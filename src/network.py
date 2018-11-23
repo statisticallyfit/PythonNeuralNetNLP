@@ -88,9 +88,11 @@ class Network(object):
         # scheme in the book, used here to take advantage of the fact
         # that Python can use negative indices in lists.
         for L in range(2, self.numLayers):
-            z = zs[-1]
+            z = zs[-L]
             sp = sigmoidDerivative(z)
-            delta = np.dot(self.weights[-L + 1].transpose() )
+            delta = np.dot(self.weights[-L + 1].transpose(), delta) * sp
+            nabla_b[-L] = delta
+            nabla_W[-L] = np.dot(delta, activations[-L-1].transpose())
 
         return (nabla_b, nabla_W)
 
@@ -132,8 +134,8 @@ class Network(object):
         return (outputActivations - y)
 
 
-    def stochasticGradientDescentAlgo(self, trainingData, epochs, miniBatchSize,
-                                      eta, testData=None):
+    def SGD(self, trainingData, epochs, miniBatchSize,
+            eta, testData=None):
         """Train the neural network using mini-batch stochastic gradient descent.
 
          @:param ``training_data`` is a list of tuples
@@ -145,10 +147,12 @@ class Network(object):
         against the test data after each epoch, and partial progress printed out.
         This is useful for tracking progress, but slows things down substantially."""
 
-        if testData:
-            nTest = len(testData)
-
+        trainingData = list(trainingData)
         n = len(trainingData)
+
+        if testData:
+            testData = list(testData)
+            nTest = len(testData)
 
         # For each epoch, randomly shuffle the training data
         for j in range(epochs):

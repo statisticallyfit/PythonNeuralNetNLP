@@ -50,3 +50,4 @@ dependencies:
   # Jupyter
   # ==============
   - conda-forge::jupyterlab
+  - conda-forge::jupytext=0.8.5
