@@ -15,25 +15,41 @@ import numpy as np
 class Network(object):
 
     def __init__(self, sizes):
-        """The list ``sizes`` contains the number of neurons in the
+        """
+        @:param ``sizes`` contains the number of neurons in the
         respective layers of the network.  For example, if the list
         was [2, 3, 1] then it would be a three-layer network, with the
         first layer containing 2 neurons, the second layer 3 neurons,
-        and the third layer 1 neuron.  The biases and weights for the
-        network are initialized randomly, using a Gaussian
-        distribution with mean 0, and variance 1.  Note that the first
+        and the third layer 1 neuron. Example: net = Network([2, 3, 1]
+
+        @:param biases and weights for the network are initialized randomly,
+        using a Gaussian distribution with mean 0, and variance 1.
+
+        Note that the first
         layer is assumed to be an input layer, and by convention we
         won't set any biases for those neurons, since biases are only
         ever used in computing the outputs from later layers."""
         self.numLayers = len(sizes)
         self.sizes = sizes
-        self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
+        # makes a y-by-1 array filled with gaussian std values.
+        self.biases = [np.random.randn(y, 1) for y in sizes[1:]] # this is matrix
+        # weights is a matrix named W_jk such that it contains the weight for the
+        # connection between the kth neuron in the second layer and the jth neuron
+        # in the third layer.
         self.weights = [np.random.randn(y, x)
-                        for x,y in zip(sizes[:-1], sizes[1:])]
+                        for x,y in zip(sizes[:-1], sizes[1:])] # this is matrix
+
+        # NOTE: a' = vector of activations of the second layer of neurons
+        # to obtain (a)' we multiply (a) by the weight matrix W and add vector b of biases.
+        # Then apply the sigmoid function elementwise to every entry in the vector WA + b
+        # (Referring to equation: A' = sigmoid(WA + b)
 
 
+    # The input A is an nx1 array, where n = number of inputs to the network.
+    # better than (n, ) array since using (n, 1) array makes it easy to modify the code
+    # to feedforward multiply inputs at once.
     def feedForward(self, A):
-        """ Return the output of the network of ``A`` is input. """
+        """ Return the output of the network if ``A`` is input. """
         for b, W in zip(self.biases, self.weights):
             A = sigmoid(np.dot(W, A) + b)
 
@@ -71,10 +87,10 @@ class Network(object):
         # second-last layer, and so on.  It's a renumbering of the
         # scheme in the book, used here to take advantage of the fact
         # that Python can use negative indices in lists.
-        for l in range(2, self.numLayers):
+        for L in range(2, self.numLayers):
             z = zs[-1]
             sp = sigmoidDerivative(z)
-            delta = np.dot(self.weights[-l + 1].transpose() )
+            delta = np.dot(self.weights[-L + 1].transpose() )
 
         return (nabla_b, nabla_W)
 
@@ -89,6 +105,8 @@ class Network(object):
         return sum(int(x == y) for (x, y) in testResults)
 
 
+    # Computes gradients for every training sample in minibatch
+    # then updates the self.weights and self.biases.
     def updateMiniBatch(self, miniBatch, eta):
         """Update the network's weights and biases by applying
         gradient descent using backpropagation to a single mini batch.
@@ -97,7 +115,9 @@ class Network(object):
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_W = [np.zeros(W.shape) for W in self.weights]
         for x, y in miniBatch:
-            delta_nabla_b, delta_nabla_w = self.backprop(x, y)
+            # backprop computes gradient of cost function
+            # # that is associated to the training example x.
+            delta_nabla_b, delta_nabla_w = self.backProp(x, y)
             nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
             nabla_W = [nw+dnw for nw, dnw in zip(nabla_W, delta_nabla_w)]
         self.weights = [W - (eta/len(miniBatch))*nw
@@ -114,28 +134,36 @@ class Network(object):
 
     def stochasticGradientDescentAlgo(self, trainingData, epochs, miniBatchSize,
                                       eta, testData=None):
-        """Train the neural network using mini-batch stochastic
-        gradient descent.  The ``training_data`` is a list of tuples
-        ``(x, y)`` representing the training inputs and the desired
-        outputs.
-          eta = learning rate
-          If ``test_data`` is provided then the
-        network will be evaluated against the test data after each
-        epoch, and partial progress printed out.  This is useful for
-        tracking progress, but slows things down substantially."""
+        """Train the neural network using mini-batch stochastic gradient descent.
+
+         @:param ``training_data`` is a list of tuples
+        ``(x, y)`` representing the training inputs and the desired outputs.
+        @:param eta = learning rate
+        @:param epochs = number of epochs to train for
+        @:param miniBatchSize = size of minibatches to use when sampling
+        @:param If ``test_data`` is provided then the network will be evaluated
+        against the test data after each epoch, and partial progress printed out.
+        This is useful for tracking progress, but slows things down substantially."""
+
         if testData:
             nTest = len(testData)
+
         n = len(trainingData)
 
+        # For each epoch, randomly shuffle the training data
         for j in range(epochs):
             random.shuffle(trainingData)
+
+            # partition the training data into minibatches, easy way of sampling
+            # randomly from the training data.
             miniBatches = [
                 trainingData[k : k + miniBatchSize]
                 for k in range(0, n, miniBatchSize)
             ]
 
+            # For each minibatch, apply a single step of gradient descent.
             for miniBatch in miniBatches:
-                self.updateMiniBatch(miniBatch, eta)
+                self.updateMiniBatch(miniBatch, eta) # updates network weights and biases
 
             if testData:
                 print("Epoch {0}: {1} / {2}".format(j, self.evaluate(testData), nTest))
@@ -148,6 +176,8 @@ class Network(object):
 
 
 ### Helper functions
+
+# Meant to be vectorized since z = array, z = WA + b
 def sigmoid(z):
     return 1.0 / (1.0 + np.exp(-z))
 
