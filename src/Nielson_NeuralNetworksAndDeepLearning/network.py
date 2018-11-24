@@ -68,6 +68,9 @@ class Network(object):
         activations = [x] # list to store all the activations, layer by layer
         zs = [] # list to store the z vectors, layer by layer
 
+        ##  For each training sample in updateMiniBatch():
+
+        # note step 1: feedforward algorithm
         for b, W in zip(self.biases, self.weights):
             z = np.dot(W, activation) + b
             zs.append(z)
@@ -75,8 +78,9 @@ class Network(object):
             activation = sigmoid(z)
             activations.append(activation)
 
-        # backward pass algorithm
+        # note step 2: backward pass algorithm (outputting the error, hadamard product expression)
         delta = self.costDerivative(activations[-1], y) * sigmoidDerivative(zs[-1])
+
         nabla_b[-1] = delta
         nabla_W[-1] = np.dot(delta, activations[-2].transpose())
 
@@ -87,6 +91,9 @@ class Network(object):
         # second-last layer, and so on.  It's a renumbering of the
         # scheme in the book, used here to take advantage of the fact
         # that Python can use negative indices in lists.
+
+        # note step 3: backpropagate the error for l = L-1, L-2, ... , 2, we compute
+        # note the delta_x_l = (W_l+1_transpose) delta_x_l+1 (HADAMARD PROD) sigmoidderiv(z_x_l)
         for L in range(2, self.numLayers):
             z = zs[-L]
             sp = sigmoidDerivative(z)
@@ -116,12 +123,16 @@ class Network(object):
         is the learning rate."""
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_W = [np.zeros(W.shape) for W in self.weights]
+
+        # note starting step 1
         for x, y in miniBatch:
             # backprop computes gradient of cost function
             # # that is associated to the training example x.
             delta_nabla_b, delta_nabla_w = self.backProp(x, y)
             nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
             nabla_W = [nw+dnw for nw, dnw in zip(nabla_W, delta_nabla_w)]
+
+        # note: step 3: gradient descent
         self.weights = [W - (eta/len(miniBatch))*nw
                         for W, nw in zip(self.weights, nabla_W)]
         self.biases = [b - (eta/len(miniBatch))*nb
