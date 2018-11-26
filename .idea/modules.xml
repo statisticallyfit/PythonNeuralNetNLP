@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/PythonNeuralNetworkAlgos.iml" filepath="$PROJECT_DIR$/PythonNeuralNetworkAlgos.iml" />
+      <module fileurl="file://$PROJECT_DIR$/PythonNeuralNetworks.iml" filepath="$PROJECT_DIR$/PythonNeuralNetworks.iml" />
     </modules>
   </component>
 </project>
