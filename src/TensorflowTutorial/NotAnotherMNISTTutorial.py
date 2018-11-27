@@ -122,9 +122,6 @@ W
 
 b
 
-# hi this is another try at b
-b
-
 # +
 # Define the classifier function
 
