@@ -245,8 +245,8 @@ answer.argmax()
 # Going to make predictions on a random digit
 def displayCompare(num):
     # load one training sample
-    xTrain = mnist.train.images[num, :].reshape(1, 784)
-    yTrain = mnist.train.labels[num, :]
+    xTrain = mnistData.train.images[num, :].reshape(1, 784)
+    yTrain = mnistData.train.labels[num, :]
 
     # Get the label as an integer
     label = yTrain.argmax()
