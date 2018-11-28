@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="774fad7c-0c8f-446d-9d5b-3e3c73674bc5" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/TensorflowTutorial/DanAloni_BackpropWithTensorflow.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/TensorflowTutorial/NotAnotherMNISTTutorial.py" afterPath="$PROJECT_DIR$/src/TensorflowTutorial/NotAnotherMNISTTutorial.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/TensorflowTutorial/DanAloni_BackpropWithTensorflow.py" afterPath="$PROJECT_DIR$/src/TensorflowTutorial/DanAloni_BackpropWithTensorflow.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.py" afterPath="$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.py" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -40,8 +40,8 @@
       <file leaf-file-name="ManualBackpropWithTensorflow.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="176">
-              <caret line="11" column="0" lean-forward="true" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
+            <state relative-caret-position="290">
+              <caret line="57" column="51" lean-forward="false" selection-start-line="57" selection-start-column="51" selection-end-line="57" selection-end-column="51" />
               <folding>
                 <element signature="e#140#163#0" expanded="true" />
               </folding>
@@ -49,14 +49,23 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="DanAloni_BackpropWithTensorflow.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="DanAloni_BackpropWithTensorflow.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/DanAloni_BackpropWithTensorflow.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="118">
-              <caret line="96" column="57" lean-forward="false" selection-start-line="96" selection-start-column="57" selection-end-line="96" selection-end-column="57" />
+            <state relative-caret-position="80">
+              <caret line="106" column="0" lean-forward="true" selection-start-line="106" selection-start-column="0" selection-end-line="106" selection-end-column="0" />
               <folding>
                 <element signature="e#59#82#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ManualBackpropWithTensorflow.ipynb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.ipynb">
+          <provider selected="true" editor-type-id="ipnb-editor">
+            <state>
+              <selected id="2" />
             </state>
           </provider>
         </entry>
@@ -115,11 +124,11 @@
         <option value="$PROJECT_DIR$/src/TensorflowTutorial/TensorflowMNISTTutorial.py" />
         <option value="$PROJECT_DIR$/src/TensorflowTutorial/TensorflowCoreTutorial.py" />
         <option value="$PROJECT_DIR$/src/TensorflowTutorial/NotAnotherMNISTTutorial2.ipynb" />
-        <option value="$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.py" />
         <option value="$PROJECT_DIR$/src/TensorflowTutorial/NotAnotherMNISTTutorial.py" />
         <option value="$PROJECT_DIR$/src/TensorflowTutorial/NotAnotherMNISTTutorial.ipynb" />
         <option value="$PROJECT_DIR$/src/TensorflowTutorial/DanAloni_AutoBackpropWithTensorflow.py" />
         <option value="$PROJECT_DIR$/src/TensorflowTutorial/DanAloni_BackpropWithTensorflow.py" />
+        <option value="$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.py" />
       </list>
     </option>
   </component>
@@ -130,9 +139,9 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="83" />
+    <option name="x" value="99" />
     <option name="y" value="34" />
-    <option name="width" value="1273" />
+    <option name="width" value="1257" />
     <option name="height" value="766" />
   </component>
   <component name="ProjectView">
@@ -255,7 +264,7 @@
     <property name="project.structure.last.edited" value="SDKs" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.Console Font" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.Language Defaults" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../NaNmnist" />
@@ -1000,12 +1009,12 @@
       <workItem from="1543240427596" duration="7374000" />
       <workItem from="1543323385837" duration="4125000" />
       <workItem from="1543328762964" duration="7637000" />
-      <workItem from="1543409354193" duration="3874000" />
+      <workItem from="1543409354193" duration="6732000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="40447000" />
+    <option name="totallyTimeSpent" value="43305000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1017,7 +1026,8 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="83" y="34" width="1273" height="766" extended-state="0" />
+    <frame x="99" y="34" width="1257" height="766" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="PlantUML" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -1040,10 +1050,10 @@
       <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.40126383" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.40126383" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="GhcMod" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22122449" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22415219" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Theme Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -1271,16 +1281,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="176">
-          <caret line="11" column="0" lean-forward="true" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
-          <folding>
-            <element signature="e#140#163#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/NotAnotherMNISTTutorial.ipynb">
       <provider selected="true" editor-type-id="ipnb-editor">
         <state>
@@ -1306,11 +1306,28 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/DanAloni_BackpropWithTensorflow.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="118">
-          <caret line="96" column="57" lean-forward="false" selection-start-line="96" selection-start-column="57" selection-end-line="96" selection-end-column="57" />
+        <state relative-caret-position="80">
+          <caret line="106" column="0" lean-forward="true" selection-start-line="106" selection-start-column="0" selection-end-line="106" selection-end-column="0" />
           <folding>
             <element signature="e#59#82#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="290">
+          <caret line="57" column="51" lean-forward="false" selection-start-line="57" selection-start-column="51" selection-end-line="57" selection-end-column="51" />
+          <folding>
+            <element signature="e#140#163#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="2" />
         </state>
       </provider>
     </entry>

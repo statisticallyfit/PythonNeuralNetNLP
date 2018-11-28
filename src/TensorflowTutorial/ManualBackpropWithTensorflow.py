@@ -28,3 +28,31 @@ def arctan(x):
 def derivativeArctan(x):
     return tf.div(tf.constant(1.0), tf.subtract(tf.constant(1.0), tf.square(x)))
 
+
+
+# 0. Declare Training data and labels
+mnistData = input_data.read_data_sets("data/", one_hot=False)
+
+train = mnistData.test
+images, labels = train.images, train.labels
+onlyZeroIndex, onlyOneIndex = np.where(labels == 0)[0], np.where(labels == 1)[0]
+onlyZeroImage, onlyZeroLabel = images[[onlyZeroIndex]], np.expand_dims(labels[[onlyZeroIndex]], axis = 1)
+onlyOneImage, onlyOneLabel = images[[onlyOneIndex]], np.expand_dims(labels[[onlyOneIndex]], axis=1)
+
+images = np.vstack((onlyZeroImage, onlyOneImage))
+labels = np.vstack((onlyZeroLabel, onlyOneLabel))
+images, label = shuffle(images, labels)
+
+testImageNum, trainingImageNum = 20, 100
+testImages, testingLabels = images[:testImageNum, :], label[:testImageNum,:]
+trainingImages, trainingLabels = images[testImageNum : testImageNum + trainingImageNum , :], \
+                                 label[testImageNum : testImageNum + trainingImageNum , :]
+
+numEpoch = 100
+totalCost = 0
+costArray = []
+graph = tf.Graph()
+
+
+
+# 1. What weights do I need? And how to initialize?

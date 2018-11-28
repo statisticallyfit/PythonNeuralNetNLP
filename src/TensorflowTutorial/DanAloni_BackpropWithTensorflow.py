@@ -96,6 +96,13 @@ for i in range(N):
 costFunction = tf.multiply(diff, diff)
 updateForAutoDiff = tf.train.GradientDescentOptimizer(0.1).minimize(costFunction)
 
+# NOTE: using a lower learning rate above otherwise the minimum of cost function is overshot
+# if we keep the old learning rate. Basically there is still some room for improvement from the
+# manual backprop in this case so for the sake of example we use autodiff to use up the last increments
+# to show how autodiff can be used. But manual backprop could still be used instead, just adjust
+# the learning rate as per chapter 9 in Hagan. (probably)
+
+
 print("\n\nAuto Diff Way: -------------------------- \n")
 
 for i in range(N):
