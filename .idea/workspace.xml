@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="774fad7c-0c8f-446d-9d5b-3e3c73674bc5" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/TensorflowTutorial/DanAloni_BackpropWithTensorflow.py" afterPath="$PROJECT_DIR$/src/TensorflowTutorial/DanAloni_BackpropWithTensorflow.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.py" afterPath="$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.py" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.py" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.ipynb" afterPath="$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.ipynb" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -37,35 +38,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="ManualBackpropWithTensorflow.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="290">
-              <caret line="57" column="51" lean-forward="false" selection-start-line="57" selection-start-column="51" selection-end-line="57" selection-end-column="51" />
-              <folding>
-                <element signature="e#140#163#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="DanAloni_BackpropWithTensorflow.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/DanAloni_BackpropWithTensorflow.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="80">
-              <caret line="106" column="0" lean-forward="true" selection-start-line="106" selection-start-column="0" selection-end-line="106" selection-end-column="0" />
-              <folding>
-                <element signature="e#59#82#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="ManualBackpropWithTensorflow.ipynb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.ipynb">
           <provider selected="true" editor-type-id="ipnb-editor">
             <state>
-              <selected id="2" />
+              <selected id="21" />
             </state>
           </provider>
         </entry>
@@ -88,6 +65,7 @@
       <find>onehot</find>
       <find>output</find>
       <find>delta_z1</find>
+      <find>layer2 =</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -129,6 +107,7 @@
         <option value="$PROJECT_DIR$/src/TensorflowTutorial/DanAloni_AutoBackpropWithTensorflow.py" />
         <option value="$PROJECT_DIR$/src/TensorflowTutorial/DanAloni_BackpropWithTensorflow.py" />
         <option value="$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.py" />
+        <option value="$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.ipynb" />
       </list>
     </option>
   </component>
@@ -139,8 +118,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="99" />
-    <option name="y" value="34" />
+    <option name="x" value="105" />
+    <option name="y" value="33" />
     <option name="width" value="1257" />
     <option name="height" value="766" />
   </component>
@@ -246,8 +225,8 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="Scratches" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -1009,12 +988,13 @@
       <workItem from="1543240427596" duration="7374000" />
       <workItem from="1543323385837" duration="4125000" />
       <workItem from="1543328762964" duration="7637000" />
-      <workItem from="1543409354193" duration="6732000" />
+      <workItem from="1543409354193" duration="14629000" />
+      <workItem from="1543432477753" duration="21000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="43305000" />
+    <option name="totallyTimeSpent" value="51223000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1026,7 +1006,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="99" y="34" width="1257" height="766" extended-state="0" />
+    <frame x="105" y="33" width="1257" height="766" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="PlantUML" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -1053,7 +1033,7 @@
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.40126383" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="GhcMod" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22415219" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22828785" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Theme Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -1081,13 +1061,17 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="-1" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#140#163#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1281,6 +1265,28 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/NotAnotherMNISTTutorial.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="208">
+          <caret line="213" column="0" lean-forward="true" selection-start-line="206" selection-start-column="0" selection-end-line="213" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/DanAloni_AutoBackpropWithTensorflow.py" />
+    <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/DanAloni_BackpropWithTensorflow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="304">
+          <caret line="106" column="0" lean-forward="true" selection-start-line="106" selection-start-column="0" selection-end-line="106" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/NotAnotherMNISTTutorial.ipynb">
       <provider selected="true" editor-type-id="ipnb-editor">
         <state>
@@ -1288,46 +1294,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/NotAnotherMNISTTutorial.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="208">
-          <caret line="213" column="0" lean-forward="true" selection-start-line="206" selection-start-column="0" selection-end-line="213" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/DanAloni_AutoBackpropWithTensorflow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="246">
-          <caret line="43" column="0" lean-forward="true" selection-start-line="43" selection-start-column="0" selection-end-line="43" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/DanAloni_BackpropWithTensorflow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="80">
-          <caret line="106" column="0" lean-forward="true" selection-start-line="106" selection-start-column="0" selection-end-line="106" selection-end-column="0" />
-          <folding>
-            <element signature="e#59#82#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="290">
-          <caret line="57" column="51" lean-forward="false" selection-start-line="57" selection-start-column="51" selection-end-line="57" selection-end-column="51" />
-          <folding>
-            <element signature="e#140#163#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.ipynb">
       <provider selected="true" editor-type-id="ipnb-editor">
         <state>
-          <selected id="2" />
+          <selected id="21" />
         </state>
       </provider>
     </entry>
