@@ -3,9 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="01d9c829-575d-4ae5-ba1d-93754a165e60" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PythonNeuralNetworks.iml" beforeDir="false" afterPath="$PROJECT_DIR$/PythonNeuralNetworks.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/env/datascienv.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/env/datascienv.yml" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -42,8 +39,8 @@
       <file leaf-file-name="numdiffstudy.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="224">
-              <caret line="37" column="10" selection-start-line="37" selection-start-column="10" selection-end-line="37" selection-end-column="10" />
+            <state relative-caret-position="173">
+              <caret line="43" column="12" selection-start-line="43" selection-start-column="12" selection-end-line="45" selection-end-column="17" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -88,7 +85,7 @@
       <find>onehot</find>
       <find>output</find>
       <find>delta_z1</find>
-      <find />
+      <find>layer2 =</find>
       <find>testingImages</find>
       <find>numpy</find>
       <find>xtens</find>
@@ -408,7 +405,7 @@
       <workItem from="1543409354193" duration="14629000" />
       <workItem from="1543432477753" duration="1061000" />
       <workItem from="1561194071037" duration="5633000" />
-      <workItem from="1561200078959" duration="7664000" />
+      <workItem from="1561200078959" duration="8099000" />
     </task>
     <task id="LOCAL-00001" summary="Studying `numdifftools`">
       <created>1561195977702</created>
@@ -431,11 +428,18 @@
       <option name="project" value="LOCAL" />
       <updated>1561197845692</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Studying `numdifftools`">
+      <created>1561220409599</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1561220409599</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="11570000" />
+    <option name="totallyTimeSpent" value="12005000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -896,8 +900,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="224">
-          <caret line="37" column="10" selection-start-line="37" selection-start-column="10" selection-end-line="37" selection-end-column="10" />
+        <state relative-caret-position="173">
+          <caret line="43" column="12" selection-start-line="43" selection-start-column="12" selection-end-line="45" selection-end-column="17" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
@@ -921,7 +925,7 @@
       </state>
       <state key="FacetStructureConfigurable.UI">
         <settings>
-          <last-edited />
+          <last-edited>No facets are configured</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
@@ -933,7 +937,7 @@
       </state>
       <state key="GlobalLibrariesConfigurable.UI">
         <settings>
-          <last-edited />
+          <last-edited>Python 3.6 (datafabric-dev-ds) interpreter library</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
@@ -945,7 +949,7 @@
       </state>
       <state key="JdkListConfigurable.UI">
         <settings>
-          <last-edited />
+          <last-edited>Python 3.6 (datasci_env)</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
@@ -970,7 +974,7 @@
       </state>
       <state key="ProjectLibrariesConfigurable.UI">
         <settings>
-          <last-edited />
+          <last-edited>R User Library</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>

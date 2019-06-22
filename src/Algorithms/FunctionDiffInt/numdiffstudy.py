@@ -40,6 +40,7 @@ def exp_jacobian_02():
 
     jb = nd.Jacobian(rosen)
 
+    # Apply the Jacobian function to all 3 dimensional points in the linear space
     for x in xs:
         x1 = x[0]
         x2 = x[1]
