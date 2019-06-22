@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="01d9c829-575d-4ae5-ba1d-93754a165e60" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -39,8 +40,8 @@
       <file leaf-file-name="numdiffstudy.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="173">
-              <caret line="43" column="12" selection-start-line="43" selection-start-column="12" selection-end-line="45" selection-end-column="17" />
+            <state relative-caret-position="408">
+              <caret line="54" column="33" selection-start-line="54" selection-start-column="33" selection-end-line="54" selection-end-column="33" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -69,8 +70,8 @@
       <file leaf-file-name="datascienv.yml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/env/datascienv.yml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="167">
-              <caret line="16" column="31" selection-start-line="16" selection-start-column="17" selection-end-line="16" selection-end-column="31" />
+            <state relative-caret-position="320">
+              <caret line="25" column="17" lean-forward="true" selection-start-line="25" selection-start-column="17" selection-end-line="25" selection-end-column="17" />
             </state>
           </provider>
         </entry>
@@ -405,7 +406,7 @@
       <workItem from="1543409354193" duration="14629000" />
       <workItem from="1543432477753" duration="1061000" />
       <workItem from="1561194071037" duration="5633000" />
-      <workItem from="1561200078959" duration="8099000" />
+      <workItem from="1561200078959" duration="8496000" />
     </task>
     <task id="LOCAL-00001" summary="Studying `numdifftools`">
       <created>1561195977702</created>
@@ -435,11 +436,18 @@
       <option name="project" value="LOCAL" />
       <updated>1561220409599</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Studying `numdifftools` and structured, typed, semantically rich ways to express functions&#10;&#10;https://docs.scipy.org/doc/numpy-1.15.0/user/basics.rec.html&#10;http://xarray.pydata.org/en/stable/indexing.html&#10;https://xtensor.readthedocs.io/en/latest/numpy.html">
+      <created>1561220976421</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1561220976421</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="12005000" />
+    <option name="totallyTimeSpent" value="12402000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -452,7 +460,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="286" y="50" width="1608" height="871" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="SBT Console" order="7" />
@@ -505,19 +512,20 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Studying `numdifftools`" />
-    <option name="LAST_COMMIT_MESSAGE" value="Studying `numdifftools`" />
+    <MESSAGE value="Studying `numdifftools` and structured, typed, semantically rich ways to express functions&#10;&#10;https://docs.scipy.org/doc/numpy-1.15.0/user/basics.rec.html&#10;http://xarray.pydata.org/en/stable/indexing.html&#10;https://xtensor.readthedocs.io/en/latest/numpy.html" />
+    <option name="LAST_COMMIT_MESSAGE" value="Studying `numdifftools` and structured, typed, semantically rich ways to express functions&#10;&#10;https://docs.scipy.org/doc/numpy-1.15.0/user/basics.rec.html&#10;http://xarray.pydata.org/en/stable/indexing.html&#10;https://xtensor.readthedocs.io/en/latest/numpy.html" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py</url>
-          <line>62</line>
+          <line>64</line>
           <option name="timeStamp" value="3" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py</url>
-          <line>58</line>
+          <line>60</line>
           <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -877,13 +885,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/env/datascienv.yml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="167">
-          <caret line="16" column="31" selection-start-line="16" selection-start-column="17" selection-end-line="16" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../../../bin/python/conda3/envs/datasci_env/lib/python3.6/site-packages/numdifftools/step_generators.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="139">
@@ -898,10 +899,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/env/datascienv.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="320">
+          <caret line="25" column="17" lean-forward="true" selection-start-line="25" selection-start-column="17" selection-end-line="25" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="173">
-          <caret line="43" column="12" selection-start-line="43" selection-start-column="12" selection-end-line="45" selection-end-column="17" />
+        <state relative-caret-position="408">
+          <caret line="54" column="33" selection-start-line="54" selection-start-column="33" selection-end-line="54" selection-end-column="33" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>

@@ -52,7 +52,8 @@ def exp_jacobian_02():
 
 
 # #
-# #
+# # #todo vector-valued functions
+# https://numdifftools.readthedocs.io/en/latest/tutorials/getting_started.html
 # #
 # def exp_jacobian_03():
 #     x1s = [2, 3, 4]
