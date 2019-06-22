@@ -13,6 +13,11 @@ dependencies:
   # core
   # =======
   - conda-forge::numpy=1.15.4
+  - conda-forge::xarray=0.12.1
+  - conda-forge::xtensor-python=0.23.1
+  - conda-forge::xtensor-r=0.11.1
+  - conda-forge::xtensor-blas=0.16.1
+  - conda-forge::xtensor-fftw=0.2.5
   - conda-forge::pandas=0.23.4
   - conda-forge::scipy=1.1.0
   - conda-forge::sympy=1.3

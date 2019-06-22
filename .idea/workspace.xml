@@ -2,9 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="01d9c829-575d-4ae5-ba1d-93754a165e60" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PythonNeuralNetworks.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PythonNeuralNetworks.iml" beforeDir="false" afterPath="$PROJECT_DIR$/PythonNeuralNetworks.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/env/datascienv.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/env/datascienv.yml" afterDir="false" />
     </list>
+    <ignored path="$PROJECT_DIR$/out/" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -14,7 +18,7 @@
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/PythonNeuralNetworkAlgos$Tester.coverage" NAME="Tester Coverage Results" MODIFIED="1542988139331" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/PythonNeuralNetworks$DanAloni_BackpropWithTensorflow.coverage" NAME="DanAloni_BackpropWithTensorflow Coverage Results" MODIFIED="1561195764960" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/TensorflowTutorial" />
-    <SUITE FILE_PATH="coverage/PythonNeuralNetworks$numdiffstudy.coverage" NAME="numdiffstudy Coverage Results" MODIFIED="1561195840999" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/Algorithms/FunctionDiffInt" />
+    <SUITE FILE_PATH="coverage/PythonNeuralNetworks$numdiffstudy.coverage" NAME="numdiffstudy Coverage Results" MODIFIED="1561220354488" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/Algorithms/FunctionDiffInt" />
     <SUITE FILE_PATH="coverage/PythonNeuralNetworks$TensorflowCoreTutorial.coverage" NAME="TensorflowCoreTutorial Coverage Results" MODIFIED="1543259863838" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/TensorflowTutorial" />
     <SUITE FILE_PATH="coverage/PythonNeuralNetworkAlgos$mnistSVM.coverage" NAME="mnistSVM Coverage Results" MODIFIED="1542988761828" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/PythonNeuralNetworkAlgos$networkRunner.coverage" NAME="networkRunner Coverage Results" MODIFIED="1542986585289" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/stochasticGradientDescent" />
@@ -38,8 +42,8 @@
       <file leaf-file-name="numdiffstudy.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="153">
-              <caret line="9" column="26" selection-start-line="9" selection-start-column="16" selection-end-line="9" selection-end-column="26" />
+            <state relative-caret-position="224">
+              <caret line="37" column="10" selection-start-line="37" selection-start-column="10" selection-end-line="37" selection-end-column="10" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -47,11 +51,29 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/.gitignore">
+      <file leaf-file-name="function_base.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../../../bin/python/conda3/envs/datasci_env/lib/python3.6/site-packages/numpy/core/function_base.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="34">
-              <caret line="2" column="7" selection-start-line="2" selection-start-column="7" selection-end-line="2" selection-end-column="7" />
+            <state relative-caret-position="140">
+              <caret line="24" column="30" selection-start-line="24" selection-start-column="30" selection-end-line="24" selection-end-column="30" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="step_generators.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../../../bin/python/conda3/envs/datasci_env/lib/python3.6/site-packages/numdifftools/step_generators.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="139">
+              <caret line="24" selection-start-line="24" selection-end-line="24" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="datascienv.yml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/env/datascienv.yml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="167">
+              <caret line="16" column="31" selection-start-line="16" selection-start-column="17" selection-end-line="16" selection-end-column="31" />
             </state>
           </provider>
         </entry>
@@ -66,12 +88,23 @@
       <find>onehot</find>
       <find>output</find>
       <find>delta_z1</find>
-      <find>layer2 =</find>
+      <find />
       <find>testingImages</find>
+      <find>numpy</find>
+      <find>xtens</find>
+      <find>xarray</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/src/env/datascienv.yml" />
+        <option value="$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py" />
+      </list>
+    </option>
   </component>
   <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
   <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
@@ -83,10 +116,10 @@
     <packageJsonPaths />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-12" />
-    <option name="y" value="33" />
-    <option name="width" value="1257" />
-    <option name="height" value="766" />
+    <option name="x" value="286" />
+    <option name="y" value="50" />
+    <option name="width" value="1608" />
+    <option name="height" value="871" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -95,7 +128,6 @@
     </navigator>
     <panes>
       <pane id="Scope" />
-      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -125,19 +157,102 @@
               <item name="PythonNeuralNetworks" type="b2602c69:ProjectViewProjectNode" />
               <item name="PythonNeuralNetworks" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="BookLearning" type="462c0819:PsiDirectoryNode" />
+              <item name="env" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="PythonNeuralNetworks" type="b2602c69:ProjectViewProjectNode" />
-              <item name="PythonNeuralNetworks" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="BookLearning" type="462c0819:PsiDirectoryNode" />
-              <item name="Nielson_NeuralNetworksAndDeepLearning" type="462c0819:PsiDirectoryNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+            </path>
+            <path>
+              <item name="PythonNeuralNetworks" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.6 (datasci_env) &gt;" type="70bed36:NamedLibraryElementNode" />
+            </path>
+            <path>
+              <item name="PythonNeuralNetworks" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.6 (datasci_env) &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="-1623906201" type="70582d5e:PySkeletonsNode" />
+            </path>
+            <path>
+              <item name="PythonNeuralNetworks" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.6 (datasci_env) &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="-1623906201" type="70582d5e:PySkeletonsNode" />
+              <item name="numpy" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="PythonNeuralNetworks" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.6 (datasci_env) &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="-1623906201" type="70582d5e:PySkeletonsNode" />
+              <item name="numpy" type="462c0819:PsiDirectoryNode" />
+              <item name="core" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="PythonNeuralNetworks" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.6 (datasci_env) &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="python-skeletons" type="51189727:PyUserSkeletonsNode" />
+            </path>
+            <path>
+              <item name="PythonNeuralNetworks" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.6 (datasci_env) &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="python-skeletons" type="51189727:PyUserSkeletonsNode" />
+              <item name="numpy" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="PythonNeuralNetworks" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.6 (datasci_env) &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="python-skeletons" type="51189727:PyUserSkeletonsNode" />
+              <item name="numpy" type="462c0819:PsiDirectoryNode" />
+              <item name="core" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="PythonNeuralNetworks" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.6 (datasci_env) &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="python3.6" type="b5f07198:RTreeStructureProvider$1" />
+            </path>
+            <path>
+              <item name="PythonNeuralNetworks" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.6 (datasci_env) &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="python3.6" type="b5f07198:RTreeStructureProvider$1" />
+              <item name="site-packages" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="PythonNeuralNetworks" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.6 (datasci_env) &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="python3.6" type="b5f07198:RTreeStructureProvider$1" />
+              <item name="site-packages" type="462c0819:PsiDirectoryNode" />
+              <item name="numdifftools" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="PythonNeuralNetworks" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.6 (datasci_env) &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="python3.6" type="b5f07198:RTreeStructureProvider$1" />
+              <item name="site-packages" type="462c0819:PsiDirectoryNode" />
+              <item name="numpy" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="PythonNeuralNetworks" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="&lt; Python 3.6 (datasci_env) &gt;" type="70bed36:NamedLibraryElementNode" />
+              <item name="python3.6" type="b5f07198:RTreeStructureProvider$1" />
+              <item name="site-packages" type="462c0819:PsiDirectoryNode" />
+              <item name="numpy" type="462c0819:PsiDirectoryNode" />
+              <item name="core" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -154,10 +269,10 @@
     <property name="options.searchVisible" value="true" />
     <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.splitter.main.proportions" value="0.3" />
-    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.last.edited" value="SDKs" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.39833158" />
-    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.Language Defaults" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="PsiViewer.ProjectComponent">
     <option name="HIGHLIGHT" value="false" />
@@ -211,6 +326,25 @@
       </option>
       <patterns />
     </configuration>
+    <configuration name="numdiffstudy" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="PythonNeuralNetworks" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/Algorithms/FunctionDiffInt" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -233,6 +367,11 @@
       <properties />
       <listeners />
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.numdiffstudy" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SbtLocalSettings">
     <option name="modificationStamps">
@@ -251,7 +390,7 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="774fad7c-0c8f-446d-9d5b-3e3c73674bc5" name="Default" comment="" />
+      <changelist id="01d9c829-575d-4ae5-ba1d-93754a165e60" name="Default" comment="" />
       <created>1542914959647</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
@@ -268,7 +407,8 @@
       <workItem from="1543328762964" duration="7637000" />
       <workItem from="1543409354193" duration="14629000" />
       <workItem from="1543432477753" duration="1061000" />
-      <workItem from="1561194071037" duration="1924000" />
+      <workItem from="1561194071037" duration="5633000" />
+      <workItem from="1561200078959" duration="7664000" />
     </task>
     <task id="LOCAL-00001" summary="Studying `numdifftools`">
       <created>1561195977702</created>
@@ -277,11 +417,25 @@
       <option name="project" value="LOCAL" />
       <updated>1561195977703</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Studying `numdifftools`">
+      <created>1561196265978</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1561196265978</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Studying `numdifftools`">
+      <created>1561197845691</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1561197845692</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="197000" />
+    <option name="totallyTimeSpent" value="11570000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -293,49 +447,54 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="190" y="76" width="1257" height="766" extended-state="0" />
+    <frame x="286" y="50" width="1608" height="871" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="SBT Console" />
+      <window_info anchor="bottom" id="SBT Console" order="7" />
       <window_info anchor="right" id="Palette&#9;" order="3" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
-      <window_info anchor="right" id="PsiViewer" />
+      <window_info anchor="right" id="PsiViewer" order="3" />
       <window_info anchor="right" id="Maven Projects" order="3" />
-      <window_info anchor="bottom" id="Database Changes" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.4" />
+      <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.4" />
       <window_info anchor="bottom" id="Terminal" order="7" />
       <window_info id="Designer" order="2" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.22791082" />
-      <window_info anchor="right" id="R Packages" />
-      <window_info anchor="bottom" id="Docker" />
-      <window_info anchor="right" id="R Graphics" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.22727273" />
+      <window_info anchor="bottom" id="Mypy" />
+      <window_info anchor="right" id="R Packages" order="3" />
+      <window_info anchor="bottom" id="Docker" order="7" />
+      <window_info anchor="right" id="R Graphics" order="3" />
       <window_info anchor="right" id="Database" order="3" />
-      <window_info anchor="right" id="SciView" visible="true" weight="0.32947975" />
+      <window_info anchor="right" id="SciView" order="3" weight="0.32650447" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.39968404" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="right" id="PlantUML" order="3" />
-      <window_info anchor="right" id="Palette" order="3" />
-      <window_info id="Image Layers" order="2" />
-      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info id="UI Designer" order="2" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.3972973" />
       <window_info id="Nl-Palette" order="2" />
-      <window_info anchor="right" id="Properties" order="3" />
+      <window_info anchor="bottom" id="SBT Execute" order="7" side_tool="true" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info id="Capture Tool" order="2" />
-      <window_info anchor="right" id="Capture Analysis" order="3" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="right" id="Theme Preview" order="3" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.328594" />
+      <window_info id="Image Layers" order="2" />
+      <window_info anchor="right" id="Properties" order="3" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="GhcMod" order="7" />
+      <window_info anchor="right" id="PlantUML" order="3" />
       <window_info anchor="right" id="Cabal" order="3" />
-      <window_info anchor="bottom" id="SBT Execute" order="7" side_tool="true" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.328594" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info id="UI Designer" order="2" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Data View" order="3" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="right" id="Theme Preview" order="3" />
+      <window_info anchor="right" id="Palette" order="3" />
+      <window_info anchor="right" id="Capture Analysis" order="3" />
     </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
@@ -346,14 +505,134 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="2" />
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py</url>
+          <line>62</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py</url>
+          <line>58</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py</url>
+          <line>40</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+      </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
+      <option name="time" value="8" />
     </breakpoint-manager>
   </component>
   <component name="antWorkspaceConfiguration">
     <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
     <option name="FILTER_TARGETS" value="false" />
   </component>
+  <component name="debuggerHistoryManager">
+    <expressions id="evaluateCodeFragment">
+      <expression>
+        <expression-string>x2.shape</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>x1.shape</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>np.array(np.dstack((x1s, x2s, x3s))).shape</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>np.array(
+        np.dstack((x1s, x2s, x3s)))</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+    </expressions>
+    <expressions id="evaluateExpression">
+      <expression>
+        <expression-string>np.array(list(zip(x1s, x2s, x3s)))[5]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>np.array(list(zip(x1s, x2s, x3s)))[2]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>np.array(list(zip(x1s, x2s, x3s)))[1]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>np.array(list(zip(x1s, x2s, x3s)))[0]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>np.array(list(zip(x1s, x2s, x3s)))</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>xs[0][3]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>xs[0][1]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>xs[0][0]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>xs[0]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+    </expressions>
+  </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../bin/python/conda3/envs/datasci_env/lib/python3.6/site-packages/numdifftools/core.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="9741">
+          <caret line="573" column="6" selection-start-line="573" selection-start-column="6" selection-end-line="573" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="7" selection-start-line="2" selection-start-column="7" selection-end-line="2" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.ipynb">
       <provider selected="true" editor-type-id="ipnb-editor">
         <state>
@@ -368,9 +647,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/NotAnotherMNISTTutorial2.ipynb" />
     <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/TensorflowCoreTutorial.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -380,9 +656,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/NotAnotherMNISTTutorial.py" />
-    <entry file="file://$PROJECT_DIR$/src/BookLearning/Nielson_NeuralNetworksAndDeepLearning/network.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/BookLearning/Nielson_NeuralNetworksAndDeepLearning/Tester.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="416">
@@ -474,9 +747,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/stochasticGradientDescent/data/testing.py" />
     <entry file="file://$PROJECT_DIR$/src/Algo_StochasticGradientDescent/__init__.py" />
     <entry file="file://$PROJECT_DIR$/src/BookLearning/Nielson_NeuralNetworksAndDeepLearning/mnistLoader.py">
@@ -490,13 +760,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="111">
           <caret line="66" column="14" selection-start-line="66" selection-start-column="4" selection-end-line="66" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/env/datascienv.yml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="304">
-          <caret line="52" column="17" selection-start-line="52" selection-start-column="17" selection-end-line="52" selection-end-column="17" />
         </state>
       </provider>
     </entry>
@@ -520,9 +783,6 @@
           <caret line="126" column="15" selection-start-line="126" selection-start-column="15" selection-end-line="126" selection-end-column="15" />
         </state>
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Algorithms/StochasticGradientDescent.py">
-      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/TensorflowMNISTTutorial.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -557,9 +817,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/ManualBackpropWithTensorflow.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/TensorflowTutorial/NotAnotherMNISTTutorial.ipynb">
       <provider selected="true" editor-type-id="ipnb-editor">
         <state>
@@ -581,10 +838,66 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/../../../bin/python/conda3/envs/datasci_env/lib/python3.6/site-packages/numdifftools/core.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="9588">
+          <caret line="573" column="6" selection-start-line="573" selection-start-column="6" selection-end-line="573" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../bin/python/conda3/envs/datasci_env/lib/python3.6/site-packages/numpy/core/numeric.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="118">
+          <caret line="2269" selection-start-line="2269" selection-end-line="2269" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.IntelliJIdea2018.1/system/python_stubs/-1623906201/numpy/core/multiarray.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="3636" lean-forward="true" selection-start-line="3636" selection-end-line="3636" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../nickdsc_idea/.IntelliJIdea2018.1/config/plugins/python/helpers/python-skeletons/numpy/core/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="89">
+          <caret line="2037" column="7" lean-forward="true" selection-start-line="2037" selection-end-line="2037" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../bin/python/conda3/envs/datasci_env/lib/python3.6/codecs.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="140">
+          <caret line="308" selection-start-line="308" selection-end-line="308" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/env/datascienv.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="167">
+          <caret line="16" column="31" selection-start-line="16" selection-start-column="17" selection-end-line="16" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../bin/python/conda3/envs/datasci_env/lib/python3.6/site-packages/numdifftools/step_generators.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="139">
+          <caret line="24" selection-start-line="24" selection-end-line="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../bin/python/conda3/envs/datasci_env/lib/python3.6/site-packages/numpy/core/function_base.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="140">
+          <caret line="24" column="30" selection-start-line="24" selection-start-column="30" selection-end-line="24" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/Algorithms/FunctionDiffInt/numdiffstudy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
-          <caret line="9" column="26" selection-start-line="9" selection-start-column="16" selection-end-line="9" selection-end-column="26" />
+        <state relative-caret-position="224">
+          <caret line="37" column="10" selection-start-line="37" selection-start-column="10" selection-end-line="37" selection-end-column="10" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
@@ -600,7 +913,7 @@
           <splitter-proportions>
             <option name="proportions">
               <list>
-                <option value="0.2" />
+                <option value="0.39833158" />
               </list>
             </option>
           </splitter-proportions>
@@ -608,11 +921,11 @@
       </state>
       <state key="FacetStructureConfigurable.UI">
         <settings>
-          <last-edited>No facets are configured</last-edited>
+          <last-edited />
           <splitter-proportions>
             <option name="proportions">
               <list>
-                <option value="0.2" />
+                <option value="0.39833158" />
               </list>
             </option>
           </splitter-proportions>
@@ -620,7 +933,7 @@
       </state>
       <state key="GlobalLibrariesConfigurable.UI">
         <settings>
-          <last-edited>Python 3.6 (datafabric-dev-ds) interpreter library</last-edited>
+          <last-edited />
           <splitter-proportions>
             <option name="proportions">
               <list>
@@ -632,7 +945,7 @@
       </state>
       <state key="JdkListConfigurable.UI">
         <settings>
-          <last-edited>Python 3.6 (datasci_env)</last-edited>
+          <last-edited />
           <splitter-proportions>
             <option name="proportions">
               <list>
@@ -649,6 +962,7 @@
             <option name="proportions">
               <list>
                 <option value="0.39833158" />
+                <option value="0.6" />
               </list>
             </option>
           </splitter-proportions>
@@ -656,7 +970,7 @@
       </state>
       <state key="ProjectLibrariesConfigurable.UI">
         <settings>
-          <last-edited>R User Library</last-edited>
+          <last-edited />
           <splitter-proportions>
             <option name="proportions">
               <list>
