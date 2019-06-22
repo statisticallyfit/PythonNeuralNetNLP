@@ -22,11 +22,12 @@ dependencies:
   # ML core
   # ==============
   - conda-forge::scikit-learn=0.19.2
-  - conda-forge::tensorflow=1.11.0
-  - conda-forge::tensorboard=1.11.0
-  - conda-forge::theano=1.0.3
+  - conda-forge::tensorflow=1.13.1
+  - conda-forge::tensorboard=1.13.1
+  - conda-forge::numdifftools
+  - conda-forge::algopy
   - pip:
-    - tensorflow-probability==0.4.0
+    - tensorflow-probability==0.6.0
 
   # ==============
   # Bayes
