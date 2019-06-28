@@ -4,5 +4,5 @@
     <ghcPath>/usr/local/bin/ghc</ghcPath>
     <cabalPath>/usr/local/bin/cabal</cabalPath>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" default="false" project-jdk-name="Python 3.6.5 (/development/bin/python/conda3_shared/envs/datasci_env/bin/python3)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="false" project-jdk-name="Python 3.6.5 (/development/bin/python/conda3_shared/envs/datasci_env/bin/python3)" project-jdk-type="Python SDK" />
 </project>

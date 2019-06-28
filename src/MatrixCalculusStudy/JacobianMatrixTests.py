@@ -28,7 +28,9 @@ def main():
 def multivarScalarFunction(x: np.array) -> np.double :
     return (1 - x[0]) ** 2 + 105. * (x[1] - x[0] ** 2) ** 2
 
-
+# the partial derivative with respect to x of the multivariate scalar Rosenbrock function
+def dfdx(x: np.double, y: np.double) -> np.double :
+    return
 
 
 #
@@ -36,27 +38,28 @@ def multivarScalarFunction(x: np.array) -> np.double :
 #
 def testJacobianMatrixOfScalarFunctionIsFunctionGradient():
 
-    x1s = np.linspace(start=10.0, stop=20.0, num=333, dtype=X1T)  #array
-    x2s = np.linspace(start=20.0, stop=45.0, num=333, dtype=X2T) # array
-    x3s = np.linspace(start=30.0, stop=98.0, num=333, dtype=X2T) # array
-    xs = np.array(list(zip(x1s, x2s, x3s))) # matrix
-        #np.array([x1s, x2s, x3s]) #
+    x1s = np.linspace(start=10.0, stop=20.0, num=333, dtype=np.float64)  #array
+    x2s = np.linspace(start=20.0, stop=45.0, num=333, dtype=np.float64) # array
+    xs = np.array(list(zip(x1s, x2s))) # matrix , where x1s and x2s are columnwise
 
     jb = nd.Jacobian(multivarScalarFunction)
 
-    # Apply the Jacobian function to all 3 dimensional points in the linear space
+    # Apply the Jacobian function to all 2 dimensional points in the linear space
     # There are 2 variables in the function and so the jacobian has the form:
-    # ( df1 / dx1   df1 / dx2 ) ????????????????????????????????????????????????????????
-    # ------ ( df2 / dx1   df2 / dx2 )
-    # ------ ( df2 / dx1   df2 / dx2 )
-    for x in xs:
-        x1 = x[0]
-        x2 = x[1]
-        x3 = x[2]
+    # ( df / dx1   df / dx2 )
+    # which is the same as the gradient vector!
+    for row in xs:
+        xn = row[0]
+        yn = row[1]
 
-        jac = jb([x1, x2, x3])
-        grad = nd.Gradient(multivarScalarFunction)([x1, x2, x3])
-        assert np.allclose(jac, grad) == True
+        # Calculating the jacobian matrix, where xn and yn are inputs to all the component functions
+        jacobianMatrix = jb([xn, yn])
+
+        # Calculating the gradient vector, where xn and yn are inputs to all the component functions
+        gradientVector = nd.Gradient(multivarScalarFunction)([xn, yn])
+
+        # Testing that jacobian matrix (1 x 2) equals gradient vector
+        assert np.allclose(jacobianMatrix, gradientVector) == True
 
 
 # #
@@ -72,6 +75,8 @@ def testJacobianMatrixOfScalarFunctionIsFunctionGradient():
 #
 #     assert np.allclose(jac, (grad1, grad2)) == True
 
+
+# Case 3: jacobian matrix of a nonlinear transformation of variables (for integration, thomas book)
 
 def exp1():
     x = np.linspace(-2, 2, 100)
