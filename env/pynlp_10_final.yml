@@ -240,13 +240,10 @@ dependencies:
   - sympy=1.4=py36_0
   - tensorboard=1.13.1=py36_0
   - tensorboardx=1.2=py_0
-  - tensorflow>=1.14 #1.13.1=py36h90a7d86_1
+  - tensorflow=1.13.1=py36h90a7d86_1
   - tensorflow-base=1.14.0=eigen_py36hf4a566f_0
   - tensorflow-estimator=1.13.0=py_0
-  - pip:
-    - tensorflow-probability>=0.7
-    - tensor2tensor
-  #- tensorflow-probability=0.7=py_2
+  - tensorflow-probability=0.7=py_2
   - termcolor=1.1.0=py_2
   - terminado=0.8.2=py36_0
   - testpath=0.4.2=py_1001
@@ -279,3 +276,4 @@ dependencies:
   - zipp=0.6.0=py_0
   - zlib=1.2.11=h516909a_1006
 prefix: /development/bin/python/conda3_ana/envs/pynlp_env
+
