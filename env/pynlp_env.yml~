@@ -1,0 +1,83 @@
+name: pynlp_env
+
+channels: 
+  - conda-forge
+  - defaults
+  - anaconda
+  - pytorch
+  - ankurankan
+  #- andywocky
+  - DaniM # for edward library
+
+
+dependencies:
+
+  # =======
+  # core
+  # =======
+  - conda-forge::pip=19.1.1
+  - defaults::python=3.7.3
+  - conda-forge::jupyterlab
+  - conda-forge::jupytext>=1.2.4
+  - statsmodels
+  - numpy
+  - scipy
+  - sympy
+  - spacy
+  - pandas
+  - patsy
+
+
+  # ======================================================
+  # Natural Language Processing / Autodiff / Neural Nets
+  # ======================================================
+  - xarray
+  - numdifftools
+  - autograd
+  - scikit-learn
+  - nltk
+  - pytorch
+  - torchtext
+  - conda-forge::tensorflow>=1.13.2
+  - conda-forge::tensorboard>=1.13.2
+  - tensorflow-probability>=0.7.0
+  - conda-forge::algopy # for autodifferentiation
+  #- pip:
+  #  - tensorflow-probability>=0.7.0
+  - edward
+  - transformers
+  - word2vec
+  - allennlp
+  #- flair
+
+
+
+  # ============================
+  # Bayesian Inference
+  # ============================
+  - pystan
+  - pymc3
+  - emcee
+  - astropy # MCMC sampling
+  - ankurankan::pgmpy
+  - bayespy # variational bayes inference in python!
+
+
+
+
+  # ==============
+  # Plotting
+  # ==============
+  - matplotlib
+  - plotly
+  #- pyplot
+  - seaborn
+  #- andywocky::daft # probabilistic graphical model plotter: https://docs.daft-pgm.org/en/latest/
+  #- python-graphviz
+
+
+
+
+
+
+
