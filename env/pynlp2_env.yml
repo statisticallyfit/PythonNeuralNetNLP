@@ -1,4 +1,4 @@
-name: pynlp_env
+name: pynlp2_env
 channels:
   - ankurankan
   - anaconda
