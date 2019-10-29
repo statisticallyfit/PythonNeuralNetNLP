@@ -33,6 +33,7 @@ dependencies:
   - cffi=1.11.5=py36he75722e_1
   - chardet=3.0.4=py36_1003
   - click=7.0=py36_0
+  - cloudpickle=1.2.2=py_0
   - colorama=0.3.9=py36_0
   - conllu=0.11=py_0
   - cookies=2.2.1=py36_1
@@ -230,6 +231,7 @@ dependencies:
   - tensorflow=1.14.0=mkl_py36h2526735_0
   - tensorflow-base=1.14.0=mkl_py36h7ce6ba3_0
   - tensorflow-estimator=1.14.0=py_0
+  - tensorflow-probability=0.7=py_0
   - termcolor=1.1.0=py36_1
   - terminado=0.8.2=py36_0
   - testpath=0.4.2=py36_0
@@ -259,6 +261,32 @@ dependencies:
   - zipp=0.6.0=py_0
   - zlib=1.2.11=h7b6447c_3
   - pip:
-    - daft==0.1.0
+    - bz2file==0.98
+    - cachetools==3.1.1
+    - dopamine-rl==2.0.5
+    - edward==1.3.5
+    - gin-config==0.2.1
+    - google-api-python-client==1.7.11
+    - google-auth==1.6.3
+    - google-auth-httplib2==0.0.3
+    - googleapis-common-protos==1.6.0
+    - gunicorn==19.9.0
+    - gym==0.15.3
+    - httplib2==0.14.0
+    - kfac==0.2.0
+    - mesh-tensorflow==0.1.4
+    - oauth2client==4.1.3
+    - opencv-python==4.1.1.26
+    - pillow==6.2.1
+    - promise==2.2.1
+    - pyasn1-modules==0.2.7
+    - pyglet==1.3.2
+    - pypng==0.0.20
+    - tensor2tensor==1.14.1
+    - tensorflow-datasets==1.3.0
+    - tensorflow-gan==2.0.0
+    - tensorflow-hub==0.6.0
+    - tensorflow-metadata==0.15.0
+    - uritemplate==3.0.0
 prefix: /development/bin/python/conda3_ana/envs/pynlp_env
 

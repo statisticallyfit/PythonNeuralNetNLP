@@ -1,6 +1,6 @@
 # Imports we need.
 import tensorflow as tf
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import os
 import collections
@@ -62,3 +62,36 @@ label = mnist_example["targets"]
 
 plt.imshow(image.numpy()[:, :, 0].astype(np.float32), cmap=plt.get_cmap('gray'))
 print("Label: %d" % label.numpy())
+
+
+
+
+# TRANSLATE FROM ENGLISH TO GERMAN WITH PRE_TRAINED MODEL
+
+# Fetch the problem
+ende_problem = problems.problem("translate_ende_wmt32k")
+
+# Copy the vocab file locally so we can encode inputs and decode model outputs
+# All vocabs are stored on GCS
+vocab_name = "vocab.translate_ende_wmt32k.32768.subwords"
+vocab_file = os.path.join(gs_data_dir, vocab_name)
+
+# TODO: left off here: how to translate this command-line like line into actual code?
+#!gsutil cp {vocab_file} {data_dir}
+
+# Get the encoders from the problem
+encoders = ende_problem.feature_encoders(data_dir)
+
+# Setup helper functions for encoding and decoding
+def encode(input_str, output_str=None):
+    """Input str to features dict, ready for inference"""
+    inputs = encoders["inputs"].encode(input_str) + [1]  # add EOS id
+    batch_inputs = tf.reshape(inputs, [1, -1, 1])  # Make it 3D.
+    return {"inputs": batch_inputs}
+
+def decode(integers):
+    """List of ints to str"""
+    integers = list(np.squeeze(integers))
+    if 1 in integers:
+        integers = integers[:integers.index(1)]
+    return encoders["inputs"].decode(np.squeeze(integers))

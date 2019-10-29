@@ -30,12 +30,12 @@ dependencies:
   - tensorboard
   - tensorflow-probability
   - pip:
-    - tensor2tensor
+      - tensor2tensor
   - allennlp
   - pytorch
   - pytorch-pretrained-bert
   - pip:
-    - torchtext
+      - torchtext
   - transformers
   - word2vec
   - scikit-learn
@@ -50,7 +50,7 @@ dependencies:
   - bayespy
   - emcee
   - pip:
-    - edward
+      - edward
   - pystan
   - pymc3
   - pgmpy
