@@ -1,4 +1,4 @@
-name: pynlp_env
+name: pynlp_t2t_env
 channels:
   - ankurankan
   - anaconda
@@ -24,18 +24,17 @@ dependencies:
   - xarray
 
   # ======================================================
-  # Natural Language Processing / Autodiff / Neural Nets
+  # NLP / Autodiff / Neural Nets (but without tensorflow, so that tensor2tensor agrees)
   # ======================================================
-  - tensorflow==1.14.0
-  - tensorboard
-  - tensorflow-probability
+  #- tensorboard>=1.14.0
+  #- tensorflow>=1.14.0
   - pip:
+    #- tensorflow-probability>=0.7
     - tensor2tensor
+    - torchtext
   - allennlp
   - pytorch
   - pytorch-pretrained-bert
-  - pip:
-    - torchtext
   - transformers
   - word2vec
   - scikit-learn
@@ -44,12 +43,12 @@ dependencies:
 
 
   # ============================
-  # Bayesian Inference (not the spotlight here)
+  # Bayesian Inference 
   # ============================
   - algopy
   - bayespy
   - emcee
-  - pip:
+  - pip: 
     - edward
   - pystan
   - pymc3
@@ -62,6 +61,8 @@ dependencies:
   - matplotlib
   - seaborn
   - plotly
+  - pip: 
+    - daft
 
 
-prefix: /development/bin/python/conda3_ana/envs/pynlp_env
+prefix: /development/bin/python/conda3_ana/envs/pynlp_t2t_env

@@ -1,24 +1,18 @@
 name: pynlp_env
-
-channels: 
+channels:
+  - ankurankan
+  - anaconda
   - conda-forge
   - defaults
-  - anaconda
-  - pytorch
-  - ankurankan
-  #- andywocky
-  - DaniM # for edward library
-
-
 dependencies:
 
   # =======
   # core
   # =======
-  - conda-forge::pip=19.1.1
-  - defaults::python=3.7.3
-  - conda-forge::jupyterlab
-  - conda-forge::jupytext>=1.2.4
+  - pip
+  - python>=3.6.7 #3.7.3
+  - jupyterlab
+  - jupytext
   - statsmodels
   - numpy
   - scipy
@@ -26,58 +20,49 @@ dependencies:
   - spacy
   - pandas
   - patsy
-
+  - numdifftools
+  - xarray
 
   # ======================================================
   # Natural Language Processing / Autodiff / Neural Nets
   # ======================================================
-  - xarray
-  - numdifftools
-  - autograd
-  - scikit-learn
-  - nltk
+  - tensorboard==1.14.0
+  - tensorflow==1.14.0
+  - pip:
+    - tensorflow-probability
+    - tensor2tensor
+    - torchtext
+  - allennlp
   - pytorch
-  - torchtext
-  - conda-forge::tensorflow>=1.13.2
-  - conda-forge::tensorboard>=1.13.2
-  - tensorflow-probability>=0.7.0
-  - conda-forge::algopy # for autodifferentiation
-  #- pip:
-  #  - tensorflow-probability>=0.7.0
-  - edward
+  - pytorch-pretrained-bert
   - transformers
   - word2vec
-  - allennlp
-  #- flair
-
+  - scikit-learn
+  - spacy
+  - nltk
 
 
   # ============================
-  # Bayesian Inference
+  # Bayesian Inference (not the spotlight here)
   # ============================
+  - algopy
+  - bayespy
+  - emcee
+  - pip: 
+    - edward
   - pystan
   - pymc3
-  - emcee
-  - astropy # MCMC sampling
-  - ankurankan::pgmpy
-  - bayespy # variational bayes inference in python!
-
-
+  - pgmpy
 
 
   # ==============
   # Plotting
   # ==============
   - matplotlib
-  - plotly
-  #- pyplot
   - seaborn
-  #- andywocky::daft # probabilistic graphical model plotter: https://docs.daft-pgm.org/en/latest/
-  #- python-graphviz
+  - plotly
+  - pip: 
+    - daft
 
 
-
-
-
-
-
+prefix: /development/bin/python/conda3_ana/envs/pynlp_env
