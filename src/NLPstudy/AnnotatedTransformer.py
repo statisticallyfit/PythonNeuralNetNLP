@@ -14,17 +14,14 @@ import matplotlib.pyplot as plt
 from IPython.display import Image
 
 
-# TODO: where is this from?
-#Image(filename='images/aiayn.png')
 
-'''
-Most competitive neural sequence transduction models have an encoder-decoder structure (cite). 
-Here, the encoder maps an input sequence of symbol representations (x1,…,xn) to a sequence of 
-continuous representations z=(z1,…,zn). Given z, the decoder then generates an output sequence (y1,…,ym) of 
-symbols one element at a time. At each step the model is auto-regressive (cite), consuming the previously 
-generated symbols as additional input when generating the next.
- 
-'''
+
+# Most competitive neural sequence transduction models have an encoder-decoder structure (cite).
+# Here, the encoder maps an input sequence of symbol representations (x1,…,xn) to a sequence of
+# continuous representations z=(z1,…,zn). Given z, the decoder then generates an output sequence (y1,…,ym) of
+# symbols one element at a time. At each step the model is auto-regressive (cite), consuming the previously
+# generated symbols as additional input when generating the next.
+
 
 class EncoderDecoder(nn.Module):
     """
@@ -63,20 +60,17 @@ class Generator(nn.Module):
         return F.log_softmax(self.proj(x), dim= - 1)
 
 
-"""
-The Transformer follows this overall architecture using stacked self-attention and point-wise,
- fully connected layers for both the encoder and decoder, shown in the left and right halves 
- of Figure 1, respectively.
-"""
+# The Transformer follows this overall architecture using stacked self-attention and point-wise,
+#  fully connected layers for both the encoder and decoder, shown in the left and right halves
+# of Figure 1, respectively.
 pth = os.getcwd()
 Image(filename=pth + '/images/ModalNet-21.png')
 
 
 
-"""
-Encoder and Decoder Stacks
-"""
-
+####
+## Encoder and Decoder Stacks
+####
 # Encoder: composed of a stack of N = 6 (assumed) identical layers.
 def clones(module, N):
     "Produce N identical layers."
@@ -98,9 +92,11 @@ class Encoder(nn.Module):
 
 
 # Employ a residual connection around each of the two sub-layers followed by
-# layer normalization:
+# layer normalization
+
 # LayerNormalization concept:
 # #hyp.is https://hyp.is/6zXZZPl_EemJBPt5Safoig/arxiv.org/pdf/1706.03762.pdf
+
 class LayerNorm(nn.Module):
     "Construct a layernorm module"
     def __init__(self, features, eps=1e-6):
@@ -223,22 +219,19 @@ None
 # Attention
 ###
 
-"""
-An attention function can be described as mapping a query and a set of key-value pairs to an output, 
-where the query, keys, values, and output are all vectors. The output is computed as a weighted sum 
-of the values, where the weight assigned to each value is computed by a compatibility function of the 
-query with the corresponding key.
 
-We call our particular attention “Scaled Dot-Product Attention”. The input consists of queries and 
-keys of dimension dk, and values of dimension dv. We compute the dot products of the query with all 
-keys, divide each by dk‾‾√, and apply a softmax function to obtain the weights on the values.
-"""
+# An attention function can be described as mapping a query and a set of key-value pairs to an output,
+# where the query, keys, values, and output are all vectors. The output is computed as a weighted sum #
+# of the values, where the weight assigned to each value is computed by a compatibility function of the
+# query with the corresponding key.
+# We call our particular attention “Scaled Dot-Product Attention”. The input consists of queries and
+# keys of dimension dk, and values of dimension dv. We compute the dot products of the query with all
+# keys, divide each by dk‾‾√, and apply a softmax function to obtain the weights on the values.
 Image(filename=pth + '/images/ModalNet-19.png')
 
-"""In practice, we compute the attention function on a set of queries simultaneously, packed 
-together into a matrix Q. The keys and values are also packed together into matrices K and V. 
-We compute the matrix of outputs as:
-"""
+# In practice, we compute the attention function on a set of queries simultaneously, packed
+# together into a matrix Q. The keys and values are also packed together into matrices K and V.
+# We compute the matrix of outputs as:
 Image(filename=pth + '/images/attentionformula.png')
 
 
@@ -266,7 +259,7 @@ Image(filename = pth + '/images/ModalNet-20.png')
 Image(filename = pth + '/images/multiheadattn_text.png')
 
 # Assumption: h = 8 parallel attention layers
-# FOr each of these layers, use: dk = dv = d_model / h = 64
+# For each of these layers, use: dk = dv = d_model / h = 64
 class MultiHeadedAttention(nn.Module):
     def __init__(self, h, d_model, dropout=0.1):
         "Take in model size and number of heads."
@@ -305,14 +298,14 @@ class MultiHeadedAttention(nn.Module):
 
 
 
+####
+# Position-wise feed-forward networks
+####
 
-### Position-wise feed-forward networks
 
-"""
-In addition to attention sub-layers, each of the layers in our encoder and decoder contains a 
-fully connected feed-forward network, which is applied to each position separately and identically. 
-This consists of two linear transformations with a ReLU activation in between.
-"""
+# In addition to attention sub-layers, each of the layers in our encoder and decoder contains a
+# fully connected feed-forward network, which is applied to each position separately and identically.
+# This consists of two linear transformations with a ReLU activation in between.
 Image(filename = pth + '/images/ffneq.png')
 
 # Implementing the FFN equation above
@@ -348,3 +341,6 @@ class Embeddings(nn.Module):
 
     def forward(self, x):
         return self.lut(x) * math.sqrt(self.d_model)
+
+
+# something else
