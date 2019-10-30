@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import torch
 import torch.nn as nn
@@ -14,7 +15,7 @@ from IPython.display import Image
 
 
 # TODO: where is this from?
-Image(filename='images/aiayn.png')
+#Image(filename='images/aiayn.png')
 
 '''
 Most competitive neural sequence transduction models have an encoder-decoder structure (cite). 
@@ -29,24 +30,24 @@ class EncoderDecoder(nn.Module):
     """
     A standard Encoder-Decoder architecture. Base for this and many other models.
     """
-    def __init__(self, encoder, decoder, src_embed, tgt_embed, generator):
+    def __init__(self, givenEncoder, givenDecoder, givenSrcEmbed, givenTargetEmbed, givenGenerator):
         super(EncoderDecoder, self).__init__()
-        self.encoder = encoder
-        self.decoder = decoder
-        self.src_embed = src_embed
-        self.tgt_embed = tgt_embed
-        self.generator = generator
+        self.encoder = givenEncoder
+        self.decoder = givenDecoder
+        self.srcEmbed = givenSrcEmbed
+        self.targetEmbed = givenTargetEmbed
+        self.generator = givenGenerator
 
     # Overrides method in Module.
-    def forward(self, src, tgt, src_mask, tgt_mask):
+    def forward(self, src, tgt, srcMask, targetMask):
         "Take in an process the masked src and target sequences."
-        return self.decode(self.encode(src, src_mask), src_mask, tgt, tgt_mask)
+        return self.decode(self.encode(src, srcMask), srcMask, tgt, targetMask)
 
-    def encode(self, src, src_mask):
-        return self.encoder(self.src_embed(src), src_mask)
+    def encode(self, src, srcMask):
+        return self.encoder(self.srcEmbed(src), srcMask)
 
-    def decode(self, memory, src_mask, tgt, tgt_mask):
-        return self.decoder(self.tgt_embed(tgt), memory, src_mask, tgt_mask)
+    def decode(self, memory, srcMask, tgt, targetMask):
+        return self.decoder(self.targetEmbed(tgt), memory, srcMask, targetMask)
 
 
 # Defining a Generator model with Module as superclass
@@ -67,8 +68,8 @@ The Transformer follows this overall architecture using stacked self-attention a
  fully connected layers for both the encoder and decoder, shown in the left and right halves 
  of Figure 1, respectively.
 """
-# TODO: where is this from?
-Image(filename='images/ModalNet-21.png')
+pth = os.getcwd()
+Image(filename=pth + '/images/ModalNet-21.png')
 
 
 
@@ -144,4 +145,206 @@ class SublayerConnection(nn.Module):
 
 class EncoderLayer(nn.Module):
     "Encoder is made of up self-attention and feed forward network, defined below"
-    def __init__(self, size, self_attention, feed_forward, dropout):
+    def __init__(self, givenSize, givenSelfAttention, givenFeedForward, givenDropout):
+        self.selfAttention = givenSelfAttention
+        self.feedForward = givenFeedForward
+        self.sublayer = clones(SublayerConnection(givenSize, givenDropout), 2)
+        self.size = givenSize
+
+    def forward(self, x, mask):
+        # Follow Figure 1 (left) for connections
+        x = self.sublayer[0](x, lambda x: self.selfAttention(x, x, x, mask))
+        return self.sublayer[1](x, self.feedForward)
+
+
+# Decoder is composed of a stack of N = 6 identical layers (like the encoder)
+class Decoder(nn.Module):
+    "Generic N layer decoder with masking."
+    def __init__(self, layer, N):
+        super(Decoder, self).__init__()
+        self.layers = clones(layer, N)
+        self.norm = LayerNorm(layer.size)
+
+    def forward(self, x, memory, srcMask, tgtMask):
+        for layer in self.layers:
+            x = layer(x, memory, srcMask, tgtMask)
+        return self.norm(x)
+
+
+
+# In addition to the two sub-layers in each encoder layer, the decoder inserts a
+# third sub-layer, which performs multi-head attention over the output of the encoder
+# stack. Similar to the encoder, we employ residual connections around each of the
+# sub-layers, followed by layer normalization.
+
+class DecoderLayer(nn.Module):
+    "Decoder is made of self-Attention , src-attention and feed forward, defined below"
+    def __init__(self, size, selfAttn, srcAttn, feedFwd, dropout):
+        super(DecoderLayer, self).__init__()
+        self.size = size
+        self.selfAttention = selfAttn
+        self.sourceAttention = srcAttn
+        self.feedForward = feedFwd
+        self.sublayer = clones(SublayerConnection(size, dropout), 3)
+
+    def forward(self, x, memory, srcMask, tgtMask):
+        "See Figure 1 (right) for connections."
+        m = memory # note memory from last encoder layer? Seems to be the one connecting
+        # note: into the middle sublayer of decoder.
+        x = self.sublayer[0](x, lambda x : self.selfAttention(x,x,x, tgtMask))
+        x = self.sublayer[1](x, lambda x : self.sourceAttention(x, m, m, srcMask))
+        return self.sublayer[2](x, self.feedForward)
+
+
+
+# We also modify the self-attention sub-layer in the decoder stack to prevent
+# positions from attending to subsequent positions. This masking, combined with
+# fact that the output embeddings are offset by one position, ensures
+# that the predictions for position i can depend only on the known outputs
+# at positions less than i.
+
+def subsequentMask(size):
+    "Mask out subsequent positions."
+    attnShape = (1, size, size)
+    subsequentMask = np.triu(np.ones(attnShape), k = 1).astype('uint8')
+    return torch.from_numpy(subsequentMask) == 0
+
+
+# Below the attention mask shows the position that each tgt (target) word (row)
+# is allowed to look at (column). Words are blocked for attending to future words
+# during training.
+plt.figure(figsize = (5,5))
+plt.imshow(subsequentMask(20)[0])
+None
+
+
+
+###
+# Attention
+###
+
+"""
+An attention function can be described as mapping a query and a set of key-value pairs to an output, 
+where the query, keys, values, and output are all vectors. The output is computed as a weighted sum 
+of the values, where the weight assigned to each value is computed by a compatibility function of the 
+query with the corresponding key.
+
+We call our particular attention “Scaled Dot-Product Attention”. The input consists of queries and 
+keys of dimension dk, and values of dimension dv. We compute the dot products of the query with all 
+keys, divide each by dk‾‾√, and apply a softmax function to obtain the weights on the values.
+"""
+Image(filename=pth + '/images/ModalNet-19.png')
+
+"""In practice, we compute the attention function on a set of queries simultaneously, packed 
+together into a matrix Q. The keys and values are also packed together into matrices K and V. 
+We compute the matrix of outputs as:
+"""
+Image(filename=pth + '/images/attentionformula.png')
+
+
+def attention(query, key, value, mask=None, dropout=None):
+    "Compute 'Scaled Dot Product Attention' "
+    d_k = query.size(-1) # dimension of the queries and keys
+    scores = torch.matmul(query, key.transpose(-2, -1) / math.sqrt(d_k))
+
+    if mask is not None:
+        scores = scores.masked_fill(mask == 0, -1e9)
+    pAttn = F.softmax(scores, dim= -1)
+
+    if dropout is not None:
+        pAttn = dropout(pAttn)
+
+    return torch.matmul(pAttn, value), pAttn
+
+
+Image(filename = pth + '/images/ModalNet-20.png')
+
+# Multi-head attention allows the model to jointly attend to information from different
+# representation subspaces at different positions. With a single attention head, averaging
+# inhibits this. MultiHead(Q,K,V)=Concat(head1,...,headh)WO where headi = Attention(QWQi,KWKi,VWVi)
+
+Image(filename = pth + '/images/multiheadattn_text.png')
+
+# Assumption: h = 8 parallel attention layers
+# FOr each of these layers, use: dk = dv = d_model / h = 64
+class MultiHeadedAttention(nn.Module):
+    def __init__(self, h, d_model, dropout=0.1):
+        "Take in model size and number of heads."
+        super(MultiHeadedAttention, self).__init__()
+        assert d_model % h == 0
+
+        # We assume d_v always equals d_k
+        self.d_k = d_model // h
+        self.h = h
+        self.linears = clones(nn.Linear(d_model, d_model), 4)
+        self.attn = None
+        self.dropout = nn.Dropout(p=dropout)
+
+
+    def forward(self, query, key, value, mask = None):
+        "Implements Figure 2 - multiheaded attention, Q, K, V"
+
+        if mask is not None:
+            # Same mask applied to all h heads.
+            mask = mask.unsqueeze(1)
+
+
+        numBatches = query.size(0)
+
+        # 1) Do all linear projections in batch from d_model => h x dk
+        query, key, value = [l(x).view(numBatches, -1, self.h, self.d_k).transpose(1, 2)
+                             for l, x in zip(self.linears, (query, key, value))]
+
+        # 2) Apply attention on all the projected vectors in batch.
+        x, self.attn = attention(query, key, value, mask = mask, dropout=self.dropout)
+
+        # 3) "Concat" using a view and apply a final linear
+        x = x.tranpose(1, 2).contiguous().view(numBatches, -1, self.h * self.d_k)
+
+        return self.linears[-1](x)
+
+
+
+
+### Position-wise feed-forward networks
+
+"""
+In addition to attention sub-layers, each of the layers in our encoder and decoder contains a 
+fully connected feed-forward network, which is applied to each position separately and identically. 
+This consists of two linear transformations with a ReLU activation in between.
+"""
+Image(filename = pth + '/images/ffneq.png')
+
+# Implementing the FFN equation above
+class PositionwiseFeedForward(nn.Module):
+    "Implements FFN equation."
+    def __init__(self, d_model, d_ff, dropout=0.1):
+        super(PositionwiseFeedForward, self).__init__()
+        self.w1 = nn.Linear(d_model, d_ff)
+        self.w2 = nn.Linear(d_ff, d_model)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x):
+        return self.w2(self.dropout(F.relu(self.w1(x))))
+
+
+
+
+####
+# Embeddings and Softmax
+
+# Similarly to other sequence transduction models, we use learned embeddings to convert the input
+# tokens and output tokens to vectors of dimension dmodel. We also use the usual learned linear
+# transformation and softmax function to convert the decoder output to predicted next-token
+# probabilities. In our model, we share the same weight matrix between the two embedding layers
+# and the pre-softmax linear transformation, similar to (cite). In the embedding layers, we multiply
+# those weights by sqrt(d_model)
+####
+class Embeddings(nn.Module):
+    def __init__(self, d_model, vocab):
+        super(Embeddings, self).__init__()
+        self.lut = nn.Embedding(vocab, d_model)
+        self.d_model = d_model
+
+    def forward(self, x):
+        return self.lut(x) * math.sqrt(self.d_model)
