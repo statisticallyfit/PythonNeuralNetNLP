@@ -98,5 +98,50 @@ class Encoder(nn.Module):
 
 # Employ a residual connection around each of the two sub-layers followed by
 # layer normalization:
+# LayerNormalization concept:
 # #hyp.is https://hyp.is/6zXZZPl_EemJBPt5Safoig/arxiv.org/pdf/1706.03762.pdf
-#class LayerNorm(nn.Module):
+class LayerNorm(nn.Module):
+    "Construct a layernorm module"
+    def __init__(self, features, eps=1e-6):
+        super(LayerNorm, self).__init__()
+        self.a_2 = nn.Parameter(torch.ones(features))
+        self.b_2 = nn.Parameter(torch.zeros(features))
+        self.eps = eps
+
+    # TODO: where is this formula below???
+    # That is, the output of each sub-layer is LayerNorm(x+Sublayer(x)),
+    # where Sublayer(x) is the function implemented by the sub-layer itself.
+    def forward(self, x):
+        mean = x.mean(-1, keepdim=True)
+        std = x.std(-1, keepdim=True)
+        return self.a_2 * (x - mean) / (std + self.eps) + self.b_2
+
+
+# Comment: (?)
+# To facilitate these residual connections, all sub-layers in the model, as well as the
+# embedding layers, produce outputs of dimension dmodel=512.
+
+
+class SublayerConnection(nn.Module):
+    """
+    A residual connection followed by a layer norm.
+    Note for code simplicity the norm is first as opposed to last.
+    """
+    def __init__(self, size, dropout):
+        super(SublayerConnection, self).__init__()
+        self.norm = LayerNorm(size)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x, sublayer):
+        "Apply residual connection to any sublayer with the same size."
+        return x + self.dropout(sublayer(self.norm(x)))
+
+
+
+# Each layer in the Encoder has two sub-layers. The first is a
+# multi-head self-attention mechanism, and the second is a simple, position-wise
+# fully connected feed- forward network.
+
+class EncoderLayer(nn.Module):
+    "Encoder is made of up self-attention and feed forward network, defined below"
+    def __init__(self, size, self_attention, feed_forward, dropout):
