@@ -584,7 +584,7 @@ class LabelSmoothing(nn.Module):
         mask = torch.nonzero(target.data == self.paddingIndex)
 
         if mask.dim() > 0:
-            obtainedTrueDist.index_fill_(0, mask.squeeze(), torch.zeros(1))
+            obtainedTrueDist.index_fill_(0, mask.squeeze(), 0.0)
             ## TODO help errror here after running the code below
         self.trueDist = obtainedTrueDist
         return self.criterion(x, Variable(obtainedTrueDist, requires_grad=False))
