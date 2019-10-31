@@ -1,3 +1,20 @@
+# -*- coding: utf-8 -*-
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     formats: ipynb,py:light
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.4'
+#       jupytext_version: 1.2.4
+#   kernelspec:
+#     display_name: Python 3
+#     language: python
+#     name: python3
+# ---
+
 import os
 import numpy as np
 import torch
@@ -68,10 +85,10 @@ Image(filename=pth + '/images/ModalNet-21.png')
 
 
 
-# ---------------------------------------------------------------------------------------------------
+####
 ## Encoder and Decoder Stacks
-# ---------------------------------------------------------------------------------------------------
-## Encoder: composed of a stack of N = 6 (assumed) identical layers.
+####
+# Encoder: composed of a stack of N = 6 (assumed) identical layers.
 def clones(module, N):
     "Produce N identical layers."
     return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
@@ -142,7 +159,6 @@ class SublayerConnection(nn.Module):
 class EncoderLayer(nn.Module):
     "Encoder is made of up self-attention and feed forward network, defined below"
     def __init__(self, givenSize, givenSelfAttention, givenFeedForward, givenDropout):
-        super(EncoderLayer, self).__init__()
         self.selfAttention = givenSelfAttention
         self.feedForward = givenFeedForward
         self.sublayer = clones(SublayerConnection(givenSize, givenDropout), 2)
@@ -216,16 +232,18 @@ None
 
 
 
-# ---------------------------------------------------------------------------------------------------
-## Attention
-# ---------------------------------------------------------------------------------------------------
-## An attention function can be described as mapping a query and a set of key-value pairs to an output,
-## where the query, keys, values, and output are all vectors. The output is computed as a weighted sum #
-## of the values, where the weight assigned to each value is computed by a compatibility function of the
-## query with the corresponding key.
-## We call our particular attention “Scaled Dot-Product Attention”. The input consists of queries and
-## keys of dimension dk, and values of dimension dv. We compute the dot products of the query with all
-## keys, divide each by dk‾‾√, and apply a softmax function to obtain the weights on the values.
+# ##
+# Attention
+# ##
+
+
+# An attention function can be described as mapping a query and a set of key-value pairs to an output,
+# where the query, keys, values, and output are all vectors. The output is computed as a weighted sum #
+# of the values, where the weight assigned to each value is computed by a compatibility function of the
+# query with the corresponding key.
+# We call our particular attention “Scaled Dot-Product Attention”. The input consists of queries and
+# keys of dimension dk, and values of dimension dv. We compute the dot products of the query with all
+# keys, divide each by dk‾‾√, and apply a softmax function to obtain the weights on the values.
 Image(filename=pth + '/images/ModalNet-19.png')
 
 # In practice, we compute the attention function on a set of queries simultaneously, packed
@@ -297,12 +315,14 @@ class MultiHeadedAttention(nn.Module):
 
 
 
-# ---------------------------------------------------------------------------------------------------
-## Position-wise feed-forward networks
-# ---------------------------------------------------------------------------------------------------
-## In addition to attention sub-layers, each of the layers in our encoder and decoder contains a
-## fully connected feed-forward network, which is applied to each position separately and identically.
-## This consists of two linear transformations with a ReLU activation in between.
+# ###
+# Position-wise feed-forward networks
+# ###
+
+
+# In addition to attention sub-layers, each of the layers in our encoder and decoder contains a
+# fully connected feed-forward network, which is applied to each position separately and identically.
+# This consists of two linear transformations with a ReLU activation in between.
 Image(filename = pth + '/images/ffneq.png')
 
 # Implementing the FFN equation above
@@ -320,16 +340,16 @@ class PositionwiseFeedForward(nn.Module):
 
 
 
-# ---------------------------------------------------------------------------------------------------
-## Embeddings and Softmax
-# ---------------------------------------------------------------------------------------------------
-## Similarly to other sequence transduction models, we use learned embeddings to convert the input
-## tokens and output tokens to vectors of dimension dmodel. We also use the usual learned linear
-## transformation and softmax function to convert the decoder output to predicted next-token
-## probabilities. In our model, we share the same weight matrix between the two embedding layers
-## and the pre-softmax linear transformation, similar to (cite). In the embedding layers, we multiply
-## those weights by sqrt(d_model)
+# ###
+# Embeddings and Softmax
 
+# Similarly to other sequence transduction models, we use learned embeddings to convert the input
+# tokens and output tokens to vectors of dimension dmodel. We also use the usual learned linear
+# transformation and softmax function to convert the decoder output to predicted next-token
+# probabilities. In our model, we share the same weight matrix between the two embedding layers
+# and the pre-softmax linear transformation, similar to (cite). In the embedding layers, we multiply
+# those weights by sqrt(d_model)
+####
 class Embeddings(nn.Module):
     def __init__(self, d_model, vocab):
         super(Embeddings, self).__init__()
@@ -343,15 +363,15 @@ class Embeddings(nn.Module):
 
 
 
-# ---------------------------------------------------------------------------------------------------
-## Positional Encodings
-# ---------------------------------------------------------------------------------------------------
-## Since our model contains no recurrence and no convolution, in order for the model to make use of
-## the order of the sequence, we must inject some information about the relative or absolute position
-## of the tokens in the sequence. To this end, we add “positional encodings” to the input embeddings
-## at the bottoms of the encoder and decoder stacks. The positional encodings have the same dimension
-## dmodel as the embeddings, so that the two can be summed.
+# ##
+# Positional Encodings
+# ##
 
+# Since our model contains no recurrence and no convolution, in order for the model to make use of
+# the order of the sequence, we must inject some information about the relative or absolute position
+# of the tokens in the sequence. To this end, we add “positional encodings” to the input embeddings
+# at the bottoms of the encoder and decoder stacks. The positional encodings have the same dimension
+# dmodel as the embeddings, so that the two can be summed.
 class PositionalEncoding(nn.Module):
     "Implement the PE function."
     def __init__(self, d_model, dropout, max_len=5000):
@@ -360,8 +380,9 @@ class PositionalEncoding(nn.Module):
 
         # Compute the positional encodings once in log space.
         pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0.0, max_len).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0.0, d_model, 2) * -(math.log(10000.0) / d_model))
+        position = torch.arange(0, max_len).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2) *
+                             -(math.log(10000.0) / d_model))
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
         pe = pe.unsqueeze(0)
@@ -371,55 +392,3 @@ class PositionalEncoding(nn.Module):
         x = x + Variable(self.pe[:, :x.size(1)],
                          requires_grad=False)
         return self.dropout(x)
-
-
-
-# Below the positional encoding will add in a sine wave based on position. The frequency and offset
-# of the wave is different for each dimension.
-# We also experimented with using learned positional embeddings (cite) instead, and found that
-# the two versions produced nearly identical results. We chose the sinusoidal version because
-# it may allow the model to extrapolate to sequence lengths longer than the ones encountered
-# during training.
-pe = PositionalEncoding(20, 0)
-y = pe.forward(Variable(torch.zeros(1, 100, 20)))
-
-plt.figure(figsize=(15, 5))
-plt.plot(np.arange(100), y[0, :, 4:8].data.numpy())
-plt.legend(["dim %d" % p for p in [4,5,6,7]])
-None
-
-
-
-
-
-# ---------------------------------------------------------------------------------------------------
-## Creating the full model
-# ---------------------------------------------------------------------------------------------------
-## Here we define a function that takes in hyperparameters and produces a full model.
-
-
-def makeModel(sourceVocab, targetVocab, N = 6, d_model=512, d_ff=2048, h=8, dropout=0.1):
-    "Helper: construct a model from hyperparameters."
-    c = copy.deepcopy # create a deepcopy function
-    attn = MultiHeadedAttention(h, d_model)
-    ff = PositionwiseFeedForward(d_model, d_ff, dropout)
-    position = PositionalEncoding(d_model, dropout)
-    model = EncoderDecoder(
-        Encoder(EncoderLayer(d_model, c(attn), c(ff), dropout), N),
-        Decoder(DecoderLayer(d_model, c(attn), c(attn), c(ff), dropout), N),
-        nn.Sequential(Embeddings(d_model, sourceVocab), c(position)),
-        nn.Sequential(Embeddings(d_model, targetVocab), c(position)),
-        Generator(d_model, targetVocab)
-    )
-
-
-    # Initialize parameters with Glorot / fan_avg
-    for p in model.parameters():
-        if p.dim() > 1:
-            nn.init.xavier_uniform(p)
-
-    return model
-
-# Creating small example model:
-tmpModel = makeModel(10, 10, 2)
-print(tmpModel)
