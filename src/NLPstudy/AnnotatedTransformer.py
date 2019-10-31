@@ -79,10 +79,10 @@ def clones(module, N):
 
 class Encoder(nn.Module):
     "Core encoder is a stack of N layers"
-    def __init__(self, layer, N):
+    def __init__(self, givenLayer, N):
         super(Encoder, self).__init__()
-        self.layers = clones(layer, N) # making N identical layers to store in the layers array
-        self.norm = LayerNorm(layer.size) # layer normalization like in article
+        self.layers = clones(givenLayer, N) # making N identical layers to store in the layers array
+        self.norm = LayerNorm(givenLayer.size) # layer normalization like in article
 
     def forward(self, x, mask):
         "Pass the input (and mask) through each layer in turn."
@@ -99,10 +99,10 @@ class Encoder(nn.Module):
 
 class LayerNorm(nn.Module):
     "Construct a layernorm module"
-    def __init__(self, features, eps=1e-6):
+    def __init__(self, givenFeatures, eps=1e-6):
         super(LayerNorm, self).__init__()
-        self.a_2 = nn.Parameter(torch.ones(features))
-        self.b_2 = nn.Parameter(torch.zeros(features))
+        self.a_2 = nn.Parameter(torch.ones(givenFeatures))
+        self.b_2 = nn.Parameter(torch.zeros(givenFeatures))
         self.eps = eps
 
     # TODO: where is this formula below???
@@ -124,10 +124,10 @@ class SublayerConnection(nn.Module):
     A residual connection followed by a layer norm.
     Note for code simplicity the norm is first as opposed to last.
     """
-    def __init__(self, size, dropout):
+    def __init__(self, givenSize, givenDropout):
         super(SublayerConnection, self).__init__()
-        self.norm = LayerNorm(size)
-        self.dropout = nn.Dropout(dropout)
+        self.norm = LayerNorm(givenSize)
+        self.dropout = nn.Dropout(givenDropout)
 
     def forward(self, x, sublayer):
         "Apply residual connection to any sublayer with the same size."
@@ -157,10 +157,10 @@ class EncoderLayer(nn.Module):
 # Decoder is composed of a stack of N = 6 identical layers (like the encoder)
 class Decoder(nn.Module):
     "Generic N layer decoder with masking."
-    def __init__(self, layer, N):
+    def __init__(self, givenLayer, N):
         super(Decoder, self).__init__()
-        self.layers = clones(layer, N)
-        self.norm = LayerNorm(layer.size)
+        self.layers = clones(givenLayer, N)
+        self.norm = LayerNorm(givenLayer.size)
 
     def forward(self, x, memory, srcMask, tgtMask):
         for layer in self.layers:
@@ -176,13 +176,13 @@ class Decoder(nn.Module):
 
 class DecoderLayer(nn.Module):
     "Decoder is made of self-Attention , src-attention and feed forward, defined below"
-    def __init__(self, size, selfAttn, srcAttn, feedFwd, dropout):
+    def __init__(self, givenSize, givenSelfAttn, givenSrcAttn, givenFeedFwd, givenDropout):
         super(DecoderLayer, self).__init__()
-        self.size = size
-        self.selfAttention = selfAttn
-        self.sourceAttention = srcAttn
-        self.feedForward = feedFwd
-        self.sublayer = clones(SublayerConnection(size, dropout), 3)
+        self.size = givenSize
+        self.selfAttention = givenSelfAttn
+        self.sourceAttention = givenSrcAttn
+        self.feedForward = givenFeedFwd
+        self.sublayer = clones(SublayerConnection(givenSize, givenDropout), 3)
 
     def forward(self, x, memory, srcMask, tgtMask):
         "See Figure 1 (right) for connections."
@@ -423,3 +423,197 @@ def makeModel(sourceVocab, targetVocab, N = 6, d_model=512, d_ff=2048, h=8, drop
 # Creating small example model:
 tmpModel = makeModel(10, 10, 2)
 print(tmpModel)
+
+
+
+# ---------------------------------------------------------------------------------------------------
+## Training
+# ---------------------------------------------------------------------------------------------------
+## Training a standard encoder-decoder model.
+## First define a batch object that holds the source and target sentences for training,
+## and construct the masks.
+
+class Batch:
+    "Object for holding a batch of data with mask during training."
+    def __init__(self, givenSource, givenTarget=None, pad=0):
+        self.source = givenSource
+        self.sourceMask = (givenSource != pad).unsqueeze(-2)
+        if givenTarget is not None:
+            self.target = givenTarget[:, :-1]
+            self.targetY = givenTarget[:, 1:]
+            self.targetMask = self.makeStandardMask(self.target, pad)
+            self.numTokens = (self.targetY != pad).data.sum()
+
+    @staticmethod
+    def makeStandardMask(target, pad):
+        "Create a mask to hide padding and future words."
+        targetMask = (target != pad).unsqueeze(-2)
+        targetMask = targetMask & Variable(
+            subsequentMask(target.size(-1)).type_as(targetMask.data))
+
+        return targetMask
+
+
+
+# Next create a generic training and scoring function to keep track of loss.
+# Pass in a generic loss computing function to also handle parameter updates.
+def runEpoch(dataIter, model, computeLoss):
+    "Standard Training and Logging Function"
+    start = time.time()
+    numTotalTokens = 0
+    totalLoss = 0
+    numTokens = 0
+
+    for i, batch in enumerate(dataIter):
+        out = model.forward(batch.source, batch.target, batch.sourceMask, batch.targetMask)
+        loss = computeLoss(out, batch.targetY, batch.numTokens)
+        totalLoss += loss
+        numTotalTokens += batch.numTokens
+        numTokens += batch.numTokens
+
+        if i % 50 == 1:
+            elapsed = time.time() - start
+            print("Epoch Step: %d Loss: %f Tokens per Sec: %f" %
+                  (i, loss / batch.numTokens, numTokens / elapsed))
+            start = time.time()
+            numTokens = 0
+
+    return totalLoss / numTotalTokens
+
+
+# Here we create batches in a torchtext function that ensures our batch size padded to the maximum
+# batchsize does not surpass a threshold (25000 if we have 8 gpus).
+
+global maxSourceInbatch, maxTargetInBatch
+
+def batchSizeFn(new, count, soFar):
+    "Keep augmenting batch and calculate total number of tokens + padding."
+    global maxSourceInbatch, maxTargetInBatch
+    if count == 1:
+        maxSourceInbatch = 0
+        maxTargetInBatch = 0
+
+    maxSourceInbatch = max(maxSourceInbatch, len(new.source))
+    maxTargetInBatch = max(maxTargetInBatch, len(new.target) + 2)
+    sourceElements = count * maxSourceInbatch
+    targetElements = count * maxTargetInBatch
+
+    return max(sourceElements, targetElements)
+
+
+
+# ---------------------------------------------------------------------------------------------------
+## Optimizer
+# ---------------------------------------------------------------------------------------------------
+## Creating optimizer that increases the learning rate linearly for the first warmupsteps
+## training steps, and decreasing it thereafter proportionally to the inverse square root of
+## the step number. We used warmupsteps=4000.
+
+class NoamOpt:
+    "Optim wrapper that implements rate."
+    def __init__(self, modelSize, factor, warmup, optimizer):
+        self.optimizer = optimizer
+        self._step = 0
+        self.warmup = warmup
+        self.factor = factor
+        self.modelSize = modelSize
+        self._rate = 0
+
+    def step(self):
+        "Update parameters and rate"
+        self._step += 1
+        rate = self.rate()
+        for p in self.optimizer.param_groups:
+            p['lr'] = rate
+        self._rate = rate
+        self.optimizer.step()
+
+    def rate(self, step = None):
+        "Implement `lrate` above"
+        if step is None:
+            step = self._step
+        return self.factor * \
+               (self.modelSize ** (-0.5) *
+                min(step ** (-0.5), step * self.warmup ** (-1.5)))
+
+    def getStandardOpt(model):
+        return NoamOpt(model.sourceEmbed[0].d_model, 2, 4000,
+                       torch.optim.Adam(model.parameters(), lr=0, betas=(0.9, 0.98), eps=1e-9))
+
+
+# Three settings of the lrate parameters.
+opts = [NoamOpt(512, 1, 4000, None),
+        NoamOpt(512, 1, 8000, None),
+        NoamOpt(256, 1, 4000, None)]
+plt.plot(np.arange(1, 20000), [[opt.rate(i) for opt in opts] for i in range(1, 20000)])
+plt.legend(["512:4000", "512:8000", "256:4000"])
+None
+plt.show()
+
+
+
+
+# ---------------------------------------------------------------------------------------------------
+## Regularization: Label Smoothing
+# ---------------------------------------------------------------------------------------------------
+## We implement label smoothing using the Kullback-Leibler Divergence Loss.
+## Instead of using a one-hot target
+## distribution, we create a distribution that has confidence of the correct word and the
+## rest of the smoothing mass distributed throughout the vocabulary.
+class LabelSmoothing(nn.Module):
+    "Implement label smoothing."
+    def __init__(self, givenSize, givenPaddingIdx, givenSmoothing = 0.0):
+        super(LabelSmoothing, self).__init__()
+        self.criterion = nn.KLDivLoss(size_average = False)
+        self.paddingIndex = givenPaddingIdx
+        self.confidence = 1.0 - givenSmoothing
+        self.smoothing = givenSmoothing
+        self.size = givenSize
+        self.trueDist = None
+
+    def forward(self, x, target):
+        assert x.size(1) == self.size
+        obtainedTrueDist = x.data.clone()
+        obtainedTrueDist.fill_(self.smoothing / (self.size - 2))
+        obtainedTrueDist.scatter_(1, target.data.unsqueeze(1), self.confidence)
+        obtainedTrueDist[:, self.paddingIndex] = 0
+        mask = torch.nonzero(target.data == self.paddingIndex)
+        if mask.dim() > 0:
+            obtainedTrueDist.index_fill_(0, mask.squeeze(), 0.0)
+            ## TODO help errror here after running the code below
+        self.trueDist = obtainedTrueDist
+        return self.criterion(x, Variable(obtainedTrueDist, requires_grad=False))
+
+
+
+
+# Here we can see an example of how the mass is distributed to the words based on confidence.
+
+# Example of label smoothing.
+crit = LabelSmoothing(5, 0, 0.4)
+predict = torch.FloatTensor([[0, 0.2, 0.7, 0.1, 0],
+                             [0, 0.2, 0.7, 0.1, 0],
+                             [0, 0.2, 0.7, 0.1, 0]])
+v = crit(Variable(predict.log()),
+         Variable(torch.LongTensor([2, 1, 0])))
+
+# Show the target distributions expected by the system.
+plt.imshow(crit.trueDist)
+plt.show()
+
+
+
+# TODO help herror
+
+
+# Label smoothing actually starts to penalize the model if it gets very confident about a given choice.
+#crit = LabelSmoothing(5, 0, 0.1)
+#def loss(x):
+#    d = x + 3 * 1
+#    predict = torch.FloatTensor([[0, x / d, 1 / d, 1 / d, 1 / d], ])
+#    #print(predict)
+#    return crit(Variable(predict.log()),
+#                Variable(torch.LongTensor([1]))).data[0]#
+
+#plt.plot(np.arange(1, 100), [loss(x) for x in range(1, 100)])
+#plt.show()
