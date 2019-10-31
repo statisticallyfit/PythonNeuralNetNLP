@@ -31,7 +31,7 @@ class EncoderDecoder(nn.Module):
         super(EncoderDecoder, self).__init__()
         self.encoder = givenEncoder
         self.decoder = givenDecoder
-        self.srcEmbed = givenSrcEmbed
+        self.sourceEmbed = givenSrcEmbed
         self.targetEmbed = givenTargetEmbed
         self.generator = givenGenerator
 
@@ -41,7 +41,7 @@ class EncoderDecoder(nn.Module):
         return self.decode(self.encode(src, srcMask), srcMask, tgt, targetMask)
 
     def encode(self, src, srcMask):
-        return self.encoder(self.srcEmbed(src), srcMask)
+        return self.encoder(self.sourceEmbed(src), srcMask)
 
     def decode(self, memory, srcMask, tgt, targetMask):
         return self.decoder(self.targetEmbed(tgt), memory, srcMask, targetMask)
@@ -291,7 +291,7 @@ class MultiHeadedAttention(nn.Module):
         x, self.attn = attention(query, key, value, mask = mask, dropout=self.dropout)
 
         # 3) "Concat" using a view and apply a final linear
-        x = x.tranpose(1, 2).contiguous().view(numBatches, -1, self.h * self.d_k)
+        x = x.transpose(1, 2).contiguous().view(numBatches, -1, self.h * self.d_k)
 
         return self.linears[-1](x)
 
@@ -562,10 +562,10 @@ plt.show()
 ## rest of the smoothing mass distributed throughout the vocabulary.
 class LabelSmoothing(nn.Module):
     "Implement label smoothing."
-    def __init__(self, givenSize, givenPaddingIdx, givenSmoothing = 0.0):
+    def __init__(self, givenSize, givenPaddingIndex, givenSmoothing = 0.0):
         super(LabelSmoothing, self).__init__()
         self.criterion = nn.KLDivLoss(size_average = False)
-        self.paddingIndex = givenPaddingIdx
+        self.paddingIndex = givenPaddingIndex
         self.confidence = 1.0 - givenSmoothing
         self.smoothing = givenSmoothing
         self.size = givenSize
@@ -577,9 +577,14 @@ class LabelSmoothing(nn.Module):
         obtainedTrueDist.fill_(self.smoothing / (self.size - 2))
         obtainedTrueDist.scatter_(1, target.data.unsqueeze(1), self.confidence)
         obtainedTrueDist[:, self.paddingIndex] = 0
+
+        # torch.nonzero returns aa tensor containing indices of all non-zero elements
+        # of the input, so for all indices where the condition is true (where target.data
+        # is equal to self.paddingIndex)
         mask = torch.nonzero(target.data == self.paddingIndex)
+
         if mask.dim() > 0:
-            obtainedTrueDist.index_fill_(0, mask.squeeze(), 0.0)
+            obtainedTrueDist.index_fill_(0, mask.squeeze(), torch.zeros(1))
             ## TODO help errror here after running the code below
         self.trueDist = obtainedTrueDist
         return self.criterion(x, Variable(obtainedTrueDist, requires_grad=False))
@@ -603,7 +608,7 @@ plt.show()
 
 
 
-# TODO help herror
+# TODO help error
 
 
 # Label smoothing actually starts to penalize the model if it gets very confident about a given choice.
@@ -617,3 +622,59 @@ plt.show()
 
 #plt.plot(np.arange(1, 100), [loss(x) for x in range(1, 100)])
 #plt.show()
+
+
+
+
+# ---------------------------------------------------------------------------------------------------
+## A First Example
+# ---------------------------------------------------------------------------------------------------
+## Try something very simple: given a random set of input symbols from a small
+## vocabulary, try to generate back those same symbols.
+def dataGen(V, batch, numBatches):
+    "Generate random data for a source-target copy task."
+    for i in range(numBatches):
+        data = torch.from_numpy(np.random.randint(1, V, size =(batch, 10)))
+        data[:, 0] = 1
+        source = Variable(data, requires_grad=False)
+        target = Variable(data, requires_grad=False)
+        yield Batch(source, target, 0)
+
+
+# Loss Computation
+class SimpleLossCompute:
+    "A simple loss compute and train function."
+    def __init__(self, givenGenerator, givenCriterion, givenOpt=None):
+        self.generator = givenGenerator
+        self.criterion = givenCriterion
+        self.opt = givenOpt
+
+    def __call__(self, x, y, norm):
+        x = self.generator(x)
+        loss = self.criterion(x.contiguous().view(-1, x.size(-1)),
+                              y.contiguous().view(-1)) / norm
+        loss.backward() # TODO backward propagation?
+
+        if self.opt is not None:
+            self.opt.step()
+            self.opt.optimizer.zero_grad()
+
+        return loss.data[0] * norm
+
+
+# Greedy Decoding
+
+# Train the simple copy task
+V = 11
+criterion = LabelSmoothing(givenSize = V, givenPaddingIndex= 0, givenSmoothing = 0.0)
+model = makeModel(V, V, N=2)
+modelOpt = NoamOpt(model.sourceEmbed[0].d_model, 1, 400,
+                   torch.optim.Adam(model.parameters(), lr=0, betas=(0.9, 0.98), eps=1e-9))
+
+for epoch in range(10):
+    model.train()
+    runEpoch(dataGen(V, 30, 20), model,
+             SimpleLossCompute(model.generator, criterion, modelOpt))
+    model.eval()
+    print(runEpoch(dataGen(V, 30, 5), model,
+                   SimpleLossCompute(model.generator, criterion, None)))
