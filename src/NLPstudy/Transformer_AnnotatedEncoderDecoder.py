@@ -348,7 +348,7 @@ class BahdanauAttention(nn.Module):
         # to store attention scores
         self.alphas = None
 
-    def forward(self, query=None, proj_key=None, value=None, mask=None):
+    def forward(self, query=None, projKey=None, value=None, mask=None):
         assert mask is not None, "mask is required"
 
         # We first project the query (the decoder state).
@@ -356,7 +356,7 @@ class BahdanauAttention(nn.Module):
         query = self.queryLayer(query)
 
         # Calculate scores.
-        scores = self.energyLayer(torch.tanh(query + proj_key))
+        scores = self.energyLayer(torch.tanh(query + projKey))
         scores = scores.squeeze(2).unsqueeze(1)
 
         # Mask out invalid positions.
