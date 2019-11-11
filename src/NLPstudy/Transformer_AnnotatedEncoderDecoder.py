@@ -12,6 +12,7 @@
 #     name: python3
 # ---
 
+
 # + {"id": "jsuglIZhifas", "colab_type": "text", "cell_type": "markdown"}
 # # The Annotated Encoder-Decoder with Attention
 #
@@ -553,23 +554,23 @@ class SimpleLossCompute:
 # We use greedy decoding for simplicity; that is, at each time step, starting at the first token, we choose the one with that maximum probability, and we never revisit that choice.
 
 # + {"id": "riYrtDoAifbh", "colab_type": "code", "colab": {}}
-def greedyDecode(model, src, src_mask, src_lengths, max_len=100, sos_index=1, eos_index=None):
+def greedyDecode(model, src, srcMask, srcLengths, maxLen=100, sosIndex=1, eosIndex=None):
     """Greedily decode a sentence."""
 
     with torch.no_grad():
-        encoder_hidden, encoder_final = model.encode(src, src_mask, src_lengths)
-        prev_y = torch.ones(1, 1).fill_(sos_index).type_as(src)
-        trg_mask = torch.ones_like(prev_y)
+        encoderHidden, encoderFinal = model.encode(src, srcMask, srcLengths)
+        prevY = torch.ones(1, 1).fill_(sosIndex).type_as(src)
+        trgMask = torch.ones_like(prevY)
 
     output = []
-    attention_scores = []
+    attentionScores = []
     hidden = None
 
-    for i in range(max_len):
+    for i in range(maxLen):
         with torch.no_grad():
             out, hidden, pre_output = model.decode(
-              encoder_hidden, encoder_final, src_mask,
-              prev_y, trg_mask, hidden)
+              encoderHidden, encoderFinal, srcMask,
+              prevY, trgMask, hidden)
 
             # we predict from the pre-output layer, which is
             # a combination of Decoder state, prev emb, and context
@@ -578,22 +579,22 @@ def greedyDecode(model, src, src_mask, src_lengths, max_len=100, sos_index=1, eo
         _, next_word = torch.max(prob, dim=1)
         next_word = next_word.data.item()
         output.append(next_word)
-        prev_y = torch.ones(1, 1).type_as(src).fill_(next_word)
-        attention_scores.append(model.decoder.attention.alphas.cpu().numpy())
+        prevY = torch.ones(1, 1).type_as(src).fill_(next_word)
+        attentionScores.append(model.decoder.attention.alphas.cpu().numpy())
 
     output = np.array(output)
 
     # cut off everything starting from </s>
     # (only when eos_index provided)
-    if eos_index is not None:
-        first_eos = np.where(output==eos_index)[0]
-        if len(first_eos) > 0:
-            output = output[:first_eos[0]]
+    if eosIndex is not None:
+        firstEos = np.where(output == eosIndex)[0]
+        if len(firstEos) > 0:
+            output = output[:firstEos[0]]
 
-    return output, np.concatenate(attention_scores, axis=1)
+    return output, np.concatenate(attentionScores, axis=1)
 
 
-def lookup_words(x, vocab=None):
+def lookupWords(x, vocab=None):
     if vocab is not None:
         x = [vocab.itos[i] for i in x]
 
@@ -601,42 +602,42 @@ def lookup_words(x, vocab=None):
 
 
 # + {"id": "UUEfH7PRifbk", "colab_type": "code", "colab": {}}
-def print_examples(example_iter, model, n=2, max_len=100,
-                   sos_index=1,
-                   src_eos_index=None,
-                   trg_eos_index=None,
-                   src_vocab=None, trg_vocab=None):
+def printExamples(exampleIter, model, n=2, maxLen=100,
+                  sosIndex=1,
+                  srcEosIndex=None,
+                  trgEosIndex=None,
+                  srcVocab=None, trgVocab=None):
     """Prints N examples. Assumes batch size of 1."""
 
     model.eval()
     count = 0
     print()
 
-    if src_vocab is not None and trg_vocab is not None:
-        src_eos_index = src_vocab.stoi[EOS_TOKEN]
-        trg_sos_index = trg_vocab.stoi[SOS_TOKEN]
-        trg_eos_index = trg_vocab.stoi[EOS_TOKEN]
+    if srcVocab is not None and trgVocab is not None:
+        srcEosIndex = srcVocab.stoi[EOS_TOKEN]
+        trgSosIndex = trgVocab.stoi[SOS_TOKEN]
+        trgEosIndex = trgVocab.stoi[EOS_TOKEN]
     else:
-        src_eos_index = None
-        trg_sos_index = 1
-        trg_eos_index = None
+        srcEosIndex = None
+        trgSosIndex = 1
+        trgEosIndex = None
 
-    for i, batch in enumerate(example_iter):
+    for i, batch in enumerate(exampleIter):
 
-        src = batch.src.cpu().numpy()[0, :]
-        trg = batch.trg_y.cpu().numpy()[0, :]
+        src = batch.source.cpu().numpy()[0, :]
+        trg = batch.targetY.cpu().numpy()[0, :]
 
         # remove </s> (if it is there)
-        src = src[:-1] if src[-1] == src_eos_index else src
-        trg = trg[:-1] if trg[-1] == trg_eos_index else trg
+        src = src[:-1] if src[-1] == srcEosIndex else src
+        trg = trg[:-1] if trg[-1] == trgEosIndex else trg
 
         result, _ = greedyDecode(
-          model, batch.src, batch.src_mask, batch.src_lengths,
-          max_len=max_len, sos_index=trg_sos_index, eos_index=trg_eos_index)
+          model, batch.source, batch.sourceMask, batch.sourceLengths,
+          maxLen=maxLen, sosIndex=trgSosIndex, eosIndex=trgEosIndex)
         print("Example #%d" % (i+1))
-        print("Src : ", " ".join(lookup_words(src, vocab=src_vocab)))
-        print("Trg : ", " ".join(lookup_words(trg, vocab=trg_vocab)))
-        print("Pred: ", " ".join(lookup_words(result, vocab=trg_vocab)))
+        print("Src : ", " ".join(lookupWords(src, vocab=srcVocab)))
+        print("Trg : ", " ".join(lookupWords(trg, vocab=trgVocab)))
+        print("Pred: ", " ".join(lookupWords(result, vocab=trgVocab)))
         print()
 
         count += 1
@@ -648,18 +649,18 @@ def print_examples(example_iter, model, n=2, max_len=100,
 # ## Training the copy task
 
 # + {"id": "K_ydRvPIifbn", "colab_type": "code", "colab": {}}
-def train_copy_task():
+def trainCopyTask():
     """Train the simple copy task."""
-    num_words = 11
+    numWords = 11
     criterion = nn.NLLLoss(reduction="sum", ignore_index=0)
-    model = makeModel(num_words, num_words, embeddingSize=32, hiddenSize=64)
+    model = makeModel(numWords, numWords, embeddingSize=32, hiddenSize=64)
     optim = torch.optim.Adam(model.parameters(), lr=0.0003)
-    eval_data = list(dataGen(numWords=num_words, batchSize=1, numBatches=100))
+    evalData = list(dataGen(numWords=numWords, batchSize=1, numBatches=100))
 
-    dev_perplexities = []
+    devPerplexities = []
 
-    if USE_CUDA:
-        model.cuda()
+    #if USE_CUDA:
+    #    model.cuda()
 
     for epoch in range(10):
 
@@ -667,34 +668,34 @@ def train_copy_task():
 
         # train
         model.train()
-        data = dataGen(numWords=num_words, batchSize=32, numBatches=100)
+        data = dataGen(numWords=numWords, batchSize=32, numBatches=100)
         runEpoch(data, model,
                  SimpleLossCompute(model.generator, criterion, optim))
 
         # evaluate
         model.eval()
         with torch.no_grad():
-            perplexity = runEpoch(eval_data, model,
+            perplexity = runEpoch(evalData, model,
                                   SimpleLossCompute(model.generator, criterion, None))
             print("Evaluation perplexity: %f" % perplexity)
-            dev_perplexities.append(perplexity)
-            print_examples(eval_data, model, n=2, max_len=9)
+            devPerplexities.append(perplexity)
+            printExamples(evalData, model, n=2, maxLen=9)
 
-    return dev_perplexities
+    return devPerplexities
 
 
 # + {"id": "zroL7O14ifbr", "colab_type": "code", "colab": {}, "outputId": "14c7b325-c8e9-4031-bee5-512f489cfef8"}
 # train the copy task
-dev_perplexities = train_copy_task()
+devPerplexities = trainCopyTask()
 
-def plot_perplexity(perplexities):
+def plotPerplexity(perplexities):
     """plot perplexities"""
     plt.title("Perplexity per Epoch")
     plt.xlabel("Epoch")
     plt.ylabel("Perplexity")
     plt.plot(perplexities)
 
-plot_perplexity(dev_perplexities)
+plotPerplexity(devPerplexities)
 
 # + {"id": "cCj-E3KSifbu", "colab_type": "text", "cell_type": "markdown"}
 # You can see that the model managed to correctly 'translate' the two examples in the end.
@@ -734,10 +735,10 @@ if True:
     spacy_de = spacy.load('de')
     spacy_en = spacy.load('en')
 
-    def tokenize_de(text):
+    def tokenizeDE(text):
         return [tok.text for tok in spacy_de.tokenizer(text)]
 
-    def tokenize_en(text):
+    def tokenizeEN(text):
         return [tok.text for tok in spacy_en.tokenizer(text)]
 
     UNK_TOKEN = "<unk>"
@@ -747,21 +748,21 @@ if True:
     LOWER = True
 
     # we include lengths to provide to the RNNs
-    SRC = data.Field(tokenize=tokenize_de,
+    SRC = data.Field(tokenize=tokenizeDE,
                      batch_first=True, lower=LOWER, include_lengths=True,
                      unk_token=UNK_TOKEN, pad_token=PAD_TOKEN, init_token=None, eos_token=EOS_TOKEN)
-    TRG = data.Field(tokenize=tokenize_en,
+    TRG = data.Field(tokenize=tokenizeEN,
                      batch_first=True, lower=LOWER, include_lengths=True,
                      unk_token=UNK_TOKEN, pad_token=PAD_TOKEN, init_token=SOS_TOKEN, eos_token=EOS_TOKEN)
 
     MAX_LEN = 25  # NOTE: we filter out a lot of sentences for speed
-    train_data, valid_data, test_data = datasets.IWSLT.splits(
+    trainData, validData, testData = datasets.IWSLT.splits(
         exts=('.de', '.en'), fields=(SRC, TRG),
         filter_pred=lambda x: len(vars(x)['src']) <= MAX_LEN and
             len(vars(x)['trg']) <= MAX_LEN)
     MIN_FREQ = 5  # NOTE: we limit the vocabulary to frequent words for speed
-    SRC.build_vocab(train_data.src, min_freq=MIN_FREQ)
-    TRG.build_vocab(train_data.trg, min_freq=MIN_FREQ)
+    SRC.build_vocab(trainData.src, min_freq=MIN_FREQ)
+    TRG.build_vocab(trainData.trg, min_freq=MIN_FREQ)
 
     PAD_INDEX = TRG.vocab.stoi[PAD_TOKEN]
 
@@ -772,35 +773,35 @@ if True:
 # It never hurts to look at your data and some statistics.
 
 # + {"id": "kM3hqeZPifb3", "colab_type": "code", "colab": {}, "outputId": "635cbc62-19a3-43dc-be06-3012baf98c3a"}
-def print_data_info(train_data, valid_data, test_data, src_field, trg_field):
+def printDataInfo(trainData, validationData, testData, sourceField, targetField):
     """ This prints some useful stuff about our data sets. """
 
     print("Data set sizes (number of sentence pairs):")
-    print('train', len(train_data))
-    print('valid', len(valid_data))
-    print('test', len(test_data), "\n")
+    print('train', len(trainData))
+    print('valid', len(validationData))
+    print('test', len(testData), "\n")
 
     print("First training example:")
-    print("src:", " ".join(vars(train_data[0])['src']))
-    print("trg:", " ".join(vars(train_data[0])['trg']), "\n")
+    print("src:", " ".join(vars(trainData[0])['src']))
+    print("trg:", " ".join(vars(trainData[0])['trg']), "\n")
 
     print("Most common words (src):")
-    print("\n".join(["%10s %10d" % x for x in src_field.vocab.freqs.most_common(10)]), "\n")
+    print("\n".join(["%10s %10d" % x for x in sourceField.vocab.freqs.most_common(10)]), "\n")
     print("Most common words (trg):")
-    print("\n".join(["%10s %10d" % x for x in trg_field.vocab.freqs.most_common(10)]), "\n")
+    print("\n".join(["%10s %10d" % x for x in targetField.vocab.freqs.most_common(10)]), "\n")
 
     print("First 10 words (src):")
     print("\n".join(
-        '%02d %s' % (i, t) for i, t in enumerate(src_field.vocab.itos[:10])), "\n")
+        '%02d %s' % (i, t) for i, t in enumerate(sourceField.vocab.itos[:10])), "\n")
     print("First 10 words (trg):")
     print("\n".join(
-        '%02d %s' % (i, t) for i, t in enumerate(trg_field.vocab.itos[:10])), "\n")
+        '%02d %s' % (i, t) for i, t in enumerate(targetField.vocab.itos[:10])), "\n")
 
-    print("Number of German words (types):", len(src_field.vocab))
-    print("Number of English words (types):", len(trg_field.vocab), "\n")
+    print("Number of German words (types):", len(sourceField.vocab))
+    print("Number of English words (types):", len(targetField.vocab), "\n")
 
 
-print_data_info(train_data, valid_data, test_data, SRC, TRG)
+printDataInfo(trainData, validData, testData, SRC, TRG)
 
 # + {"id": "_r9QosTiifb5", "colab_type": "text", "cell_type": "markdown"}
 # ## Iterators
@@ -812,17 +813,17 @@ print_data_info(train_data, valid_data, test_data, SRC, TRG)
 # For validation, we would run into trouble if we want to compare our translations with some external file that was not sorted. Therefore we simply set the validation batch size to 1, so that we can keep it in the original order.
 
 # + {"id": "vx2FEuU8ifb6", "colab_type": "code", "colab": {}}
-train_iter = data.BucketIterator(train_data, batch_size=64, train=True,
-                                 sort_within_batch=True,
-                                 sort_key=lambda x: (len(x.src), len(x.trg)), repeat=False,
-                                 device=DEVICE)
-valid_iter = data.Iterator(valid_data, batch_size=1, train=False, sort=False, repeat=False,
-                           device=DEVICE)
+trainIter = data.BucketIterator(trainData, batch_size=64, train=True,
+                                sort_within_batch=True,
+                                sort_key=lambda x: (len(x.src), len(x.trg)), repeat=False,
+                                device=DEVICE)
+validIter = data.Iterator(validData, batch_size=1, train=False, sort=False, repeat=False,
+                          device=DEVICE)
 
 
-def rebatch(pad_idx, batch):
+def rebatch(padIndex, batch):
     """Wrap torchtext batch into our own Batch class for pre-processing"""
-    return Batch(batch.src, batch.trg, pad_idx)
+    return Batch(batch.src, batch.trg, padIndex)
 
 
 # + {"id": "nWCES06Vifb-", "colab_type": "text", "cell_type": "markdown"}
@@ -833,39 +834,39 @@ def rebatch(pad_idx, batch):
 # On a Titan X GPU, this runs at ~18,000 tokens per second with a batch size of 64.
 
 # + {"id": "agdmcnzhifb_", "colab_type": "code", "colab": {}}
-def train(model, num_epochs=10, lr=0.0003, print_every=100):
+def train(model, numEpochs=10, learningRate=0.0003, printEvery=100):
     """Train a model on IWSLT"""
 
-    if USE_CUDA:
-        model.cuda()
+    #if USE_CUDA:
+    #    model.cuda()
 
     # optionally add label smoothing; see the Annotated Transformer
     criterion = nn.NLLLoss(reduction="sum", ignore_index=PAD_INDEX)
-    optim = torch.optim.Adam(model.parameters(), lr=lr)
+    optim = torch.optim.Adam(model.parameters(), lr=learningRate)
 
-    dev_perplexities = []
+    devPerplexities = []
 
-    for epoch in range(num_epochs):
+    for epoch in range(numEpochs):
 
         print("Epoch", epoch)
         model.train()
-        train_perplexity = runEpoch((rebatch(PAD_INDEX, b) for b in train_iter),
+        trainPerplexity = runEpoch((rebatch(PAD_INDEX, b) for b in trainIter),
                                     model,
                                     SimpleLossCompute(model.generator, criterion, optim),
-                                    printEvery=print_every)
+                                    printEvery=printEvery)
 
         model.eval()
         with torch.no_grad():
-            print_examples((rebatch(PAD_INDEX, x) for x in valid_iter),
-                           model, n=3, src_vocab=SRC.vocab, trg_vocab=TRG.vocab)
+            printExamples((rebatch(PAD_INDEX, x) for x in validIter),
+                          model, n=3, srcVocab=SRC.vocab, trgVocab=TRG.vocab)
 
-            dev_perplexity = runEpoch((rebatch(PAD_INDEX, b) for b in valid_iter),
+            dev_perplexity = runEpoch((rebatch(PAD_INDEX, b) for b in validIter),
                                       model,
                                       SimpleLossCompute(model.generator, criterion, None))
             print("Validation perplexity: %f" % dev_perplexity)
-            dev_perplexities.append(dev_perplexity)
+            devPerplexities.append(dev_perplexity)
 
-    return dev_perplexities
+    return devPerplexities
 
 
 
@@ -873,10 +874,10 @@ def train(model, num_epochs=10, lr=0.0003, print_every=100):
 model = makeModel(len(SRC.vocab), len(TRG.vocab),
                   embeddingSize=256, hiddenSize=256,
                   numLayers=1, dropout=0.2)
-dev_perplexities = train(model, print_every=100)
+devPerplexities = train(model, printEvery=100)
 
 # + {"id": "PmHv2tChifcE", "colab_type": "code", "colab": {}, "outputId": "a1d173a5-15fc-4596-86fc-964656abc688"}
-plot_perplexity(dev_perplexities)
+plotPerplexity(devPerplexities)
 
 # + {"id": "JO0OvTZiifcH", "colab_type": "text", "cell_type": "markdown"}
 # ## Prediction and Evaluation
@@ -914,10 +915,10 @@ print(bleu)
 # The references are the tokenized versions, but they should not contain out-of-vocabulary UNKs that our network might have seen. So we'll take the references straight out of the `valid_data` object:
 
 # + {"id": "DuujF_McifcP", "colab_type": "code", "colab": {}, "outputId": "f3e1898b-04d2-4404-d08b-5b2110ee7320"}
-len(valid_data)
+len(validData)
 
 # + {"id": "IkxZ1lWSifcR", "colab_type": "code", "colab": {}, "outputId": "54808406-03bf-46ca-b815-e740d386f2da"}
-references = [" ".join(example.trg) for example in valid_data]
+references = [" ".join(example.trg) for example in validData]
 print(len(references))
 print(references[0])
 
@@ -934,12 +935,12 @@ references[-2]
 # + {"id": "5LyObwmnifcX", "colab_type": "code", "colab": {}}
 hypotheses = []
 alphas = []  # save the last attention scores
-for batch in valid_iter:
+for batch in validIter:
   batch = rebatch(PAD_INDEX, batch)
   pred, attention = greedyDecode(
-    model, batch.source, batch.sourceMask, batch.sourceLengths, max_len=25,
-    sos_index=TRG.vocab.stoi[SOS_TOKEN],
-    eos_index=TRG.vocab.stoi[EOS_TOKEN])
+    model, batch.source, batch.sourceMask, batch.sourceLengths, maxLen=25,
+    sosIndex=TRG.vocab.stoi[SOS_TOKEN],
+    eosIndex=TRG.vocab.stoi[EOS_TOKEN])
   hypotheses.append(pred)
   alphas.append(attention)
 
@@ -948,7 +949,7 @@ for batch in valid_iter:
 hypotheses[0]
 
 # + {"id": "0ZX5JPP6ifcc", "colab_type": "code", "colab": {}, "outputId": "cf0fd1ef-2305-4155-b005-1eab041774cf"}
-hypotheses = [lookup_words(x, TRG.vocab) for x in hypotheses]
+hypotheses = [lookupWords(x, TRG.vocab) for x in hypotheses]
 hypotheses[0]
 
 # + {"id": "4Yheo7E9ifce", "colab_type": "code", "colab": {}, "outputId": "a1ee2147-7ffa-45cb-b8cc-c4693dd33539"}
@@ -969,7 +970,7 @@ print(bleu)
 # We can also visualize the attention scores of the decoder.
 
 # + {"id": "s84snWxRifcj", "colab_type": "code", "colab": {}}
-def plot_heatmap(src, trg, scores):
+def plotHeatmap(src, trg, scores):
 
     fig, ax = plt.subplots()
     heatmap = ax.pcolor(scores, cmap='viridis')
@@ -991,14 +992,14 @@ def plot_heatmap(src, trg, scores):
 # + {"id": "xXbm1Sy9ifcn", "colab_type": "code", "colab": {}, "outputId": "5a1613ec-ee51-4460-bf24-461795504f3f"}
 # This plots a chosen sentence, for which we saved the attention scores above.
 idx = 5
-src = valid_data[idx].src + ["</s>"]
-trg = valid_data[idx].trg + ["</s>"]
+src = validData[idx].src + ["</s>"]
+trg = validData[idx].trg + ["</s>"]
 pred = hypotheses[idx].split() + ["</s>"]
-pred_att = alphas[idx][0].T[:, :len(pred)]
+predAtt = alphas[idx][0].T[:, :len(pred)]
 print("src", src)
 print("ref", trg)
 print("pred", pred)
-plot_heatmap(src, pred, pred_att)
+plotHeatmap(src, pred, predAtt)
 
 # + {"id": "Ichf4Mb2ifcp", "colab_type": "text", "cell_type": "markdown"}
 # # Congratulations! You've finished this notebook.
