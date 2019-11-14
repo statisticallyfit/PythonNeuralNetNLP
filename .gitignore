@@ -5,3 +5,4 @@ data
 .idea/*
 
 .data/
+tokenizers/
