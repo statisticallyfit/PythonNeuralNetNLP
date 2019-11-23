@@ -7,3 +7,4 @@ data
 .data/
 data/
 tokenizers/
+tut1_seq2seq_bestModel.pt
