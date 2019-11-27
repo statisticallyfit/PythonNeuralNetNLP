@@ -8,4 +8,4 @@ data
 data/
 tokenizers/
 tut1_seq2seq_bestModel.pt
-tut2_seq2seqGRU_bestModel
+tut2_seq2seqGRU_bestModel.pt
