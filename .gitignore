@@ -9,3 +9,6 @@ data/
 tokenizers/
 tut1_seq2seq_bestModel.pt
 tut2_seq2seqGRU_bestModel.pt
+tut3_bestmodel.pt
+tut4_bestmodel.pt
+tut5_bestmodel.pt
