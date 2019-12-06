@@ -76,39 +76,78 @@ class TransformerModel(nn.Module):
 
         super(TransformerModel, self).__init__()
 
-        self.modelType = 'Transformer'
-        self.srcMask = None
-        self.posEncoder = PositionalEncoding(numInputs, dropout)
-        encoderLayers = TransformerEncoderLayer(numInputs, numHeads, numHidden, dropout)
-        self.transformerEncoder = TransformerEncoder(encoderLayers, numLayers)
-        self.encoder = nn.Embedding(numTokens, numInputs)
-        self.numInputs = numInputs
-        self.decoder = nn.Linear(numInputs, numTokens)
+        self.modelType: str = 'Transformer'
+        self.srcMask: Tensor = None
+        self.posEncoder: PositionalEncoding = PositionalEncoding(dimModel = numInputs,
+                                                                 dropout = dropout)
+        # ----- TransformerEncoderLayer parameters
+        # d_model = number of expected features in the input
+        # nhead = number of heads in multiheadattention models
+        # dim_feedforward = dimension of feedforward network model
+        # dropout = dropout value
+        # activation = activationfunction of intermediate layer
+        # DOC API: https://hyp.is/5NWWFhhiEeqLENfnZPL2hA/pytorch.org/docs/stable/nn.html
+        encoderLayers: TransformerEncoderLayer = \
+            TransformerEncoderLayer(d_model = numInputs,
+                                    nhead = numHeads,
+                                    dim_feedforward = numHidden,
+                                    dropout = dropout)
+
+        # ---- TransformerEncoder parameters
+        # encoder_layer = an instance of the TransformerEncoderLayer class
+        # num_layers = number of sub-encoder-layers in the encoder.
+        # DOC API: https://hyp.is/EV-8NBhjEeq4-jvfWqsS-w/pytorch.org/docs/stable/nn.html
+        self.transformerEncoder: TransformerEncoder =  \
+            TransformerEncoder(encoder_layer = encoderLayers,
+                               num_layers = numLayers)
+
+        self.encoderEmbedder = nn.Embedding(num_embeddings=numTokens,
+                                            embedding_dim = numInputs)
+
+        self.numInputs: int = numInputs
+
+        self.decoderLinear = nn.Linear(in_features = numInputs, out_features = numTokens)
 
         self.initWeights()
 
-    def _generate_square_subsequent_mask(self, sz):
-        mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
-        mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
+
+
+    def generateSquareSubsequentMask(self, size: int) -> Tensor:
+        mask: Tensor = (torch.triu(torch.ones(size, size)) == 1).transpose(0, 1)
+        mask: Tensor = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
         return mask
 
-    def initWeights(self):
-        initrange = 0.1
-        self.encoder.weight.data.uniform_(-initrange, initrange)
-        self.decoder.bias.data.zero_()
-        self.decoder.weight.data.uniform_(-initrange, initrange)
 
-    def forward(self, src: Tensor):
+
+    def initWeights(self) -> None:
+        initrange = 0.1
+        self.encoderEmbedder.weight.data.uniform_(-initrange, initrange)
+        self.decoderLinear.bias.data.zero_()
+        self.decoderLinear.weight.data.uniform_(-initrange, initrange)
+
+
+
+    def forward(self, src: Tensor) -> Tensor:
         if self.srcMask is None or self.srcMask.size(0) != len(src):
             device = src.device
-            mask = self._generate_square_subsequent_mask(len(src)).to(device)
-            self.srcMask = mask
+            mask: Tensor = self.generateSquareSubsequentMask(len(src)).to(device)
+            self.srcMask: Tensor = mask
 
-        src = self.encoder(src) * math.sqrt(self.numInputs)
-        src = self.posEncoder(src)
-        output = self.transformerEncoder(src, self.srcMask)
-        output = self.decoder(output)
+        src: Tensor = self.encoderEmbedder(input = src) * math.sqrt(self.numInputs)
+        src: Tensor = self.posEncoder(x = src)
+
+
+        # --- TransformerEncoder `forward`  method parameters:
+        # DOC API: https://hyp.is/0iDTDhhjEeqdSQ8VUAeSqg/pytorch.org/docs/stable/_modules/torch/nn/modules/transformer.html
+        # - src = sequence to the encoder
+        # - mask = mask for the src sequence
+        output: Tensor = self.transformerEncoder(src = src, mask = self.srcMask)
+        output: Tensor = self.decoderLinear(input = output)
+
         return output
+
+
+
 # %% markdown
 # ``PositionalEncoding`` module injects some information about the
 # relative or absolute position of the tokens in the sequence. The
@@ -117,32 +156,71 @@ class TransformerModel(nn.Module):
 # different frequencies.
 #
 #
-#
 # %% codecell
 class PositionalEncoding(nn.Module):
 
-    def __init__(self, d_model, dropout=0.1, max_len=5000):
+    def __init__(self, dimModel: int, dropout: float=0.1, max_len: int =5000):
+
         super(PositionalEncoding, self).__init__()
+
         self.dropout = nn.Dropout(p=dropout)
 
-        pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        pe = pe.unsqueeze(0).transpose(0, 1)
+        pe: Tensor = torch.zeros(max_len, dimModel)
+        position: Tensor = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        divTerm: Tensor = torch.exp(torch.arange(0, dimModel, 2).float() * (-math.log(10000.0) / dimModel))
+
+        # Going up by twos on the second dimension
+        pe[:, 0::2]: Tensor = torch.sin(position * divTerm)
+        # going up by twos, starting from pos = 1, on second dimension
+        pe[:, 1::2]: Tensor = torch.cos(position * divTerm)
+
+        pe: Tensor = pe.unsqueeze(0).transpose(0, 1)
+
+        # Puts the `pe` result in the buffer (persistence)
+        # TODO: why not just assign result to self.pe?
         self.register_buffer('pe', pe)
 
-    def forward(self, x):
-        x = x + self.pe[:x.size(0), :]
+
+
+    def forward(self, x: Tensor) -> Tensor :
+        x: Tensor = x + self.pe[:x.size(0), :]
         return self.dropout(x)
+
+
+# %% codecell  ----------------------------------------------------------------------------------------------
+# dropout example
+
+m = nn.Dropout(p=0.2)
+m
+
+input = torch.randn(20, 16)
+input.shape
+input.dim()
+input[0:5, 0:5]
+output = m(input)
+type(output)
+output.shape
+
+output[0:5, 0:2]
+
+# -------------------------------------------------------------------------------------------------------------
+# %% codecell: Trying a little example to understand meaning of 0::len in a tensors
+x: Tensor = torch.tensor([1,2,3,4,5,6,7])
+x
+
+x[0::2]
+
+# Meaning: go up by twos (or by `len` amount)
+
+x[3::2]
+# -------------------------------------------------------------------------------------------------------------
+
+
+
 # %% markdown
 # Load and batch data
 # -------------------
 #
-#
-#
-# %% markdown
 # The training process uses Wikitext-2 dataset from ``torchtext``. The
 # vocab object is built based on the train dataset and is used to numericalize
 # tokens into tensors. Starting from sequential data, the ``batchify()``
@@ -152,17 +230,32 @@ class PositionalEncoding(nn.Module):
 # and a batch size of 4, we would divide the alphabet into 4 sequences of
 # length 6:
 #
-# \begin{align}\begin{bmatrix}
-#   \text{A} & \text{B} & \text{C} & \ldots & \text{X} & \text{Y} & \text{Z}
-#   \end{bmatrix}
-#   \Rightarrow
-#   \begin{bmatrix}
-#   \begin{bmatrix}\text{A} \\ \text{B} \\ \text{C} \\ \text{D} \\ \text{E} \\ \text{F}\end{bmatrix} &
-#   \begin{bmatrix}\text{G} \\ \text{H} \\ \text{I} \\ \text{J} \\ \text{K} \\ \text{L}\end{bmatrix} &
-#   \begin{bmatrix}\text{M} \\ \text{N} \\ \text{O} \\ \text{P} \\ \text{Q} \\ \text{R}\end{bmatrix} &
-#   \begin{bmatrix}\text{S} \\ \text{T} \\ \text{U} \\ \text{V} \\ \text{W} \\ \text{X}\end{bmatrix}
-#   \end{bmatrix}\end{align}
+# \usepackage{amsmath}
+# \begin{align}
+#   $\begin{pmatrix}
+#       A & B & C & \dots & X & Y & Z
+#   \end{pmatrix}$
+#   $\Rightarrow$
+#   $\begin{pmatrix}
+#       $\begin{pmatrix} A \\ B \\ C \\ D \\ E \\ F \end{pmatrix}$ &
+#       $\begin{pmatrix} G \\ H \\ I \\ J \\ K \\ L \end{pmatrix}$ &
+#       $\begin{pmatrix} M \\ N \\ O \\ P \\ Q \\ R \end{pmatrix}$ &
+#       $\begin{pmatrix} S \\ T \\ U \\ V \\ W \\ X \end{pmatrix}$
+#   \end{pmatrix}$
 #
+# \end{align}
+#
+
+# \begin{split}\begin{bmatrix}
+# \text{A} & \text{B} & \text{C} & \ldots & \text{X} & \text{Y} & \text{Z}
+# \end{bmatrix}
+# \Rightarrow
+# \begin{bmatrix}
+# \begin{bmatrix}\text{A} \\ \text{B} \\ \text{C} \\ \text{D} \\ \text{E} \\ \text{F}\end{bmatrix} &
+# \begin{bmatrix}\text{G} \\ \text{H} \\ \text{I} \\ \text{J} \\ \text{K} \\ \text{L}\end{bmatrix} &
+# \begin{bmatrix}\text{M} \\ \text{N} \\ \text{O} \\ \text{P} \\ \text{Q} \\ \text{R}\end{bmatrix} &
+# \begin{bmatrix}\text{S} \\ \text{T} \\ \text{U} \\ \text{V} \\ \text{W} \\ \text{X}\end{bmatrix}
+# \end{bmatrix}\end{split}
 # These columns are treated as independent by the model, which means that
 # the dependence of ``G`` and ``F`` can not be learned, but allows more
 # efficient batch processing.
