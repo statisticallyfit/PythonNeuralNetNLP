@@ -55,51 +55,58 @@ Image(filename = pth + "/images/transformer_architecture.jpg")
 # layer, which is followed by a log-Softmax function.
 
 # %% codecell
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 import seaborn as sns
 import math
 import torch
+import torch.tensor as Tensor # for type annotation purposes
 import torch.nn as nn
 import torch.nn.functional as F
+
+# TODO why doesn't this work???
+from torch.nn import TransformerEncoder, TransformerEncoderLayer
+
 
 
 # %% codecell
 class TransformerModel(nn.Module):
 
-    def __init__(self, ntoken, ninp, nhead, nhid, nlayers, dropout=0.5):
-        super(TransformerModel, self).__init__()
-        from torch.nn import TransformerEncoder, TransformerEncoderLayer
-        self.model_type = 'Transformer'
-        self.src_mask = None
-        self.pos_encoder = PositionalEncoding(ninp, dropout)
-        encoder_layers = TransformerEncoderLayer(ninp, nhead, nhid, dropout)
-        self.transformer_encoder = TransformerEncoder(encoder_layers, nlayers)
-        self.encoder = nn.Embedding(ntoken, ninp)
-        self.ninp = ninp
-        self.decoder = nn.Linear(ninp, ntoken)
+    def __init__(self, numTokens: int, numInputs: int , numHeads: int , numHidden: int,
+        numLayers: int, dropout: float =0.5):
 
-        self.init_weights()
+        super(TransformerModel, self).__init__()
+
+        self.modelType = 'Transformer'
+        self.srcMask = None
+        self.posEncoder = PositionalEncoding(numInputs, dropout)
+        encoderLayers = TransformerEncoderLayer(numInputs, numHeads, numHidden, dropout)
+        self.transformerEncoder = TransformerEncoder(encoderLayers, numLayers)
+        self.encoder = nn.Embedding(numTokens, numInputs)
+        self.numInputs = numInputs
+        self.decoder = nn.Linear(numInputs, numTokens)
+
+        self.initWeights()
 
     def _generate_square_subsequent_mask(self, sz):
         mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
         mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
         return mask
 
-    def init_weights(self):
+    def initWeights(self):
         initrange = 0.1
         self.encoder.weight.data.uniform_(-initrange, initrange)
         self.decoder.bias.data.zero_()
         self.decoder.weight.data.uniform_(-initrange, initrange)
 
-    def forward(self, src):
-        if self.src_mask is None or self.src_mask.size(0) != len(src):
+    def forward(self, src: Tensor):
+        if self.srcMask is None or self.srcMask.size(0) != len(src):
             device = src.device
             mask = self._generate_square_subsequent_mask(len(src)).to(device)
-            self.src_mask = mask
+            self.srcMask = mask
 
-        src = self.encoder(src) * math.sqrt(self.ninp)
-        src = self.pos_encoder(src)
-        output = self.transformer_encoder(src, self.src_mask)
+        src = self.encoder(src) * math.sqrt(self.numInputs)
+        src = self.posEncoder(src)
+        output = self.transformerEncoder(src, self.srcMask)
         output = self.decoder(output)
         return output
 # %% markdown
@@ -230,13 +237,13 @@ def get_batch(source, i):
 #
 #
 # %% codecell
-ntokens = len(TEXT.vocab.stoi) # the size of vocabulary
+numTokenss = len(TEXT.vocab.stoi) # the size of vocabulary
 emsize = 200 # embedding dimension
-nhid = 200 # the dimension of the feedforward network model in nn.TransformerEncoder
-nlayers = 2 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
-nhead = 2 # the number of heads in the multiheadattention models
+numHidden = 200 # the dimension of the feedforward network model in nn.TransformerEncoder
+numLayers = 2 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
+numHeads = 2 # the number of heads in the multiheadattention models
 dropout = 0.2 # the dropout value
-model = TransformerModel(ntokens, emsize, nhead, nhid, nlayers, dropout).to(device)
+model = TransformerModel(numTokenss, emsize, numHeads, numHidden, numLayers, dropout).to(device)
 # %% markdown
 # Run the model
 # -------------
@@ -267,12 +274,12 @@ def train():
     model.train() # Turn on the train mode
     total_loss = 0.
     start_time = time.time()
-    ntokens = len(TEXT.vocab.stoi)
+    numTokenss = len(TEXT.vocab.stoi)
     for batch, i in enumerate(range(0, train_data.size(0) - 1, bptt)):
         data, targets = get_batch(train_data, i)
         optimizer.zero_grad()
         output = model(data)
-        loss = criterion(output.view(-1, ntokens), targets)
+        loss = criterion(output.view(-1, numTokenss), targets)
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 0.5)
         optimizer.step()
@@ -294,12 +301,12 @@ def train():
 def evaluate(eval_model, data_source):
     eval_model.eval() # Turn on the evaluation mode
     total_loss = 0.
-    ntokens = len(TEXT.vocab.stoi)
+    numTokenss = len(TEXT.vocab.stoi)
     with torch.no_grad():
         for i in range(0, data_source.size(0) - 1, bptt):
             data, targets = get_batch(data_source, i)
             output = eval_model(data)
-            output_flat = output.view(-1, ntokens)
+            output_flat = output.view(-1, numTokenss)
             total_loss += len(data) * criterion(output_flat, targets).item()
     return total_loss / (len(data_source) - 1)
 # %% markdown
