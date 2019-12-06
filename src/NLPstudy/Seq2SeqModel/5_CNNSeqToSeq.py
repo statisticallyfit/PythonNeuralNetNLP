@@ -1,33 +1,19 @@
-# ---
-# jupyter:
-#   jupytext:
-#     text_representation:
-#       extension: .py
-#       format_name: light
-#       format_version: '1.4'
-#       jupytext_version: 1.2.4
-#   kernelspec:
-#     display_name: Python 2
-#     language: python
-#     name: python2
-# ---
-
+# %% markdown
 # Source: [part 5](https://github.com/bentrevett/pytorch-seq2seq/blob/master/5%20-%20Convolutional%20Sequence%20to%20Sequence%20Learning.ipynb)
-
-# +
+# %% codecell
 import os
 from IPython.display import Image
 
 pth = os.getcwd()
 pth
-# -
 
+# %% markdown
 # # 5 - Convolutional Sequence to Sequence Learning
 #
 # In this notebook we'll be implementing the [Convolutional Sequence to Sequence Learning](https://arxiv.org/abs/1705.03122) model.
-
+# %% codecell
 Image(filename = pth + "/images/5_1_cnnseq2seq.png")
-
+# %% markdown
 # ## Introduction
 #
 # This model is drastically different to the previous models used in these tutorials. There is are no recurrent components used at all. Instead it makes use of convolutional layers, typically used for image processing.
@@ -38,8 +24,7 @@ Image(filename = pth + "/images/5_1_cnnseq2seq.png")
 # ## Preparing the Data
 #
 # First, let's import all the required modules and set the random seeds for reproducability.
-
-# +
+# %% codecell
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -51,7 +36,7 @@ from torchtext.data import Field, BucketIterator
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-# %matplotlib inline
+%matplotlib inline
 import seaborn as sns
 
 import spacy
@@ -59,8 +44,7 @@ import spacy
 import random
 import math
 import time
-
-# +
+# %% codecell
 # Set random seeds for reproducibility
 
 SEED = 1234
@@ -68,15 +52,13 @@ SEED = 1234
 random.seed(SEED)
 torch.manual_seed(SEED)
 torch.backends.cudnn.deterministic = True
-# -
-
+# %% markdown
 # ### 1. Create the Tokenizers
 #
 # Next, we'll create the tokenizers. A tokenizer is used to turn a string containing a sentence into a list of individual tokens that make up that string, e.g. "good morning!" becomes ["good", "morning", "!"].
 #
 # spaCy has model for each language ("de" for German and "en" for English) which need to be loaded so we can access the tokenizer of each model.
-
-# +
+# %% codecell
 # Download the spacy models via command line:
 # conda activate pynlp_env
 # cd /development/.../NLPStudy/data
@@ -91,13 +73,11 @@ spacyDE = spacy.load('de')
 #spacyFR = spacy.load('fr') # french!
 #spacyIT = spacy.load('it')
 # site link for other language models: https://spacy.io/usage/models
-# -
-
+# %% markdown
 # ### 2. Create the Tokenizer Functions
 #
 # Next, we create the tokenizer functions. These can be passed to TorchText and will take in the sentence as a string and return the sentence as a list of tokens.
-
-# +
+# %% codecell
 # Creating the tokenizer functions
 
 #def tokenizeFrench(frenchText: str):
@@ -127,10 +107,7 @@ def tokenizeEnglish(englishText: str):
     :return:
     """
     return [tok.text for tok in spacyEN.tokenizer(englishText)]
-
-
-# -
-
+# %% markdown
 # We set the tokenize argument to the correct tokenization function for each, with German being the `SRC` (source) field and English being the `TRG` (target) field. The `Field` also appends the "start of sequence" and "end of sequence" tokens via the `init_token` and `eos_token` arguments, and converts all words to lowercase.
 #
 # [To read more about Field's arguments](https://github.com/pytorch/text/blob/master/torchtext/data/field.py#L61)
@@ -140,8 +117,7 @@ def tokenizeEnglish(englishText: str):
 # However in this notebook we are using CNNs which expect the batch dimension to be first. We tell TorchText to have batches be **(`batchSize`, `sequenceLength`)** by setting `batch_first = True`.
 #
 # We also append the start and end of sequence tokens as well as lowercasing all text.
-
-# +
+# %% codecell
 # German = source language, English = target language
 
 # tokenize:  The function used to tokenize strings using this field into
@@ -163,23 +139,20 @@ TRG = Field(tokenize = tokenizeEnglish,
             eos_token = '<eos>',
             lower = True,
             batch_first = True)
-# -
-
+# %% markdown
 # ### 3. Download the Data
 #
 # Next, we download and load the train, validation and test data.
 #
 # The dataset we'll be using is the [Multi30k dataset](https://github.com/multi30k/dataset)
-
-# +
+# %% codecell
 # NOTE: after this, the data is stored in
 # a folder under NLPSTUDY called '.data'
 
 trainData, validationData, testData = \
     Multi30k.splits(exts = ('.de', '.en'), fields = (SRC, TRG))
 
-
-# +
+# %% codecell
 # Print out examples
 
 # Double-checking we have the right number of examples:
@@ -193,8 +166,7 @@ print("\n")
 # not reversed (if you know German); the target (english) is in proper order, though.
 print(trainData.examples[0])
 print(vars(trainData.examples[0]))
-# -
-
+# %% markdown
 # ### 4. Building the vocabulary
 #
 # Next, we build the *vocabulary* for the source and target languages.
@@ -208,15 +180,13 @@ print(vars(trainData.examples[0]))
 # - **NOTE:** Using the `min_freq` argument, we only allow tokens that appear at least 2 times to appear in our vocabulary. Tokens that appear only once are converted into an `<unk>` (unknown) token.
 #
 # WARNING: It is important to note that your vocabulary should only be built from the training set and not the validation/test set. This prevents "information leakage" into your model, giving you artifically inflated validation/test scores.
-
-# +
+# %% codecell
 SRC.build_vocab(trainData, min_freq=2)
 TRG.build_vocab(trainData, min_freq=2)
 
 print(f"Unique tokens in source (de) vocabulary: {len(SRC.vocab)}")
 print(f"Unique tokens in target (en) vocabulary: {len(TRG.vocab)}")
-# -
-
+# %% markdown
 # ### 5. (Final) Create the Iterators
 #
 # The final step of preparing the data is to create the iterators. These can be iterated on to return a batch of data which will have a `src` attribute (the PyTorch tensors containing a batch of numericalized source sentences) and a `trg` attribute (the PyTorch tensors containing a batch of numericalized target sentences). Numericalized is just a fancy way of saying they have been converted from a sequence of readable tokens to a sequence of corresponding indexes, using the vocabulary.
@@ -226,11 +196,10 @@ print(f"Unique tokens in target (en) vocabulary: {len(TRG.vocab)}")
 # When we get a batch of examples using an iterator we need to make sure that all of the source sentences are padded to the same length, the same with the target sentences. Luckily, TorchText iterators handle this for us!
 #
 # We use a `BucketIterator` instead of the standard `Iterator` as it creates batches in such a way that it minimizes the amount of padding in both the source and target sentences.
-
+# %% codecell
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 device
-
-# +
+# %% codecell
 # Creating the training iterator
 
 BATCH_SIZE = 128
@@ -241,8 +210,7 @@ trainIterator, validationIterator, testIterator = BucketIterator.splits(
     #sort_within_batch = True, # new key feature
     #sort_key = lambda x: len(x.src), # new key feature
     device = device)
-# -
-
+# %% markdown
 # ## Building the Model
 #
 # Next up is building the model. As before, the model is made of an `Encoder` and `Decoder`. The `Encoder` *encodes* the input sentence, in the source language, into a *context vector*. The `Decoder` *decodes* the context vector to produce the output sentence in the target language.
@@ -254,9 +222,9 @@ trainIterator, validationIterator, testIterator = BucketIterator.splits(
 # The two context vectors per token are a **conved** vector and a **combined** vector. The conved vector is the result of each token being passed through a few layers - which we will explain shortly. The combined vector comes from the sum of the convolved vector and the embedding of that token. Both of these are returned by the `Encoder` to be used by the `Decoder`.
 #
 # The image below shows the result of an input sentence - *zwei menschen fechten.* - being passed through the `Encoder`.
-
+# %% codecell
 Image(filename = pth + "/images/5_2_encoderCNN.png")
-
+# %% markdown
 # ### `Encoder` CNN Forward Pass:
 #
 # 1. **Token and Positional Embedding Layers:** First, the token is passed through a *token embedding layer* - which is standard for neural networks in natural language processing. However, as there are no recurrent connections in this model it has no idea about the order of the tokens within a sequence. To rectify this we have a second embedding layer, the *positional embedding layer*. This is a standard embedding layer where the input is not the token itself but the position of the token within the sequence - starting with the first token, the `<sos>` (start of sequence) token, in position 0.
@@ -278,10 +246,9 @@ Image(filename = pth + "/images/5_2_encoderCNN.png")
 # ### [Encoder Convolutional Blocks](https://hyp.is/2ioPmBUWEeqb9p8tN4Mg-Q/arxiv.org/pdf/1705.03122.pdf)
 #
 # How do these convolutional blocks work? The below image shows 2 convolutional blocks with a single filter (blue) that is sliding across the tokens within the sequence. In the actual implementation we will have 10 convolutional blocks with 1024 filters in each block.
-
+# %% codecell
 Image(filename = pth + "/images/5_3_CNNBlocks.png")
-
-
+# %% markdown
 # ### [Mechanism of Encoder Convolutional Blocks:](https://hyp.is/2ioPmBUWEeqb9p8tN4Mg-Q/arxiv.org/pdf/1705.03122.pdf)
 #
 # - [key feature: ](https://hyp.is/ymJLthKMEeqv03PnUdsbYw/arxiv.org/pdf/1705.03122.pdf) In the paper, each convolutional block contains a one-dimensional convolution followed by a non-linearity function.
@@ -320,7 +287,7 @@ Image(filename = pth + "/images/5_3_CNNBlocks.png")
 # - Note 2: The `scale` variable is used (in the residual connection calculation) by the authors to "ensure that the variance throughout the network does not change dramatically". The performance of the model seems to vary wildly using different seeds if this is not used.
 #
 # - Note 3: The positional embedding is initialized to have a "vocabulary" of 100. This means it can handle sequences up to 100 elements long, indexed from 0 to 99. This can be increased if used on a dataset with longer sequences.
-
+# %% codecell
 class Encoder(nn.Module):
 
     def __init__(self, inputDim: int, embedDim: int, hiddenDim: int,
@@ -509,15 +476,15 @@ class Encoder(nn.Module):
 
         return conv_embedShape, combined
 
-
+# %% markdown
 # ### Decoder
 #
 # The `Decoder` takes in the actual target sentence and tries to predict it. This model differs from the recurrent neural network models previously detailed in these tutorials as it predicts all tokens within the target sentence in parallel. There is no sequential processing, i.e. no decoding loop. This will be detailed further later on in the tutorials.
 #
 # The `Decoder` is similar to the `Encoder`, with a few changes to both the main model and the convolutional blocks inside the model.
-
+# %% codecell
 Image(filename = pth + "/images/5_4_decoderCNN.png")
-
+# %% markdown
 # **How `Decoder` Differs from `Encoder`:**
 #
 # First, the embeddings do not have a residual connection that connects after the convolutional blocks and the transformation. Instead the embeddings are fed into the convolutional blocks to be used as residual connections there.
@@ -530,9 +497,9 @@ Image(filename = pth + "/images/5_4_decoderCNN.png")
 # ### `Decoder` Convolutional Blocks
 #
 # Again, these are similar to the convolutional blocks within the `Encoder`, with a few changes.
-
+# %% codecell
 Image(filename = pth + "/images/5_5_decoderCNNBlocks.png")
-
+# %% markdown
 # ### [Mechanism of Decoder Convolutional Blocks:](https://hyp.is/2ioPmBUWEeqb9p8tN4Mg-Q/arxiv.org/pdf/1705.03122.pdf)  `convolutionBlock()`
 #
 # 1. **Padding:** First, the padding. Instead of padding equally on each side to ensure the length of the sentence stays the same throughout, we only pad at the beginning of the sentence.
@@ -540,10 +507,9 @@ Image(filename = pth + "/images/5_5_decoderCNNBlocks.png")
 # If they were allowed to look at token $i+1$ (the token they should be outputting), the model will simply learn to output the next word in the sequence by directly copying it, without actually learning how to translate.
 #
 # Let's see what happens if we **incorrectly** padded equally on each side, like we do in the `Decoder`.
-
+# %% codecell
 Image(filename = pth + "/images/5_6_cnn_pad.png")
-
-
+# %% markdown
 # The filter at the first position, which is trying use the first word in the sequence, `<sos>` to predict the second word, `two`, can now directly see the word `two`. This is the same for every position, the word the model trying to predict is the second element covered by the filter.
 # Thus, the filters can learn to **simply copy the second word** at each position allowing for perfect translation **without actually learning how to translate.**
 #
@@ -626,7 +592,7 @@ Image(filename = pth + "/images/5_6_cnn_pad.png")
 # 3. Reshape the above result by get embed $\Rightarrow$ hidden dimension size.
 # 4. Apply the convolutional block calculations, where we calculate attention scores.
 # 5. Pass the tensor result through dropout and the output layer.
-
+# %% codecell
 class Decoder(nn.Module):
 
     def __init__(self, outputDim: int,
@@ -957,7 +923,7 @@ class Decoder(nn.Module):
         # # attention shape = (batchSize, trgSentenceLen, srcSentenceLen)
         return output, attention
 
-
+# %% markdown
 # ### Seq2Seq
 #
 # The encapsulating `Seq2Seq` module is a lot different from recurrent neural network methods used in previous notebooks, especially in the decoding.
@@ -974,7 +940,7 @@ class Decoder(nn.Module):
 # **Differences in `Encoder`:**
 #
 # The encoding is similar, insert the source sequence and receive a "context vector". However, here we have two context vectors per word in the source sequence, `encoderConved` and `encoderCombined`.
-
+# %% codecell
 class Seq2Seq(nn.Module):
 
 
@@ -1016,7 +982,7 @@ class Seq2Seq(nn.Module):
 
         return output, attention
 
-
+# %% markdown
 # ## Training the Seq2Seq Model
 #
 #
@@ -1025,8 +991,7 @@ class Seq2Seq(nn.Module):
 # The rest of the tutorial is similar to all of the previous ones. We define all of the hyperparameters, initialize the `Encoder` and `Decoder`, and initialize the overall model - placing it on the GPU if we have one.
 #
 # In the paper they find that it is more beneficial to use a small filter (kernel size of 3) and a high number of layers (5+).
-
-# +
+# %% codecell
 INPUT_DIM = len(SRC.vocab)
 OUTPUT_DIM = len(TRG.vocab)
 EMB_DIM = 256
@@ -1048,42 +1013,37 @@ dec = Decoder(outputDim = OUTPUT_DIM, embedDim= EMB_DIM, hiddenDim = HID_DIM,
               dropout = DEC_DROPOUT, trgPadIndex= TRG_PAD_IDX, device = device)
 
 seqCNNModel = Seq2Seq(encoder = enc, decoder = dec).to(device)
-# -
-
+# %% codecell
 enc
-
+# %% codecell
 dec
-
+# %% codecell
 seqCNNModel
-
+# %% codecell
 device
-
-
+# %% markdown
 # ### Step 2: Count Parameters
 #
 # We can also see that the model has almost twice as many parameters as the attention based model (20m to 37m).
-
-# +
+# %% codecell
 def countParameters(model: Seq2Seq):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 print(f'The model has {countParameters(seqCNNModel):,} trainable parameters')
-# -
-
+# %% markdown
 # ### Step 3: Define Optimizer
-
+# %% codecell
 adamOptimizer = optim.Adam(seqCNNModel.parameters())
 adamOptimizer
-
+# %% markdown
 # ### Step 4: Define the Loss Function (Cross Entropy)
 # Make sure to ignore the loss on <pad> tokens.
-
+# %% codecell
 TRG_PAD_IDX
-
+# %% codecell
 crossEntropyLossFunction = nn.CrossEntropyLoss(ignore_index = TRG_PAD_IDX)
 crossEntropyLossFunction
-
-
+# %% markdown
 # ### Step 5: Define Training Loop
 #
 # Then, we define the training loop for the model.
@@ -1109,7 +1069,7 @@ crossEntropyLossFunction
 # \end{align*}$$
 #
 # We then calculate our losses and update our parameters as is standard.
-
+# %% codecell
 def train(seqModel: Seq2Seq, iterator, optimizer, lossFunction, clip: int):
 
     seqModel.train() # put model in training mode
@@ -1158,12 +1118,11 @@ def train(seqModel: Seq2Seq, iterator, optimizer, lossFunction, clip: int):
         lossPerEpoch += loss.item()
 
     return lossPerEpoch / len(iterator) # average loss
-
-
+# %% markdown
 # ### Step 7: Define Evaluation Loop
 #
 # The evaluation loop is the same as the training loop, just without the gradient calculations and parameter updates.
-
+# %% codecell
 def evaluate(seqModel: Seq2Seq, iterator, lossFunction):
 
     seqModel.eval()
@@ -1202,9 +1161,7 @@ def evaluate(seqModel: Seq2Seq, iterator, lossFunction):
             lossPerEpoch += loss.item()
 
         return lossPerEpoch / len(iterator) # average loss
-
-
-# +
+# %% codecell
 # Time the epoch!
 
 def epochTimer(startTime, endTime):
@@ -1212,10 +1169,7 @@ def epochTimer(startTime, endTime):
     elapsedMins = int(elapsedTime / 60)
     elapsedSecs = int(elapsedTime - (elapsedMins * 60))
     return elapsedMins, elapsedSecs
-
-
-# -
-
+# %% markdown
 # ### Step 8: Train the Model
 #
 # Finally, we train our model.
@@ -1223,9 +1177,8 @@ def epochTimer(startTime, endTime):
 # Although we have almost twice as many parameters as the attention based RNN model, it actually takes around half the time as the standard version and about the same time as the packed padded sequences version. This is due to all calculations being done in parallel using the convolutional filters instead of sequentially using RNNs.
 #
 # **Note**: this model always has a teacher forcing ratio of 1, i.e. it will always use the ground truth next token from the target sequence. This means we cannot compare perplexity values against the previous models when they are using a teacher forcing ratio that is not 1. See [here](https://github.com/bentrevett/pytorch-seq2seq/issues/39#issuecomment-529408483) for the results of the attention based RNN using a teacher forcing ratio of 1.
-
-# +
-# %%time
+# %% codecell
+%%time
 
 NUM_EPOCHS = 10
 CLIP = 1
@@ -1258,8 +1211,7 @@ for epoch in range(NUM_EPOCHS):
     print(f'Epoch: {epoch+1:02} | Time: {epochMins}m {epochSecs}s')
     print(f'\tTrain Loss: {trainingLoss:.3f} | Train PPL: {math.exp(trainingLoss):7.3f}')
     print(f'\t Val. Loss: {validationLoss:.3f} |  Val. PPL: {math.exp(validationLoss):7.3f}')
-
-# +
+# %% codecell
 # We'll load the parameters (state_dict) that gave our model the best
 # validation loss and run it the model on the test set.
 
@@ -1271,10 +1223,7 @@ testLoss = evaluate(seqModel=seqCNNModel,
 
 # show test loss and calculate test perplexity score:
 print(f'| Test Loss: {testLoss:.3f} | Test PPL: {math.exp(testLoss):7.3f} |')
-
-
-# -
-
+# %% markdown
 # ## Inference
 #
 # Now we can use our trained model to generate translations.
@@ -1296,7 +1245,7 @@ print(f'| Test Loss: {testLoss:.3f} | Test PPL: {math.exp(testLoss):7.3f} |')
 # e) Break if the prediction was an `<eos>` token
 # 9. Convert the output sentence from indexes to tokens
 # 10. Return the output sentence (with the `<sos>` token removed) and the attention from the last layer.
-
+# %% codecell
 def translateSentence(sentence, srcField: Field, trgField: Field,
                       seqModel: Seq2Seq,
                       device, maxLen: int = 50) -> (Tensor, Tensor):
@@ -1365,8 +1314,7 @@ def translateSentence(sentence, srcField: Field, trgField: Field,
     # attention values over the sequence
     return trgTokens[1:], attention
 
-
-# +
+# %% codecell
 ## Create function to display how much the model pays
 # attention to each input token during each step of the decoding
 
@@ -1380,17 +1328,17 @@ def displayAttention(sentence, translation, attention):
     """
     """
     fig, ax = plt.subplots()
-    
+
     # convert attention to numpy array
     attention = attention.squeeze(1).cpu().detach().numpy()
-    
+
     cax = ax.matshow(attention, cmap = 'bone')
 
     ax.tick_params(labelsize=15)
     ax.set_xticklabels([''] + ['<sos>'] + [t.lower() for t in sentence] + ['<eos>'],
                        rotation=45)
     ax.set_yticklabels([''] + translation)
- 
+
     ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
     ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
 
@@ -1414,17 +1362,13 @@ def displayAttention(sentence, translation, attention):
 
     plt.show()
     plt.close()
-
-
-# -
-
+# %% markdown
 # ### Train Data Example Translation
 #
 # Then we'll finally start translating some sentences. **Note**: these sentences have been cherry picked.
 #
 # First, we'll get an example from the training set:
-
-# +
+# %% codecell
 exampleIndex = 12
 
 src = vars(trainData.examples[exampleIndex])['src']
@@ -1440,8 +1384,7 @@ translation, attn = translateSentence(sentence=src,
                                       device=device)
 
 print(f'predicted trg = {translation}')
-# -
-
+# %% markdown
 # Then we pass it into our `translateSentence` function which gives us the predicted translation tokens as well as the attention.
 #
 # We can see above that it doesn't give the exact same translation, however it does capture the same meaning as the original. It is actual a more literal translation as *aus holz* literally translates to *of wood*, so a *wooden playhouse* is the same thing as a *playhouse made of wood*.
@@ -1450,12 +1393,11 @@ print(f'predicted trg = {translation}')
 #
 # Below we view the attention of the model, making sure it gives sensible looking results
 # We can see it correctly pays attention to *aus* when translating both *made* and *of*.
-
+# %% codecell
 displayAttention(sentence = src, translation = translation, attention = attn)
-
+# %% markdown
 # ### Validation Set Example Translation:
-
-# +
+# %% codecell
 exampleIndex = 2
 
 src = vars(validationData.examples[exampleIndex])['src']
@@ -1470,8 +1412,7 @@ translation, attn = translateSentence(sentence=src,
                                       device=device)
 
 print(f'predicted trg = {translation}')
-# -
-
+# %% markdown
 # The model managed to translate this one perfectly.
 #
 #
@@ -1482,12 +1423,11 @@ print(f'predicted trg = {translation}')
 # We can also see the model pays full attention to the period at the end of the sentence when outputting the `<eos>` token.
 #
 # The model also seems to only occasionally pay attention to the `<sos>` and `<eos>` tokens from the source sentence. This is potentially because they are at the start and end of every single sentence and therefore contain no actual information about the contents of a sentence.
-
+# %% codecell
 displayAttention(sentence = src, translation = translation, attention = attn)
-
+# %% markdown
 # ### Test Data Translation Example:
-
-# +
+# %% codecell
 exampleIndex = 9
 
 src = vars(validationData.examples[exampleIndex])['src']
@@ -1502,8 +1442,7 @@ translation, attn = translateSentence(sentence=src,
                                       device=device)
 
 print(f'predicted trg = {translation}')
-# -
-
+# %% markdown
 # We get a generally correct translation here, although the model changed _sitting **in** a chair_ to _sitting **on** a chair_ and removes the *and*.
 #
 # The word *magazines* is not in our vocabulary, hence it was output as an unknown token.
@@ -1512,16 +1451,15 @@ print(f'predicted trg = {translation}')
 # ### Display Attention (Test Data):
 #
 # The attention seems to be correct. No attention is payed to *und* as it never outputs *and* and the word *magazine* is correctly attended to even though it is not in the output vocabulary.
-
+# %% codecell
 displayAttention(sentence = src, translation = translation, attention = attn)
-
+# %% markdown
 # ## BLEU
 #
 # Finally, we calculate the BLEU score for the model.
 #
 # **Note:** the BLEU functionality is currently in `bleu.py` but this metric will be officially incorporated into TorchText in the near future. We are using the exact same implementation, found [here](https://github.com/pytorch/text/blob/master/torchtext/data/metrics.py).
-
-# +
+# %% codecell
 import bleu
 
 def calculateBleu(data,
@@ -1559,8 +1497,7 @@ theBleuScore = calculateBLEU(data = testData,
                              device = device)
 
 print(f'BLEU score = {theBleuScore*100:.2f}')
-# -
-
+# %% markdown
 # We get a BLEU score of ~34, compared to the attention based RNN model which gave us a ~29. This is a ~17% improvement in BLEU score.
-
+# %% markdown
 # We've now covered the first of our non-RNN using models! Next up is the `Transformer` model which doesn't even use convolutional layers - only linear layers and a lot of attention mechanisms.
