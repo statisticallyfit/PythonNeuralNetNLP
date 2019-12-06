@@ -6,6 +6,7 @@ from IPython.display import Image
 
 pth = os.getcwd()
 pth
+
 # %% markdown
 # # 3 - Neural Machine Translation by Jointly Learning to Align and Translate
 #
