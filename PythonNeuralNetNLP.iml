@@ -12,4 +12,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Python 3.6.5 (/development/bin/python/conda3_shared/envs/datasci_env/bin/python3) interpreter library" level="application" />
   </component>
+  <component name="PyDocumentationSettings">
+    <option name="renderExternalDocumentation" value="true" />
+  </component>
 </module>
