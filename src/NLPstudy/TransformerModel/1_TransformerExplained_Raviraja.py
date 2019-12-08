@@ -102,6 +102,8 @@ Image(filename = pth + "self_attn_overview.png")
 # - $V$ = vectors for the rest of the words, other than "it".
 # - $K$ = vectors for each word, including "it".
 #
+# When the model is processing the word "it", self-attention allows the model to associate "it" with the word "animal" instead of "street". As the model processes each word (each position in the input sentence), self-attention allows it to look at other positions in the input sentence for clues to help lead to a better encoding for this word. In each layer, a part of the attention mechanism that focuses on "the animal" was "baked in" to a part of the presentation of the word "it" when encoding this in the model.
+#
 # The final embedding of the word is called the "output", which is a weighted sum of "value" vectors, which are weights from the product of "query" and "key" vectors.
 #
 # $$
@@ -137,80 +139,28 @@ Image(filename = pth + "self_attn_overview.png")
 
 # %% markdown - Steps for Calculating Self-Attention
 # # Steps for Calculating Self-Attention
+# ---
+# ### Step 1: Create Query, Key, Value Vectors
+# The first step is to create three vectors from each of the `Encoder`'s input vectors (in this case, the inputs are the embeddings $\overrightarrow{w_i}$ of each word $\overrightarrow{x_i}$). So for each word, we create a Query vector, a Key vector and a Value vector by multiplying the embedding by three matrices obtained during training
+# TODO: training matrices? to create Q, K, V
+# - NOTE: the embeddings $\overrightarrow{w_i}$ and `Encoder` input and output vectors have dimension $512$.
+# - NOTE: the query, key, value vectors have dimension $64$. These do not HAVE to be smaller, but this is just an architecture choice to make the computation of multiheaded attention (mostly) constant.
+# %% codecell
+Image(filename = pth + "qkv.png")
+# %% markdown
+# ---
+# ### Step 2: Calculate a Score
+# Say we are calculating the self-attention for word $i$ in this example, $\overrightarrow{x_i}$, whose numericalized word embedding is $\overrightarrow{w_i}$. We need to score each word of the input sentence against this word. The score determines how much **focus to place on other parts of the input sentence** as we encode a word at a certain position.
 #
-# ### Step 1: Calculate a Score
-# Say we are calculating the self-attention for the first word in this example, $\overrightarrow{x_1} =$ "The", whose numericalized word embedding is $\overrightarrow{w_1}$. We need to score each word of the input sentence against this word. The score determines how much **focus to place on other parts of the input sentence** as we encode a word at a certain position.
+# The score is calculated by taking the dot product of the *query* vector with the *key* vector of the respective word we are scoring. This means if we are processing the self-attention for the word in position #$i$ (word $i$), the first value in the $i$th score vector would be the dot product of $\overrightarrow{q_i}$ and $\overrightarrow{k_1}$.
 #
-# The score is calculated by taking the dot product of the *query* vector with the *key* vector of the respective word we are scoring:
-# - if we are processing the self-attention for the first word $\overrightarrow{w_1}$, the first score would be the dot product of $\overrightarrow{q_1}$ and $\overrightarrow{k_1}$.
-# - the second score would be the dot product of $\overrightarrow{q_1}$ and $\overrightarrow{k_2}$.
-# - the third score is the dot product of $\overrightarrow{q_1}$ and $\overrightarrow{k_3}. $
+# - the first score value in the $i$th score vector would be the dot product of $\overrightarrow{q_i}$ and $\overrightarrow{k_1}$.
+# - the second score value in the $i$th score vector would be the dot product of $\overrightarrow{q_i}$ and $\overrightarrow{k_2}$.
+# - the third score value in the $i$th score vector is is the dot product of $\overrightarrow{q_i}$ and $\overrightarrow{k_3}. $
 #
 # $$ \vdots \\ $$
-# - the $n$-th score for the $n$-th word would be the dot product of $\overrightarrow{q_1}$ and $\overrightarrow{k_n}$.
+# - the $n$-th score for the $n$-th word would be the dot product of $\overrightarrow{q_i}$ and $\overrightarrow{k_n}$.
 #
-# $$
-# scores_{w_1} = \bigg\{
-# \overrightarrow{q_1} \cdot \overrightarrow{k_1},
-# \overrightarrow{q_1} \cdot \overrightarrow{k_2},
-# ...,
-# \overrightarrow{q_1} \cdot \overrightarrow{k_n} \bigg\}
-# $$
-#
-# ### Step 2: Scale The Score
-#
-# From the paper:
-# > *We suspect that for large values of $d_k$, the dot products grow large in  magnitude, pushing the softmax function into regions where it has extremely small gradients. To counteract this effect, we scale the dot products by $\frac {1} {\sqrt{d_k}}$
-#
-# So now the scores vector for the first word embedding tensor $\overrightarrow{w_1}$ is:
-#
-# $$
-# scores_{w_1} = \Bigg\{
-# \frac {\overrightarrow{q_1} \cdot \overrightarrow{k_1}} {\sqrt{d_k}},
-# \frac {\overrightarrow{q_1} \cdot \overrightarrow{k_2}} {\sqrt{d_k}},
-# ...,
-# \frac{\overrightarrow{q_1} \cdot \overrightarrow{k_n}} {\sqrt{d_k}} \Bigg\}
-# $$
-#
-# ### Step 3: Apply Softmax
-#
-# The softmax function normalizes the scores so they become positive and add up to $1$. This serves the purpose that now the scores are a probability distribution.
-# $$
-# scores_{w_1} = softmax \Bigg( \Bigg\{
-# \frac {\overrightarrow{q_1} \cdot \overrightarrow{k_1}} {\sqrt{d_k}},
-# \frac {\overrightarrow{q_1} \cdot \overrightarrow{k_2}} {\sqrt{d_k}},
-# ...,
-# \frac{\overrightarrow{q_1} \cdot \overrightarrow{k_n}} {\sqrt{d_k}} \Bigg\} \Bigg)
-# $$
-#
-# ### Step 4: Compute the Product
-#
-# Multiply each *value vector* contained in the value matrix $V$ by the softmax scores. The intuition is to keep intact the values of the words we must focus on and drown out irrelevant words. This is why we weight the value vector by the softmax scores.
-# $$
-# weightedValues_{w_1} = scores_{w_1} * (\overrightarrow{v_1}, ..., \overrightarrow{v_n})
-# $$
-# TODO is the above correct?
-#
-# ----
-# ### Step 5: Output Vector
-#
-# Sum up the weighted value vectors to produce the **output vector** of the self-attention layer of the current first word $\overrightarrow{w_1}$.
-# $$
-# \overrightarrow{output_{w_1}} = softmax \Bigg(
-# \frac {\overrightarrow{q_1} \cdot \overrightarrow{k_1}} {\sqrt{d_k}} \Bigg) \cdot \overrightarrow{v_1} +
-# softmax \Bigg(\frac {\overrightarrow{q_1} \cdot \overrightarrow{k_1}} {\sqrt{d_k}} \Bigg) \cdot \overrightarrow{v_2} + ... +
-# softmax \Bigg(\frac {\overrightarrow{q_1} \cdot \overrightarrow{k_1}} {\sqrt{d_k}} \Bigg) \cdot \overrightarrow{v_n}
-# $$
-
-
-
-
-# %% markdown - General Steps for Computing Self-Attention
-# ## General Steps for Computing Self-Attention:
-#
-# In general, when calculating the self-attention for any $i$-th word $\overrightarrow{w_i}$ in the sentence of $n$ words, we need to consider every query vector $\overrightarrow{q_i}$.
-#
-# ### Step 1: Calculate Score for General Word $\overrightarrow{w_i}$
 # $$
 # scores_{w_i} = \bigg\{
 # \overrightarrow{q_i} \cdot \overrightarrow{k_1},
@@ -219,7 +169,20 @@ Image(filename = pth + "self_attn_overview.png")
 # \overrightarrow{q_i} \cdot \overrightarrow{k_n} \bigg\}
 # $$
 #
-# ### Step 2: Scale the Score for General Word $\overrightarrow{w_i}$
+# The image below shows the first and second values in the first scoring vector corresponding to the first word "Thinking" in a sentence that starts with the words "Thinking Machines ...":
+# %% codecell
+Image(filename = pth + "qkv_thinkingmachines.png")
+# %% markdown
+# ---
+# ### Step 3: Scale The Score
+#
+# The dimensions of the  key vectors is $d_k = 64$.
+#
+# From the paper:
+# > *We suspect that for large values of $d_k$, the dot products grow large in  magnitude, pushing the softmax function into regions where it has extremely small gradients. To counteract this effect, we scale the dot products by $\frac {1} {\sqrt{d_k}}$*
+#
+# So now the scores vector for the first word embedding tensor $\overrightarrow{w_i}$ is:
+#
 # $$
 # scores_{w_i} = \Bigg\{
 # \frac {\overrightarrow{q_i} \cdot \overrightarrow{k_1}} {\sqrt{d_k}},
@@ -227,8 +190,10 @@ Image(filename = pth + "self_attn_overview.png")
 # ...,
 # \frac{\overrightarrow{q_i} \cdot \overrightarrow{k_n}} {\sqrt{d_k}} \Bigg\}
 # $$
+# ---
+# ### Step 4: Apply Softmax
 #
-# ### Step 3: Apply Softmax for General Word $\overrightarrow{w_i}$
+# The softmax function normalizes the scores so they become positive and add up to $1$. This serves the purpose that now the scores are a probability distribution.
 # $$
 # scores_{w_i} = softmax \Bigg( \Bigg\{
 # \frac {\overrightarrow{q_i} \cdot \overrightarrow{k_1}} {\sqrt{d_k}},
@@ -237,12 +202,23 @@ Image(filename = pth + "self_attn_overview.png")
 # \frac{\overrightarrow{q_i} \cdot \overrightarrow{k_n}} {\sqrt{d_k}} \Bigg\} \Bigg)
 # $$
 #
-# ### Step 4: Compute Weighted Product for General Word $\overrightarrow{w_i}$
+# The image below shows the scaling and softmax operations after the query, key, value operations:
+# %% codecell
+Image(filename = pth + "scaling.png")
+# %% markdown
+# ---
+# ### Step 5: Compute the Weights
+#
+# Multiply each *value vector* contained in the value matrix $V$ by the softmax scores. The intuition is to keep intact the values of the words we must focus on and drown out irrelevant words. This is why we weight the value vector by the softmax scores.
 # $$
 # weightedValues_{w_i} = scores_{w_i} * (\overrightarrow{v_1}, ..., \overrightarrow{v_n})
 # $$
+# TODO is the above correct?
 #
-# ### Step 5: Output Vector for General Word $\overrightarrow{w_i}$
+# ----
+# ### Step 6: Output Vector
+#
+# Sum up the weighted value vectors to produce the **output vector** of the self-attention layer of the current first word $\overrightarrow{w_i}$.
 # $$
 # \overrightarrow{output_{w_i}} = softmax \Bigg(
 # \frac {\overrightarrow{q_i} \cdot \overrightarrow{k_1}} {\sqrt{d_k}} \Bigg) \cdot \overrightarrow{v_1} +
@@ -250,7 +226,18 @@ Image(filename = pth + "self_attn_overview.png")
 # softmax \Bigg(\frac {\overrightarrow{q_i} \cdot \overrightarrow{k_1}} {\sqrt{d_k}} \Bigg) \cdot \overrightarrow{v_n}
 # $$
 #
+# The image below shows the last step 5 and step 6:
+# %% codecell
+Image(filename = pth + "laststeps.png")
 
+
+
+# %% markdown - Self-Attention: Matrix-Based Calculation TODO LEFT OFF HERE
+# # Self-Attention: Matrix-Based Calculation
+#
+# In general, when calculating the self-attention for any $i$-th word $\overrightarrow{w_i}$ in the sentence of $n$ words, we need to consider every query vector $\overrightarrow{q_i}$.
+#
+# > $$Attention(Q, K, V) = softmax \Bigg(\frac {QK^T} {\sqrt{d_k}} \Bigg) \cdot V$$
 
 
 
