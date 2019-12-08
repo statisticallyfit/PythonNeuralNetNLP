@@ -1,4 +1,4 @@
-# %% markdown
+# %% markdown --- tutorial source link
 # [Source: Transformer Explained - part 1](https://graviraja.github.io/transformer/#)
 
 
@@ -10,7 +10,7 @@ pth
 pth += "/src/NLPstudy/images/"
 pth
 
-# %% markdown
+# %% markdown --- title
 # # Transformer Explained - Part 1
 #
 # [Paper - Attention is All You Need](https://hyp.is/vcxebvlpEemxWNvmc21KAQ/arxiv.org/pdf/1706.03762.pdf)
@@ -20,7 +20,7 @@ Image(filename = pth + "transformer_animation.gif", width=700, height=600)
 
 
 
-# %% markdown
+# %% markdown --- Overview
 # # Overview
 # Recurrent neural networks, long short-term memory and gated recurrent neural networks in particular, have been firmly established as state of the art approaches in sequence modeling and transduction problems such as language modeling and machine translation.
 #
@@ -29,7 +29,7 @@ Image(filename = pth + "transformer_animation.gif", width=700, height=600)
 # In this work we propose the Transformer, a model architecture eschewing recurrence and instead relying entirely on an attention mechanism to draw global dependencies between input and output.
 
 
-# %% markdown
+# %% markdown --- Transformer overview
 # # Transformer
 # ### Definition: `Transformer`
 # The transformer is a **sequence-to-sequence** model which contains an `Encoder` and `Decoder`.
@@ -44,12 +44,12 @@ Image(filename = pth + "encdeclayers.png")
 # %% codecell
 Image(filename = pth + "encoder_overview.png")
 
-# %% markdown
+# %% markdown --- Encoder
 # ### [Definition: `Encoder` in `Transformer`](https://hyp.is/47hacvl_EemoWVuw4dRtSg/arxiv.org/pdf/1706.03762.pdf)
 # Each `Encoder` contains a stack of identical encoder layers (in the paper they use $N = 6$ layers)
 
 
-# %% markdown
+# %% markdown -- Encoder Layer
 # ### Definition: Encoder Layer in `Encoder`
 # An encoder layer is composed of 2 sub-layers:
 # 1. multi-head self-attention mechanism (layer)
@@ -60,7 +60,8 @@ Image(filename = pth + "encoder_overview.png")
 # Following residual connection, there is layer normalization.
 # - **NOTE:** All sub-layers in the model, including embedding layers, produce outputs of dimension $d_{model}=512$ to facilitate these residual connections.
 
-# %% markdown
+
+# %% markdown - Self-attention
 # # Self-Attention
 #
 # **Example:**
@@ -86,8 +87,8 @@ Image(filename = pth + "encoder_overview.png")
 Image(filename = pth + "self_attn_overview.png")
 
 
-# %% markdown
-# ### DEFINITION: Query, Key, Value Vectors (matrices)
+# %% markdown - Q, K, V
+# ### Definition: Query, Key, Value Vectors (matrices)
 #
 # The query, key, and value vectors are abstractions useful for calculating attention.
 # - The Query matrix $Q$ contains formation on what word we want to calculate self-attention for (meaning we ask what is the meaning of a particular word).
@@ -134,7 +135,7 @@ Image(filename = pth + "self_attn_overview.png")
 # Then, the $n$ *query, key, value* vectors for each word $i$ are $\{\overrightarrow{q_1}, \overrightarrow{q_2}, ..., \overrightarrow{q_n}\}$, $\{\overrightarrow{k_1}, \overrightarrow{k_2}, ..., \overrightarrow{k_n}\}$, $\{\overrightarrow{v_1}, \overrightarrow{v_2}, ..., \overrightarrow{v_n}\}$ respectively.
 
 
-# %% markdown
+# %% markdown - Steps for Calculating Self-Attention
 # # Steps for Calculating Self-Attention
 #
 # ### Step 1: Calculate a Score
@@ -190,7 +191,7 @@ Image(filename = pth + "self_attn_overview.png")
 # $$
 # TODO is the above correct?
 #
-
+# ----
 # ### Step 5: Output Vector
 #
 # Sum up the weighted value vectors to produce the **output vector** of the self-attention layer of the current first word $\overrightarrow{w_1}$.
@@ -200,9 +201,11 @@ Image(filename = pth + "self_attn_overview.png")
 # softmax \Bigg(\frac {\overrightarrow{q_1} \cdot \overrightarrow{k_1}} {\sqrt{d_k}} \Bigg) \cdot \overrightarrow{v_2} + ... +
 # softmax \Bigg(\frac {\overrightarrow{q_1} \cdot \overrightarrow{k_1}} {\sqrt{d_k}} \Bigg) \cdot \overrightarrow{v_n}
 # $$
-#
-#
-# %% markdown
+
+
+
+
+# %% markdown - General Steps for Computing Self-Attention
 # ## General Steps for Computing Self-Attention:
 #
 # In general, when calculating the self-attention for any $i$-th word $\overrightarrow{w_i}$ in the sentence of $n$ words, we need to consider every query vector $\overrightarrow{q_i}$.
@@ -248,7 +251,10 @@ Image(filename = pth + "self_attn_overview.png")
 # $$
 #
 
-# %% markdown
+
+
+
+# %% markdown - Decoder
 # # Decoder
 # %% codecell
 Image(filename = pth + "decoder_overview.png")
