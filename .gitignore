@@ -6,6 +6,8 @@ data
 
 .mypy_cache/
 
+.ipynb_checkpoints/
+
 .data/
 data/
 tokenizers/
