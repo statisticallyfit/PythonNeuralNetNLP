@@ -7,10 +7,12 @@
 import sys
 import os
 from IPython.display import Image
-import ImageResizer
 
 # Making files in utils folder visible here:
 sys.path.append(os.getcwd() + "/src/utils/")
+
+import ImageResizer
+
 # Building pathname for images
 pth = os.getcwd()
 pth
@@ -39,25 +41,26 @@ Image(filename = pth + "transformer_animation.gif")
 # %% markdown --- Transformer overview
 # # Transformer
 # ### Definition: `Transformer`
-# The transformer is a **sequence-to-sequence** model which contains an `Encoder` and `Decoder`.
+# The transformer is a **sequence-to-sequence** model which contains an `Encoder` and `Decoder`. Its job is to translate sentences.
 #
 # The `Encoder` and `Decoder` are similar in that they contain several identical layers inside of them. For instance, the `Encoder` is called the "encoder stack" and this refers to the stack of $N$ identical encoder layers from which it is composed. Likewise, the `Decoder` is called the "decoder stack" because it contains a stack of $N$ identical decoder layers.
 
 # %% codecell
-from ImageResizer import resize
-ImageResizer.resize(pth + "encdeclayers.png", resizeBy = 0.70)
+# ImageResizer.resize(filename = pth + "encdeclayers.png", by = 0.7)
+ImageResizer.resize(filename = pth + "encoderDecoderLayers.jpg", by=0.65)
+
+Image(filename = pth + "encoderLayers.jpg")
 
 
-
+# %% markdown --- Encoder
 # # Encoder
+#
+# ### [Definition: `Encoder` in `Transformer`](https://hyp.is/47hacvl_EemoWVuw4dRtSg/arxiv.org/pdf/1706.03762.pdf)
+# Each `Encoder` contains a stack of identical encoder layers (in the paper they use $N = 6$ layers)
 # %% codecell
 ImageResizer.resize(filename = pth + "encoder_overview.png")
 
-# %% markdown --- Encoder
-# ### [Definition: `Encoder` in `Transformer`](https://hyp.is/47hacvl_EemoWVuw4dRtSg/arxiv.org/pdf/1706.03762.pdf)
-# Each `Encoder` contains a stack of identical encoder layers (in the paper they use $N = 6$ layers)
-
-
+Image(filename = pth + "encdec.jpg")
 # %% markdown -- Encoder Layer
 # ### Definition: Encoder Layer in `Encoder`
 # An encoder layer is composed of 2 sub-layers:
@@ -93,7 +96,7 @@ ImageResizer.resize(filename = pth + "encoder_overview.png")
 # The paper uses **Scaled Dot-Product Attention**.
 
 # %% codecell
-Image(filename = pth + "self_attn_overview.png")
+ImageResizer.resize(filename = pth + "self_attn_overview.png")
 
 
 # %% markdown - Q, K, V
@@ -146,8 +149,8 @@ Image(filename = pth + "self_attn_overview.png")
 # Then, the $n$ *query, key, value* vectors for each word $i$ are $\{\overrightarrow{q_1}, \overrightarrow{q_2}, ..., \overrightarrow{q_n}\}$, $\{\overrightarrow{k_1}, \overrightarrow{k_2}, ..., \overrightarrow{k_n}\}$, $\{\overrightarrow{v_1}, \overrightarrow{v_2}, ..., \overrightarrow{v_n}\}$ respectively.
 
 
-# %% markdown - Steps for Calculating Self-Attention
-# # Steps for Calculating Self-Attention
+# %% markdown - Self-Attention: Vector Calculation
+# # Self-Attention: Vector Calculation
 # ---
 # ### Step 1: Create Query, Key, Value Vectors
 # The first step is to create three vectors from each of the `Encoder`'s input vectors (in this case, the inputs are the embeddings $\overrightarrow{w_i}$ of each word $\overrightarrow{x_i}$). So for each word, we create a Query vector, a Key vector and a Value vector by multiplying the embedding by three matrices obtained during training
@@ -155,7 +158,7 @@ Image(filename = pth + "self_attn_overview.png")
 # - NOTE: the embeddings $\overrightarrow{w_i}$ and `Encoder` input and output vectors have dimension $512$.
 # - NOTE: the query, key, value vectors have dimension $64$. These do not HAVE to be smaller, but this is just an architecture choice to make the computation of multiheaded attention (mostly) constant.
 # %% codecell
-Image(filename = pth + "qkv.png")
+ImageResizer.resize(filename = pth + "qkv.png")
 # %% markdown
 # ---
 # ### Step 2: Calculate a Score
@@ -179,6 +182,7 @@ Image(filename = pth + "qkv.png")
 # $$
 #
 # The image below shows the first and second values in the first scoring vector corresponding to the first word "Thinking" in a sentence that starts with the words "Thinking Machines ...":
+# %% codecell
 # %% codecell
 Image(filename = pth + "qkv_thinkingmachines.png")
 # %% markdown
@@ -213,6 +217,7 @@ Image(filename = pth + "qkv_thinkingmachines.png")
 #
 # The image below shows the scaling and softmax operations after the query, key, value operations:
 # %% codecell
+# %% codecell
 Image(filename = pth + "scaling.png")
 # %% markdown
 # ---
@@ -237,6 +242,7 @@ Image(filename = pth + "scaling.png")
 #
 # The image below shows the last step 5 and step 6:
 # %% codecell
+# %% codecell
 Image(filename = pth + "laststeps.png")
 
 
@@ -247,6 +253,130 @@ Image(filename = pth + "laststeps.png")
 # In general, when calculating the self-attention for any $i$-th word $\overrightarrow{w_i}$ in the sentence of $n$ words, we need to consider every query vector $\overrightarrow{q_i}$.
 #
 # > $$Attention(Q, K, V) = softmax \Bigg(\frac {QK^T} {\sqrt{d_k}} \Bigg) \cdot V$$
+# %% codecell
+ImageResizer.resize(filename = pth + "multihead.png")
+# %% markdown
+# Behold the paper's motivation for using matrices for query, key, value:
+#
+# > *Instead of performing a single attention function with $d_{model}$-dimensional keys, values and queries, we found it beneficial to linearly project the queries, keys and values $h$ (number of attention heads) times with different, learned linear projections to $d_k$, $d_k$, and $d_v$ dimensions, respectively. On each of these projected versions of queries, keys and values we then perform the attention function in parallel, yielding $d_v$-dimensional output values. These are concatenated and once again projected, resulting in the final value.*
+#
+# **Main Performance Advantages of Multi-Headed Attention:**
+#
+# Multi-headed attention improves the performance of any attention layer in the transformer in two ways:
+#
+# 1. It expands the model's ability to focus on different positions in order to encode a query word's meaning.
+#
+# 2. It gives the attention layer multiple "representation subspaces". With multi-headed attention there are multiple (not just one) sets of Query / Key / Value weight matrices. (The transformer uses 8 attention heads, so we end up using eight sets of Q / K/ V for each `Encoder` / `Decoder` layer. ) Each of these sets is randomly initialized. Then after training, each set is used to project the input embeddings (vectors from lower `Encoder`s / `Decoder`s) into a different representation subspace.
+# %% codecell
+Image(filename = pth + "multipleqkv.png")
+# %% markdown
+# ## Steps to Calculate Multihead Attention Using Matrices:
+# ---
+# ### Step 1: Create $Q$, $K$, $V$ matrices
+# With multi-headed attention we maintain separate $Q$, $K$, $V$ weight matrices for each attention head, resulting in different sets of $Q$, $K$, $V$ matrices. The rows of the input matrix $X$ correspond to a word in the input sentence. We multiply the matrix $X$ of sentence inputs by the trained parameter matrices $W^Q$, $W_K$, $W_V$ to produce the $Q$, $K$, $V$ matrices:
+# $$
+# \text{Query matrices for attention heads: } \\
+# Q_1 = X \cdot W_1^Q \\
+# Q_2 = X \cdot W_2^Q \\
+# \vdots \\
+# Q_h = X \cdot W_h^Q \\
+# \\
+# \text{Key matrices for attention heads: } \\
+# K_1 = X \cdot W_1^K \\
+# K_2 = X \cdot W_2^K \\
+# \vdots \\
+# K_h = X \cdot W_h^K \\
+# \\
+# \text{Value matrices for attention heads: } \\
+# V_1 = X \cdot W_1^V \\
+# V_2 = X \cdot W_2^V \\
+# \vdots \\
+# V_h = X \cdot W_h^V \\
+# $$
+# where the parameter matrices for all $h$ attention heads, for the $i$th attention head, $1 \leq i \leq A$, are:
+# - $\large W_i^Q \in \mathbb{R}^{\Large d_{model} \times d_k}$
+# - $\large W_i^K \in \mathbb{R}^{\Large d_{model} \times d_k}$
+# - $\large W_i^V \in \mathbb{R}^{\Large d_{model} \times d_v}$
+# %% codecell
+ImageResizer.resize(filename =  pth + "matrixcalc_multihead.png", by=0.6)
+#
+# %% markdown
+# ---
+# ### Step 2: Apply Softmax To Get Output Matrix
+# Since we are using matrices, we can condense the steps two through six in the vector calculation of self-attention to find the final output matrix $Z_i$ for the $i$th attention head any self-attention layer:
+# $$
+# Z_i := softmax \Bigg(\frac {Q_i K_i^T} {\sqrt{d_k}} \Bigg) \cdot V_i
+# $$
+# %% codecell
+ImageResizer.resize(filename = pth + "multihead_formula.jpg", by = 0.6)
+# %% markdown 
+# ---
+# ### Step 3: Concatenate Output Matrices
+#
+# If we do the self-attention calculation outlined (above), for each attention head, with different weight matrices, we end up with different $Z$ output matrices for each attention head:
+# %% codecell
+Image(filename = pth + "multiple_z.png")
+# %% markdown
+# But the feed-forward layer is not expected all those matrices. It is expecting a single matrix (a vector for each word), so we must condense these eight matrices down to a single matrix.
+# - Note 1: there are $8$ output matrices since the paper uses $8$ attention heads.
+# - Note 2: the paper calls the "attention heads" the "attention layers" also.
+# To do that, we concatenate all output matrices $Z_i$, corresponding to each $i$th attention head, and multiply them by an additional weights matrix, $W^O \in \mathbb{R}^{\Large h \cdot d_v \times d_{model}}$:
+# $$
+# MultiHead(Q, K, V) = Concat(head_1, ..., head_h) \cdot W^O
+# $$
+# where
+# - $head_i = Attention(Q \cdot W_i^Q, K \cdot W_i^K, V \cdot W_i^V)$
+# - $h = $ number of attention heads
+# - $W^O \in \mathbb{R}^{\Large h \cdot d_v \times d_{model}}$
+# %% codecell
+Image(filename= pth + "multihead_condensematrices.png")
+# %% markdown
+# Here we recap all the steps for calculating self-attention using matrices:
+# %% codecell
+Image(filename = pth + "multihead_recap.png")
+
+# %% markdown
+# What happens as we add more attention heads?
+# Let us revisit our previous example to see where different attention heads are focusing as we encode the word "it" in the example sentence.
+# As we encode the word "it", one attention head is focusing most on "the animal" while another is focusing on "tired". This means the model's representation of the word "it" bakes in some of the representation of both "animal" and "tired".
+# The image below shows two attention heads (orange and green):
+# %% codecell
+ImageResizer.resize(filename = pth + "attnhead_example.jpg", by = 0.8)
+
+
+# %% markdown --- Positional Encoding
+# # Positional Encoding: Representing The Order of the Sequence
+#
+# ***Reason for Positional Encodings:**
+#
+# > *Since our model contains no recurrence and no convolution, in order for the model to make use of the **order of the sequence**, we must inject some information about the relative or absolute position of the tokens in the sequence. To this end, we add “positional encodings” to the input embeddings at the bottoms of the `Encoder` and `Decoder` stacks*
+#
+# Missing so far is a way to account for the order of words in the input sentence.
+#
+# Without positional encodings, the sentences "I like dogs more than cats” and “I like cats more than dogs” encode into same thing. In order to inject some information about the relationship between word positions, positional encodings are added to the words.
+#
+# To do this, the transformer adds a vector to each input embedding. These vectors follow a specific pattern that the model learns, which helps it determine the position of each word, or the distance between different words in the sequence. The intuition here is that adding these values to the embeddings provides meaningful distances between the embedding vectors once they’re projected into $Q$, $K$, $V$ vectors and during the self-attention calculation.
+#
+# The paper chose to use sinusoidal waves for encoding positions, to extrapolate to sequence lengths longer than ones encountered during training:
+# $$
+# PosEnc_{\Large (pos, 2i)} = \text{sin} \Bigg(\frac {pos} {10000^{\Large \frac {2i} {d_{model}} } }  \Bigg) \\
+# PosEnc_{\Large (pos, 2i + 1)} = \text{cos} \Bigg(\frac {pos} {10000^{\Large \frac {2i} {d_{model}} } }  \Bigg)
+# $$
+# %% codecell
+Image(filename = pth + "posencodings.jpg")
+
+
+
+# %% markdown --- Position-Wise Feed-Forward Layer
+# # Position-Wise Feed-Forward Layer
+#
+# The second layer in the `Encoder` is a position-wise feed forward layer.
+#
+# This means a feed forward neural network `FFN` is applied to each position separately and identically, and it contains 1 hidden layer which uses a $ReLU$ activation function.
+# $$
+# FFN(x) = max(0, x W_1 + b_1) W_2 + b_2
+# $$
+
 
 
 

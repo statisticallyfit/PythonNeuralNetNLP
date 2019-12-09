@@ -18,11 +18,21 @@ class ImageResizer(Image):
         self.resizedImage
 """
 
-def resize(filename: str, resizeBy: float = 0.75) -> Image:
+# def resizeImage(filename: str, resizeBy: float = 0.75) -> Image:
+#     img = Image.open(filename)
+#
+#     newWidth: int = int(resizeBy * img.size[0])
+#     newHeight: int = int(resizeBy * img.size[1])
+#     newImg = img.resize((newWidth, newHeight), PIL.Image.ANTIALIAS)
+#
+#     return newImg
+
+
+def resize(filename: str, by: float = 0.75) -> Image:
     img = Image.open(filename)
 
-    newWidth: int = int(resizeBy * img.size[0])
-    newHeight: int = int(resizeBy * img.size[1])
+    newWidth: int = int(by * img.size[0])
+    newHeight: int = int(by * img.size[1])
     newImg = img.resize((newWidth, newHeight), PIL.Image.ANTIALIAS)
 
     return newImg
