@@ -3,8 +3,15 @@
 
 
 # %% codecell
-from IPython.display import Image
+#from IPython.display import Image
+import sys
 import os
+from IPython.display import Image
+import ImageResizer
+
+# Making files in utils folder visible here:
+sys.path.append(os.getcwd() + "/src/utils/")
+# Building pathname for images
 pth = os.getcwd()
 pth
 pth += "/src/NLPstudy/images/"
@@ -16,7 +23,7 @@ pth
 # [Paper - Attention is All You Need](https://hyp.is/vcxebvlpEemxWNvmc21KAQ/arxiv.org/pdf/1706.03762.pdf)
 
 # %% codecell
-Image(filename = pth + "transformer_animation.gif", width=700, height=600)
+Image(filename = pth + "transformer_animation.gif")
 
 
 
@@ -37,12 +44,14 @@ Image(filename = pth + "transformer_animation.gif", width=700, height=600)
 # The `Encoder` and `Decoder` are similar in that they contain several identical layers inside of them. For instance, the `Encoder` is called the "encoder stack" and this refers to the stack of $N$ identical encoder layers from which it is composed. Likewise, the `Decoder` is called the "decoder stack" because it contains a stack of $N$ identical decoder layers.
 
 # %% codecell
-Image(filename = pth + "encdeclayers.png")
+from ImageResizer import resize
+ImageResizer.resize(pth + "encdeclayers.png", resizeBy = 0.70)
+
 
 
 # # Encoder
 # %% codecell
-Image(filename = pth + "encoder_overview.png")
+ImageResizer.resize(filename = pth + "encoder_overview.png")
 
 # %% markdown --- Encoder
 # ### [Definition: `Encoder` in `Transformer`](https://hyp.is/47hacvl_EemoWVuw4dRtSg/arxiv.org/pdf/1706.03762.pdf)
@@ -232,7 +241,7 @@ Image(filename = pth + "laststeps.png")
 
 
 
-# %% markdown - Self-Attention: Matrix-Based Calculation TODO LEFT OFF HERE
+# %% markdown - Self-Attention: Matrix-Based Calculation
 # # Self-Attention: Matrix-Based Calculation
 #
 # In general, when calculating the self-attention for any $i$-th word $\overrightarrow{w_i}$ in the sentence of $n$ words, we need to consider every query vector $\overrightarrow{q_i}$.
