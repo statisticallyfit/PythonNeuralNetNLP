@@ -39,9 +39,11 @@ Image(filename = pth + "transformer_animation.gif")
 
 
 # %% markdown --- Transformer overview
-# # Transformer
+# # [Transformer Overview](https://hyp.is/t7_VJhkoEeq6HdNsFlt78A/arxiv.org/pdf/1706.03762.pdf)
 # ### Definition: `Transformer`
 # The transformer is a **sequence-to-sequence** model which contains an `Encoder` and `Decoder`. Its job is to translate sentences.
+#
+# The `Encoder` maps an input sequence of symbol representations $X = \{\overrightarrow{x_1}, ..., \overrightarrow{x_n} \}$ to a sequence of continuous output representations $Z = \{\overrightarrow{z_1}, ..., \overrightarrow{z_n} \}$ where each of the $\overrightarrow{x_i}$ and $\overrightarrow{z_i}$ are vectors and $X$ and $Z$ are the input and output matrices, respectively. At each step the transformer model is auto-regressive, meaning it consumes the previously generated symbols as additional input when generating the next.
 #
 # The `Encoder` and `Decoder` are similar in that they contain several identical layers inside of them. For instance, the `Encoder` is called the "encoder stack" and this refers to the stack of $N$ identical encoder layers from which it is composed. Likewise, the `Decoder` is called the "decoder stack" because it contains a stack of $N$ identical decoder layers.
 
@@ -53,7 +55,7 @@ Image(filename = pth + "encoderLayers.jpg")
 
 
 # %% markdown --- Encoder
-# # Encoder
+# # [Encoder](https://hyp.is/47hacvl_EemoWVuw4dRtSg/arxiv.org/pdf/1706.03762.pdf)
 #
 # ### [Definition: `Encoder` in `Transformer`](https://hyp.is/47hacvl_EemoWVuw4dRtSg/arxiv.org/pdf/1706.03762.pdf)
 # Each `Encoder` contains a stack of identical encoder layers (in the paper they use $N = 6$ layers)
@@ -74,7 +76,7 @@ Image(filename = pth + "encdec.jpg")
 
 
 # %% markdown - Self-attention
-# # Self-Attention
+# # [Self-Attention](https://hyp.is/n7sRYPmAEemG6BtKfDNqqg/arxiv.org/pdf/1706.03762.pdf)
 #
 # **Example:**
 # Let's consider the following sentence:
@@ -93,7 +95,7 @@ Image(filename = pth + "encdec.jpg")
 #
 # > *An attention function can be described as mapping a query and a set of key-value pairs to an output, where the query, keys, values, and output are all vectors. The output is computed as a weighted sum of the values, where the weight assigned to each value is computed by a compatibility function of the query with the corresponding key.*
 #
-# The paper uses **Scaled Dot-Product Attention**.
+# The paper uses []**Scaled Dot-Product Attention**](https://hyp.is/n7sRYPmAEemG6BtKfDNqqg/arxiv.org/pdf/1706.03762.pdf).
 
 # %% codecell
 ImageResizer.resize(filename = pth + "self_attn_overview.png")
@@ -248,7 +250,7 @@ Image(filename = pth + "laststeps.png")
 
 
 # %% markdown - Self-Attention: Matrix-Based Calculation
-# # Self-Attention: Matrix-Based Calculation
+# # [Self-Attention: Matrix-Based Calculation](https://hyp.is/CnIFQPmBEemRzANcMgPbEA/arxiv.org/pdf/1706.03762.pdf)
 #
 # In general, when calculating the self-attention for any $i$-th word $\overrightarrow{w_i}$ in the sentence of $n$ words, we need to consider every query vector $\overrightarrow{q_i}$.
 #
@@ -260,7 +262,7 @@ ImageResizer.resize(filename = pth + "multihead.png")
 #
 # > *Instead of performing a single attention function with $d_{model}$-dimensional keys, values and queries, we found it beneficial to linearly project the queries, keys and values $h$ (number of attention heads) times with different, learned linear projections to $d_k$, $d_k$, and $d_v$ dimensions, respectively. On each of these projected versions of queries, keys and values we then perform the attention function in parallel, yielding $d_v$-dimensional output values. These are concatenated and once again projected, resulting in the final value.*
 #
-# **Main Performance Advantages of Multi-Headed Attention:**
+# [**Main Performance Advantages of Multi-Headed Attention:**](https://hyp.is/kCkDMhkqEeqn1zuEinQcSg/arxiv.org/pdf/1706.03762.pdf)
 #
 # Multi-headed attention improves the performance of any attention layer in the transformer in two ways:
 #
@@ -299,7 +301,6 @@ Image(filename = pth + "multipleqkv.png")
 # - $\large W_i^V \in \mathbb{R}^{\Large d_{model} \times d_v}$
 # %% codecell
 ImageResizer.resize(filename =  pth + "matrixcalc_multihead.png", by=0.6)
-#
 # %% markdown
 # ---
 # ### Step 2: Apply Softmax To Get Output Matrix
@@ -309,7 +310,7 @@ ImageResizer.resize(filename =  pth + "matrixcalc_multihead.png", by=0.6)
 # $$
 # %% codecell
 ImageResizer.resize(filename = pth + "multihead_formula.jpg", by = 0.6)
-# %% markdown 
+# %% markdown
 # ---
 # ### Step 3: Concatenate Output Matrices
 #
@@ -344,11 +345,14 @@ Image(filename = pth + "multihead_recap.png")
 ImageResizer.resize(filename = pth + "attnhead_example.jpg", by = 0.8)
 
 
+
+
 # %% markdown --- Positional Encoding
-# # Positional Encoding: Representing The Order of the Sequence
+# # [Positional Encoding: Representing The Order of the Sequence](https://hyp.is/OmJ95hksEeq6KQO3vRg-rA/arxiv.org/pdf/1706.03762.pdf)
 #
-# ***Reason for Positional Encodings:**
+# **Reason for Positional Encodings:**
 #
+# The paper says:
 # > *Since our model contains no recurrence and no convolution, in order for the model to make use of the **order of the sequence**, we must inject some information about the relative or absolute position of the tokens in the sequence. To this end, we add “positional encodings” to the input embeddings at the bottoms of the `Encoder` and `Decoder` stacks*
 #
 # Missing so far is a way to account for the order of words in the input sentence.
@@ -362,26 +366,58 @@ ImageResizer.resize(filename = pth + "attnhead_example.jpg", by = 0.8)
 # PosEnc_{\Large (pos, 2i)} = \text{sin} \Bigg(\frac {pos} {10000^{\Large \frac {2i} {d_{model}} } }  \Bigg) \\
 # PosEnc_{\Large (pos, 2i + 1)} = \text{cos} \Bigg(\frac {pos} {10000^{\Large \frac {2i} {d_{model}} } }  \Bigg)
 # $$
+# where ...
+# - $pos = $ the position
+# - $i = $ the dimension.
+# - NOTE: This implies each dimension of the positional encoding corresponds to a sinusoid. The wavelengths form a geometric progression from $2\pi$ to $1000 \cdot 2\pi$.
+# - NOTE: A sinusoid was chosen because it was hypothesized to allow the model to more easily learn to attend by relative positions, since for any fixed offset $k$, the positional encoding $PosEnc_{pos + k}$ can be represented as a linear function of $PosEnc_{pos}$.
 # %% codecell
 Image(filename = pth + "posencodings.jpg")
 
 
 
 # %% markdown --- Position-Wise Feed-Forward Layer
-# # Position-Wise Feed-Forward Layer
+# # [Position-Wise Feed-Forward Layer](https://hyp.is/i5IhNhkrEeqt67dCGzWnqw/arxiv.org/pdf/1706.03762.pdf)
 #
 # The second layer in the `Encoder` is a position-wise feed forward layer.
 #
-# This means a feed forward neural network `FFN` is applied to each position separately and identically, and it contains 1 hidden layer which uses a $ReLU$ activation function.
+# This means a feed forward neural network `FFN` is applied to each position separately and identically. The `FFN` contains two linear transformations with a $ReLU$ activation function (`max`) in between them:
 # $$
 # FFN(x) = max(0, x W_1 + b_1) W_2 + b_2
 # $$
+# - NOTE: the linear transformations are the same across different positions but use different parameters from layer to layer.
+#   - Another way of describing this is as two convolutions with filter size = $1$.
+#   - The dimensionality of input and output is $d_{model} = 512$ and the inner-layer dimensionality is $d_{ff} = 2048$.
+
+
+
+# %% markdown -- The Residuals
+# # [Residual Connection](https://hyp.is/6zXZZPl_EemJBPt5Safoig/arxiv.org/pdf/1706.03762.pdf)
+#
+# Both the `Encoder` and `Decoder` stacks use residual connections. More specifically, each sub-layer in the stack (which contains the self-attention and feed-forward network) has a reisdual connection around it which is followed by a layer normalization step.
+#
+# ### Definition: Residual Connection:
+# A residual connection consists of a layer normalization function and is expressed as:
+# TODO: correct def residual connection?
+# $$
+# LayerNorm(x + Sublayer(x))
+# $$
+# where $Sublayer(x)$ is the function implemented by the sub-layer itself.
+# - TODO Residual connections are the same thing as **skip conections** - they are used to allow gradients to flow through the network directly, without passing through non-linear activation functions.
+# %% codecell
+ImageResizer.resize(filename = pth + "layernorm_detail.png", by = 0.6)
+# %% markdown
+# In general, this is how the residual connections and layer normalization steps would look for both the `Encoder` and `Decoder` sub-layers for the example sentence "Thinking Machines":
+# %% codecell
+ImageResizer.resize(filename = pth + "layernorm_encdec.png", by = 0.6)
+
+
 
 
 
 
 # %% markdown - Decoder
-# # Decoder
+# # [Decoder](https://hyp.is/QmIQchkpEeqc-4fiyvXmkw/arxiv.org/pdf/1706.03762.pdf)
 # %% codecell
 Image(filename = pth + "decoder_overview.png")
 
@@ -407,9 +443,7 @@ Image(filename = pth + "decoder_overview.png")
 # - **NOTE:** All sub-layers in the model, including embedding layers, produce outputs of dimension $d_{model}=512$ to facilitate these residual connections.
 #
 #
-# %% markdown
-# ### Definition: Layer Normalization
-#     # TODO: define this under `layer normalization`: , meaning the output of each sub-layer is $LayerNorm(x + SubLayer(x))$, where $SubLayer(x)$ is the function implemented by the sub-layer itself.
+
 
 
 # %% codecell
