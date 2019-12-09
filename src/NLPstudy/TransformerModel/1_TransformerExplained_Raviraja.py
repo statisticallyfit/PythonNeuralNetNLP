@@ -1,5 +1,8 @@
-# %% markdown --- tutorial source link
-# [Source: Transformer Explained - part 1](https://graviraja.github.io/transformer/#)
+# %% markdown --- tutorial source links
+# - [Source 1: Transformer Explained - part 1](https://graviraja.github.io/transformer/#)
+# - [Source 2: Illustrated Transformer by Jay Alammar](https://jalammar.github.io/illustrated-transformer/#annotations:QWHOHvljEemu1C88OCwRXQ)
+# - [Source 3: Medium's Transformer Architecture: Attention Is All You Need](https://medium.com/@adityathiruvengadam/transformer-architecture-attention-is-all-you-need-aeccd9f50d09)
+# - [Source 4: Attention Is All You Need Paper](https://arxiv.org/pdf/1706.03762.pdf)
 
 
 # %% codecell
@@ -57,22 +60,24 @@ Image(filename = pth + "encoderLayers.jpg")
 # %% markdown --- Encoder
 # # [Encoder](https://hyp.is/47hacvl_EemoWVuw4dRtSg/arxiv.org/pdf/1706.03762.pdf)
 #
-# ### [Definition: `Encoder` in `Transformer`](https://hyp.is/47hacvl_EemoWVuw4dRtSg/arxiv.org/pdf/1706.03762.pdf)
 # Each `Encoder` contains a stack of identical encoder layers (in the paper they use $N = 6$ layers)
 # %% codecell
 ImageResizer.resize(filename = pth + "encoder_overview.png")
-
-Image(filename = pth + "encdec.jpg")
 # %% markdown -- Encoder Layer
-# ### Definition: Encoder Layer in `Encoder`
+# ### [Definition: Encoder Layer in `Encoder`](https://hyp.is/47hacvl_EemoWVuw4dRtSg/arxiv.org/pdf/1706.03762.pdf)
 # An encoder layer is composed of 2 sub-layers:
-# 1. multi-head self-attention mechanism (layer)
-# 2. position-wise fully connected feed-forward network (layer)
+#
+# 1. **Multi-Head Self-Attention Mechanism (layer)**
+# 2. **Positionwise Fully Connected Feed-Forward Network (layer)**
 #
 # There is a residual connection around each of the two sub-layers in the encoder layer.
-#
 # Following residual connection, there is layer normalization.
 # - **NOTE:** All sub-layers in the model, including embedding layers, produce outputs of dimension $d_{model}=512$ to facilitate these residual connections.
+#
+# ### Encoder Workflow:
+# 1. **Encoder Input:** is the input embedding matrix $X$ + positional embeddings.
+# 2. **Encoder Layers:** there are $N$ of the layers described above.
+# 3. **Dropout:** Dropouts are also added to the output of each of the above sublayers before normalization.
 
 
 # %% markdown - Self-attention
@@ -406,11 +411,6 @@ Image(filename = pth + "posencodings.jpg")
 # - TODO Residual connections are the same thing as **skip conections** - they are used to allow gradients to flow through the network directly, without passing through non-linear activation functions.
 # %% codecell
 ImageResizer.resize(filename = pth + "layernorm_detail.png", by = 0.6)
-# %% markdown
-# In general, this is how the residual connections and layer normalization steps would look for both the `Encoder` and `Decoder` sub-layers for the example sentence "Thinking Machines":
-# %% codecell
-ImageResizer.resize(filename = pth + "layernorm_encdec.png", by = 0.6)
-
 
 
 
@@ -419,30 +419,63 @@ ImageResizer.resize(filename = pth + "layernorm_encdec.png", by = 0.6)
 # %% markdown - Decoder
 # # [Decoder](https://hyp.is/QmIQchkpEeqc-4fiyvXmkw/arxiv.org/pdf/1706.03762.pdf)
 # %% codecell
-Image(filename = pth + "decoder_overview.png")
-
+ImageResizer.resize(filename = pth + "encdeclayers.png", by = 0.6)
 # %% markdown
-# ### [Definition: `Decoder` in `Transformer`](https://hyp.is/QmIQchkpEeqc-4fiyvXmkw/arxiv.org/pdf/1706.03762.pdf)
-# - Each `Decoder` contains a stack of decoder layers (in the paper they use $N = 6$ layers) instead of a single `Decoder` layer, just like the `Encoder`.
+# Each `Decoder` contains a stack of decoder layers (in the paper they use $N = 6$ layers) instead of a single `Decoder` layer, just like the `Encoder`.
 #
-# %% markdown
 # ### Definition: Decoder Layer in `Decoder`
-# Similar to any encoder layer in the `Encoder`, a decoder layer in the `Decoder is composed of 2 sub-layers but also inserts a 3rd sub-layer which performs multi-head attention over the output of the `Encoder` stack.
-# - multi-head self-attention mechanism (layer)
-# - position-wise fully connected feed-forward network (layer)
-# - `Encoder`-`Decoder` attention layer to do multi-head attention over entire `Encoder` outputs.
+# Similar to any encoder layer in the `Encoder`, a decoder layer in the `Decoder` is composed of 2 sub-layers but also inserts a 3rd sub-layer which performs multi-head attention over the output of the `Encoder` stack. The `Decoder` consists of $N$ layers of the below three layers:
 #
-# There is a residual connection around each of the two sub-layers in this decoder layer.
-# Following residual connection, there is layer normalization.
+# 1. **Multi-Head Self-Attention Mechanism (layer)**
+#
+# 2. **Encoder-Decoder Attention Layer:** This does multi-head attention over the entire `Encoder` outputs while decoding it. The query vector is from the `Decoder` self-attention layer, but the key and value vectors are from the `Encoder`'s output. Note also there are some differences in this self-attention sub-layer in the `Decoder` stack compared to the attention layer of the `Encoder` stack:
+#       - **Change 1: Masking: ** the self-attention sub-layer in the `Decoder` stack is modified to prevent positions from attending to subsequent positions. This is called masking.
+#       - **Change 2: Offsets: ** the output embeddings of the `Encoder` (inputs for the `Decoder`) are offset by one position.
+#
+# These two changes ensure that the predictions for position $pos$ can depend only on the known outputs at positions less than $pos$. Another way of saying this is: while decoding a word embedding $\overrightarrow{w_i}$, the `Decoder` is not aware of words past position $i$, so it is not aware of words $\overrightarrow{w_{>i}}$. The `Decoder` only knows about words $\overrightarrow{w_{\leq i}}$. Masking is done to render invisible the words $\overrightarrow{w_{>i}}$ so that the `Decoder` only calculates its output vector from words $\overrightarrow{w_{\leq i}}$.
+#
+# Basically, masking prepares the inputs of the `Decoder` for self-attention to occur successfully.
+#
+# 3. **Positionwise Fully Connected Feed-Forward Network (layer)**
+# which are surrounded by residual connections followed by layer normalizations.
+#
+# ### `Decoder` Workflow
+# 1. **Decoder Input:** is the `Encoder` output embedding + positional embedding, which is offset by $1$ position to ensure the prediction for position $pos$ depends only on the positions before $pos$.
+# 2. **Decoder Layers:** there are $N$ of the layers described above.
+# %% codecell
+ImageResizer.resize(filename = pth + "decoder_overview.png", by = 0.7)
+
+
+
+
+
+# %% markdown -- Working Together
+# # `Encoder` and `Decoder` Working Together
+# 1. The `Encoder` processes the input sentence.
+# 2. The output of the top `Encoder` layer is then transformed into a set of attention vectors $K$ and $V$.
+# 3. The `Decoder` uses $K$ and $V$ in its "encoder-decoder attention layer" which helps the `Decoder` focus on appropriate places in the input sequence:
+# %% codecell
+# %% codecell
+Image(filename = pth + "transformer_decoding_1.gif")
+# %% markdown
+# The previous steps are repeated until a special symbol is reached, indicated the `Decoder` has finished generating output.
+#
+# 4. The `Decoder` outputs of each time step is fed to the bottom `Decoder` in the next time step:
+# %% codecell
+# %% codecell
+Image(filename = pth + "transformer_decoding_2.gif")
+# %% markdown
+# - KEY NOTE: the "`Encoder`-`Decoder` Attention Layer" in the `Decoder` stack works just like multi-headed attention except it creates its queries matrix $Q$ from the layer below it and takes the keys $K$ and values $V$ matrices from the output of the entire `Encoder` stack.
+
+
+
+# %% markdown - Final Linear and Softmax Layer
+# # The Final Linear and Softmax Layer: Getting a Predicted Word
 #
 #
-# - **NOTE / TODO:** The self-attention sub-layer in the `Decoder` stack of layers is modified from the above self-attention implementation of the `Encoder` stack. It is modified to prevent positions from attending to subsequent positions. This is called masking.
-# This masking combined with the fact that output embeddings are offset by one position ensures that the predictions for position $i$ can depend only on the known outputs at positions less than $i$.
-#
-#
-# - **NOTE:** All sub-layers in the model, including embedding layers, produce outputs of dimension $d_{model}=512$ to facilitate these residual connections.
-#
-#
+
+
+
 
 
 
