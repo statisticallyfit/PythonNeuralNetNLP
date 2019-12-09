@@ -1,5 +1,6 @@
 # %% markdown --- tutorial source links
 # - [Source 1: Transformer Explained - part 1](https://graviraja.github.io/transformer/#)
+# - [Source 1: Transformer Explained - part 2](https://graviraja.github.io/transformerimp/#)
 # - [Source 2: Illustrated Transformer by Jay Alammar](https://jalammar.github.io/illustrated-transformer/#annotations:QWHOHvljEemu1C88OCwRXQ)
 # - [Source 3: Medium's Transformer Architecture: Attention Is All You Need](https://medium.com/@adityathiruvengadam/transformer-architecture-attention-is-all-you-need-aeccd9f50d09)
 # - [Source 4: Attention Is All You Need Paper](https://arxiv.org/pdf/1706.03762.pdf)
