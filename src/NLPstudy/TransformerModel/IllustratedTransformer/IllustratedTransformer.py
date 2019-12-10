@@ -104,7 +104,7 @@ ImageResizer.resize(filename = pth + "encoder_overview.png")
 #
 # > *An attention function can be described as mapping a query and a set of key-value pairs to an output, where the query, keys, values, and output are all vectors. The output is computed as a weighted sum of the values, where the weight assigned to each value is computed by a compatibility function of the query with the corresponding key.*
 #
-# The paper uses []**Scaled Dot-Product Attention**](https://hyp.is/n7sRYPmAEemG6BtKfDNqqg/arxiv.org/pdf/1706.03762.pdf).
+# The paper uses [**Scaled Dot-Product Attention**](https://hyp.is/n7sRYPmAEemG6BtKfDNqqg/arxiv.org/pdf/1706.03762.pdf).
 
 # %% codecell
 ImageResizer.resize(filename = pth + "self_attn_overview.png")
@@ -158,7 +158,6 @@ ImageResizer.resize(filename = pth + "self_attn_overview.png")
 # And let the corresponding word embedding tensor vectors be $\{\overrightarrow{w_1}, \overrightarrow{w_2}, ..., \overrightarrow{w_n}\}$.
 #
 # Then, the $n$ *query, key, value* vectors for each word $i$ are $\{\overrightarrow{q_1}, \overrightarrow{q_2}, ..., \overrightarrow{q_n}\}$, $\{\overrightarrow{k_1}, \overrightarrow{k_2}, ..., \overrightarrow{k_n}\}$, $\{\overrightarrow{v_1}, \overrightarrow{v_2}, ..., \overrightarrow{v_n}\}$ respectively.
-
 
 # %% markdown - Self-Attention: Vector Calculation
 # # Self-Attention: Vector Calculation
