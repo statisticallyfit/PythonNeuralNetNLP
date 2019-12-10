@@ -2,6 +2,7 @@ import os
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.tensor as Tensor
 import torch.nn.functional as F
 import math, copy, time
 from torch.autograd import Variable
@@ -69,12 +70,13 @@ Image(filename=pth + '/images/ModalNet-21.png')
 
 
 # ---------------------------------------------------------------------------------------------------
-## Encoder and Decoder Stacks
+# Encoder and Decoder Stacks
 # ---------------------------------------------------------------------------------------------------
-## Encoder: composed of a stack of N = 6 (assumed) identical layers.
+# Encoder: composed of a stack of N = 6 (assumed) identical layers.
 def clones(module, N):
     "Produce N identical layers."
     return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
+
 
 
 class Encoder(nn.Module):
@@ -84,7 +86,7 @@ class Encoder(nn.Module):
         self.layers = clones(layer, N) # making N identical layers to store in the layers array
         self.norm = LayerNorm(layer.size) # layer normalization like in article
 
-    def forward(self, x, mask):
+    def forward(self, x: Tensor, mask: Tensor):
         "Pass the input (and mask) through each layer in turn."
         for layer in self.layers:
             x = layer(x, mask) # TODO: is this the step of passing hidden state and inputs?
@@ -114,6 +116,7 @@ class LayerNorm(nn.Module):
         return self.a_2 * (x - mean) / (std + self.eps) + self.b_2
 
 
+# ---------------------------------------------------------------
 # Comment: (?)
 # To facilitate these residual connections, all sub-layers in the model, as well as the
 # embedding layers, produce outputs of dimension dmodel=512.

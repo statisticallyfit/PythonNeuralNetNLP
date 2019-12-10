@@ -23,6 +23,37 @@ pth
 pth += "/src/NLPstudy/images/"
 pth
 
+# %% markdown
+# Include imports for doing the Transformer model:
+# %% codecell
+import os
+import math
+import time
+import spacy
+import random
+
+import torch
+import torch.nn as nn
+import torch.tensor as Tensor # for typing purposes
+import torch.optim as optim
+import torch.nn.functional as F
+from torch.autograd import Variable
+
+import torchtext
+from torchtext.datasets import Multi30k
+from torchtext.data import Field, BucketIterator
+
+
+# %% markdown
+# Set the seed value to have deterministic results.
+# %% codecell
+SEED = 1
+random.seed(SEED)
+torch.manual_seed(SEED)
+torch.backends.cudnn.deterministic = True
+
+# TODO: have the above data munging prep in another file and have this nice markup with class code as separate file, imported into the other one. 
+
 # %% markdown --- title
 # # Transformer Explained - Part 1
 #
@@ -473,16 +504,62 @@ Image(filename = pth + "transformer_decoding_2.gif")
 # %% markdown - Final Linear and Softmax Layer
 # # The Final Linear and Softmax Layer: Getting a Predicted Word
 #
+# The `Decoder` stack outputs a vector of floats. How is that turned into a word? There are two layers: the Linear layer, followed by the Softmax layer which accomplish this.
 #
-
-
-
-
-
-
+# **Linear Layer:** The linear layer is a simple fully connected neural network that projects the vector produced by the stack of `Decoder` layers into a MUCH larger vector called a *logits vector*.
+#
+# > **Example:** *Let’s assume that our model knows 10,000 unique English words (our model’s “output vocabulary”) that it’s learned from its training dataset. This would make the logits vector 10,000 cells wide – each cell corresponding to the score of a unique word. That is how we interpret the output of the model followed by the Linear layer.*
+#
+# **Softmax Layer:** The softmax layer then turns the scores from the linear layer into probabilities (so they become all positive and add up to $1$). The cell with the highest probability is chosen, and the word corresponding to that cell is the predicted word that is output for a particular time step.
 # %% codecell
-import torch
-import torch.tensor as Tensor
-import seaborn as sns
-value: Tensor = torch.tensor([1,2,3])
-value
+ImageResizer.resize(filename = pth + "finallayers.png", by = 0.6)
+
+
+
+
+# %% markdown --- Training, Loss
+# # Training and Loss
+# ### Training:
+# To train the model, we compare the model's output with actual correct output.
+# For example, assume our output vocabulary contains six words: $\{\text{"a"}, \text{"am"}, \text{"i"}, \text{"thanks"}, \text{"student"}, \text{"<eos>"} \}$, where $<eos>$ stands for "end of sentence".
+#
+# Below is a one-hot encoding of the above sentence, with a $1$ in the location corresponding to the word "am":
+# %% codecell
+ImageResizer.resize(filename = pth + "outputvocab_onehot.png", by=0.5)
+# %% markdown
+#  ### The Loss Function:
+# The goal of the training phase is to output a probability distribution indicating the target word.
+# Since the model's parameters (weights) are all randomly initialized, the untrained model produces a probability distribution with arbitrary values for each cell (word).
+# The loss function is a crucial step in comparing predicted output with the actual output, then tweaking all the model's weights using backpropagation to make the predicted output closer to actual output:
+# %% codecell
+ImageResizer.resize(filename = pth + "transformer_logits.png", by = 0.45)
+# %% markdown
+# **Comparing Probability Distributions:** Two probability distributions (in our case, the vector of predictions and vector of actual outputs) can be compared by subtracting one from the oher using [*cross-entropy*](https://hyp.is/_cwJyhsyEeq5nNsGS0Ac_Q/www.countbayesie.com/blog/2017/5/9/kullback-leibler-divergence-explained) and [*Kullback-Leibler divergence*](https://hyp.is/4ZCvRhsxEeq-Yfcx8qYTFQ/www.countbayesie.com/blog/2017/5/9/kullback-leibler-divergence-explained).
+# - [**Cross-Entropy:**](https://hyp.is/_cwJyhsyEeq5nNsGS0Ac_Q/www.countbayesie.com/blog/2017/5/9/kullback-leibler-divergence-explained) is used to quantify how much information is contained in data. The entropy is typically denoted as $H$. The entropy for a probability distribution $p$ is defined as:
+# $$
+# \large H = - \sum_{i = 1}^N p(x_i) \cdot log(p(x_i))
+# $$
+# - $\rightarrow$ **Intuition:** the use $log 2$ means we can interpret entropy as "the minimum number of bits it would take to encode the information."
+# - [**Kullback-Leibler Divergence:**](https://hyp.is/4ZCvRhsxEeq-Yfcx8qYTFQ/www.countbayesie.com/blog/2017/5/9/kullback-leibler-divergence-explained) is a modification on the entropy formula. It differs since the formula contains an approximating distribution $q$ as well as the original distribution $p$:
+# $$
+# \large D_{\large KL(p || q)} = \sum_{i = 1}^N p(x_i) \cdot (log(p(x_i)) - log(q(x_i)))
+# $$
+#
+# - $\rightarrow$ **Intuition:** This form emphasizes that we are subtracting two distributions, $p$ and $q$. The KL divergence is the expectation of the log difference between the probability of data in the original distribution $p$ with the approximating distribution $q$. The term $log_2$ is interpreted to mean "how many bits of information we expect to lose". This means we can calculate how much information is lost when approximating distribution $p$ with distribution $q$.
+#
+# In terms of expectation, the formula is:
+# $$
+# D_{KL(p || q)} = E[log(p(x)) - log(q(x))]
+# $$
+# - NOTE: KL Divergence is NOT a distance metric (so cannot be interpreted as *distance* between two distributions) because KL Divergence is not *symmetric*.
+#
+#
+# In the model we would use an entire sentence composed of multiple words. For example – input: “je suis étudiant” and expected output: “i am a student”. So the model should to successively output probability distributions where:
+# - Each probability distribution $p$ is represented  by a vector with width equal to the vocabulary size, `vocabSize` (in the toy example above, `vocabSize` = $6$ but in reality it might be a number in the thousands, representing each word in the vocabulary)
+# - The *first* probability distribution must have the highest probability at the cell associated with the *first* word.
+# - The *second* probability distribution must have the highest probability at the cell associated with the *second* word.
+# - ... and so on until the last output distribution indicates the `<eos>` symbol (this also must have a cell associated with it in the vocabulary).
+#
+# The below images show the targetd probability distributions that we train the model against. As we see in this left-hand image, the vectors are all one-hot, indicating absolute certainty over a particular word corresponding to the cell. The right-hand image shows the trained model's outputs: we expect to see very high probabilities in the cells corresponding to the correctly translated word. For example, the cell for word "I" has probability $0.93$ and very low probabilities for other words.
+# %% codecell
+Image(filename = pth + "target-trained.png")
