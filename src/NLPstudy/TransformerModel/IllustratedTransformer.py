@@ -23,36 +23,8 @@ pth
 pth += "/src/NLPstudy/images/"
 pth
 
-# %% markdown
-# Include imports for doing the Transformer model:
-# %% codecell
-import os
-import math
-import time
-import spacy
-import random
 
-import torch
-import torch.nn as nn
-import torch.tensor as Tensor # for typing purposes
-import torch.optim as optim
-import torch.nn.functional as F
-from torch.autograd import Variable
-
-import torchtext
-from torchtext.datasets import Multi30k
-from torchtext.data import Field, BucketIterator
-
-
-# %% markdown
-# Set the seed value to have deterministic results.
-# %% codecell
-SEED = 1
-random.seed(SEED)
-torch.manual_seed(SEED)
-torch.backends.cudnn.deterministic = True
-
-# TODO: have the above data munging prep in another file and have this nice markup with class code as separate file, imported into the other one. 
+# TODO: have the above data munging prep in another file and have this nice markup with class code as separate file, imported into the other one.
 
 # %% markdown --- title
 # # Transformer Explained - Part 1

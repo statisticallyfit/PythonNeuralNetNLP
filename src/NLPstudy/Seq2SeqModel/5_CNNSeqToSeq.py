@@ -36,7 +36,7 @@ from torchtext.data import Field, BucketIterator
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-%matplotlib inline
+# %matplotlib inline
 import seaborn as sns
 
 import spacy
@@ -107,6 +107,7 @@ def tokenizeEnglish(englishText: str):
     :return:
     """
     return [tok.text for tok in spacyEN.tokenizer(englishText)]
+
 # %% markdown
 # We set the tokenize argument to the correct tokenization function for each, with German being the `SRC` (source) field and English being the `TRG` (target) field. The `Field` also appends the "start of sequence" and "end of sequence" tokens via the `init_token` and `eos_token` arguments, and converts all words to lowercase.
 #
@@ -117,17 +118,14 @@ def tokenizeEnglish(englishText: str):
 # However in this notebook we are using CNNs which expect the batch dimension to be first. We tell TorchText to have batches be **(`batchSize`, `sequenceLength`)** by setting `batch_first = True`.
 #
 # We also append the start and end of sequence tokens as well as lowercasing all text.
-# %% codecell
+#
 # German = source language, English = target language
 
-# tokenize:  The function used to tokenize strings using this field into
-#             sequential examples.
-# init_token: A token that will be prepended to every example using this
-#             field, or None for no initial token. Default: None.
-# eos_token: A token that will be appended to every example using this
-#             field, or None for no end-of-sentence token. Default: None.
-# lower: Whether to lowercase the text in this field. Default: False.
-
+# - `tokenize`:  The function used to tokenize strings using this field into sequential examples.
+# - `init_token`: A token that will be prepended to every example using this field, or `None` for no initial token. Default: `None`.
+# - `eos_token`: A token that will be appended to every example using this field, or `None` for no end-of-sentence token. Default: `None`.
+# - `lower`: Whether to lowercase the text in this field. Default: `False`.
+# %% codecell
 SRC = Field(tokenize = tokenizeGerman,
             init_token = '<sos>',
             eos_token = '<eos>',
