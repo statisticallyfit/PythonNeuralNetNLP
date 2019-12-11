@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import torch.tensor as Tensor
 
 
+
 class SelfAttentionLayer(nn.Module):
     '''
     This class implements the Multi-Head Attention

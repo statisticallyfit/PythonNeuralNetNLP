@@ -359,7 +359,6 @@ Image(filename= pth + "multihead_condensematrices.png")
 # Here we recap all the steps for calculating self-attention using matrices:
 # %% codecell
 Image(filename = pth + "multihead_recap.png")
-
 # %% markdown
 # What happens as we add more attention heads?
 # Let us revisit our previous example to see where different attention heads are focusing as we encode the word "it" in the example sentence.
