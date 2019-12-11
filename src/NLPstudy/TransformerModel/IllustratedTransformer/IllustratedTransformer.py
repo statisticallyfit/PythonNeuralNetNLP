@@ -430,6 +430,8 @@ Image(filename = pth + "posencodings.jpg")
 # $$
 # where $Sublayer(x)$ is the function implemented by the sub-layer itself.
 # - TODO Residual connections are the same thing as **skip conections** - they are used to allow gradients to flow through the network directly, without passing through non-linear activation functions.
+#
+# ![]()
 # %% codecell
 ImageResizer.resize(filename = pth + "layernorm_detail.png", by = 0.6)
 

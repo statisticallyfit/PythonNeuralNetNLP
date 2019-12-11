@@ -32,7 +32,7 @@ class PositionwiseFeedforwardLayer(nn.Module):
         super().__init__()
 
         self.hiddenDim: int = hiddenDim
-        self.posHiddenDim: int = posFeedFwdHiddenDim    # 2048 in paper
+        self.posFFHiddenDim: int = posFeedFwdHiddenDim    # 2048 in paper
 
         # NOTE: this seems to be the W_1 weight matrix
         self.firstLinearLayer = nn.Conv1d(hiddenDim, posFeedFwdHiddenDim, 1)
@@ -54,7 +54,7 @@ class PositionwiseFeedforwardLayer(nn.Module):
         # x => (batchSize, hiddenDim, sentenceLen)
 
         # FORMULA PART: ----------------------------------------------------------------------
-        # https://hyp.is/nh6_HBkrEeqdBIsNSL3pig/arxiv.org/pdf/1706.03762.pdf 
+        # https://hyp.is/nh6_HBkrEeqdBIsNSL3pig/arxiv.org/pdf/1706.03762.pdf
 
         # Applying the formula FFN(x): max(0, xW1 + b1)
         ffnAfterRELU: Tensor = self.dropout(F.relu(self.firstLinearLayer(X)))

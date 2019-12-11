@@ -91,7 +91,7 @@ class SelfAttentionLayer(nn.Module):
         energy: Tensor = torch.matmul(Q, K_) / self.scale
         ## energy shape => (batchSize, numHeads, sentenceLen, sentenceLen)
 
-        # If mask is given, then we are doing self attention for Decoder:
+        # TODO: TRUE? If mask is given, then we are doing self attention for Decoder:
         if mask is not None:
             energy: Tensor = energy.masked_fill(mask == 0, value = -1e10)
 
