@@ -395,6 +395,8 @@ ImageResizer.resize(filename = pth + "attnhead_example.jpg", by = 0.8)
 # - $i = $ the dimension.
 # - NOTE: This implies each dimension of the positional encoding corresponds to a sinusoid. The wavelengths form a geometric progression from $2\pi$ to $1000 \cdot 2\pi$.
 # - NOTE: A sinusoid was chosen because it was hypothesized to allow the model to more easily learn to attend by relative positions, since for any fixed offset $k$, the positional encoding $PosEnc_{pos + k}$ can be represented as a linear function of $PosEnc_{pos}$.
+#
+# ![](../../images/posencodings.jpg)
 # %% codecell
 Image(filename = pth + "posencodings.jpg")
 
