@@ -15,7 +15,7 @@ from torchtext.data import Field, BucketIterator
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 # %matplotlib inline
-import seaborn as sns
+# import seaborn as sns
 
 import spacy
 

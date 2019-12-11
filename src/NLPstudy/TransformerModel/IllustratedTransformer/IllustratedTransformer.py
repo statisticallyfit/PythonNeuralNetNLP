@@ -159,6 +159,7 @@ ImageResizer.resize(filename = pth + "self_attn_overview.png")
 #
 # Then, the $n$ *query, key, value* vectors for each word $i$ are $\{\overrightarrow{q_1}, \overrightarrow{q_2}, ..., \overrightarrow{q_n}\}$, $\{\overrightarrow{k_1}, \overrightarrow{k_2}, ..., \overrightarrow{k_n}\}$, $\{\overrightarrow{v_1}, \overrightarrow{v_2}, ..., \overrightarrow{v_n}\}$ respectively.
 
+
 # %% markdown - Self-Attention: Vector Calculation
 # # Self-Attention: Vector Calculation
 # ---
@@ -167,6 +168,7 @@ ImageResizer.resize(filename = pth + "self_attn_overview.png")
 # TODO: training matrices? to create Q, K, V
 # - NOTE: the embeddings $\overrightarrow{w_i}$ and `Encoder` input and output vectors have dimension $512$.
 # - NOTE: the query, key, value vectors have dimension $64$. These do not HAVE to be smaller, but this is just an architecture choice to make the computation of multiheaded attention (mostly) constant.
+# %% codecell
 # %% codecell
 ImageResizer.resize(filename = pth + "qkv.png")
 # %% markdown
@@ -192,6 +194,7 @@ ImageResizer.resize(filename = pth + "qkv.png")
 # $$
 #
 # The image below shows the first and second values in the first scoring vector corresponding to the first word "Thinking" in a sentence that starts with the words "Thinking Machines ...":
+# %% codecell
 # %% codecell
 # %% codecell
 Image(filename = pth + "qkv_thinkingmachines.png")
@@ -228,6 +231,7 @@ Image(filename = pth + "qkv_thinkingmachines.png")
 # The image below shows the scaling and softmax operations after the query, key, value operations:
 # %% codecell
 # %% codecell
+# %% codecell
 Image(filename = pth + "scaling.png")
 # %% markdown
 # ---
@@ -253,6 +257,7 @@ Image(filename = pth + "scaling.png")
 # The image below shows the last step 5 and step 6:
 # %% codecell
 # %% codecell
+# %% codecell
 Image(filename = pth + "laststeps.png")
 
 
@@ -263,6 +268,7 @@ Image(filename = pth + "laststeps.png")
 # In general, when calculating the self-attention for any $i$-th word $\overrightarrow{w_i}$ in the sentence of $n$ words, we need to consider every query vector $\overrightarrow{q_i}$.
 #
 # > $$Attention(Q, K, V) = softmax \Bigg(\frac {QK^T} {\sqrt{d_k}} \Bigg) \cdot V$$
+# %% codecell
 # %% codecell
 ImageResizer.resize(filename = pth + "multihead.png")
 # %% markdown
@@ -277,6 +283,7 @@ ImageResizer.resize(filename = pth + "multihead.png")
 # 1. It expands the model's ability to focus on different positions in order to encode a query word's meaning.
 #
 # 2. It gives the attention layer multiple "representation subspaces". With multi-headed attention there are multiple (not just one) sets of Query / Key / Value weight matrices. (The transformer uses 8 attention heads, so we end up using eight sets of Q / K/ V for each `Encoder` / `Decoder` layer. ) Each of these sets is randomly initialized. Then after training, each set is used to project the input embeddings (vectors from lower `Encoder`s / `Decoder`s) into a different representation subspace.
+# %% codecell
 # %% codecell
 Image(filename = pth + "multipleqkv.png")
 # %% markdown
@@ -303,10 +310,11 @@ Image(filename = pth + "multipleqkv.png")
 # \vdots \\
 # V_h = X \cdot W_h^V \\
 # $$
-# where the parameter matrices for all $h$ attention heads, for the $i$th attention head, $1 \leq i \leq A$, are:
+# where the parameter matrices for all $h$ attention heads, for the $i$th attention head, $1 \leq i \leq h$, are:
 # - $\large W_i^Q \in \mathbb{R}^{\Large d_{model} \times d_k}$
 # - $\large W_i^K \in \mathbb{R}^{\Large d_{model} \times d_k}$
 # - $\large W_i^V \in \mathbb{R}^{\Large d_{model} \times d_v}$
+# %% codecell
 # %% codecell
 ImageResizer.resize(filename =  pth + "matrixcalc_multihead.png", by=0.6)
 # %% markdown
@@ -317,6 +325,7 @@ ImageResizer.resize(filename =  pth + "matrixcalc_multihead.png", by=0.6)
 # Z_i := softmax \Bigg(\frac {Q_i K_i^T} {\sqrt{d_k}} \Bigg) \cdot V_i
 # $$
 # %% codecell
+# %% codecell
 ImageResizer.resize(filename = pth + "multihead_formula.jpg", by = 0.6)
 # %% markdown
 # ---
@@ -324,9 +333,10 @@ ImageResizer.resize(filename = pth + "multihead_formula.jpg", by = 0.6)
 #
 # If we do the self-attention calculation outlined (above), for each attention head, with different weight matrices, we end up with different $Z$ output matrices for each attention head:
 # %% codecell
+# %% codecell
 Image(filename = pth + "multiple_z.png")
 # %% markdown
-# But the feed-forward layer is not expected all those matrices. It is expecting a single matrix (a vector for each word), so we must condense these eight matrices down to a single matrix.
+# But the feed-forward layer is not expecting all those matrices. It is expecting a single matrix (a vector for each word), so we must condense these eight matrices down to a single matrix.
 # - Note 1: there are $8$ output matrices since the paper uses $8$ attention heads.
 # - Note 2: the paper calls the "attention heads" the "attention layers" also.
 # To do that, we concatenate all output matrices $Z_i$, corresponding to each $i$th attention head, and multiply them by an additional weights matrix, $W^O \in \mathbb{R}^{\Large h \cdot d_v \times d_{model}}$:
@@ -335,8 +345,14 @@ Image(filename = pth + "multiple_z.png")
 # $$
 # where
 # - $head_i = Attention(Q \cdot W_i^Q, K \cdot W_i^K, V \cdot W_i^V)$
+# - $Attention(Q, K, V) = softmax \Bigg( \frac {\Large QK^T} {\Large \sqrt{d_k}} \Bigg) \cdot V$
 # - $h = $ number of attention heads
 # - $W^O \in \mathbb{R}^{\Large h \cdot d_v \times d_{model}}$
+# - $\large W_i^Q \in \mathbb{R}^{\Large d_{model} \times d_k}$
+# - $\large W_i^K \in \mathbb{R}^{\Large d_{model} \times d_k}$
+# - $\large W_i^V \in \mathbb{R}^{\Large d_{model} \times d_v}$
+# - $i = $ the $i$th attention head.
+# %% codecell
 # %% codecell
 Image(filename= pth + "multihead_condensematrices.png")
 # %% markdown
@@ -349,6 +365,7 @@ Image(filename = pth + "multihead_recap.png")
 # Let us revisit our previous example to see where different attention heads are focusing as we encode the word "it" in the example sentence.
 # As we encode the word "it", one attention head is focusing most on "the animal" while another is focusing on "tired". This means the model's representation of the word "it" bakes in some of the representation of both "animal" and "tired".
 # The image below shows two attention heads (orange and green):
+# %% codecell
 # %% codecell
 ImageResizer.resize(filename = pth + "attnhead_example.jpg", by = 0.8)
 
