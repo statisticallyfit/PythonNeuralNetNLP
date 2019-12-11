@@ -25,24 +25,24 @@ class EncoderLayer(nn.Module):
     A layer (this module) makes up the "Encoder stack" of layers
     '''
 
-    def __init__(self, hiddenDim: int, numHeads: int, posFeedFwdHiddenDim: int,
-                 multiheadAttn: SelfAttentionLayer,
-                 poswiseFFD: PositionwiseFeedforwardLayer,
+    def __init__(self, hiddenDim: int, numHeads: int, pffHiddenDim: int,
+                 attnLayer: SelfAttentionLayer,
+                 pffLayer: PositionwiseFeedforwardLayer,
                  dropout: float,
                  device):
 
         super().__init__()
 
         # Creating the self attention object
-        self.selfAttentionLayer: SelfAttentionLayer = multiheadAttn(hiddenDim = hiddenDim,
-                                                                    numHeads = numHeads,
-                                                                    dropout = dropout,
-                                                                    device = device)
+        self.selfAttentionLayer: SelfAttentionLayer = attnLayer(hiddenDim = hiddenDim,
+                                                                numHeads = numHeads,
+                                                                dropout = dropout,
+                                                                device = device)
         # Creating the poswise feedforward object
         self.poswiseFeedForwardLayer: PositionwiseFeedforwardLayer = \
-            poswiseFFD(hiddenDim = hiddenDim,
-                       posFeedFwdHiddenDim = posFeedFwdHiddenDim,
-                       dropout = dropout)
+            pffLayer(hiddenDim = hiddenDim,
+                     pffHiddenDim = pffHiddenDim,
+                     dropout = dropout)
 
         # Layer normalization step in the Encoder Layer:
         self.layerNormalization = nn.LayerNorm(normalized_shape=hiddenDim)

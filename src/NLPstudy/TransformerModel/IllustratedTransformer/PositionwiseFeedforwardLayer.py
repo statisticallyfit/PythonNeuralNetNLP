@@ -23,21 +23,21 @@ class PositionwiseFeedforwardLayer(nn.Module):
 
     Args:
         hiddenDim: integer indicating hidden dimension of the model (TODO: d_model == hiddenDim?)
-        posFeedFwdHiddenDim: integer indicating the position wise feed forward layer hidden dimension.
+        pffHiddenDim: integer indicating the position wise feed forward layer hidden dimension.
         dropout: float indicatin amoutn of dropout
     '''
 
-    def __init__(self, hiddenDim: int, posFeedFwdHiddenDim: int, dropout: float):
+    def __init__(self, hiddenDim: int, pffHiddenDim: int, dropout: float):
 
         super().__init__()
 
         self.hiddenDim: int = hiddenDim
-        self.posFFHiddenDim: int = posFeedFwdHiddenDim    # 2048 in paper
+        self.pffHiddenDim: int = pffHiddenDim    # 2048 in paper
 
         # NOTE: this seems to be the W_1 weight matrix
-        self.firstLinearLayer = nn.Conv1d(hiddenDim, posFeedFwdHiddenDim, 1)
+        self.firstLinearLayer = nn.Conv1d(hiddenDim, pffHiddenDim, 1)
         # NOTE: this seems to be the W_2 weight matrix
-        self.secondLinearLayer = nn.Conv1d(posFeedFwdHiddenDim, hiddenDim, 1)
+        self.secondLinearLayer = nn.Conv1d(pffHiddenDim, hiddenDim, 1)
 
         self.dropout = nn.Dropout(dropout)
 
