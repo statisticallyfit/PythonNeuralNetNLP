@@ -12,8 +12,8 @@ import sys
 sys.path
 
 # Then continue importing after that:
-from src.NLPstudy.TransformerModel.IllustratedTransformer import SelfAttentionLayer
-from src.NLPstudy.TransformerModel.IllustratedTransformer import PositionwiseFeedforwardLayer
+from src.NLPstudy.TransformerModel.IllustratedTransformer.SelfAttentionLayer import *
+from src.NLPstudy.TransformerModel.IllustratedTransformer.PositionwiseFeedforwardLayer import *
 
 
 
@@ -26,8 +26,8 @@ class EncoderLayer(nn.Module):
     '''
 
     def __init__(self, hiddenDim: int, numHeads: int, pffHiddenDim: int,
-                 attnLayer: SelfAttentionLayer,
-                 pffLayer: PositionwiseFeedforwardLayer,
+                 attnLayer: SelfAttentionLayer, # class, not object
+                 pffLayer: PositionwiseFeedforwardLayer, # class, not object
                  dropout: float,
                  device):
 

@@ -198,37 +198,59 @@ PAD_INDEX = SRC.vocab.stoi['<pad>']
 
 
 # %% codecell
-from src.NLPstudy.TransformerModel.IllustratedTransformer import PositionalEncodingLayer
-from src.NLPstudy.TransformerModel.IllustratedTransformer import Encoder
-from src.NLPstudy.TransformerModel.IllustratedTransformer import EncoderLayer
-from src.NLPstudy.TransformerModel.IllustratedTransformer import Decoder
-from src.NLPstudy.TransformerModel.IllustratedTransformer import DecoderLayer
-from src.NLPstudy.TransformerModel.IllustratedTransformer import Transformer
-from src.NLPstudy.TransformerModel.IllustratedTransformer import SelfAttentionLayer
-from src.NLPstudy.TransformerModel.IllustratedTransformer import PositionwiseFeedforwardLayer
+
+from src.NLPstudy.TransformerModel.IllustratedTransformer.Encoder import *
+from src.NLPstudy.TransformerModel.IllustratedTransformer.EncoderLayer import *
+from src.NLPstudy.TransformerModel.IllustratedTransformer.Decoder import *
+from src.NLPstudy.TransformerModel.IllustratedTransformer.DecoderLayer import *
+from src.NLPstudy.TransformerModel.IllustratedTransformer.Transformer import *
+from src.NLPstudy.TransformerModel.IllustratedTransformer.SelfAttentionLayer import *
+from src.NLPstudy.TransformerModel.IllustratedTransformer.PositionwiseFeedforwardLayer import *
+from src.NLPstudy.TransformerModel.IllustratedTransformer.PositionalEncodingLayer import *
+
 
 
 
 # %% codecell
-PE = PositionalEncodingLayer(hiddenDim = HIDDEN_DIM, dropout = DROPOUT, device = device)
+t = torch.tensor([1,2,3])
+t.double()
 
+#torch.exp(t)
+torch.exp(t.double())
+torch.exp(t.float())
+
+result = torch.exp(torch.FloatTensor(t.numpy()))
+result
+
+t.float() * result
+
+torch.sin(t.float() * result)
+
+
+
+# %% codecell
+posEnc = PositionalEncodingLayer(d_model = HIDDEN_DIM, dropout = DROPOUT, device = device)
+posEnc
 
 # %% codecell
 encoder: Encoder = Encoder(inputDim = INPUT_DIM, hiddenDim = HIDDEN_DIM, numLayers = NUM_LAYERS,
                            numHeads = NUM_HEADS, pffHiddenDim = PFF_DIM,
-                           encoderLayer = EncoderLayer,
-                           attnLayer = SelfAttentionLayer,
-                           pffLayer = PositionwiseFeedforwardLayer,
-                           peLayer = PE,
+                           encoderLayerC= EncoderLayer,
+                           attnC= SelfAttentionLayer,
+                           pffC= PositionwiseFeedforwardLayer,
+                           peC= posEnc,
                            dropout = DROPOUT, device = device)
+encoder
 
+# %% codecell
 decoder: Decoder = Decoder(outputDim = OUTPUT_DIM, hiddenDim = HIDDEN_DIM, numLayers = NUM_LAYERS,
                            numHeads = NUM_HEADS, pffHiddenDim = PFF_DIM,
                            decoderLayer = DecoderLayer,
                            attnLayer = SelfAttentionLayer,
                            pffLayer = PositionwiseFeedforwardLayer,
-                           peLayer = PE,
+                           peLayer = posEnc,
                            dropout = DROPOUT, device = device)
 
+# %% codecell
 transformerModel: Transformer = Transformer(encoder = encoder, decoder = decoder,
                                             padIndex = PAD_INDEX, device = device).to(device)

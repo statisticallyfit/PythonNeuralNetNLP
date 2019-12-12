@@ -12,8 +12,8 @@ import sys
 sys.path
 
 # Then continue importing after that:
-from src.NLPstudy.TransformerModel.IllustratedTransformer import Decoder
-from src.NLPstudy.TransformerModel.IllustratedTransformer import Encoder
+from src.NLPstudy.TransformerModel.IllustratedTransformer.Decoder import *
+from src.NLPstudy.TransformerModel.IllustratedTransformer.Encoder import *
 
 
 class Transformer(nn.Module):

@@ -35,13 +35,20 @@ class PositionalEncodingLayer(nn.Module):
         # position.dim() == 3
 
         # Creating the div term
-        divTerm: Tensor = torch.exp(torch.arange(0, d_model, 2) *
+        # WARNING: need to make the type a  float else "exp" complains it got LongTensor
+        # instead of FloatTensor
+        divTerm: Tensor = torch.exp( torch.FloatTensor(torch.arange(0, d_model, 2).numpy()) *
                                     -(math.log(10000.0) / d_model))
+        #divTerm: Tensor = torch.exp( (torch.arange(0, d_model, 2) *
+        #                            -(math.log(10000.0) / d_model) ).float() )
+        #divTerm: Tensor = torch.exp(torch.arange(0, d_model, 2, dtype=torch.float) *
+        #                            -(math.log(10000.0) / d_model))
 
         # Assign to each second PE the sin encoding:
-        pe[:, 0::2] = torch.sin(position * divTerm)
+        # WARNING: need to make position a float tensor as well when calculating:
+        pe[:, 0::2] = torch.sin(position.float() * divTerm)
         # Assign to every other each second PE the cos encoding:
-        pe[:, 1::2] = torch.cos(position * divTerm)
+        pe[:, 1::2] = torch.cos(position.float() * divTerm)
 
         # Inserting 1-dim tensor at position 0, so now
         # pe.dim() == 3
@@ -73,4 +80,3 @@ class PositionalEncodingLayer(nn.Module):
         inputsWithPosition: Tensor = self.dropout(inputsWithPosition)
 
         return inputsWithPosition
-

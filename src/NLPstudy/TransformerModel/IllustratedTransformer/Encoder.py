@@ -12,11 +12,11 @@ import sys
 sys.path
 
 # Then continue importing after that:
-from src.NLPstudy.TransformerModel.IllustratedTransformer import SelfAttentionLayer
-from src.NLPstudy.TransformerModel.IllustratedTransformer import PositionwiseFeedforwardLayer
-from src.NLPstudy.TransformerModel.IllustratedTransformer import PositionalEncodingLayer
-from src.NLPstudy.TransformerModel.IllustratedTransformer import EncoderLayer
+from src.NLPstudy.TransformerModel.IllustratedTransformer.EncoderLayer import *
 
+from src.NLPstudy.TransformerModel.IllustratedTransformer.SelfAttentionLayer import *
+from src.NLPstudy.TransformerModel.IllustratedTransformer.PositionwiseFeedforwardLayer import *
+from src.NLPstudy.TransformerModel.IllustratedTransformer.PositionalEncodingLayer import *
 
 
 
@@ -44,10 +44,10 @@ class Encoder(nn.Module):
 
     def __init__(self, inputDim: int, hiddenDim: int, numLayers: int,
                  numHeads:int, pffHiddenDim:int,
-                 encoderLayer: EncoderLayer,
-                 attnLayer: SelfAttentionLayer,
-                 pffLayer: PositionwiseFeedforwardLayer,
-                 peLayer: PositionalEncodingLayer,
+                 encoderLayerC: EncoderLayer,  # class not object
+                 attnC: SelfAttentionLayer,  # this is the actuall class!
+                 pffC: PositionwiseFeedforwardLayer,  # class not object
+                 peC: PositionalEncodingLayer,  # class, not object
                  dropout: float,
                  device):
 
@@ -58,10 +58,10 @@ class Encoder(nn.Module):
         self.numLayers: int = numLayers
         self.numHeads: int = numHeads
         self.pffHiddenDim: int = pffHiddenDim
-        self.encoderLayer: EncoderLayer = encoderLayer
-        self.selfAttentionLayer: SelfAttentionLayer = attnLayer
-        self.poswiseFeedforwardLayer: PositionwiseFeedforwardLayer = pffLayer
-        self.posEncodingLayer: PositionalEncodingLayer = peLayer
+        self.encoderLayerC: EncoderLayer = encoderLayerC
+        self.selfAttentionC: SelfAttentionLayer = attnC
+        self.poswiseFeedforwardC: PositionwiseFeedforwardLayer = pffC
+        self.posEncC: PositionalEncodingLayer = peC
 
         self.device = device
 
@@ -75,13 +75,13 @@ class Encoder(nn.Module):
                                                        embedding_dim = hiddenDim)
 
         # Encoder Layers
-        self.encoderLayerStack = nn.ModuleList([encoderLayer(hiddenDim = hiddenDim,
-                                                             numHeads = numHeads,
-                                                             pffHiddenDim = pffHiddenDim,
-                                                             attnLayer = attnLayer,
-                                                             pffLayer = pffLayer,
-                                                             dropout = dropout,
-                                                             device = device)
+        self.encoderLayerStack = nn.ModuleList([encoderLayerC(hiddenDim = hiddenDim,
+                                                              numHeads = numHeads,
+                                                              pffHiddenDim = pffHiddenDim,
+                                                              attnLayer = attnC,
+                                                              pffLayer = pffC,
+                                                              dropout = dropout,
+                                                              device = device)
                                                 for _ in range(numLayers)])
 
         self.dropout: nn.Dropout = nn.Dropout(dropout)
@@ -114,9 +114,9 @@ class Encoder(nn.Module):
 
         # 2. add the result with positional encodings
         # This does forward pass of the pos encoding layer class
-        wordWithPosEmbeddings: Tensor = self.posEncodingLayer(wordEmbeddings)
+        wordWithPosEmbeddings: Tensor = self.posEncC(wordEmbeddings)
         #### shape => (batchSize, sentenceLen, hiddenDim)
-        
+
 
         currSrc: Tensor = wordWithPosEmbeddings
 

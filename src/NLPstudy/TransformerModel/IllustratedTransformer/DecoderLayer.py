@@ -12,8 +12,8 @@ import sys
 sys.path
 
 # Then continue importing after that:
-from src.NLPstudy.TransformerModel.IllustratedTransformer import SelfAttentionLayer
-from src.NLPstudy.TransformerModel.IllustratedTransformer import PositionwiseFeedforwardLayer
+from src.NLPstudy.TransformerModel.IllustratedTransformer.SelfAttentionLayer import *
+from src.NLPstudy.TransformerModel.IllustratedTransformer.PositionwiseFeedforwardLayer import *
 
 
 
