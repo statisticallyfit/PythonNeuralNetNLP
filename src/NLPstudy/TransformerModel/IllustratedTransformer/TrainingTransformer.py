@@ -1,4 +1,5 @@
 
+# %% markdown
 # ## Preparing the Data
 #
 # First, let's import all the required modules and set the random seeds for reproducability.
@@ -15,13 +16,17 @@ from torchtext.data import Field, BucketIterator
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 # %matplotlib inline
-# import seaborn as sns
+import seaborn as sns
 
 import spacy
 
 import random
 import math
 import time
+
+
+
+
 # %% codecell
 # Set random seeds for reproducibility
 
@@ -175,3 +180,55 @@ trainIterator, validationIterator, testIterator = BucketIterator.splits(
     #sort_within_batch = True, # new key feature
     #sort_key = lambda x: len(x.src), # new key feature
     device = device)
+
+
+
+
+# %% markdown - Training
+# ## Training the Model
+# %% codecell
+INPUT_DIM = len(SRC.vocab)
+OUTPUT_DIM = len(TRG.vocab)
+HIDDEN_DIM = 512 # d_model
+NUM_LAYERS = 6
+NUM_HEADS = 8
+PFF_DIM = 2048 # poswise feedforward hidden dim
+DROPOUT = 0.1
+PAD_INDEX = SRC.vocab.stoi['<pad>']
+
+
+# %% codecell
+from src.NLPstudy.TransformerModel.IllustratedTransformer import PositionalEncodingLayer
+from src.NLPstudy.TransformerModel.IllustratedTransformer import Encoder
+from src.NLPstudy.TransformerModel.IllustratedTransformer import EncoderLayer
+from src.NLPstudy.TransformerModel.IllustratedTransformer import Decoder
+from src.NLPstudy.TransformerModel.IllustratedTransformer import DecoderLayer
+from src.NLPstudy.TransformerModel.IllustratedTransformer import Transformer
+from src.NLPstudy.TransformerModel.IllustratedTransformer import SelfAttentionLayer
+from src.NLPstudy.TransformerModel.IllustratedTransformer import PositionwiseFeedforwardLayer
+
+
+
+# %% codecell
+PE = PositionalEncodingLayer(hiddenDim = HIDDEN_DIM, dropout = DROPOUT, device = device)
+
+
+# %% codecell
+encoder: Encoder = Encoder(inputDim = INPUT_DIM, hiddenDim = HIDDEN_DIM, numLayers = NUM_LAYERS,
+                           numHeads = NUM_HEADS, pffHiddenDim = PFF_DIM,
+                           encoderLayer = EncoderLayer,
+                           attnLayer = SelfAttentionLayer,
+                           pffLayer = PositionwiseFeedforwardLayer,
+                           peLayer = PE,
+                           dropout = DROPOUT, device = device)
+
+decoder: Decoder = Decoder(outputDim = OUTPUT_DIM, hiddenDim = HIDDEN_DIM, numLayers = NUM_LAYERS,
+                           numHeads = NUM_HEADS, pffHiddenDim = PFF_DIM,
+                           decoderLayer = DecoderLayer,
+                           attnLayer = SelfAttentionLayer,
+                           pffLayer = PositionwiseFeedforwardLayer,
+                           peLayer = PE,
+                           dropout = DROPOUT, device = device)
+
+transformerModel: Transformer = Transformer(encoder = encoder, decoder = decoder,
+                                            padIndex = PAD_INDEX, device = device).to(device)
