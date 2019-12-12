@@ -184,8 +184,12 @@ trainIterator, validationIterator, testIterator = BucketIterator.splits(
 
 
 
-# %% markdown - Training
-# ## Training the Model
+# %% markdown
+# ## Training the Seq2Seq Model
+#
+#
+# ### Step 1: Initialize the Seq2Seq Transformer Model
+
 # %% codecell
 INPUT_DIM = len(SRC.vocab)
 OUTPUT_DIM = len(TRG.vocab)
@@ -233,6 +237,8 @@ posEnc = PositionalEncodingLayer(d_model = HIDDEN_DIM, dropout = DROPOUT, device
 posEnc
 
 # %% codecell
+# TODO: why are classes instead of objects passed here?
+
 encoder: Encoder = Encoder(inputDim = INPUT_DIM, hiddenDim = HIDDEN_DIM, numLayers = NUM_LAYERS,
                            numHeads = NUM_HEADS, pffHiddenDim = PFF_DIM,
                            encoderLayerC= EncoderLayer,
@@ -250,7 +256,226 @@ decoder: Decoder = Decoder(outputDim = OUTPUT_DIM, hiddenDim = HIDDEN_DIM, numLa
                            pffLayer = PositionwiseFeedforwardLayer,
                            peLayer = posEnc,
                            dropout = DROPOUT, device = device)
+decoder
+
+
+
+# %% markdown
+# Can see the structure of the transformer model very clearly here:
 
 # %% codecell
 transformerModel: Transformer = Transformer(encoder = encoder, decoder = decoder,
                                             padIndex = PAD_INDEX, device = device).to(device)
+
+transformerModel
+
+
+
+
+# %% markdown
+# ### Step 2: Count Parameters amd Initialize Weights
+#
+# We can also see that the model has almost twice as many parameters as the attention based model (20m to 37m).
+# %% codecell
+def countParameters(model: Transformer):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+def initWeights(model:Transformer):
+    for param in model.parameters():
+        if param.dim() > 1:
+            nn.init.xavier_uniform_(param)
+
+print(f'The model has {countParameters(transformerModel):,} trainable parameters')
+# %% markdown
+# ### Step 3: Define Optimizer
+# %% codecell
+adamOptimizer = optim.Adam(seqCNNModel.parameters())
+adamOptimizer
+# %% markdown
+# ### Step 4: Define the Loss Function (Cross Entropy)
+# Make sure to ignore the loss on <pad> tokens.
+# %% codecell
+TRG_PAD_IDX
+# %% codecell
+crossEntropyLossFunction = nn.CrossEntropyLoss(ignore_index = TRG_PAD_IDX)
+crossEntropyLossFunction
+# %% markdown
+# ### Step 5: Define Training Loop
+#
+# Then, we define the training loop for the model.
+#
+# We handle the sequences a little differently than previous tutorials. For all models we never put the `<eos>` into the `Decoder`. This is handled in the RNN models by the having the `Decoder` loop not reach having the `<eos>` as an input to the `Decoder`. But in this CNN model, we simply slice the `<eos>` token off the end of the sequence. Thus:
+#
+# $$\begin{align*}
+# \text{trg} &= [sos, x_1, x_2, x_3, eos] \\
+#     \text{trg[:-1]} &= [sos, x_1, x_2, x_3]
+# \end{align*}$$
+# where $x_i$ = the actual target sequence element.
+#
+# We then feed this into the model to get a predicted sequence that should hopefully predict the `<eos>` token:
+#
+# $$\begin{align*}
+# \text{output} &= [y_1, y_2, y_3, eos]
+# \end{align*}$$
+# where $y_i$ = the predicted target sequence element. We then calculate our loss using the original `trg` tensor with the `<sos>` token sliced off the front, leaving the `<eos>` token:
+#
+# $$\begin{align*}
+# \text{output} &= [y_1, y_2, y_3, eos]\ \
+#     \text{trg[1:]} &= [x_1, x_2, x_3, eos]
+# \end{align*}$$
+#
+# We then calculate our losses and update our parameters as is standard.
+# %% codecell
+def train(seqModel: Seq2Seq, iterator, optimizer, lossFunction, clip: int):
+
+    seqModel.train() # put model in training mode
+
+    lossPerEpoch: int = 0
+
+    for epoch, batch in enumerate(iterator):
+
+        # 1. Getting source and target sentences from batch
+        srcSentence: Tensor = batch.src
+        trgSentence: Tensor = batch.trg
+
+        # 2. Zero the gradients from the last batch
+        optimizer.zero_grad()
+
+        # 3. Feed the source and target sentences into the seq2seq model
+        # to get the output tensor of predictions.
+        output, _ = seqModel(src = srcSentence, trg = trgSentence[:, :-1])
+        ### trgSentence = tensor of shape (batchSize, trgSentenceLen)
+        ### output = tensor of shape (batchSize, trgSentenceLen - 1, outputDim)
+
+        # 4. Need to flatten the outputs (by slicing off the first column
+        # of the output and target tensors
+        # as mentioned above)
+        outputDim: int = output.shape[-1]
+
+        output: Tensor = output.contiguous().view(-1, outputDim)
+            #output[1:].view(-1, outputDim)
+        trgSentence: Tensor = trgSentence[:, 1:].contiguous().view(-1)
+            #trgSentence[1:].view(-1)
+        ## output shape now: (batchSize * trgLen - 1, outputDim)
+        ## trgSentence shape now: (batchSize * trgLen - 1)
+
+        # 5. Calculate gradients
+        loss = lossFunction(input=output, target= trgSentence)
+        loss.backward()
+
+        # 6. Clip gradient so it doesn't explode
+        torch.nn.utils.clip_grad_norm_(parameters = seqModel.parameters(),
+                                       max_norm = clip)
+
+        # 7. Update parameters of model
+        optimizer.step()
+
+        # 8. Sum the loss value to a running total
+        lossPerEpoch += loss.item()
+
+    return lossPerEpoch / len(iterator) # average loss
+# %% markdown
+# ### Step 7: Define Evaluation Loop
+#
+# The evaluation loop is the same as the training loop, just without the gradient calculations and parameter updates.
+# %% codecell
+def evaluate(seqModel: Seq2Seq, iterator, lossFunction):
+
+    seqModel.eval()
+
+    lossPerEpoch = 0
+
+    with torch.no_grad():
+
+        for epoch, batch in enumerate(iterator):
+
+            srcSentence: Tensor = batch.src
+            trgSentence: Tensor = batch.trg
+
+            # Turn off teacher forcing
+            output, _ = seqModel(src=srcSentence, trg=trgSentence[:, :-1])
+            ### trgSentence = tensor of shape (batchSize, trgSentenceLen)
+            ### output = tensor of shape (batchSize, trgSentenceLen - 1, outputDim)
+
+            # 4. Need to flatten the outputs (by slicing off the first column
+            # of the output and target tensors
+            # as mentioned above)
+            outputDim: int = output.shape[-1]
+
+            output: Tensor = output.contiguous().view(-1, outputDim)
+            #output[1:].view(-1, outputDim)
+            trgSentence: Tensor = trgSentence[:, 1:].contiguous().view(-1)
+            #trgSentence[1:].view(-1)
+            ## output shape now: (batchSize * trgLen - 1, outputDim)
+            ## trgSentence shape now: (batchSize * trgLen - 1)
+
+            # 5. Calculate loss but not gradients since this is evaluation mode
+            loss = lossFunction(input=output, target= trgSentence)
+
+
+            # 6. Sum the loss value to a running total
+            lossPerEpoch += loss.item()
+
+        return lossPerEpoch / len(iterator) # average loss
+# %% codecell
+# Time the epoch!
+
+def epochTimer(startTime, endTime):
+    elapsedTime = endTime - startTime
+    elapsedMins = int(elapsedTime / 60)
+    elapsedSecs = int(elapsedTime - (elapsedMins * 60))
+    return elapsedMins, elapsedSecs
+# %% markdown
+# ### Step 8: Train the Model
+#
+# Finally, we train our model.
+#
+# Although we have almost twice as many parameters as the attention based RNN model, it actually takes around half the time as the standard version and about the same time as the packed padded sequences version. This is due to all calculations being done in parallel using the convolutional filters instead of sequentially using RNNs.
+#
+# **Note**: this model always has a teacher forcing ratio of 1, i.e. it will always use the ground truth next token from the target sequence. This means we cannot compare perplexity values against the previous models when they are using a teacher forcing ratio that is not 1. See [here](https://github.com/bentrevett/pytorch-seq2seq/issues/39#issuecomment-529408483) for the results of the attention based RNN using a teacher forcing ratio of 1.
+# %% codecell
+%%time
+
+NUM_EPOCHS = 10
+CLIP = 1
+
+bestValidLoss = float('inf')
+
+for epoch in range(NUM_EPOCHS):
+
+    startTime = time.time()
+
+    trainingLoss = train(seqModel=seqCNNModel,
+                         iterator=trainIterator,
+                         optimizer=adamOptimizer,
+                         lossFunction=crossEntropyLossFunction,
+                         clip=CLIP)
+
+    validationLoss = evaluate(seqModel=seqCNNModel,
+                              iterator=validationIterator,
+                              lossFunction=crossEntropyLossFunction)
+
+    endTime = time.time()
+
+    epochMins, epochSecs = epochTimer(startTime , endTime)
+
+    if validationLoss < bestValidLoss:
+        bestValidLoss = validationLoss
+        torch.save(seqCNNModel.state_dict(), 'tut5_bestModel.pt')
+
+
+    print(f'Epoch: {epoch+1:02} | Time: {epochMins}m {epochSecs}s')
+    print(f'\tTrain Loss: {trainingLoss:.3f} | Train PPL: {math.exp(trainingLoss):7.3f}')
+    print(f'\t Val. Loss: {validationLoss:.3f} |  Val. PPL: {math.exp(validationLoss):7.3f}')
+# %% codecell
+# We'll load the parameters (state_dict) that gave our model the best
+# validation loss and run it the model on the test set.
+
+seqCNNModel.load_state_dict(torch.load('tut4_bestModel.pt'))
+
+testLoss = evaluate(seqModel=seqCNNModel,
+                    iterator= testIterator,
+                    lossFunction= crossEntropyLossFunction)
+
+# show test loss and calculate test perplexity score:
+print(f'| Test Loss: {testLoss:.3f} | Test PPL: {math.exp(testLoss):7.3f} |')
