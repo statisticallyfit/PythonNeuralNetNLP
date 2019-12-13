@@ -556,16 +556,17 @@ totalMins, totalSecs = clock(trainStartTime, trainEndTime)
 
 print("Total training time = {} mins {} secs".format(totalMins, totalSecs))
 
+# TODO: when you train the model next time make sure to have the epoch results kept! Must export this .py file to ipynb somehow
 
-# %% codecell
+
+# %% markdown
 # We'll load the parameters (state_dict) that gave our model the best
 # validation loss and run it the model on the test set.
 
-transformerModel.load_state_dict(torch.load('illustransformer_bestModel.pt'))
+# %% codecell
+transformerModel.load_state_dict(torch.load(MODEL_SAVE_PATH))
 
-testLoss = evaluate(model=transformerModel,
-                    iterator= testIterator,
-                    lossFunction= crossEntropyLossFunction)
+testLoss = evaluate(model = transformerModel, iterator = testIterator,
+                    lossFunction = crossEntropyLossFunction)
 
-# show test loss and calculate test perplexity score:
-print(f'| Test Loss: {testLoss:.3f} | Test PPL: {math.exp(testLoss):7.3f} |')
+print(f'| Test Loss: {test_loss:.3f} | Test PPL: {math.exp(test_loss):7.3f} |')

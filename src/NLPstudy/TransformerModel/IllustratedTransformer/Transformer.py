@@ -62,27 +62,7 @@ class Transformer(nn.Module):
 
         return srcMask, trgMask
 
-# %% codecell
-import torch.tensor
-import torch.tensor as Tensor
-srcmask = torch.tensor([1,0,1,0,1,1,0])
-srcmask
-trgPADmask = torch.tensor([1,0,1,1])
 
-
-srcmask.size()
-srcmask2 = srcmask.unsqueeze(1)
-srcmask2.size()
-srcmask3 = srcmask2.unsqueeze(2)
-srcmask3
-srcmask3.dim()
-srcmask3.size()
-
-trgPADmask2 = trgPADmask.unsqueeze(1)
-trgPADmask2.size()
-trgPADmask3 = trgPADmask2.unsqueeze(3)
-
-# %%codecell
 
     def forward(self, src: Tensor, trg: Tensor) -> Tensor:
         '''
