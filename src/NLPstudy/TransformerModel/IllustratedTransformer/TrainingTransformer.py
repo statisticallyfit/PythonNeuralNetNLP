@@ -20,6 +20,7 @@ import seaborn as sns
 
 import spacy
 
+import os
 import random
 import math
 import time
@@ -216,23 +217,6 @@ from src.NLPstudy.TransformerModel.IllustratedTransformer.PositionalEncodingLaye
 
 
 # %% codecell
-t = torch.tensor([1,2,3])
-t.double()
-
-#torch.exp(t)
-torch.exp(t.double())
-torch.exp(t.float())
-
-result = torch.exp(torch.FloatTensor(t.numpy()))
-result
-
-t.float() * result
-
-torch.sin(t.float() * result)
-
-
-
-# %% codecell
 posEnc = PositionalEncodingLayer(d_model = HIDDEN_DIM, dropout = DROPOUT, device = device)
 posEnc
 
@@ -348,46 +332,61 @@ adamOptimizer = torch.optim.Adam(params = transformerModel.parameters(),
                                  betas = (0.9, 0.98),
                                  eps=1e-9)
 type(adamOptimizer)
+
 modifAdamOptimizer: NoamOpt = NoamOpt(modelSize = HIDDEN_DIM,
                                       factor = 1,
                                       warmupSteps=2000,
                                       optimizer = adamOptimizer)
+modifAdamOptimizer
 
 
 # %% markdown
 # ### Step 4: Define the Loss Function (Cross Entropy)
-# Make sure to ignore the loss on <pad> tokens.
+# The `CrossEntropyLoss` function calculates both log softmax and negative log-likelihood of our predictions.
+#
+# The loss function calculates the average loss per token but by passing the index of the `<pad>` token as the `ignore_index` argument, we effectively ignore the loss whenever the target token is a padding token.
 # %% codecell
-crossEntropyLossFunction = nn.CrossEntropyLoss(ignore_index = TRG_PAD_IDX)
+crossEntropyLossFunction = nn.CrossEntropyLoss(ignore_index = PAD_INDEX)
 crossEntropyLossFunction
+
+
+
 # %% markdown
-# ### Step 5: Define Training Loop
+# ### Step 5: Define the Training Loop
 #
-# Then, we define the training loop for the model.
+# Next, we'll define our training loop.
 #
-# We handle the sequences a little differently than previous tutorials. For all models we never put the `<eos>` into the `Decoder`. This is handled in the RNN models by the having the `Decoder` loop not reach having the `<eos>` as an input to the `Decoder`. But in this CNN model, we simply slice the `<eos>` token off the end of the sequence. Thus:
+# First, we'll set the model into "training mode" with `model.train()`. This will turn on dropout (and batch normalization, which we aren't using) and then iterate through our data iterator.
 #
-# $$\begin{align*}
-# \text{trg} &= [sos, x_1, x_2, x_3, eos] \\
-#     \text{trg[:-1]} &= [sos, x_1, x_2, x_3]
-# \end{align*}$$
-# where $x_i$ = the actual target sequence element.
+# - **NOTE:**: the `Decoder` loop starts at 1, not 0. This means the 0th element of our `outputs` tensor remains all zeros. So our `trg` and `outputs` look something like:
 #
-# We then feed this into the model to get a predicted sequence that should hopefully predict the `<eos>` token:
+# $$
+# \text{trg} = [<sos>, y_1, y_2, y_3, <eos>] \\
+# \text{outputs} = [0, \hat{y}_1, \hat{y}_2, \hat{y}_3, <eos>] \\
+# $$
 #
-# $$\begin{align*}
-# \text{output} &= [y_1, y_2, y_3, eos]
-# \end{align*}$$
-# where $y_i$ = the predicted target sequence element. We then calculate our loss using the original `trg` tensor with the `<sos>` token sliced off the front, leaving the `<eos>` token:
+# Here, when we calculate the loss, we cut off the first element of each tensor to get:
 #
-# $$\begin{align*}
-# \text{output} &= [y_1, y_2, y_3, eos]\ \
-#     \text{trg[1:]} &= [x_1, x_2, x_3, eos]
-# \end{align*}$$
+# $$
+# \text{trg} = [y_1, y_2, y_3, <eos>] \\
+# \text{outputs} = [\hat{y}_1, \hat{y}_2, \hat{y}_3, <eos>] \\
+# $$
 #
-# We then calculate our losses and update our parameters as is standard.
+# At each iteration:
+# - Get the source and target sentences from the batch, $X$ and $Y$
+# - Zero the gradients calculated from the last batch
+# - Feed the source and target into the model to get the output, $\hat{Y}$
+# - As the **loss function only works on 2d inputs with 1d targets we need to flatten each of them with `.view`**
+#   - To avoid measuring the loss of the `<sos>` token, we slice off the first column of the output and target tensors as mentioned above.
+# - Calculate the gradients with `loss.backward()`
+# - Clip the gradients to prevent them from exploding (a common issue in RNNs)
+# - Update the parameters of our model by doing an optimizer step
+# - Sum the loss value to a running total
+#
+# Finally, we return the loss that is averaged over all batches.
+
 # %% codecell
-def train(model: Transformer, iterator, optimizer, lossFunction, clip: int):
+def train(model: Transformer, iterator, noamOpt: NoamOpt, lossFunction, clip: int):
 
     model.train() # put model in training mode
 
@@ -396,32 +395,33 @@ def train(model: Transformer, iterator, optimizer, lossFunction, clip: int):
     for epoch, batch in enumerate(iterator):
 
         # 1. Getting source and target sentences from batch
-        srcSentence: Tensor = batch.src
+        srcSentence = batch.src
         trgSentence: Tensor = batch.trg
 
         # 2. Zero the gradients from the last batch
-        optimizer.zero_grad()
+        noamOpt.optimizer.zero_grad()
 
         # 3. Feed the source and target sentences into the seq2seq model
         # to get the output tensor of predictions.
-        output, _ = model(src = srcSentence, trg =trgSentence[:, :-1])
-        ### trgSentence = tensor of shape (batchSize, trgSentenceLen)
-        ### output = tensor of shape (batchSize, trgSentenceLen - 1, outputDim)
+        output: Tensor = model(src=srcSentence,
+                               trg =trgSentence[:, :-1]) # cutting off first element to avoid passing the
+        # <sos>  token
+        ### trgSentence = vector of shape (trgSentenceLen * batchSize - 1)
+        ### output = tensor of shape (batchSize, trgSentenceLen -1, outputDim)
 
-        # 4. Need to flatten the outputs (by slicing off the first column
-        # of the output and target tensors
+        # 4. Need to flatten the outputs to be in 2d input with 1d target
+        # so that loss can take this as an argument.
+        # (by slicing off the first column of the output and target tensors
         # as mentioned above)
         outputDim: int = output.shape[-1]
 
-        output: Tensor = output.contiguous().view(-1, outputDim)
-            #output[1:].view(-1, outputDim)
-        trgSentence: Tensor = trgSentence[:, 1:].contiguous().view(-1)
-            #trgSentence[1:].view(-1)
-        ## output shape now: (batchSize * trgLen - 1, outputDim)
-        ## trgSentence shape now: (batchSize * trgLen - 1)
+        output_Reshaped: Tensor = output.contiguous().view(-1, outputDim)
+        trgSentence_Reshaped: Tensor = trgSentence[:, 1:].contiguous().view(-1)
+        ## trgSentence shape now: (batchSize * trgSentLen - 1)
+        ## output shape now: (batchSize * trgSentLen - 1, outputDim)
 
         # 5. Calculate gradients
-        loss = lossFunction(input=output, target= trgSentence)
+        loss = lossFunction(input=output_Reshaped, target= trgSentence_Reshaped)
         loss.backward()
 
         # 6. Clip gradient so it doesn't explode
@@ -429,55 +429,72 @@ def train(model: Transformer, iterator, optimizer, lossFunction, clip: int):
                                        max_norm = clip)
 
         # 7. Update parameters of model
-        optimizer.step()
+        noamOpt.step()
 
         # 8. Sum the loss value to a running total
         lossPerEpoch += loss.item()
 
     return lossPerEpoch / len(iterator) # average loss
+
 # %% markdown
-# ### Step 7: Define Evaluation Loop
+# ### Step 7: Define the Evaluation Loop
 #
-# The evaluation loop is the same as the training loop, just without the gradient calculations and parameter updates.
+# Our evaluation loop is similar to our training loop, however as we aren't updating any parameters we don't need to pass an optimizer or a clip value.
+#
+# *We must remember to set the model to evaluation mode with `model.eval()`. This will turn off dropout (and batch normalization, if used).*
+#
+# We use the `with torch.no_grad()` block to ensure no gradients are calculated within the block. This reduces memory consumption and speeds things up.
+
 # %% codecell
-def evaluate(model: Transformer, iterator, lossFunction):
+def evaluate(model: Transformer, iterator, lossFunction: nn.CrossEntropyLoss):
 
     model.eval()
 
-    lossPerEpoch = 0
+    lossPerEpoch: float = 0
 
     with torch.no_grad():
 
         for epoch, batch in enumerate(iterator):
 
-            srcSentence: Tensor = batch.src
+            # 1. Getting source and target sentences from batch
+            srcSentence = batch.src
             trgSentence: Tensor = batch.trg
 
-            # Turn off teacher forcing
-            output, _ = model(src=srcSentence, trg=trgSentence[:, :-1])
-            ### trgSentence = tensor of shape (batchSize, trgSentenceLen)
-            ### output = tensor of shape (batchSize, trgSentenceLen - 1, outputDim)
+            # 3. Feed the source and target sentences into the seq2seq model
+            # to get the output tensor of predictions.
+            output: Tensor = model(src=srcSentence,
+                                   trg =trgSentence[:, :-1]) # cutting off first element to avoid passing the
+            # <sos>  token
+            ### trgSentence = vector of shape (batchSize, trgSentenceLen)
+            ### output = tensor of shape (batchSize, trgSentenceLen -1, outputDim)
 
-            # 4. Need to flatten the outputs (by slicing off the first column
-            # of the output and target tensors
+
+            # 4. Need to flatten the outputs to be in 2d input with 1d target
+            # so that loss can take this as an argument.
+            # (by slicing off the first column of the output and target tensors
             # as mentioned above)
             outputDim: int = output.shape[-1]
 
-            output: Tensor = output.contiguous().view(-1, outputDim)
-            #output[1:].view(-1, outputDim)
-            trgSentence: Tensor = trgSentence[:, 1:].contiguous().view(-1)
-            #trgSentence[1:].view(-1)
-            ## output shape now: (batchSize * trgLen - 1, outputDim)
-            ## trgSentence shape now: (batchSize * trgLen - 1)
+            output_Reshaped: Tensor = output.contiguous().view(-1, outputDim)
+            trgSentence_Reshaped: Tensor = trgSentence[:, 1:].contiguous().view(-1)
+            ## trgSentence shape now: (batchSize * trgSentLen - 1)
+            ## output shape now: (batchSize * trgSentLen - 1, outputDim)
 
-            # 5. Calculate loss but not gradients since this is evaluation mode
-            loss = lossFunction(input=output, target= trgSentence)
+            # 5. Calculate gradients
+            loss = lossFunction(input=output_Reshaped, target= trgSentence_Reshaped)
+            #loss.backward()
 
 
-            # 6. Sum the loss value to a running total
+
+            # 8. Sum the loss value to a running total
             lossPerEpoch += loss.item()
 
-        return lossPerEpoch / len(iterator) # average loss
+    return lossPerEpoch / len(iterator) # average loss
+
+
+
+
+
 # %% codecell
 # Time the epoch!
 
@@ -488,31 +505,20 @@ def clock(startTime, endTime):
     return elapsedMins, elapsedSecs
 # %% markdown
 # ### Step 8: Train the Model
-#
-# Finally, we train our model.
-#
-# Although we have almost twice as many parameters as the attention based RNN model, it actually takes around half the time as the standard version and about the same time as the packed padded sequences version. This is due to all calculations being done in parallel using the convolutional filters instead of sequentially using RNNs.
-#
-# **Note**: this model always has a teacher forcing ratio of 1, i.e. it will always use the ground truth next token from the target sequence. This means we cannot compare perplexity values against the previous models when they are using a teacher forcing ratio that is not 1. See [here](https://github.com/bentrevett/pytorch-seq2seq/issues/39#issuecomment-529408483) for the results of the attention based RNN using a teacher forcing ratio of 1.
-# %% codecell
-
-# %% codecell
-# Time the epoch!
-
-def clock(startTime, endTime):
-    elapsedTime = endTime - startTime
-    elapsedMins = int(elapsedTime / 60)
-    elapsedSecs = int(elapsedTime - (elapsedMins * 60))
-    return elapsedMins, elapsedSecs
-
 
 # %% codecell
 # %%time
-trainStartTime = time.time()
 
+trainStartTime = time.time()
 
 NUM_EPOCHS = 10
 CLIP = 1
+SAVE_DIR = '.'
+MODEL_SAVE_PATH = os.path.join(SAVE_DIR, 'transformer_bestModel.pt')
+
+if not os.path.isdir(f'{SAVE_DIR}'):
+    os.makedirs(f'{SAVE_DIR}')
+
 
 bestValidLoss = float('inf')
 
@@ -522,7 +528,7 @@ for epoch in range(NUM_EPOCHS):
 
     trainingLoss = train(model=transformerModel,
                          iterator=trainIterator,
-                         optimizer=adamOptimizer,
+                         noamOpt=modifAdamOptimizer,
                          lossFunction=crossEntropyLossFunction,
                          clip=CLIP)
 
@@ -536,10 +542,10 @@ for epoch in range(NUM_EPOCHS):
 
     if validationLoss < bestValidLoss:
         bestValidLoss = validationLoss
-        torch.save(transformerModel.state_dict(), 'illustransformer_bestModel.pt')
+        torch.save(transformerModel.state_dict(), MODEL_SAVE_PATH)
 
 
-    print(f'Epoch: {epoch+1:02} | Time: {epochMins}m {epochSecs}s')
+    print(f'Epoch: {epoch+1:03} | Time: {epochMins}m {epochSecs}s')
     print(f'\tTrain Loss: {trainingLoss:.3f} | Train PPL: {math.exp(trainingLoss):7.3f}')
     print(f'\t Val. Loss: {validationLoss:.3f} |  Val. PPL: {math.exp(validationLoss):7.3f}')
 

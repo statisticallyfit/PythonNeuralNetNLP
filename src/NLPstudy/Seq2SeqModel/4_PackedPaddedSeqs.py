@@ -1015,14 +1015,15 @@ crossEntropyLossFunction
 # $$
 #
 # At each iteration:
-# - get the source and target sentences from the batch, $X$ and $Y$
-# - zero the gradients calculated from the last batch-feed the source and target into the model to get the output, $\hat{Y}$
-# - as the **loss function only works on 2d inputs with 1d targets we need to flatten each of them with `.view`**
-# - we slice off the first column of the output and target tensors as mentioned above
-# - calculate the gradients with `loss.backward()`
-# - clip the gradients to prevent them from exploding (a common issue in RNNs)
-# - update the parameters of our model by doing an optimizer step
-# - sum the loss value to a running total
+# - Get the source and target sentences from the batch, $X$ and $Y$
+# - Zero the gradients calculated from the last batch
+# - Feed the source and target into the model to get the output, $\hat{Y}$
+# - As the **loss function only works on 2d inputs with 1d targets we need to flatten each of them with `.view`**
+#   - To avoid measuring the loss of the `<sos>` token, we slice off the first column of the output and target tensors as mentioned above.
+# - Calculate the gradients with `loss.backward()`
+# - Clip the gradients to prevent them from exploding (a common issue in RNNs)
+# - Update the parameters of our model by doing an optimizer step
+# - Sum the loss value to a running total
 #
 # Finally, we return the loss that is averaged over all batches.
 
