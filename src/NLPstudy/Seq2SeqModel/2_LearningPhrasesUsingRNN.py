@@ -744,13 +744,15 @@ def evaluate(seqModel: Seq2Seq, iterator, lossFunction):
 # %% codecell
 # Time the epoch!
 
-def epochTimer(startTime, endTime):
+def clock(startTime, endTime):
     elapsedTime = endTime - startTime
     elapsedMins = int(elapsedTime / 60)
     elapsedSecs = int(elapsedTime - (elapsedMins * 60))
     return elapsedMins, elapsedSecs
 # %% codecell
-%%time
+# %%time
+trainStartTime = time.time()
+
 
 NUM_EPOCHS = 10
 CLIP = 1
@@ -771,7 +773,7 @@ for epoch in range(NUM_EPOCHS):
 
     endTime = time.time()
 
-    epochMins, epochSecs = epochTimer(startTime , endTime)
+    epochMins, epochSecs = clock(startTime, endTime)
 
     if validationLoss < bestValidLoss:
         bestValidLoss = validationLoss
@@ -781,13 +783,21 @@ for epoch in range(NUM_EPOCHS):
     print(f'Epoch: {epoch+1:02} | Time: {epochMins}m {epochSecs}s')
     print(f'\tTrain Loss: {trainingLoss:.3f} | Train PPL: {math.exp(trainingLoss):7.3f}')
     print(f'\t Val. Loss: {validationLoss:.3f} |  Val. PPL: {math.exp(validationLoss):7.3f}')
+
+
+trainEndTime = time.time()
+totalMins, totalSecs = clock(trainStartTime, trainEndTime)
+
+print("Total training time = {} mins {} secs".format(totalMins, totalSecs))
+
+
 # %% codecell
 # We'll load the parameters (state_dict) that gave our model the best
 # validation loss and run it the model on the test set.
 
 seq2seqGRUModel.load_state_dict(torch.load('tut2_seq2seqGRU_bestModel.pt'))
 
-testLoss = evaluate(seqModel=seqToSeqBidirectionalModel,
+testLoss = evaluate(seqModel=seq2seqGRUModel,
                     iterator= testIterator,
                     lossFunction= crossEntropyLossFunction)
 

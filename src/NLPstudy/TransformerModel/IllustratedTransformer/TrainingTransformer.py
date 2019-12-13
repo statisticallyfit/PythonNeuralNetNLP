@@ -236,6 +236,7 @@ torch.sin(t.float() * result)
 posEnc = PositionalEncodingLayer(d_model = HIDDEN_DIM, dropout = DROPOUT, device = device)
 posEnc
 
+
 # %% codecell
 # TODO: why are classes instead of objects passed here?
 
@@ -273,29 +274,89 @@ transformerModel
 
 
 # %% markdown
-# ### Step 2: Count Parameters amd Initialize Weights
-#
-# We can also see that the model has almost twice as many parameters as the attention based model (20m to 37m).
+# ### Step 2: Initialize Parameter Weights
 # %% codecell
-def countParameters(model: Transformer):
-    return sum(p.numel() for p in model.parameters() if p.requires_grad)
-
-def initWeights(model:Transformer):
+def initWeights(model: Transformer):
     for param in model.parameters():
         if param.dim() > 1:
             nn.init.xavier_uniform_(param)
 
+transformerModel.apply(fn = initWeights)
+transformerModel
+
+# %% markdown
+# ### Step 3: Count Parameters
+# %% codecell
+def countParameters(model: Transformer):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
 print(f'The model has {countParameters(transformerModel):,} trainable parameters')
+
+
 # %% markdown
 # ### Step 3: Define Optimizer
+#
+# The paper uses a modified Adam optimizer.
+# > *We used the Adam optimizer with $\beta_1 = 0.9$, $\beta_2 = 0.98$, and $\epsilon=10^{-9}$. We varied the learning rate over the course of training, according to the formula: *
+# > $$
+# > learningRate = d_{model}^{-0.5} \cdot min(stepNum^{-0.5}, stepNum \cdot warmupSteps^{-1.5})
+# > $$
+# > *This corresponds to increasing the learning rate linearly for the first $warmupSteps$ training steps, and decreasing it thereafter proportionally to the inverse square root of the step number. We used $warmupSteps = 4000$.*
+
 # %% codecell
-adamOptimizer = optim.Adam(seqCNNModel.parameters())
-adamOptimizer
+# Create the modified adam optimizer class
+
+class NoamOpt:
+    "Optimizer wrapper that implements the rate."
+    def __init__(self, modelSize: int, factor: float, warmupSteps: int, optimizer):
+        self.optimizer = optimizer
+        self.currentStep: int = 0
+        self.numWarmupSteps: int = warmupSteps
+        self.factor: float = factor
+        self.modelSize: int = modelSize # d_model
+        self.learningRate: float = 0
+
+
+
+    def step(self):
+        '''Update parameters and the learning rate. '''
+        self.currentStep += 1
+        currentRate: float = self.calculateLearningRate()
+
+        for par in self.optimizer.param_groups:
+            par['lr'] = currentRate
+
+        self.learningRate = currentRate
+
+        self.optimizer.step()
+
+
+    def calculateLearningRate(self, step = None):
+        '''Implement `learningRate` formula above'''
+        if step is None:
+            step = self.currentStep
+
+        return self.factor * \
+               (self.modelSize ** (-0.5) *
+                min(step ** (-0.5), step * self.numWarmupSteps ** (-1.5)))
+
+
+
+# Create an instance:
+adamOptimizer = torch.optim.Adam(params = transformerModel.parameters(),
+                                 lr = 0,
+                                 betas = (0.9, 0.98),
+                                 eps=1e-9)
+type(adamOptimizer)
+modifAdamOptimizer: NoamOpt = NoamOpt(modelSize = HIDDEN_DIM,
+                                      factor = 1,
+                                      warmupSteps=2000,
+                                      optimizer = adamOptimizer)
+
+
 # %% markdown
 # ### Step 4: Define the Loss Function (Cross Entropy)
 # Make sure to ignore the loss on <pad> tokens.
-# %% codecell
-TRG_PAD_IDX
 # %% codecell
 crossEntropyLossFunction = nn.CrossEntropyLoss(ignore_index = TRG_PAD_IDX)
 crossEntropyLossFunction
@@ -326,9 +387,9 @@ crossEntropyLossFunction
 #
 # We then calculate our losses and update our parameters as is standard.
 # %% codecell
-def train(seqModel: Seq2Seq, iterator, optimizer, lossFunction, clip: int):
+def train(model: Transformer, iterator, optimizer, lossFunction, clip: int):
 
-    seqModel.train() # put model in training mode
+    model.train() # put model in training mode
 
     lossPerEpoch: int = 0
 
@@ -343,7 +404,7 @@ def train(seqModel: Seq2Seq, iterator, optimizer, lossFunction, clip: int):
 
         # 3. Feed the source and target sentences into the seq2seq model
         # to get the output tensor of predictions.
-        output, _ = seqModel(src = srcSentence, trg = trgSentence[:, :-1])
+        output, _ = model(src = srcSentence, trg =trgSentence[:, :-1])
         ### trgSentence = tensor of shape (batchSize, trgSentenceLen)
         ### output = tensor of shape (batchSize, trgSentenceLen - 1, outputDim)
 
@@ -364,7 +425,7 @@ def train(seqModel: Seq2Seq, iterator, optimizer, lossFunction, clip: int):
         loss.backward()
 
         # 6. Clip gradient so it doesn't explode
-        torch.nn.utils.clip_grad_norm_(parameters = seqModel.parameters(),
+        torch.nn.utils.clip_grad_norm_(parameters = model.parameters(),
                                        max_norm = clip)
 
         # 7. Update parameters of model
@@ -379,9 +440,9 @@ def train(seqModel: Seq2Seq, iterator, optimizer, lossFunction, clip: int):
 #
 # The evaluation loop is the same as the training loop, just without the gradient calculations and parameter updates.
 # %% codecell
-def evaluate(seqModel: Seq2Seq, iterator, lossFunction):
+def evaluate(model: Transformer, iterator, lossFunction):
 
-    seqModel.eval()
+    model.eval()
 
     lossPerEpoch = 0
 
@@ -393,7 +454,7 @@ def evaluate(seqModel: Seq2Seq, iterator, lossFunction):
             trgSentence: Tensor = batch.trg
 
             # Turn off teacher forcing
-            output, _ = seqModel(src=srcSentence, trg=trgSentence[:, :-1])
+            output, _ = model(src=srcSentence, trg=trgSentence[:, :-1])
             ### trgSentence = tensor of shape (batchSize, trgSentenceLen)
             ### output = tensor of shape (batchSize, trgSentenceLen - 1, outputDim)
 
@@ -420,7 +481,7 @@ def evaluate(seqModel: Seq2Seq, iterator, lossFunction):
 # %% codecell
 # Time the epoch!
 
-def epochTimer(startTime, endTime):
+def clock(startTime, endTime):
     elapsedTime = endTime - startTime
     elapsedMins = int(elapsedTime / 60)
     elapsedSecs = int(elapsedTime - (elapsedMins * 60))
@@ -434,7 +495,21 @@ def epochTimer(startTime, endTime):
 #
 # **Note**: this model always has a teacher forcing ratio of 1, i.e. it will always use the ground truth next token from the target sequence. This means we cannot compare perplexity values against the previous models when they are using a teacher forcing ratio that is not 1. See [here](https://github.com/bentrevett/pytorch-seq2seq/issues/39#issuecomment-529408483) for the results of the attention based RNN using a teacher forcing ratio of 1.
 # %% codecell
-%%time
+
+# %% codecell
+# Time the epoch!
+
+def clock(startTime, endTime):
+    elapsedTime = endTime - startTime
+    elapsedMins = int(elapsedTime / 60)
+    elapsedSecs = int(elapsedTime - (elapsedMins * 60))
+    return elapsedMins, elapsedSecs
+
+
+# %% codecell
+# %%time
+trainStartTime = time.time()
+
 
 NUM_EPOCHS = 10
 CLIP = 1
@@ -445,35 +520,44 @@ for epoch in range(NUM_EPOCHS):
 
     startTime = time.time()
 
-    trainingLoss = train(seqModel=seqCNNModel,
+    trainingLoss = train(model=transformerModel,
                          iterator=trainIterator,
                          optimizer=adamOptimizer,
                          lossFunction=crossEntropyLossFunction,
                          clip=CLIP)
 
-    validationLoss = evaluate(seqModel=seqCNNModel,
+    validationLoss = evaluate(model=transformerModel,
                               iterator=validationIterator,
                               lossFunction=crossEntropyLossFunction)
 
     endTime = time.time()
 
-    epochMins, epochSecs = epochTimer(startTime , endTime)
+    epochMins, epochSecs = clock(startTime, endTime)
 
     if validationLoss < bestValidLoss:
         bestValidLoss = validationLoss
-        torch.save(seqCNNModel.state_dict(), 'tut5_bestModel.pt')
+        torch.save(transformerModel.state_dict(), 'illustransformer_bestModel.pt')
 
 
     print(f'Epoch: {epoch+1:02} | Time: {epochMins}m {epochSecs}s')
     print(f'\tTrain Loss: {trainingLoss:.3f} | Train PPL: {math.exp(trainingLoss):7.3f}')
     print(f'\t Val. Loss: {validationLoss:.3f} |  Val. PPL: {math.exp(validationLoss):7.3f}')
+
+
+
+trainEndTime = time.time()
+totalMins, totalSecs = clock(trainStartTime, trainEndTime)
+
+print("Total training time = {} mins {} secs".format(totalMins, totalSecs))
+
+
 # %% codecell
 # We'll load the parameters (state_dict) that gave our model the best
 # validation loss and run it the model on the test set.
 
-seqCNNModel.load_state_dict(torch.load('tut4_bestModel.pt'))
+transformerModel.load_state_dict(torch.load('illustransformer_bestModel.pt'))
 
-testLoss = evaluate(seqModel=seqCNNModel,
+testLoss = evaluate(model=transformerModel,
                     iterator= testIterator,
                     lossFunction= crossEntropyLossFunction)
 
