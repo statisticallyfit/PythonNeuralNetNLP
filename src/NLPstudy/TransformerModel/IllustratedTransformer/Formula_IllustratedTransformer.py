@@ -55,7 +55,7 @@ Image(filename = pth + "transformer_animation.gif")
 # The `Encoder` and `Decoder` are similar in that they contain several identical layers inside of them. For instance, the `Encoder` is called the "encoder stack" and this refers to the stack of $N$ identical encoder layers from which it is composed. Likewise, the `Decoder` is called the "decoder stack" because it contains a stack of $N$ identical decoder layers.
 
 # %% codecell
-# ImageResizer.resize(filename = pth + "encdeclayers.png", by = 0.7)
+ ImageResizer.resize(filename = pth + "encdeclayers.png", by = 0.7)
 ImageResizer.resize(filename = pth + "encoderDecoderLayers.jpg", by=0.65)
 
 Image(filename = pth + "encoderLayers.jpg")
