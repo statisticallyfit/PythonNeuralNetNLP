@@ -10,7 +10,7 @@ In general, when calculating the self-attention for any $i$-th word $\overrighta
 
 Behold the paper's motivation for using matrices for query, key, value:
 
-> *Instead of performing a single attention function with $d_{model}$-dimensional keys, values and queries, we found it beneficial to linearly project the queries, keys and values $h$ (number of attention heads) times with different, learned linear projections to $d_k$, $d_k$, and $d_v$ dimensions, respectively. On each of these projected versions of queries, keys and values we then perform the attention function in parallel, yielding $d_v$-dimensional output values. These are concatenated and once again projected, resulting in the final value.*
+> *Instead of performing a single attention function with $d_{model}$-dimensional keys, values and queries, we found it beneficial to linearly project the queries, keys and values $h$ (number of `attention head`s) times with different, learned linear projections to $d_k$, $d_k$, and $d_v$ dimensions, respectively. On each of these projected versions of queries, keys and values we then perform the attention function in parallel, yielding $d_v$-dimensional output values. These are concatenated and once again projected, resulting in the final value.*
 
 [**Main Performance Advantages of Multi-Headed Attention:**](https://hyp.is/kCkDMhkqEeqn1zuEinQcSg/arxiv.org/pdf/1706.03762.pdf)
 

@@ -569,4 +569,4 @@ transformerModel.load_state_dict(torch.load(MODEL_SAVE_PATH))
 testLoss = evaluate(model = transformerModel, iterator = testIterator,
                     lossFunction = crossEntropyLossFunction)
 
-print(f'| Test Loss: {test_loss:.3f} | Test PPL: {math.exp(test_loss):7.3f} |')
+print(f'| Test Loss: {testLoss:.3f} | Test PPL: {math.exp(testLoss):7.3f} |')

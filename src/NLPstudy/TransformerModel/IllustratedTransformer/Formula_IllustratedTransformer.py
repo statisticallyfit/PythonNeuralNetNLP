@@ -205,9 +205,9 @@ Image(filename = pth + "qkv_thinkingmachines.png")
 # The dimensions of the  key vectors is $d_k = 64$.
 #
 # From the paper:
-# > *We suspect that for large values of $d_k$, the dot products grow large in  magnitude, pushing the softmax function into regions where it has extremely small gradients. To counteract this effect, we scale the dot products by $\frac {1} {\sqrt{d_k}}$*
+# > *We suspect that for large values of $d_k$, the dot products grow large in  magnitude, pushing the `softmax function` into regions where it has extremely small gradients. To counteract this effect, we scale the dot products by $\frac {1} {\sqrt{d_k}}$*
 #
-# So now the scores vector for the first word embedding tensor $\overrightarrow{w_i}$ is:
+# So now the scores vector for the first `word embedding` `tensor` $\overrightarrow{w_i}$ is:
 #
 # $$
 # scores_{w_i} = \Bigg\{
@@ -229,8 +229,7 @@ Image(filename = pth + "qkv_thinkingmachines.png")
 # $$
 #
 # The image below shows the scaling and softmax operations after the query, key, value operations:
-# %% codecell
-# %% codecell
+
 # %% codecell
 Image(filename = pth + "scaling.png")
 # %% markdown
@@ -274,7 +273,7 @@ ImageResizer.resize(filename = pth + "multihead.png")
 # %% markdown
 # Behold the paper's motivation for using matrices for query, key, value:
 #
-# > *Instead of performing a single attention function with $d_{model}$-dimensional keys, values and queries, we found it beneficial to linearly project the queries, keys and values $h$ (number of attention heads) times with different, learned linear projections to $d_k$, $d_k$, and $d_v$ dimensions, respectively. On each of these projected versions of queries, keys and values we then perform the attention function in parallel, yielding $d_v$-dimensional output values. These are concatenated and once again projected, resulting in the final value.*
+# > *Instead of performing a single attention function with $d_{model}$-dimensional keys, values and queries, we found it beneficial to linearly project the queries, keys and values $h$ (number of `attention head`s) times with different, learned linear projections to $d_k$, $d_k$, and $d_v$ dimensions, respectively. On each of these projected versions of queries, keys and values we then perform the attention function in parallel, yielding $d_v$-dimensional output values. These are concatenated and once again projected, resulting in the final value.*
 #
 # [**Main Performance Advantages of Multi-Headed Attention:**](https://hyp.is/kCkDMhkqEeqn1zuEinQcSg/arxiv.org/pdf/1706.03762.pdf)
 #
