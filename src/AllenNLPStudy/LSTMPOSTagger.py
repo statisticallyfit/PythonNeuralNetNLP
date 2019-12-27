@@ -159,5 +159,16 @@ class PosDatasetReader(DatasetReader):
 
 # %% markdown
 # # Step 2: Create the LstmTagger Class
-# 
+# In general we always must implement classes inheriting from `DatasetReader` and `Model` class.
+#
+# This `LstmTagger` class inherits from the `Model` class.
+#
+# The `Model` class is a subclass of `torch.nn.Module`. It  needs a `forward` method that takes tensor inputs and produces a dict of tensor outputs that incldues the loss to train the model.
+#
+# The model consists of an embedding layer, sequence encoder, and feedforward network.
+#
+# ### `__init__()` method:
+# One thing that might seem unusual is that we're going pass in the embedder and the sequence encoder as constructor parameters. This allows us to experiment with different embedders and encoders without having to change the model code.
+#
+# ###
 # %% codecell
