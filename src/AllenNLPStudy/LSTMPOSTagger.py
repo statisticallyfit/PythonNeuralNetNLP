@@ -169,6 +169,8 @@ class PosDatasetReader(DatasetReader):
 #
 # ### `__init__()` method:
 # One thing that might seem unusual is that we're going pass in the embedder and the sequence encoder as constructor parameters. This allows us to experiment with different embedders and encoders without having to change the model code.
-#
+# * `wordEmbeddings: TextFieldEmbedder`: the embedding layer is specified as an AllenNLP `TextFieldEmbedder` which represents a general way of turning tokens into tensors.  (Here we know that we want to represent each unique word with a learned tensor, but using the general class allows us to easily experiment with different types of embeddings, for example ELMo.)
+# * `encoder: Seq2SeqEncoder`: Similarly, the encoder is specified as a general `Seq2SeqEncoder` even though we know we want to use an LSTM. Again, this makes it easy to experiment with other sequence encoders, for example a Transformer.
+# * `vocab: Vocabulary`: Every AllenNLP model also expects a `Vocabulary`, which contains the namespaced mappings of tokens to indices and labels to indices.
 # ###
 # %% codecell
