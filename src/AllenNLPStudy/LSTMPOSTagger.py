@@ -271,15 +271,15 @@ class LstmTagger(Model):
 
 
 # %% markdown
-# # Step 3: Training
+# # Step 3: Start Training
 # Now that we've implemented a `DatasetReader` and `Model`, we're ready to train.
 #
-# ### Step 3.a) Training: Create a data set reader for POS tagging:
+# ### Step 4 Training: Create a data set reader for POS tagging:
 # We first need an instance of our dataset reader.
 # %% codecell
 reader = PosDatasetReader()
 # %% markdown
-# ### Step 3.b) Training: Download the data
+# ### Step 5 Training: Download the data
 # We can use the `PosDatasetReader`  to read in the training data and validation data. Here we read them in from a URL, but you could read them in from local files if your data was local. We use cached_path to cache the files locally (and to hand reader.read the path to the local cached version.)
 # %% codecell
 trainDataset = reader.read(cached_path(
@@ -289,24 +289,26 @@ trainDataset = reader.read(cached_path(
 validationDataset = reader.read(cached_path(
     'https://raw.githubusercontent.com/allenai/allennlp'
     '/master/tutorials/tagger/validation.txt'))
+trainDataset
+validationDataset
 
 
 # %% markdown
-# ### Step 3.c) Training: Create the Vocabulary
+# ### Step 6 Training: Create the Vocabulary
 # Once we've read in the datasets, we use them to create our Vocabulary (that is, the mapping[s] from tokens / labels to ids).
 # %% codecell
 vocab = Vocabulary.from_instances(instances = trainDataset + validationDataset)
 vocab
 
 # %% markdown
-# ### Step 3.d) Training: Choose embedding and hidden layer sizes
+# ### Step 7 Training: Choose embedding and hidden layer sizes
 # Now we need to construct the model. We'll choose a size for our embedding layer and for the hidden layer of our LSTM.
 # %% codecell
 EMBEDDING_DIM = 6
 HIDDEN_DIM = 6
 
 # %% markdown
-# ### Step 3.e) Training: Create the Embeddings
+# ### Step 8 Training: Create the Embeddings
 # For embedding the tokens we'll just use the `BasicTextFieldEmbedder`.
 #
 # This takes a mapping from index names to embeddings.
@@ -326,7 +328,7 @@ wordEmbeddings = BasicTextFieldEmbedder({"tokens": tokenEmbedding})
 tokenEmbedding
 wordEmbeddings
 # %% markdown
-# ### Step 3.f) Training: Specify the Sequence Encoder
+# ### Step 9 Training: Specify the Sequence Encoder
 # The `PytorchSeq2SeqWrapper` is needed here to add some extra functionality and cleaner interface to the built-in PyTorch module.
 #
 # Also specify `batch_first = True` (always the case in AllenNLP)
@@ -340,7 +342,7 @@ lstmEncoder = PytorchSeq2SeqWrapper(module =
 lstmEncoder
 
 # %% markdown
-# ### Step 3.g) Training: Instantiate the POS Tagger Model
+# ### Step 10 Training: Instantiate the POS Tagger Model
 # %% codecell
 posTagModel = LstmTagger(wordEmbeddings = wordEmbeddings,
                          encoder = lstmEncoder,
@@ -350,20 +352,20 @@ posTagModel
 # Checking for GPU
 if torch.cuda.is_available():
     cudaDevice = 0
-    model = model.cuda(cudaDevice)
+    posTagModel = posTagModel.cuda(cudaDevice)
 else:
     cudaDevice = -1
 
- cudaDevice
+cudaDevice
 
 
 # %% markdown
-# ### Step 3.h) Training: Create Optimizer
+# ### Step 11 Training: Create Optimizer
 # Using stochastic gradient descent here.
 # %% codecell
 optimizer = optim.SGD(posTagModel.parameters(), lr=0.1)
 # %% markdown
-# ### Step 3.i) Training: Create Iterator
+# ### Step 12 Training: Create Iterator
 # Need a `DataIterator` that handles batching for the datasets.
 #
 # The `BucketIterator` sorts instances by the specified fields in order to create batches with similar sequence lengths.
@@ -375,7 +377,7 @@ iterator = BucketIterator(batch_size=2, sorting_keys=[("sentence", "num_tokens")
 iterator.index_with(vocab)
 
 # %% markdown
-# ### Step 3.j) Training: Create the `Trainer`
+# ### Step 13 Training: Create the `Trainer`
 # Instantiating the `Trainer` and running it.
 #
 # Setting the `patience = 10`: Here we run for 1000 epochs and stop training early if it ever spends 10 epochs without the validation metric improving.
@@ -390,3 +392,83 @@ trainer = Trainer(model = posTagModel,
                   patience = 10,
                   num_epochs = 1000,
                   cuda_device = cudaDevice)
+
+trainer
+
+# %% markdown
+# When we launch it it will print a progress bar for each epoch that includes both the "loss" and the "accuracy" metric. If our model is good, the loss should go down and the accuracy up as we train.
+# %% codecell
+trainer.train()
+
+# %% markdown
+# ### Step 14 Training: Generate Model Predictions
+# AllenNLP contains a `Predictor` abstraction that takes inputs, converts them to instances, and feeds them through
+# the model and returns JSON-serializabel results.
+#
+# Often must implement a custom `Predictor` but here we can use `SentenceTaggerPredictor`. It takes in as parameters
+# a `DatasetReader` for creating data instances, and our model, for making predictions.
+# %% codecell
+predictor = SentenceTaggerPredictor(posTagModel, dataset_reader=reader)
+predictor
+
+# %% markdown
+# The predictor object It has a `predict` method that just needs a sentence and returns (a JSON-serializable version of)
+# the output dict from forward. Here `tagLogits` will be a (5, 3) array of logits, corresponding to the 3 possible tags
+# for each of the 5 words.
+# %% codecell
+tagLogits = predictor.predict("The dog ate the apple")['tagLogits']
+tagLogits
+
+# %% markdown
+# To get the actual "predictions" we can just take the `argmax`.
+# %% codecell
+tagIndices = np.argmax(tagLogits, axis=-1)
+
+# %% markdown
+# Using the `Vocabulary` find the predicted tags.
+# %% codecell
+print([posTagModel.vocab.get_token_from_index(i, 'labels') for i in tagIndices])
+
+# %% markdown
+# ### Step 15: Save the Model
+# Here's how to save the model.
+# First we save the model weights, then the vocabulary
+# %% codecell
+# Saving the model weights
+with open("/tmp/model.th", 'wb') as f:
+    torch.save(posTagModel.state_dict(), f)
+
+# Saving the vocabulary
+vocab.save_to_files("/tmp/vocabulary")
+
+# %% markdown
+# ### How to Reload the Model:
+# We only saved the model weights, so we actually have to recreate the same model structure using code if we want to reuse them. First, let's reload the vocabulary into a new variable.
+# %% codecell
+vocabRE = Vocabulary.from_files("/tmp/vocabulary")
+
+# %% markdown
+# And then let's recreate the model (if we were doing this in a different file we would of course have to re-instantiate the word embeddings and lstm as well).
+# %% codecell
+posTagModelRE = LstmTagger(wordEmbeddings, lstmEncoder, vocabRE)
+
+# Must load the model state
+with open("/tmp/model.th", 'rb') as f:
+    posTagModelRE.load_state_dict(torch.load(f))
+
+# %% markdown
+# Here we move the loaded model to the GPU that we used previously. This is necessary because we moved `wordEmbeddings`
+# and `lstmEncoder` with the original model earlier. All of a model's parameters need to be on the same device.
+# %% codecell
+if cudaDevice > -1:
+    posTagModelRE.cuda(cudaDevice)
+
+
+# %% markdown
+# Getting the predictions and testing that the reloaded ones are close to the original predictions.
+# %% codecell
+predictorRE = SentenceTaggerPredictor(posTagModelRE, dataset_reader=reader)
+tagLogitsRE = predictorRE.predict("The dog ate the apple")['tagLogits']
+
+# Testing that the predictions are almost the same as the reloaded ones.
+np.testing.assert_array_almost_equal(tagLogitsRE, tagLogits)
