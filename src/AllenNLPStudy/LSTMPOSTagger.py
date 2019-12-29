@@ -21,6 +21,7 @@ from typing import Iterator, List, Dict
 # AllenNLP is built on top of PyTorch, so we use its code freely.
 # %% codecell
 import torch
+import torch.tensor as Tensor
 import torch.optim as optim
 import numpy as np
 # %% markdown
@@ -172,5 +173,220 @@ class PosDatasetReader(DatasetReader):
 # * `wordEmbeddings: TextFieldEmbedder`: the embedding layer is specified as an AllenNLP `TextFieldEmbedder` which represents a general way of turning tokens into tensors.  (Here we know that we want to represent each unique word with a learned tensor, but using the general class allows us to easily experiment with different types of embeddings, for example ELMo.)
 # * `encoder: Seq2SeqEncoder`: Similarly, the encoder is specified as a general `Seq2SeqEncoder` even though we know we want to use an LSTM. Again, this makes it easy to experiment with other sequence encoders, for example a Transformer.
 # * `vocab: Vocabulary`: Every AllenNLP model also expects a `Vocabulary`, which contains the namespaced mappings of tokens to indices and labels to indices.
-# ###
+#
+# ### `forward()` method
+# Actual computation happens here.
+# Each `Instance` in the data set will get batched with other `Instance`s and fed into `forward`.
+# Arguments: dicts of tensors, with names equal to the names of the fields in the `Instance`.
+# * NOTE: In this case we have a sentence field and possibly a labels field so we will construct the `forward` method accordingly.
+#
+# ### `get_metrics()` method:
+# We included an accuracy metric that gets updated each forward pass. That means we need to override a get_metrics method that pulls the data out of it. Behind the scenes, the `CategoricalAccuracy` metric is storing the number of predictions and the number of correct predictions, updating those counts during each call to forward. Each call to `get_metric` returns the calculated accuracy and (optionally) resets the counts, which is what allows us to track accuracy anew for each epoch.
+
 # %% codecell
+class LstmTagger(Model):
+
+    def __init__(self,
+                 wordEmbeddings: TextFieldEmbedder,
+                 encoder: Seq2SeqEncoder,
+                 vocab: Vocabulary) -> None:
+
+        # Notice: we have to pass the vocab to the base class constructor
+        super().__init__(vocab)
+
+        self.wordEmbeddings: TextFieldEmbedder = wordEmbeddings
+        self.encoder: Seq2SeqEncoder = encoder
+
+        # The feed forward layer is not passed in as parameter.
+        # Instead we construct it here.
+        # It gets encoder's output dimension as the feedforward layer's input dimension
+        # and uses vocab's size as the feedforward layer's output dimension.
+        self.hiddenToTagLayer = torch.nn.Linear(in_features = encoder.get_output_dim(),
+                                                out_features= vocab.get_vocab_size(namespace = 'labels'))
+
+        # Instantiate an accuracy metric to track it during training
+        # and validation epochs.
+        self.accuracy = CategoricalAccuracy()
+
+
+
+    def forward(self,
+                sentence: Dict[str, Tensor],
+                labels: Tensor = None) -> Dict[str, Tensor]:
+
+
+        # Step 1: Create the masks
+
+        # AllenNLP is designed to operate on batched inputs, but
+        # different input sequences have different lengths. Behind the scenes AllenNLP is
+        # padding the shorter inputs so that the batch has uniform shape, which means our
+        # computations need to use a mask to exclude the padding. Here we just use the utility
+        # function get_text_field_mask, which returns a tensor of 0s and 1s corresponding to
+        # the padded and unpadded locations.
+        mask: Tensor = get_text_field_mask(text_field_tensors= sentence)
+
+
+        # Step 2: create the tensor embeddings
+
+        # We start by passing the sentence tensor (each sentence a sequence of token ids)
+        # to the word_embeddings module, which converts each sentence into a sequence
+        # of embedded tensors.
+
+        # Does forward pass of word embeddings layer
+        embeddings: Tensor = self.wordEmbeddings(sentence)
+
+
+        # Step 3: Encode the embeddings using mask
+
+        # We next pass the embedded tensors (and the mask) to the LSTM,
+        # which produces a sequence of encoded outputs.
+
+        # Does forward pass of encoder layer
+        encoderOutputs: Tensor = self.encoder(embeddings, mask)
+
+
+        # Step 4: Finally, we pass each encoded output tensor to the feedforward
+        # layer to produce logits corresponding to the various tags.
+
+        # Does forward pass of the linear layer
+        tagLogits = self.hiddenToTagLayer(encoderOutputs)
+        output = {"tagLogits": tagLogits}
+
+
+        # As before, the labels were optional, as we might want to run this model to
+        # make predictions on unlabeled data. If we do have labels, then we use them
+        # to update our accuracy metric and compute the "loss" that goes in our output.
+        if labels is not None:
+            self.accuracy(predictions = tagLogits, gold_labels = labels, mask = mask)
+            output["loss"] = sequence_cross_entropy_with_logits(logits = tagLogits,
+                                                                targets = labels,
+                                                                weights = mask)
+
+        return output
+
+
+
+    def get_metrics(self, reset: bool = False) -> Dict[str, float]:
+        return {"accuracy": self.accuracy.get_metric(reset)}
+
+
+# %% markdown
+# # Step 3: Training
+# Now that we've implemented a `DatasetReader` and `Model`, we're ready to train.
+#
+# ### Step 3.a) Training: Create a data set reader for POS tagging:
+# We first need an instance of our dataset reader.
+# %% codecell
+reader = PosDatasetReader()
+# %% markdown
+# ### Step 3.b) Training: Download the data
+# We can use the `PosDatasetReader`  to read in the training data and validation data. Here we read them in from a URL, but you could read them in from local files if your data was local. We use cached_path to cache the files locally (and to hand reader.read the path to the local cached version.)
+# %% codecell
+trainDataset = reader.read(cached_path(
+    'https://raw.githubusercontent.com/allenai/allennlp'
+    '/master/tutorials/tagger/training.txt'))
+
+validationDataset = reader.read(cached_path(
+    'https://raw.githubusercontent.com/allenai/allennlp'
+    '/master/tutorials/tagger/validation.txt'))
+
+
+# %% markdown
+# ### Step 3.c) Training: Create the Vocabulary
+# Once we've read in the datasets, we use them to create our Vocabulary (that is, the mapping[s] from tokens / labels to ids).
+# %% codecell
+vocab = Vocabulary.from_instances(instances = trainDataset + validationDataset)
+vocab
+
+# %% markdown
+# ### Step 3.d) Training: Choose embedding and hidden layer sizes
+# Now we need to construct the model. We'll choose a size for our embedding layer and for the hidden layer of our LSTM.
+# %% codecell
+EMBEDDING_DIM = 6
+HIDDEN_DIM = 6
+
+# %% markdown
+# ### Step 3.e) Training: Create the Embeddings
+# For embedding the tokens we'll just use the `BasicTextFieldEmbedder`.
+#
+# This takes a mapping from index names to embeddings.
+#
+# The default parameters for `DatasetReader` included a single index called "tokens", so our mapping just needs an embedding corresponding to that index.
+#
+# The number of embeddings is set to be equal to the `Vocabulary` size.
+#
+# The output dimension is set to equal the `EMBEDDING_DIM`
+#
+# It is also possible to start with pre-trained embeddings (for example, GloVe vectors), but there's no need to do that on this tiny toy dataset.
+# %% codecell
+tokenEmbedding = Embedding(num_embeddings=vocab.get_vocab_size('tokens'),
+                           embedding_dim=EMBEDDING_DIM)
+wordEmbeddings = BasicTextFieldEmbedder({"tokens": tokenEmbedding})
+
+tokenEmbedding
+wordEmbeddings
+# %% markdown
+# ### Step 3.f) Training: Specify the Sequence Encoder
+# The `PytorchSeq2SeqWrapper` is needed here to add some extra functionality and cleaner interface to the built-in PyTorch module.
+#
+# Also specify `batch_first = True` (always the case in AllenNLP)
+# %% codecell
+lstmEncoder = PytorchSeq2SeqWrapper(module =
+                             torch.nn.LSTM(input_size = EMBEDDING_DIM,
+                                           hidden_size = HIDDEN_DIM,
+                                           batch_first = True
+                                           )
+                                    )
+lstmEncoder
+
+# %% markdown
+# ### Step 3.g) Training: Instantiate the POS Tagger Model
+# %% codecell
+posTagModel = LstmTagger(wordEmbeddings = wordEmbeddings,
+                         encoder = lstmEncoder,
+                         vocab = vocab)
+posTagModel
+# %% codecell
+# Checking for GPU
+if torch.cuda.is_available():
+    cudaDevice = 0
+    model = model.cuda(cudaDevice)
+else:
+    cudaDevice = -1
+
+ cudaDevice
+
+
+# %% markdown
+# ### Step 3.h) Training: Create Optimizer
+# Using stochastic gradient descent here.
+# %% codecell
+optimizer = optim.SGD(posTagModel.parameters(), lr=0.1)
+# %% markdown
+# ### Step 3.i) Training: Create Iterator
+# Need a `DataIterator` that handles batching for the datasets.
+#
+# The `BucketIterator` sorts instances by the specified fields in order to create batches with similar sequence lengths.
+#
+# Below, we sort the instances by the number of tokens in the sentence field.
+# %% codecell
+iterator = BucketIterator(batch_size=2, sorting_keys=[("sentence", "num_tokens")])
+
+iterator.index_with(vocab)
+
+# %% markdown
+# ### Step 3.j) Training: Create the `Trainer`
+# Instantiating the `Trainer` and running it.
+#
+# Setting the `patience = 10`: Here we run for 1000 epochs and stop training early if it ever spends 10 epochs without the validation metric improving.
+#
+# * NOTE: Default validation metric is the loss, which improves by getting smaller, but can also specify a different metric and direction (like accuracy, which should increase)
+# %% codecell
+trainer = Trainer(model = posTagModel,
+                  optimizer = optimizer,
+                  iterator = iterator,
+                  train_dataset = trainDataset,
+                  validation_dataset = validationDataset,
+                  patience = 10,
+                  num_epochs = 1000,
+                  cuda_device = cudaDevice)
