@@ -26,7 +26,7 @@ dependencies:
   # ======================================================
   # Natural Language Processing / Autodiff / Neural Nets
   # ======================================================
-  - tensorflow>=1.13.0
+  - tensorflow>=1.14.0
   - tensorboard
   - tensorflow-probability
   - allennlp
