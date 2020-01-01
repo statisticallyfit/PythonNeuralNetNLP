@@ -1,4 +1,4 @@
-name: pynlp_env
+name: pynlp_env2
 channels:
   #- ankurankan
   #- anaconda
@@ -12,6 +12,10 @@ dependencies:
   - pip
   - python>=3.6.7 #3.7.3
   - jupyterlab
+  # https://hyp.is/5GZIiCyUEeq39Z_3EE6t6Q/github.com/kiwi0fruit/pandoctools/blob/master/docs/tips.md
+  - exec-wrappers
+  - ipykernel
+  # Hydrogen plugin
   - jupytext
   - statsmodels
   - numpy
@@ -53,6 +57,9 @@ dependencies:
   # Report / doc generation
   # ==============
   - knitty=0.6.0
+  - conda-forge::pandoc>=2.9.1
+  - conda-forge::pandoctools>=2.8.0.3
+  - conda-forge::sugartex>=0.1.16
 
   # ==============
   # Plotting
