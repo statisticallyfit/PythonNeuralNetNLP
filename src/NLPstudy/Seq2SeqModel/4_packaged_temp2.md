@@ -333,27 +333,25 @@ Image(filename = pth + "/src/NLPstudy/images/gru.png")
 
 
 
-```python
-# **NOTE:** the $\tilde{h}_t$ represents the new gate, $n_t$
-#
-# [Image source](https://colah.github.io/posts/2015-08-Understanding-LSTMs/)
-#
-#
-# ### Encoder
-#
-# #### Forward Pass of Encoder:
-#
-# First, we'll build the encoder. Similar to the previous model, we only use a single layer GRU, however we now use a *bidirectional RNN*.
-#
-# - **Bidirectional RNN:** there are two RNNs per layer:
-# - A *forward RNN* going over the sentence from left to right (shown below in green), and
-# - a *backward RNN* going over the sentence from right to left (yellow).
-#
-# In PyTorch all we need to do in code is set `bidirectional = True` and then pass the embedded sentence to the RNN as before.
-#
-# **Key Changes:** The changes this time are all within the `forward` method. It now accepts the lengths of the source sentences as well as the sentences themselves.
-```
+**NOTE:** the $\tilde{h}_t$ represents the new gate, $n_t$
 
+[Image source](https://colah.github.io/posts/2015-08-Understanding-LSTMs/)
+
+
+### Encoder
+
+#### Forward Pass of Encoder:
+
+First, we'll build the encoder. Similar to the previous model, we only use a single layer GRU, however we now use a *bidirectional RNN*.
+
+- **Bidirectional RNN:** there are two RNNs per layer:
+- A *forward RNN* going over the sentence from left to right (shown below in green), and
+- a *backward RNN* going over the sentence from right to left (yellow).
+
+In PyTorch all we need to do in code is set `bidirectional = True` and then pass the embedded sentence to the RNN as before.
+
+**Key Changes:** The changes this time are all within the `forward` method. It now accepts the lengths of the source sentences as well as the sentences themselves.
+![png](4_packaged_temp2_files/4_packaged_temp2_20_0.png)
 
 ```python
 Image(filename= pth + "/src/NLPstudy/images/3_encoderGRU_bidirectional.png")
