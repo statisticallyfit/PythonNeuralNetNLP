@@ -12,7 +12,9 @@ pth
 # # 4 - Packed Padded Sequences, Masking and Inference
 #
 # In this notebook we will be adding a few improvements - packed padded sequences and masking - to the model from the previous notebook.
+#
 # **Definition: Packed padded sequences:** are used to tell our RNN to skip over padding tokens in our encoder.
+#
 # **Definition: Mask:** A mask explicitly forces the model to ignore certain values, such as attention over padded elements.
 #
 # Both of these techniques are commonly used in NLP.

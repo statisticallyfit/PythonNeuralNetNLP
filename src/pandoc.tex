@@ -1,0 +1,51 @@
+% \documentclass[12pt]{article}
+
+% Color SetUp ---------------------------------------------------
+
+% note: must keep this import before background import setup or else the colors will NOT show up!
+
+% \usepackage[dvipsnames]{xcolor}
+
+
+
+% Font Setup  ---------------------------------------------------------
+\usepackage{unicode-math} % load 'fontspec' automatically
+% \usepackage{fontspec, xunicode}
+%\usepackage[T1]{fontenc} ?????
+
+% \setmainfont{Linux Biolinum O}
+%\setmainfont{Junction}
+\setmainfont{Overlock}
+
+%\setmathfont{XITS Math}
+\setmathfont{TeX Gyre Schola Math}
+
+
+% Declaring a command to set the definition and lemma titles in a different font.
+%\newfontfamily\cinzelDecorative{Cinzel Decorative}
+%\DeclareTextFontCommand{\defFont}{\cinzelDecorative}
+
+%% TODO: how to set code font in latex?
+
+
+% Page Margin SetUp ---------------------------------------------------
+
+\usepackage{geometry}
+ \geometry{
+ a4paper,
+ %total={170mm,257mm},
+ left=5mm, lmargin=5mm, inner=5mm,
+ right=5mm, rmargin=5mm, outer=5mm,
+ top=5mm, tmargin=5mm,
+ bottom=5mm, bmargin=5mm,
+ }
+
+% -------------------------------------------------------------------------------
+
+%% color and other settings for hyperref package
+\hypersetup{
+    bookmarksopen=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=RoyalBlue,
+}

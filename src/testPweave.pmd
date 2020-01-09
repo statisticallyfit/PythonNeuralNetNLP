@@ -1,0 +1,22 @@
+
+```python
+mylist = [1,2,3,4]
+print(mylist)
+```
+
+
+This is a formula here:
+$$
+x^2 + y^3 + 4*zyx
+$$
+```python
+mylist.append(5)
+mylist
+```
+```python
+print("hi my name is giraffe i like to pirouette during nutracker ballet")
+```
+
+$$
+\sum_{n = 0}^\inf \frac {x^n} {n!}
+$$
