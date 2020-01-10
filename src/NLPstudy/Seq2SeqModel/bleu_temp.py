@@ -8,7 +8,7 @@ from collections import Counter
 import torch
 import torch.tensor as Tensor
 import torchtext
-from torchtext.data.utils import ngrams_iterator
+#from torchtext.data.utils import ngrams_iterator
 
 
 
@@ -33,7 +33,7 @@ def computeNGramCounter(tokens: list, MAX_N: int) -> Counter:
     assert MAX_N > 0
 
     ngramsCounter: Counter = Counter(tuple(x.split(' '))
-                                         for x in ngrams_iterator(tokens, MAX_N))
+                                         for x in torchtext.data.utils.ngrams_iterator(tokens, MAX_N))
 
     return ngramsCounter
 
