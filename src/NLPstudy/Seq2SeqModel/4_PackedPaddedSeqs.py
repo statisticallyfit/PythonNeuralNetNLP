@@ -1,5 +1,5 @@
 
-# %% markdown
+# %% markdown [markdown]
 # Source: [part 4](https://github.com/bentrevett/pytorch-seq2seq/blob/master/4%20-%20Packed%20Padded%20Sequences%2C%20Masking%2C%20Inference%20and%20BLEU.ipynb)
 
 # %% codecell
@@ -9,20 +9,21 @@ from IPython.display import Image
 pth = os.getcwd()
 pth
 
-# %% markdown
+# %% markdown [markdown]
 # # 4 - Packed Padded Sequences, Masking and Inference
-#
 # In this notebook we will be adding a few improvements - packed padded sequences and masking - to the model from the previous notebook.
+#
 # **Definition: Packed padded sequences:** are used to tell our RNN to skip over padding tokens in our encoder.
-# **Definition: Mask:** A mask explicitly forces the model to ignore certain values, such as attention over padded elements.
 #
-# Both of these techniques are commonly used in NLP.
+#  **Definition: Mask:** A mask explicitly forces the model to ignore certain values, such as attention over padded elements.
 #
-# We will also look at how to use our model for inference, by giving it a sentence, seeing what it translates it as and seeing where exactly it pays attention to when translating each word.
+#  Both of these techniques are commonly used in NLP.
+#
+#  We will also look at how to use our model for inference, by giving it a sentence, seeing what it translates it as and seeing where exactly it pays attention to when translating each word.
 #
 # ## Preparing Data
 #
-# Again, the preparation is similar to last time.
+#  Again, the preparation is similar to last time.
 #
 # First we import all the required modules.
 
@@ -56,7 +57,7 @@ random.seed(SEED)
 torch.manual_seed(SEED)
 torch.backends.cudnn.deterministic = True
 
-# %% markdown
+# %% markdown [markdown]
 # ### 1. Create the Tokenizers
 #
 # Next, we'll create the tokenizers. A tokenizer is used to turn a string containing a sentence into a list of individual tokens that make up that string, e.g. "good morning!" becomes ["good", "morning", "!"].
@@ -69,6 +70,9 @@ torch.backends.cudnn.deterministic = True
 # cd /development/.../NLPStudy/data
 # python -m spacy download en
 # python -m spacy download de
+# Or type the same commands above from notebook as:
+# !python -m spacy download en
+# !python -m spacy download de
 
 # Then load the models
 spacyDE = spacy.load('de')
@@ -76,7 +80,7 @@ spacyEN = spacy.load('en')
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### 2. Create the Tokenizer Functions
 #
 # Next, we create the tokenizer functions. These can be passed to TorchText and will take in the sentence as a string and return the sentence as a list of tokens.
@@ -105,7 +109,7 @@ def tokenizeEnglish(englishText: str):
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # We set the tokenize argument to the correct tokenization function for each, with German being the `SRC` (source) field and English being the `TRG` (target) field. The `Field` also appends the "start of sequence" and "end of sequence" tokens via the `init_token` and `eos_token` arguments, and converts all words to lowercase.
 #
 # [To read more about Field's arguments](https://github.com/pytorch/text/blob/master/torchtext/data/field.py#L61)
@@ -135,7 +139,7 @@ TRG = Field(tokenize = tokenizeEnglish,
             lower = True)
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### 3. Download the Data
 #
 # Next, we download and load the train, validation and test data.
@@ -167,7 +171,7 @@ print(vars(trainData.examples[0]))
 # -
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### 4. Building the vocabulary
 #
 # Next, we build the *vocabulary* for the source and target languages.
@@ -190,7 +194,7 @@ print(f"Unique tokens in source (de) vocabulary: {len(SRC.vocab)}")
 print(f"Unique tokens in target (en) vocabulary: {len(TRG.vocab)}")
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### 5. (Final) Create the Iterators
 #
 # The final step of preparing the data is to create the iterators. These can be iterated on to return a batch of data which will have a `src` attribute (the PyTorch tensors containing a batch of numericalized source sentences) and a `trg` attribute (the PyTorch tensors containing a batch of numericalized target sentences). Numericalized is just a fancy way of saying they have been converted from a sequence of readable tokens to a sequence of corresponding indexes, using the vocabulary.
@@ -218,7 +222,8 @@ trainIterator, validationIterator, testIterator = BucketIterator.splits(
 # -
 
 
-# %% markdown
+# %% markdown [markdown] 
+#
 # ## Building the Seq2Seq Model (GRU)
 #
 # **Overview:** We use a  bidirectional GRU `Encoder` and non-bidirectional GRU `Decoder`.
@@ -227,12 +232,14 @@ trainIterator, validationIterator, testIterator = BucketIterator.splits(
 #
 # For each element in the input sequence, each layer computes the following functions:
 #
-# \begin{align*}
-# r_t &= \text{sigmoid}(W_{ir} x_t + b_{ir} + W_{hr} h_{t-1} + b_{hr}) \\
-# z_t &= \text{sigmoid}(W_{iz} x_t + b_{iz} + W_{hz} h_{t-1} + b_{hz}) \\
-# n_t &= \text{tanh}(W_{in} x_t + b_{in} + r_t * (W_{hn} h_{t-1} + b_{hn})) \\
-# h_t &= (1 - z_t) * n_t + z_t + h_{t-1} \\
-# \end{align*}
+# $$
+# \begin{array}{ll}
+# r_t = \text{sigmoid}(W_{ir} x_t + b_{ir} + W_{hr} h_{t-1} + b_{hr}) \\
+# z_t = \text{sigmoid}(W_{iz} x_t + b_{iz} + W_{hz} h_{t-1} + b_{hz}) \\
+# n_t = \text{tanh}(W_{in} x_t + b_{in} + r_t * (W_{hn} h_{t-1} + b_{hn})) \\
+# h_t = (1 - z_t) * n_t + z_t + h_{t-1} \\
+# \end{array}
+# $$
 #
 # ##### Variable Meanings in GRU:
 # - $x_t$ = the input at time $t$
@@ -248,15 +255,15 @@ trainIterator, validationIterator, testIterator = BucketIterator.splits(
 #
 # - $W_{ih}$ = tensor containing the learnable input-to-hidden weights of the layers. Has shape (3 * `hiddenSize`, `inputSize`) for $k = 0$, else the shape is (3 * `hiddenSize`, `numDirections` * `hiddenSize`).
 # - Refers to:
-# 	- $W_{ir}$ = input-to-hidden weights for all layers for the reset gate
-# 	- $W_{iz}$ = input-to-hidden weights for all layers for the update gate
-# 	- $W_{in}$ = input-to-hidden weights for all layers for the new gate
+#     - $W_{ir}$ = input-to-hidden weights for all layers for the reset gate
+#     - $W_{iz}$ = input-to-hidden weights for all layers for the update gate
+#     - $W_{in}$ = input-to-hidden weights for all layers for the new gate
 #
 # - $W_{hh}$ = tensor containing the learnable hidden-to-hidden weights of the layers. Has shape (3 * `hiddenSize`, `hiddenSize`).
 # - Refers to:
-# 	- $W_{hr}$ = hidden-to-hidden weights for all layers for the reset gate
-# 	- $W_{hz}$ = hidden-to-hidden weights for all layers for the update gate
-# 	- $W_{hn}$ = hidden-to-hidden weights for all layers for the new gate
+#     - $W_{hr}$ = hidden-to-hidden weights for all layers for the reset gate
+#     - $W_{hz}$ = hidden-to-hidden weights for all layers for the update gate
+#     - $W_{hn}$ = hidden-to-hidden weights for all layers for the new gate
 #
 #
 # - `inputSize` = the number of expected features in the input $X$
@@ -273,11 +280,12 @@ trainIterator, validationIterator, testIterator = BucketIterator.splits(
 #
 #
 # The GRU model (drawing) looks like:
+#
 
 # %% codecell
-Image(filename = pth + "/images/gru.png")
+Image(filename = pth + "/src/NLPstudy/images/gru.png")
 
-# %% markdown
+# %% markdown [markdown]
 # **NOTE:** the $\tilde{h}_t$ represents the new gate, $n_t$
 #
 # [Image source](https://colah.github.io/posts/2015-08-Understanding-LSTMs/)
@@ -299,9 +307,9 @@ Image(filename = pth + "/images/gru.png")
 
 
 # %% codecell
-Image(filename= pth + "/images/3_encoderGRU_bidirectional.png")
+Image(filename= pth + "/src/NLPstudy/images/3_encoderGRU_bidirectional.png")
 
-# %% markdown
+# %% markdown [markdown]
 # We now have:
 #
 # $$
@@ -461,7 +469,7 @@ class Encoder(nn.Module):
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Attention
 #
 # Next up is the attention layer. The attention module is where we calculate the attention values over the source sentence.
@@ -515,9 +523,9 @@ class Encoder(nn.Module):
 # Graphically, this looks something like below. This is for calculating the very first attention vector, where $s_{t-1} = s_0 = z$. The green/yellow blocks represent the hidden states from both the forward and backward RNNs, and the attention computation is all done within the pink block.
 
 # %% codecell
-Image(filename = pth + "/images/3_attention.png")
+Image(filename = pth + "/src/NLPstudy/images/3_attention.png")
 
-# %% markdown
+# %% markdown [markdown]
 # **New Key Feature: Masking**
 #
 # The `forward` method now takes a `mask` input.
@@ -610,7 +618,7 @@ class Attention(nn.Module):
         return F.softmax(input = attention, dim = 1)
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Decoder
 #
 # Next up is the decoder. Compared to [part 3](https://github.com/statisticallyfit/PythonNeuralNetNLP/blob/master/src/NLPstudy/Seq2SeqModel/3_NeuralTranslation.ipynb), this `Decoder`  needs only a few small changes:
@@ -658,9 +666,9 @@ class Attention(nn.Module):
 # The image below shows decoding the first word in an example translation.
 
 # %% codecell
-Image(filename = pth + "/images/3_decoderGRU.png")
+Image(filename = pth + "/src/NLPstudy/images/3_decoderGRU.png")
 
-# %% markdown
+# %% markdown [markdown]
 # The green/yellow blocks show the forward/backward encoder RNNs which output $H$, the red block shows the context vector, $z = h_T = \tanh(g(h^\rightarrow_T,h^\leftarrow_T)) = \tanh(g(z^\rightarrow, z^\leftarrow)) = s_0$, the blue block shows the decoder RNN which outputs $s_t$, the purple block shows the linear layer, $f$, which outputs $\hat{y}_{t+1}$ and the orange block shows the calculation of the weighted sum over $H$ by $a_t$ and outputs $w_t$. Not shown is the calculation of $a_t$.
 
 # %% codecell
@@ -785,7 +793,7 @@ class Decoder(nn.Module):
 
         return prediction, hidden, attn
 
-# %% markdown
+# %% markdown [markdown]
 # ### Seq2Seq
 #
 # This is the first model where we don't have to have the `Encoder` RNN and `Decoder` RNN have the same hidden dimensions, however the `Encoder` has to be bidirectional. This requirement can be removed by changing all occurences of `enc_dim * 2` to `enc_dim * 2 if 'encoderIsBidirectional else enc_dim`.
@@ -897,7 +905,7 @@ class Seq2Seq(nn.Module):
         return outputs
 
 
-# %% markdown
+# %% markdown [markdown]
 # Training the Seq2Seq Model
 
 # The rest of this tutorial is very similar to the previous one.
@@ -940,7 +948,7 @@ seqToSeqMaskModel
 
 device
 
-# %% markdown
+# %% markdown [markdown]
 # ## Step 2: Initialize the Weights of the Seq2Seq Model
 #
 # We use a simplified version of the weight initialization scheme used in the paper. Here, we will initialize all biases to zero and all weights from $\mathcal{N}(0, 0.01)$.
@@ -956,7 +964,7 @@ def initWeights(model: Seq2Seq):
 seqToSeqMaskModel.apply(initWeights)
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Step 3: Print Out Parameters
 #
 # Define a function to calculate number of trainable parameters in the model.
@@ -971,14 +979,14 @@ print(f'The model has {countParameters(seqToSeqMaskModel):,} trainable parameter
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Step 4: Initialize the Optimizer (Adam)
 
 # %% codecell
 adamOptimizer = optim.Adam(seqToSeqMaskModel.parameters())
 adamOptimizer
 
-# %% markdown
+# %% markdown [markdown]
 # ### Step 5: Define the Loss Function (Cross Entropy)
 #
 # Make sure to ignore the loss on `<pad>` tokens.
@@ -991,7 +999,7 @@ crossEntropyLossFunction = nn.CrossEntropyLoss(ignore_index = TRG_PAD_IDX)
 crossEntropyLossFunction
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Step 6: Define the Training Loop
 #
 # - **NOTE:** same as part 1
@@ -1078,7 +1086,7 @@ def train(seqModel: Seq2Seq, iterator, optimizer, lossFunction, clip: int):
 
     return lossPerEpoch / len(iterator) # average loss
 
-# %% markdown
+# %% markdown [markdown]
 # ### Step 7: Define the Evaluation Loop
 #
 # Our evaluation loop is similar to our training loop, however as we aren't updating any parameters we don't need to pass an optimizer or a clip value.
@@ -1136,7 +1144,7 @@ def epochTimer(startTime, endTime):
     return elapsedMins, elapsedSecs
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Step 8: Train the Model
 
 # %% codecell
@@ -1190,7 +1198,7 @@ testLoss = evaluate(seqModel=seqToSeqMaskModel,
 print(f'| Test Loss: {testLoss:.3f} | Test PPL: {math.exp(testLoss):7.3f} |')
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## Inference
 #
 # Now we can use our trained model to generate translations.
@@ -1298,7 +1306,7 @@ def translateSentence(sentence, srcField: Field, trgField: Field,
     return trgTokens[1:], attentionValues[ : (len(trgTokens) - 1)]
 
 
-# %% markdown
+# %% markdown [markdown]
 # Next, we'll make a function that displays the model's attention over the source sentence for each target token generated.
 # %% codecell
 def displayAttention(sentence, translation, attention):
@@ -1347,7 +1355,7 @@ def displayAttention(sentence, translation, attention):
     plt.close()
 
 
-# %% markdown
+# %% markdown [markdown]
 # Now, we'll grab some translations from our dataset and see how well our model did. Note, we're going to cherry pick examples here so it gives us something interesting to look at, but feel free to change the `exampleIndex` value to look at different examples.
 #
 # First, we'll get a source and target from our dataset.
@@ -1363,7 +1371,7 @@ trg = vars(trainData.examples[exampleIndex])['trg']
 print(f'src = {src}')
 print(f'trg = {trg}')
 
-# %% markdown
+# %% markdown [markdown]
 # Then we'll use our translateSentence function to get our predicted translation
 # and attention. We show this
 # graphically by having the source sentence on the x-axis and the predicted
@@ -1385,7 +1393,7 @@ print(f'predicted trg = {translation}')
 displayAttention(sentence = src, translation = translation, attention = attn)
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Test Set Example Translation:
 #
 # Translations from the training set could simply be memorized by the model. So it's only fair we look at translations from the validation and testing set too.
@@ -1401,7 +1409,7 @@ trg = vars(validationData.examples[exampleIndex])['trg']
 print(f'src = {src}')
 print(f'trg = {trg}')
 
-# %% markdown
+# %% markdown [markdown]
 # Then let's generate our translation and view the attention.
 #
 # Here, the translation is slightly different and is a more literal translation
@@ -1419,7 +1427,7 @@ print(f'predicted trg = {translation}')
 displayAttention(sentence = src, translation = translation, attention = attn)
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Test Set Example Translation:
 
 # %% codecell
@@ -1431,7 +1439,7 @@ trg = vars(testData.examples[exampleIndex])['trg']
 print(f'src = {src}')
 print(f'trg = {trg}')
 
-# %% markdown
+# %% markdown [markdown]
 # Again, it produces a slightly different translation than target, a more literal
 # version of the source sentence.
 #
@@ -1452,7 +1460,7 @@ displayAttention(sentence = src, translation = translation, attention = attn)
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## BLEU
 #
 # Previously we have only cared about the loss/perplexity of the model. However there metrics that are specifically designed for measuring the quality of a translation - the most popular is *BLEU*. Without going into too much detail, BLEU looks at the overlap in the predicted and actual target sequences in terms of their n-grams. It will give us a number between 0 and 1 for each sequence, where 1 means there is perfect overlap, i.e. a perfect translation, although is usually shown between 0 and 100. BLEU was designed for multiple candidate translations per source sequence, however in this dataset we only have one candidate per source.
@@ -1496,7 +1504,7 @@ theBleuScore = calculateBLEU(data = testData, srcField = SRC, trgField = TRG,
 
 print(f'BLEU score = {theBleuScore*100:.2f}')
 
-# %% markdown
+# %% markdown [markdown]
 # We get a BLEU of almost 29. If we compare it to the paper that the attention model is attempting to replicate, they achieve a BLEU score of 26.75. This is similar to our score, however they are using a completely different dataset and their model size is much larger - 1000 hidden dimensions which takes 4 days to train! - so we cannot really compare against that either.
 #
 # This number isn't really interpretable, we can't really say much about it. The most useful part of a BLEU score is that it can be used to compare different models, where the one with the **higher** BLEU score is "better".
