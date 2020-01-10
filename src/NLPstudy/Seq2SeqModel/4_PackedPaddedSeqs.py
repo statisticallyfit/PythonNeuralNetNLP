@@ -146,6 +146,7 @@ TRG = Field(tokenize = tokenizeEnglish,
 #
 # The dataset we'll be using is the [Multi30k dataset](https://github.com/multi30k/dataset)
 
+# %% codecell
 # NOTE: after this, the data is stored in
 # a folder under NLPSTUDY called '.data'
 trainData, validationData, testData = Multi30k.splits(exts = ('.de', '.en'),
@@ -222,7 +223,7 @@ trainIterator, validationIterator, testIterator = BucketIterator.splits(
 # -
 
 
-# %% markdown [markdown] 
+# %% markdown [markdown]
 #
 # ## Building the Seq2Seq Model (GRU)
 #
