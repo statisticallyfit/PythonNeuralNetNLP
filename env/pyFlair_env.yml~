@@ -15,7 +15,6 @@ dependencies:
   - mypy
   - jupyterlab
   - ipykernel # Hydrogen dependency
-  - conda-forge::python-language-server # hydrogen dependency
   - jupytext # Hydrogen dependency
   # https://hyp.is/5GZIiCyUEeq39Z_3EE6t6Q/github.com/kiwi0fruit/pandoctools/blob/master/docs/tips.md
   #- exec-wrappers
