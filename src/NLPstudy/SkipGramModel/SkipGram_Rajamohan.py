@@ -1,7 +1,7 @@
-# %% codecell
-# Author: Srijith Rajamohan based off the work by Robert Guthrie
-# Source:
-# https://srijithr.gitlab.io/post/word2vec/
+# %% markdown [markdown]
+# Author: Ana-Maria Vintila, based off work from Srijith Rajamohan based off the work by Robert Guthrie
+#
+# Source: https://srijithr.gitlab.io/post/word2vec/
 # %% codecell
 import os
 from IPython.display import Image
@@ -9,7 +9,10 @@ from IPython.display import Image
 pth = os.getcwd()
 pth
 # %% codecell
-Image(filename=pth + '/images/Skip-gram.png')
+Image(filename=pth + '/src/NLPstudy/images/Skip-gram.png')
+
+# %% markdown [markdown]
+# Loading the imports:
 # %% codecell
 import torch
 import torch.tensor as Tensor
@@ -26,6 +29,12 @@ from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import euclidean_distances
 
 torch.manual_seed(1)
+
+# %% markdown [markdown]
+# # Step 1: Initialization
+# Here we set the context window size to $3$ words and the word embedding dimension to $10$, and also pass in the text corpora from which we build vocabulary.
+#
+# Tokenizing the text occurs later while reading in the data.
 # %% codecell
 CONTEXT_SIZE = 3
 EMBEDDING_DIM = 10
@@ -53,10 +62,12 @@ That sensitivity informed “Freedom’s Fearful Foe: Poverty,” his celebrated
 """.split()
 
 
-# we should tokenize the input, but we will ignore that for now
-
-
-# Building NGRAMS: build a list of tuples.  Each tuple is ([ word_i-2, word_i-1 ], target word)
+# %% markdown [markdown]
+# # Step 2: Build the $n$-grams
+# Next we build the $n$-grams, or sequence of words, as a list of tuples.
+#
+# Each tuple is ([ `word`$_{i-2}$, `word`$_{i-1}$ ], `targetWord`)
+# %% codecell
 ngrams = []
 for i in range(len(testSentence) - CONTEXT_SIZE):
     tup = [testSentence[j] for j in np.arange(i + 1, i + CONTEXT_SIZE + 1)]
@@ -64,13 +75,21 @@ for i in range(len(testSentence) - CONTEXT_SIZE):
     ngrams.append( (testSentence[i], tup) )
     # cbow# ngrams.append( (tup, testSentence[i + CONTEXT_SIZE]) )
 
+# %% markdown [markdown]
+# # Step 3: Create Vocabulary
+# Create the vocabulary by converting the text into a `set` to remove duplicate words.
 
-# Creating vocabulary
+# %% codecell
 vocabulary = set(testSentence)
 
-# Creating word to index map:
-wordToIndex = {word : i for i, word in enumerate(vocabulary)}
+# %% markdown [markdown]
+# # Step 4: Create Map of Words to Indices
+#
+# Creating word to index map that prints the key (word) corresponding to the given index in the dictionary argument. Basically, we get a list of tuples (number, word) from zipping the sequence $0,1,2,3 ....$ with the vocabulary word list.
+
 # %% codecell
+wordToIndex = {word : i for i, word in enumerate(vocabulary)}
+
 def printKey(iWord, wordToIndexDict):
     """
     Prints the key (the word) corresponding to the given index in the given dictionary.
@@ -112,6 +131,23 @@ def readData(filePath):
 
     return cleanedWords
 
+# %% markdown [markdown]
+# # Step 6: Create Skip-Gram Model
+# The skip-gram neural network has three components:
+#
+# 1. embedding layer, created using pytorch's `nn.Embedding`, to convert tensors into word embeddings.
+# 2. hidden layer, in this case it is a linear layer.
+# 3. output layer, in this case also linear layer.
+#
+# ### Forward Pass of Skip-Gram:
+# 1. Convert the tensor `inputs` to word embeddings via the skip-gram's `nn.Embedding` layer
+# 2. Pass the embeddings to the hidden layer and transform the result using the `relu` function
+# 3. Transform the hidden layer results using the output layer.
+# 4. Finally, create a probability distribution over words using the `softmax` function. (Here we actually use the `log_softmax` so the results are log probabilities instead of probabilities. )
+#
+# ### Predictions:
+# To generate predictions we need to execute the `forward` pass of the skip-gram model and get the index of the maximum probability from the output layer. Then that index is used to find the corresponding prediction word.
+#
 # %% codecell
 class SkipGramModeler(nn.Module):
 
@@ -244,7 +280,7 @@ print("contextIndices size: ", contextIndices.size())
 
 
 
-
+# %% codecell
 dummyModel = SkipGramModeler(vocabSize=len(vocabulary), embeddingDim=EMBEDDING_DIM,
                          contextSize=CONTEXT_SIZE)
 
@@ -290,8 +326,23 @@ for i in indices:
 
 print("\nlength of key,ind pairs: ", len(keyIndFilteredPairs))
 print("keyIndFilteredPairs: ", keyIndFilteredPairs)
+
+# %% markdown [markdown]
+# # Step 7: Train the Skip-Gram Model
+# Training the model requires the following steps:
+# 
+# 1. Convert the context words into integer indices using the `wordToIndex` dictionary, and make their type a `Tensor`.
+# 2. Set the model gradients to zero so they do not accumulate artificially (feature of pytorch)
+# 3. Do the `forward` pass of the Skip-Gram model, resulting in the log probabilities of the context words.
+# 4. For each word in the correct target context wrods, convert it to an index using the `wordToIndex` dictionary and wrap it in a `Tensor` type.
+# 5. Compute the loss between the log probabilities and target contexts.
+# 6. Do the `backward` pass over the neural network to update the gradients by calling `loss.backward()`.
+# 7. Do one step using the optimizer, so that weights are updated using stochastic gradient descent.
+# 8. Increment the total loss by this epoch's current loss.
+
 # %% codecell
-# Training the model
+%time
+
 learningRate = 0.001
 NUM_EPOCHS = 550
 
@@ -300,10 +351,11 @@ lossFunction = nn.NLLLoss()
 skipGramModel = SkipGramModeler(vocabSize = len(vocabulary),
                         embeddingDim=EMBEDDING_DIM,
                         contextSize=CONTEXT_SIZE)
+# Using the stochastic-gradient descent optimizer.
 optimizer = optim.SGD(skipGramModel.parameters(), lr = learningRate)
 
-# Freeze embedding layer (TODO: why???)
-# model.freezeLayer("embeddings")
+# Preserve the data by freezing the embedding layer
+#skipGramModel.freezeLayer("embeddingsSkipGram")
 
 for epoch in range(NUM_EPOCHS):
     totalLoss = 0
