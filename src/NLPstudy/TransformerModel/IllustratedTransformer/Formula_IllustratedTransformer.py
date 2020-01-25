@@ -1,4 +1,4 @@
-# %% markdown --- tutorial source links
+# %% markdown [markdown] --- tutorial source links
 # - [Source 1: Transformer Explained - part 1](https://graviraja.github.io/transformer/#)
 # - [Source 1: Transformer Explained - part 2](https://graviraja.github.io/transformerimp/#)
 # - [Source 2: Illustrated Transformer by Jay Alammar](https://jalammar.github.io/illustrated-transformer/#annotations:QWHOHvljEemu1C88OCwRXQ)
@@ -26,7 +26,7 @@ pth
 
 # TODO: have the above data munging prep in another file and have this nice markup with class code as separate file, imported into the other one.
 
-# %% markdown --- title
+# %% markdown [markdown] --- title
 # # Transformer Explained - Part 1
 #
 # [Paper - Attention is All You Need](https://hyp.is/vcxebvlpEemxWNvmc21KAQ/arxiv.org/pdf/1706.03762.pdf)
@@ -36,7 +36,7 @@ Image(filename = pth + "transformer_animation.gif")
 
 
 
-# %% markdown --- Overview
+# %% markdown [markdown] --- Overview
 # # Overview
 # Recurrent neural networks, long short-term memory and gated recurrent neural networks in particular, have been firmly established as state of the art approaches in sequence modeling and transduction problems such as language modeling and machine translation.
 #
@@ -45,7 +45,7 @@ Image(filename = pth + "transformer_animation.gif")
 # In this work we propose the Transformer, a model architecture eschewing recurrence and instead relying entirely on an attention mechanism to draw global dependencies between input and output.
 
 
-# %% markdown --- Transformer overview
+# %% markdown [markdown] --- Transformer overview
 # # [Transformer Overview](https://hyp.is/t7_VJhkoEeq6HdNsFlt78A/arxiv.org/pdf/1706.03762.pdf)
 # ### Definition: `Transformer`
 # The transformer is a **sequence-to-sequence** model which contains an `Encoder` and `Decoder`. Its job is to translate sentences.
@@ -61,13 +61,13 @@ ImageResizer.resize(filename = pth + "encoderDecoderLayers.jpg", by=0.65)
 Image(filename = pth + "encoderLayers.jpg")
 
 
-# %% markdown --- Encoder
+# %% markdown [markdown] --- Encoder
 # # [Encoder](https://hyp.is/47hacvl_EemoWVuw4dRtSg/arxiv.org/pdf/1706.03762.pdf)
 #
 # Each `Encoder` contains a stack of identical encoder layers (in the paper they use $N = 6$ layers)
 # %% codecell
 ImageResizer.resize(filename = pth + "encoder_overview.png")
-# %% markdown -- Encoder Layer
+# %% markdown [markdown] -- Encoder Layer
 # ### [Definition: Encoder Layer in `Encoder`](https://hyp.is/47hacvl_EemoWVuw4dRtSg/arxiv.org/pdf/1706.03762.pdf)
 # An encoder layer is composed of 2 sub-layers:
 #
@@ -84,7 +84,7 @@ ImageResizer.resize(filename = pth + "encoder_overview.png")
 # 3. **Dropout:** Dropouts are also added to the output of each of the above sublayers before normalization.
 
 
-# %% markdown - Self-attention
+# %% markdown [markdown] - Self-attention
 # # [Self-Attention](https://hyp.is/n7sRYPmAEemG6BtKfDNqqg/arxiv.org/pdf/1706.03762.pdf)
 #
 # **Example:**
@@ -110,7 +110,7 @@ ImageResizer.resize(filename = pth + "encoder_overview.png")
 ImageResizer.resize(filename = pth + "self_attn_overview.png")
 
 
-# %% markdown - Q, K, V
+# %% markdown [markdown] - Q, K, V
 # ### Definition: Query, Key, Value Vectors (matrices)
 #
 # The query, key, and value vectors are abstractions useful for calculating attention.
@@ -160,7 +160,7 @@ ImageResizer.resize(filename = pth + "self_attn_overview.png")
 # Then, the $n$ *query, key, value* vectors for each word $i$ are $\{\overrightarrow{q_1}, \overrightarrow{q_2}, ..., \overrightarrow{q_n}\}$, $\{\overrightarrow{k_1}, \overrightarrow{k_2}, ..., \overrightarrow{k_n}\}$, $\{\overrightarrow{v_1}, \overrightarrow{v_2}, ..., \overrightarrow{v_n}\}$ respectively.
 
 
-# %% markdown - Self-Attention: Vector Calculation
+# %% markdown [markdown] - Self-Attention: Vector Calculation
 # # Self-Attention: Vector Calculation
 # ---
 # ### Step 1: Create Query, Key, Value Vectors
@@ -171,7 +171,7 @@ ImageResizer.resize(filename = pth + "self_attn_overview.png")
 # %% codecell
 # %% codecell
 ImageResizer.resize(filename = pth + "qkv.png")
-# %% markdown
+# %% markdown [markdown]
 # ---
 # ### Step 2: Calculate a Score
 # Say we are calculating the self-attention for word $i$ in this example, $\overrightarrow{x_i}$, whose numericalized word embedding is $\overrightarrow{w_i}$. We need to score each word of the input sentence against this word. The score determines how much **focus to place on other parts of the input sentence** as we encode a word at a certain position.
@@ -198,7 +198,7 @@ ImageResizer.resize(filename = pth + "qkv.png")
 # %% codecell
 # %% codecell
 Image(filename = pth + "qkv_thinkingmachines.png")
-# %% markdown
+# %% markdown [markdown]
 # ---
 # ### Step 3: Scale The Score
 #
@@ -232,7 +232,7 @@ Image(filename = pth + "qkv_thinkingmachines.png")
 
 # %% codecell
 Image(filename = pth + "scaling.png")
-# %% markdown
+# %% markdown [markdown]
 # ---
 # ### Step 5: Compute the Weights
 #
@@ -261,7 +261,7 @@ Image(filename = pth + "laststeps.png")
 
 
 
-# %% markdown - Self-Attention: Matrix-Based Calculation
+# %% markdown [markdown] - Self-Attention: Matrix-Based Calculation
 # # [Self-Attention: Matrix-Based Calculation](https://hyp.is/CnIFQPmBEemRzANcMgPbEA/arxiv.org/pdf/1706.03762.pdf)
 #
 # In general, when calculating the self-attention for any $i$-th word $\overrightarrow{w_i}$ in the sentence of $n$ words, we need to consider every query vector $\overrightarrow{q_i}$.
@@ -270,7 +270,7 @@ Image(filename = pth + "laststeps.png")
 # %% codecell
 # %% codecell
 ImageResizer.resize(filename = pth + "multihead.png")
-# %% markdown
+# %% markdown [markdown]
 # Behold the paper's motivation for using matrices for query, key, value:
 #
 # > *Instead of performing a single attention function with $d_{model}$-dimensional keys, values and queries, we found it beneficial to linearly project the queries, keys and values $h$ (number of `attention head`s) times with different, learned linear projections to $d_k$, $d_k$, and $d_v$ dimensions, respectively. On each of these projected versions of queries, keys and values we then perform the attention function in parallel, yielding $d_v$-dimensional output values. These are concatenated and once again projected, resulting in the final value.*
@@ -285,7 +285,7 @@ ImageResizer.resize(filename = pth + "multihead.png")
 # %% codecell
 # %% codecell
 Image(filename = pth + "multipleqkv.png")
-# %% markdown
+# %% markdown [markdown]
 # ## Steps to Calculate Multihead Attention Using Matrices:
 # ---
 # ### Step 1: Create $Q$, $K$, $V$ matrices
@@ -316,7 +316,7 @@ Image(filename = pth + "multipleqkv.png")
 # %% codecell
 # %% codecell
 ImageResizer.resize(filename =  pth + "matrixcalc_multihead.png", by=0.6)
-# %% markdown
+# %% markdown [markdown]
 # ---
 # ### Step 2: Apply Softmax To Get Output Matrix
 # Since we are using matrices, we can condense the steps two through six in the vector calculation of self-attention to find the final output matrix $Z_i$ for the $i$th attention head any self-attention layer:
@@ -326,7 +326,7 @@ ImageResizer.resize(filename =  pth + "matrixcalc_multihead.png", by=0.6)
 # %% codecell
 # %% codecell
 ImageResizer.resize(filename = pth + "multihead_formula.jpg", by = 0.6)
-# %% markdown
+# %% markdown [markdown]
 # ---
 # ### Step 3: Concatenate Output Matrices
 #
@@ -334,7 +334,7 @@ ImageResizer.resize(filename = pth + "multihead_formula.jpg", by = 0.6)
 # %% codecell
 # %% codecell
 Image(filename = pth + "multiple_z.png")
-# %% markdown
+# %% markdown [markdown]
 # But the feed-forward layer is not expecting all those matrices. It is expecting a single matrix (a vector for each word), so we must condense these eight matrices down to a single matrix.
 # - Note 1: there are $8$ output matrices since the paper uses $8$ attention heads.
 # - Note 2: the paper calls the "attention heads" the "attention layers" also.
@@ -354,11 +354,11 @@ Image(filename = pth + "multiple_z.png")
 # %% codecell
 # %% codecell
 Image(filename= pth + "multihead_condensematrices.png")
-# %% markdown
+# %% markdown [markdown]
 # Here we recap all the steps for calculating self-attention using matrices:
 # %% codecell
 Image(filename = pth + "multihead_recap.png")
-# %% markdown
+# %% markdown [markdown]
 # What happens as we add more attention heads?
 # Let us revisit our previous example to see where different attention heads are focusing as we encode the word "it" in the example sentence.
 # As we encode the word "it", one attention head is focusing most on "the animal" while another is focusing on "tired". This means the model's representation of the word "it" bakes in some of the representation of both "animal" and "tired".
@@ -370,7 +370,7 @@ ImageResizer.resize(filename = pth + "attnhead_example.jpg", by = 0.8)
 
 
 
-# %% markdown --- Positional Encoding
+# %% markdown [markdown] --- Positional Encoding
 # # [Positional Encoding: Representing The Order of the Sequence](https://hyp.is/OmJ95hksEeq6KQO3vRg-rA/arxiv.org/pdf/1706.03762.pdf)
 #
 # **Reason for Positional Encodings:**
@@ -401,7 +401,7 @@ Image(filename = pth + "posencodings.jpg")
 
 
 
-# %% markdown --- Position-Wise Feed-Forward Layer
+# %% markdown [markdown] --- Position-Wise Feed-Forward Layer
 # # [Position-Wise Feed-Forward Layer](https://hyp.is/i5IhNhkrEeqt67dCGzWnqw/arxiv.org/pdf/1706.03762.pdf)
 #
 # The second layer in the `Encoder` is a position-wise feed forward layer.
@@ -416,7 +416,7 @@ Image(filename = pth + "posencodings.jpg")
 
 
 
-# %% markdown -- The Residuals
+# %% markdown [markdown] -- The Residuals
 # # [Residual Connection](https://hyp.is/6zXZZPl_EemJBPt5Safoig/arxiv.org/pdf/1706.03762.pdf)
 #
 # Both the `Encoder` and `Decoder` stacks use residual connections. More specifically, each sub-layer in the stack (which contains the self-attention and feed-forward network) has a reisdual connection around it which is followed by a layer normalization step.
@@ -438,11 +438,11 @@ ImageResizer.resize(filename = pth + "layernorm_detail.png", by = 0.6)
 
 
 
-# %% markdown - Decoder
+# %% markdown [markdown] - Decoder
 # # [Decoder](https://hyp.is/QmIQchkpEeqc-4fiyvXmkw/arxiv.org/pdf/1706.03762.pdf)
 # %% codecell
 ImageResizer.resize(filename = pth + "encdeclayers.png", by = 0.6)
-# %% markdown
+# %% markdown [markdown]
 # Each `Decoder` contains a stack of decoder layers (in the paper they use $N = 6$ layers) instead of a single `Decoder` layer, just like the `Encoder`.
 #
 # ### Definition: Decoder Layer in `Decoder`
@@ -471,7 +471,7 @@ ImageResizer.resize(filename = pth + "decoder_overview.png", by = 0.7)
 
 
 
-# %% markdown -- Working Together
+# %% markdown [markdown] -- Working Together
 # # `Encoder` and `Decoder` Working Together
 # 1. The `Encoder` processes the input sentence.
 # 2. The output of the top `Encoder` layer is then transformed into a set of attention vectors $K$ and $V$.
@@ -479,19 +479,19 @@ ImageResizer.resize(filename = pth + "decoder_overview.png", by = 0.7)
 # %% codecell
 # %% codecell
 Image(filename = pth + "transformer_decoding_1.gif")
-# %% markdown
+# %% markdown [markdown]
 # The previous steps are repeated until a special symbol is reached, indicated the `Decoder` has finished generating output.
 #
 # 4. The `Decoder` outputs of each time step is fed to the bottom `Decoder` in the next time step:
 # %% codecell
 # %% codecell
 Image(filename = pth + "transformer_decoding_2.gif")
-# %% markdown
+# %% markdown [markdown]
 # - KEY NOTE: the "`Encoder`-`Decoder` Attention Layer" in the `Decoder` stack works just like multi-headed attention except it creates its queries matrix $Q$ from the layer below it and takes the keys $K$ and values $V$ matrices from the output of the entire `Encoder` stack.
 
 
 
-# %% markdown - Final Linear and Softmax Layer
+# %% markdown [markdown] - Final Linear and Softmax Layer
 # # The Final Linear and Softmax Layer: Getting a Predicted Word
 #
 # The `Decoder` stack outputs a vector of floats. How is that turned into a word? There are two layers: the Linear layer, followed by the Softmax layer which accomplish this.
@@ -507,7 +507,7 @@ ImageResizer.resize(filename = pth + "finallayers.png", by = 0.6)
 
 
 
-# %% markdown --- Training, Loss
+# %% markdown [markdown] --- Training, Loss
 # # Training and Loss
 # ### Training:
 # To train the model, we compare the model's output with actual correct output.
@@ -516,14 +516,14 @@ ImageResizer.resize(filename = pth + "finallayers.png", by = 0.6)
 # Below is a one-hot encoding of the above sentence, with a $1$ in the location corresponding to the word "am":
 # %% codecell
 ImageResizer.resize(filename = pth + "outputvocab_onehot.png", by=0.5)
-# %% markdown
+# %% markdown [markdown]
 #  ### The Loss Function:
 # The goal of the training phase is to output a probability distribution indicating the target word.
 # Since the model's parameters (weights) are all randomly initialized, the untrained model produces a probability distribution with arbitrary values for each cell (word).
 # The loss function is a crucial step in comparing predicted output with the actual output, then tweaking all the model's weights using backpropagation to make the predicted output closer to actual output:
 # %% codecell
 ImageResizer.resize(filename = pth + "transformer_logits.png", by = 0.45)
-# %% markdown
+# %% markdown [markdown]
 # **Comparing Probability Distributions:** Two probability distributions (in our case, the vector of predictions and vector of actual outputs) can be compared by subtracting one from the oher using [*cross-entropy*](https://hyp.is/_cwJyhsyEeq5nNsGS0Ac_Q/www.countbayesie.com/blog/2017/5/9/kullback-leibler-divergence-explained) and [*Kullback-Leibler divergence*](https://hyp.is/4ZCvRhsxEeq-Yfcx8qYTFQ/www.countbayesie.com/blog/2017/5/9/kullback-leibler-divergence-explained).
 # - [**Cross-Entropy:**](https://hyp.is/_cwJyhsyEeq5nNsGS0Ac_Q/www.countbayesie.com/blog/2017/5/9/kullback-leibler-divergence-explained) is used to quantify how much information is contained in data. The entropy is typically denoted as $H$. The entropy for a probability distribution $p$ is defined as:
 # $$
