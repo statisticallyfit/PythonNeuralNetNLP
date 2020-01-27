@@ -79,6 +79,7 @@ dependencies:
       - torchtext
       - edward
       - torchviz
+      - pandoc-minted # filter for pandoc to use latex's minted code syntax highlighting
 
 
 prefix: /development/bin/python/conda3_ana/envs/pyFlair_env
