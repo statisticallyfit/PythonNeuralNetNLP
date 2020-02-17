@@ -1,7 +1,5 @@
-name: pyFlair_env
+name: pyflair_env
 channels:
-  #- ankurankan
-  #- anaconda
   - conda-forge
   - defaults
 dependencies:
@@ -10,15 +8,14 @@ dependencies:
   # core
   # =======
   - pip
-  - python>=3.6.7 #3.7.3
+  - python=3.6.7      #3.7.3
   - typing
   - mypy
   - jupyterlab
-  - ipykernel # Hydrogen dependency
-  - conda-forge::python-language-server # hydrogen dependency
-  - jupytext # Hydrogen dependency
-  # https://hyp.is/5GZIiCyUEeq39Z_3EE6t6Q/github.com/kiwi0fruit/pandoctools/blob/master/docs/tips.md
-  #- exec-wrappers
+  - ipykernel 
+  - conda-forge::python-language-server 
+  - jupytext 
+  - exec-wrappers
   - statsmodels
   - numpy
   - scipy
@@ -26,13 +23,13 @@ dependencies:
   - spacy
   - pandas
   #- patsy
-  #- numdifftools
+  - numdifftools
   #- xarray
 
   # ======================================================
   # Natural Language Processing / Autodiff / Neural Nets
   # ======================================================
-  - tensorflow>=1.14.0
+  - tensorflow=1.14.0
   - tensorflow-probability
   - tensorboard
   - allennlp
@@ -43,20 +40,31 @@ dependencies:
   - scikit-learn
   - spacy
   - nltk
-  - bioconda::flair
   - powerai::sacrebleu
   - conda-forge::sacremoses
+  - conda-forge::jax
+  - conda-forge::thinc
+
+
+  - pip:
+      - tensor2tensor
+      - torchtext
+      - edward
+      - flair 
+      - numpyro  # dependency for jax and Thinc
+      - torchviz
+      - pandoc-minted # filter for pandoc to use latex's minted code syntax highlighting
 
 
   # ============================
   # Bayesian Inference (not the spotlight here)
   # ============================
-  - algopy
-  - bayespy
+  # - algopy
+  # - bayespy
   - emcee
-  #- pystan
   - pymc3
-  - ankurankan::pgmpy
+  #- ankurankan::pgmpy
+
 
   # ==============
   # Report / doc generation
@@ -74,12 +82,6 @@ dependencies:
   - seaborn
   - plotly
 
-  - pip:
-      - tensor2tensor
-      - torchtext
-      - edward
-      - torchviz
-      - pandoc-minted # filter for pandoc to use latex's minted code syntax highlighting
 
 
-prefix: /development/bin/python/conda3_ana/envs/pyFlair_env
+prefix: /development/bin/python/conda3_ana/envs/pyflair_env
