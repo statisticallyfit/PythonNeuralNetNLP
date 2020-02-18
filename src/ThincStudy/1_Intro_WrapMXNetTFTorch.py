@@ -4,7 +4,7 @@
 # # Intro to Thinc: Defining Model and Config and Wrapping PyTorch, Tensorflow and MXNet
 
 # %% codecell
-import thinc
+# import thinc
 from thinc.api import prefer_gpu
 prefer_gpu() # returns boolean indicating if GPU was activated
 
@@ -16,3 +16,18 @@ import ml_datasets
 
 (trainX, trainY), (devX,  devY) = ml_datasets.mnist()
 print(f"Training size={len(trainX)}, dev size={len(devX)}")
+
+
+# %% codecell
+from thinc.api import chain, Relu, Softmax
+
+n_hidden = 32
+dropout = 0.2
+
+model = chain(
+    Relu(nO=n_hidden, dropout=dropout),
+    Relu(nO=n_hidden, dropout=dropout),
+    Softmax()
+)
+
+model
