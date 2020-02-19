@@ -9,9 +9,9 @@ dependencies:
   # ======================================================
   # Natural Language Processing / Autodiff / Neural Nets
   # ======================================================
-  - tensorflow=1.14.0
-  - tensorflow-probability
-  - conda-forge::tensorboard
+  # - conda-forge::tensorflow    # =1.14.0
+  # - conda-forge::tensorflow-probability
+  # - conda-forge::tensorboard
   # - allennlp
   - pytorch::pytorch
   - conda-forge::pytorch-pretrained-bert
@@ -62,4 +62,6 @@ dependencies:
       - ml_datasets
       - tqdm>=4.41
       - gluonnlp
+      - tensorflow>2.0
+      - tensorflow-gpu
 prefix: /development/bin/python/conda3_ana/envs/pythinc_env
