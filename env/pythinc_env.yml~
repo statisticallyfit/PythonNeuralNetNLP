@@ -1,0 +1,65 @@
+name: pythinc_env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+
+  
+
+  # ======================================================
+  # Natural Language Processing / Autodiff / Neural Nets
+  # ======================================================
+  - conda-forge::pip
+  - pip:
+      - thinc>=8.0.0a0
+      - ml_datasets
+      - tqdm>=4.41
+      - gluonnlp
+  - tensorflow=1.14.0
+  - tensorflow-probability
+  - conda-forge::tensorboard
+  # - allennlp
+  - pytorch::pytorch
+  - conda-forge::pytorch-pretrained-bert
+  - conda-forge::transformers
+  
+  # =======
+  # core
+  # =======
+  # - conda-forge::pip
+  - conda-forge::python
+  - conda-forge::mypy
+  - conda-forge::jupytext
+  - conda-forge::jupyterlab
+  - conda-forge::exec-wrappers
+  - conda-forge::ipywidgets
+  - conda-forge::python-language-server # hydrogen plugin
+  - conda-forge::ipykernel  # Hydrogen plugin
+  - conda-forge::statsmodels
+  - conda-forge::numpy
+  - conda-forge::scipy
+  - conda-forge::sympy
+  # - pandas
+  # - patsy
+  # - numdifftools
+  # - xarray
+
+
+  # ==============
+  # Report / doc generation
+  # ==============
+  - conda-forge::knitty=0.6.0
+  - conda-forge::pandoc>=2.9.1
+  - conda-forge::pandoctools>=2.8.0.3
+  - conda-forge::sugartex>=0.1.16
+  - conda-forge::pweave
+
+  # ==============
+  # Plotting
+  # ==============
+  - conda-forge::matplotlib
+  - conda-forge::seaborn
+  - conda-forge::plotly
+
+
+prefix: /development/bin/python/conda3_ana/envs/pythinc_env

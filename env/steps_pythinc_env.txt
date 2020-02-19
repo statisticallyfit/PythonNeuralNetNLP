@@ -1,0 +1,31 @@
+conda install -c conda-forge pip
+
+pip install "thinc>=8.0.0a0" ml_datasets "tqdm>=4.41"
+
+conda install -c conda-forge jupytext jupyterlab ipywidgets
+conda install -c conda-forge exec-wrappers
+conda install -c conda-forge pandoc
+conda install -c conda-forge pandoctools
+conda install -c conda-forge sugartex
+conda install -c conda-forge pweave
+
+
+conda install -c conda-forge mypy
+
+pip install gluonnlp 
+
+conda install -c pytorch pytorch
+
+conda install -c conda-forge pytorch-pretrained-bert
+
+conda install -c conda-forge tensorflow=1.14.0 tensorflow-probability tensorboard
+
+conda install -c conda-forge transformers
+
+conda install -c conda-forge matplotlib seaborn plotly
+
+conda install -c conda-forge python-language server
+
+conda install ipykernel
+
+python -m ipykernel install --user --name pythinc_env
