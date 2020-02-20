@@ -3,11 +3,6 @@ conda install -c conda-forge pip
 pip install "thinc>=8.0.0a0" ml_datasets "tqdm>=4.41"
 
 conda install -c conda-forge jupytext jupyterlab ipywidgets
-conda install -c conda-forge exec-wrappers
-conda install -c conda-forge pandoc
-conda install -c conda-forge pandoctools
-conda install -c conda-forge sugartex
-conda install -c conda-forge pweave
 
 
 conda install -c conda-forge mypy

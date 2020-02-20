@@ -4,64 +4,46 @@ channels:
   - defaults
 dependencies:
 
-  
+  # ========================
+  # Core
+  # ========================
+  - mypy
+  - typing 
+  - pip
+  - python
+  - jupytext
+  - jupyterlab
+  - ipywidgets
+  - python-language-server
+  - ipykernel
 
-  # ======================================================
-  # Natural Language Processing / Autodiff / Neural Nets
-  # ======================================================
-  # - conda-forge::tensorflow    # =1.14.0
-  # - conda-forge::tensorflow-probability
-  # - conda-forge::tensorboard
-  # - allennlp
-  - pytorch::pytorch
-  - conda-forge::pytorch-pretrained-bert
-  - conda-forge::transformers
-  
-  # =======
-  # core
-  # =======
-  - conda-forge::pip
-  - conda-forge::python
-  - conda-forge::mypy
-  - conda-forge::jupytext
-  - conda-forge::jupyterlab
-  - conda-forge::exec-wrappers
-  - conda-forge::ipywidgets
-  - conda-forge::python-language-server # hydrogen plugin
-  - conda-forge::ipykernel  # Hydrogen plugin
-  - conda-forge::statsmodels
-  - conda-forge::numpy
-  - conda-forge::scipy
-  - conda-forge::sympy
-  # - pandas
-  # - patsy
-  # - numdifftools
-  # - xarray
-
-
-  # ==============
-  # Report / doc generation
-  # ==============
-  - conda-forge::knitty=0.6.0
-  - conda-forge::pandoc>=2.9.1
-  - conda-forge::pandoctools>=2.8.0.3
-  - conda-forge::sugartex>=0.1.16
-  - conda-forge::pweave
+  # ========================
+  # NLP
+  # ========================
+  - pytorch
+  - pytorch-pretrained-bert
+  - transformers
+  - tensorflow>2.0
 
   # ==============
   # Plotting
   # ==============
-  - conda-forge::matplotlib
-  - conda-forge::seaborn
-  - conda-forge::plotly
+  - matplotlib
+  - seaborn
+  - plotly
 
 
-  # Pip things must go at the end of the file to avoid breakages from conda: 
+  # ==============
+  # Pip things
+  # ============== 
   - pip:
       - thinc>=8.0.0a0
       - ml_datasets
       - tqdm>=4.41
+      - mxnet>=1.5.1,<1.6.0
       - gluonnlp
-      - tensorflow>2.0
-      - tensorflow-gpu
+      #- tensorflow-gpu
+
+
 prefix: /development/bin/python/conda3_ana/envs/pythinc_env
+
