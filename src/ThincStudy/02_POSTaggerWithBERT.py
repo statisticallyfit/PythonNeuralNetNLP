@@ -57,6 +57,8 @@ from transformers import AutoTokenizer
 def TransformersTokenizer(name: str) -> Model[List[List[str]], TokensPlus]:
 
     def forward(model: Model, texts: List[List[str]], isTrain: bool):
+        '''Take the model and texts and output the `TokensPlus` dataclass and a callback to use during the backward pass (which in this case does nothing)
+        '''
         tokenizer = model.attrs["tokenizer"]
 
         tokenData = tokenizer.batch_encode_plus(
@@ -71,4 +73,83 @@ def TransformersTokenizer(name: str) -> Model[List[List[str]], TokensPlus]:
         return TokensPlus(**tokenData), lambda dTokens: []
 
     return Model(name = "tokenizer", forward = forward,
-                 attrs = attrs = {"tokenizer": AutoTokenizer.from_pretrained(name)})
+                 attrs = {"tokenizer": AutoTokenizer.from_pretrained(name)})
+
+# %% markdown
+# ### 2. Wrapping the Transformer
+# To load and wrap the transformer we can use `transformers.AutoModel` and Thinc's `PyTorchWrapper`.
+#
+# The forward method of the wrapped model can take arbitrary positional arguments and keyword arguments.
+#
+# The wrapped model looks like:
+# %% codecell
+import thinc
+from thinc.api import PyTorchWrapper
+from transformers import AutoModel
+from thinc.types import Array2d
+
+
+@thinc.registry.layers("transformers_model.v1")
+def Transformer(name: str) -> Model[TokensPlus, List[Array2d]]:
+    '''
+    Takes `TokenPlus` data as input (from tokenizer) and outputs a list of 2-dimensional arrays.
+
+    The convert functions can **map inputs and outputs to and from the PyTorch model**. Each returns the converted
+    output and a callback to use during the backward pass.
+    '''
+
+    return PyTorchWrapper(pytorch_model = AutoModel.from_pretrained(pretrained_model_name_or_path = name),
+                          convert_inputs = convertTransformerInputs,
+                          convert_outputs = convertTransformerOutputs,
+                          )
+
+# %% markdown
+# **`Transformer`**: takes `TokenPlus` data as input (from tokenizer) and outputs a list of 2-dimensional arrays. The convert functions can **map inputs and outputs to and from the PyTorch model**. Each returns the converted output and a callback to use during the backward pass.
+#
+#  * NOTE: To make the arbitrary positional and keyword arguments easier to manage, Thinc uses an `ArgsKwargs`  dataclass, essentially a named tuple with `args` and `kwargs` that can be spread into a function as *`ArgsKwargs.args` and **`ArgsKwargs.kwargs`. The `ArgsKwargs` objects will be passed straight into the model in the forward pass and straight into the `torch.autograd.backward` during the backward pass.
+
+# %% codecell
+from thinc.api import ArgsKwargs, torch2xp, xp2torch
+
+
+
+def convertTransformerInputs(model: Model, tokens: TokensPlus, isTrain: bool):
+    kwargs = {
+        "inputIDs": tokens.inputIDs,
+        "attentionMask": tokens.attentionMask,
+        "tokenTypeIDs": tokens.tokenTypeIDs,
+    }
+
+    return ArgsKwargs(args = (), kwargs = kwargs), lambda dX: []
+
+
+
+def convertTransformerOutputs(model: Model, inputsOutputs, isTrain: bool):
+
+    layerInputs, torchOutputs = inputsOutputs
+
+    torchTokenVectors: Tensor = torchOutputs[0]
+
+    torchOutputs = None # free the memory as soon as we can
+
+    lengths: list = list(layerInputs.inputLength)
+
+    tokenVectors: List[Array2d] = model.ops.unpad(padded = torch2xp(torch_tensor = torchTokenVectors),
+                                                  lengths = lengths)
+
+    # removing the BOS and EOS markers (start of sentence and end of sentence)
+    tokenVectors: List[Array2d] = [vec[1:-1] for vec in tokenVectors]
+
+
+
+    def backprop(dTokenVectors: List[Array2d]) -> ArgsKwargs:
+        # Restore entries for BOS and EOS markers
+        row = model.ops.alloc2f(d0 = 1, d1 = dTokenVectors[0].shape[1])
+
+        dTokenVectors = [model.ops.xp.vstack(tup = (row, vec, row)) for vec in dTokenVectors]
+
+        return ArgsKwargs(args = (torchTokenVectors, ),
+                          kwargs = {"gradTensors": xp2torch(xp_tensor = model.ops.pad(seqs = dTokenVectors))}, )
+
+
+    return tokenVectors, backprop
