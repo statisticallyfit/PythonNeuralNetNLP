@@ -43,8 +43,32 @@ class TokensPlus:
     specialTokensMask: Optional[Tensor] = None
 
 # %% markdown
-
 # * **TransformersTokenizer**: `List[List[str]]` $\rightarrow$ `TokensPlus`: this is the wrapped tokenizer that will take a list of lists as input (the texts) and will output a `TokensPlus` object containing the fully padded batch of tokens.
 # * **Transformer**: `TokensPlus` $\rightarrow$ `List[Array2d]`: this is the wrapped transformer that takes a list of `TokensPlus` objects and outputs a list of 2-dimensional arrays.
 #
-#
+# ### 1. Wrapping the Tokenizer
+# To wrap the tokenizer, we register a new function that returns a Thinc `Model`. The function takes the name of the pretrained weights (`bert-base-multilingual-cased`) as an argument that can be later provided using the config file. After loading the `AutoTokenizer`, we can stash the weights in the attributes for accessing later via `model.attrs["tokenizer"]`
+# %% codecell
+import thinc
+from thinc.api import Model
+from transformers import AutoTokenizer
+
+@thinc.registry.layers("transformers_tokenizer.v1")
+def TransformersTokenizer(name: str) -> Model[List[List[str]], TokensPlus]:
+
+    def forward(model: Model, texts: List[List[str]], isTrain: bool):
+        tokenizer = model.attrs["tokenizer"]
+
+        tokenData = tokenizer.batch_encode_plus(
+            [(text, None) for text in texts],
+            add_special_tokens = True,
+            return_token_type_ids = True,
+            return_attention_masks = True,
+            return_input_lengths = True,
+            return_tensors = "pt",
+        )
+
+        return TokensPlus(**tokenData), lambda dTokens: []
+
+    return Model(name = "tokenizer", forward = forward,
+                 attrs = attrs = {"tokenizer": AutoTokenizer.from_pretrained(name)})
