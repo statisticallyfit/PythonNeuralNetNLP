@@ -17,7 +17,36 @@ if isGPU:
     use_pytorch_for_gpu_memory
 
 
-# NOTE: config file here
+# %% markdown
+# ## Overview: the final config
+# Here is the final config for the model we are building in this notebook.
+#
+# It references a custom `TransformersTagger` that takes the name of a starter (pretrained model to use), optimizer, learning rate schedule with warm-up and general training settings.
+#
+# Can keep this string in a separate file or save to `config.cfg` file and load it via `Config.from_disk`
+# %% codecell
+CONFIG: str = """
+[model]
+@layers = "TransformersTagger.v1"
+starter = "bert-base-multilingual-cased"
+
+[optimizer]
+@optimizers = "Adam.v1"
+
+[optimizer.learn_rate]
+@schedules = "warmup_linear.v1"
+initial_rate = 0.01
+warmup_steps = 3000
+total_steps = 6000
+
+[loss]
+@losses = "SequenceCategoricalCrossentropy.v1"
+
+[training]
+batch_size = 128
+words_per_subbatch = 2000
+n_epoch = 10
+"""
 
 # %% markdown
 # ## Step 1: Defining the Model
@@ -56,7 +85,7 @@ from transformers import AutoTokenizer
 @thinc.registry.layers("transformers_tokenizer.v1")
 def TransformersTokenizer(name: str) -> Model[List[List[str]], TokensPlus]:
 
-    def forward(model: Model, texts: List[List[str]], isTrain: bool):
+    def forward(model: Model, texts: List[List[str]], isTrain: bool) -> TokensPlus:
         '''Take the model and texts and output the `TokensPlus` dataclass and a callback to use during the backward pass (which in this case does nothing)
         '''
         tokenizer = model.attrs["tokenizer"]
@@ -77,41 +106,13 @@ def TransformersTokenizer(name: str) -> Model[List[List[str]], TokensPlus]:
 
 # %% markdown
 # ### 2. Wrapping the Transformer
-# To load and wrap the transformer we can use `transformers.AutoModel` and Thinc's `PyTorchWrapper`.
 #
-# The forward method of the wrapped model can take arbitrary positional arguments and keyword arguments.
-#
-# The wrapped model looks like:
-# %% codecell
-import thinc
-from thinc.api import PyTorchWrapper
-from transformers import AutoModel
-from thinc.types import Array2d
-
-
-@thinc.registry.layers("transformers_model.v1")
-def Transformer(name: str) -> Model[TokensPlus, List[Array2d]]:
-    '''
-    Takes `TokenPlus` data as input (from tokenizer) and outputs a list of 2-dimensional arrays.
-
-    The convert functions can **map inputs and outputs to and from the PyTorch model**. Each returns the converted
-    output and a callback to use during the backward pass.
-    '''
-
-    return PyTorchWrapper(pytorch_model = AutoModel.from_pretrained(pretrained_model_name_or_path = name),
-                          convert_inputs = convertTransformerInputs,
-                          convert_outputs = convertTransformerOutputs,
-                          )
-
-# %% markdown
 # **`Transformer`**: takes `TokenPlus` data as input (from tokenizer) and outputs a list of 2-dimensional arrays. The convert functions can **map inputs and outputs to and from the PyTorch model**. Each returns the converted output and a callback to use during the backward pass.
 #
 #  * NOTE: To make the arbitrary positional and keyword arguments easier to manage, Thinc uses an `ArgsKwargs`  dataclass, essentially a named tuple with `args` and `kwargs` that can be spread into a function as *`ArgsKwargs.args` and **`ArgsKwargs.kwargs`. The `ArgsKwargs` objects will be passed straight into the model in the forward pass and straight into the `torch.autograd.backward` during the backward pass.
 
 # %% codecell
 from thinc.api import ArgsKwargs, torch2xp, xp2torch
-
-
 
 def convertTransformerInputs(model: Model, tokens: TokensPlus, isTrain: bool):
     kwargs = {
@@ -153,3 +154,72 @@ def convertTransformerOutputs(model: Model, inputsOutputs, isTrain: bool):
 
 
     return tokenVectors, backprop
+
+
+# %% markdown
+# Now we can wrap the transformer ...
+#
+# To load and wrap the transformer we can use `transformers.AutoModel` and Thinc's `PyTorchWrapper`.
+#
+# The forward method of the wrapped model can take arbitrary positional arguments and keyword arguments.
+#
+# The model returned from PyTorch's `AutoModel.from_pretrained`  can be wrapped with Thinc's `PyTorchWrapper`. The converter functions tell Thinc how to transform the inputs and outputs.
+#
+# The wrapped model is:
+# %% codecell
+import thinc
+from thinc.api import PyTorchWrapper
+from transformers import AutoModel
+
+from thinc.types import Array2d
+
+@thinc.registry.layers("transformers_model.v1")
+def Transformer(name: str) -> Model[TokensPlus, List[Array2d]]:
+    '''
+    Takes `TokenPlus` data as input (from tokenizer) and outputs a list of 2-dimensional arrays.
+
+    The convert functions can **map inputs and outputs to and from the PyTorch model**. Each returns the converted
+    output and a callback to use during the backward pass.
+    '''
+    return PyTorchWrapper(pytorch_model = AutoModel.from_pretrained(name),
+                          convert_inputs = convertTransformerInputs,
+                          convert_outputs = convertTransformerOutputs,
+                          )
+# %% markdown
+# Now combine the `TransformersTokenizer` and `Transformer` into a feed-forward network using the `chain` combinator, and using the `with_array` layer, which transforms a sequence of data into a contiguous 2d array on the way into and out of a model.
+# %% codecell
+from thinc.api import chain, with_array, Softmax
+
+@thinc.registry.layers("TransformersTagger.v1")
+def TransformersTagger(starter: str, numTags: int = 17) -> Model[List[List[str]], List[Array2d]]:
+    return chain(TransformersTokenizer(name = starter),
+                 Transformer(name = starter),
+                 with_array(layer = Softmax(nO = numTags)),
+                 )
+
+# %% markdown
+# ## Step 2: Training the  Model
+# ### 1. Setting up Model and Data
+# After registering all layers using `@thinc.registry.layers`, we can construct the model, its settings, and other functions we need from a config.
+#
+# The result: is a config object with a model, an optimizer (a function to calculate loss and training settings).
+# %% codecell
+from thinc.api import Config, registry
+C = registry.make_from_config(Config().from_str(CONFIG))
+C
+
+# %% codecell
+model: Model = C["model"]
+model
+optimizer = C["optimizer"]
+optimizer
+calculateLoss = C["loss"]
+calculateLoss
+cfg = C["training"]
+cfg
+
+# %% markdown
+# Passing batch of inputs along with using `Model.initialize` helps Thinc **infer missing dimensions** when we are getting the AnCora data via `ml-datasets`:
+# %% codecell
+import ml_datasets
+(trainX, trainY), (devX, devY) = ml_datasets.ud_ancora_pos_tags()
