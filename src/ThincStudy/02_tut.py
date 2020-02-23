@@ -3,7 +3,7 @@
 #
 # This example shows how to use Thinc and Hugging Face's [`transformers`](https://github.com/huggingface/transformers) library to implement and train a part-of-speech tagger on the Universal Dependencies [AnCora corpus](https://github.com/UniversalDependencies/UD_Spanish-AnCora). This notebook assumes familiarity with machine learning concepts, transformer models and Thinc's config system and `Model` API (see the "Thinc for beginners" notebook and the [documentation](https://thinc.ai/docs) for more info).
 # %% codecell
-!pip install "thinc>=8.0.0a0" transformers torch ml_datasets "tqdm>=4.41"
+# !pip install "thinc>=8.0.0a0" transformers torch ml_datasets "tqdm>=4.41"
 # %% markdown
 # First, let's use Thinc's `prefer_gpu` helper to make sure we're performing operations **on GPU if available**. The function should be called right after importing Thinc, and it returns a boolean indicating whether the GPU has been activated. If we're on GPU, we can also call `use_pytorch_for_gpu_memory` to route `cupy`'s memory allocation via PyTorch, so both can play together nicely.
 # %% codecell

@@ -24,8 +24,10 @@ if isGPU:
 # It references a custom `TransformersTagger` that takes the name of a starter (pretrained model to use), optimizer, learning rate schedule with warm-up and general training settings.
 #
 # Can keep this string in a separate file or save to `config.cfg` file and load it via `Config.from_disk`
+# %% markdown
+# THe config for BERT model:
 # %% codecell
-CONFIG: str = """
+CONFIG_FOR_BERT: str = """
 [model]
 @layers = "TransformersTagger.v1"
 starter = "bert-base-multilingual-cased"
@@ -47,6 +49,62 @@ batch_size = 128
 words_per_subbatch = 2000
 n_epoch = 10
 """
+
+# %% markdown
+# The config for Transformer XL model:
+# %% codecell
+CONFIG_FOR_TransformerXL: str = """
+[model]
+@layers = "TransformersTagger.v1"
+starter = "transfo-xl-wt103"
+
+[optimizer]
+@optimizers = "Adam.v1"
+
+[optimizer.learn_rate]
+@schedules = "warmup_linear.v1"
+initial_rate = 0.01
+warmup_steps = 3000
+total_steps = 6000
+
+[loss]
+@losses = "SequenceCategoricalCrossentropy.v1"
+
+[training]
+batch_size = 128
+words_per_subbatch = 2000
+n_epoch = 10
+"""
+
+# %% markdown
+# The config for XLNet model:
+# %% codecell
+CONFIG_FOR_XLNet: str = """
+[model]
+@layers = "TransformersTagger.v1"
+starter = "xlnet-large-cased"
+
+[optimizer]
+@optimizers = "Adam.v1"
+
+[optimizer.learn_rate]
+@schedules = "warmup_linear.v1"
+initial_rate = 0.01
+warmup_steps = 3000
+total_steps = 6000
+
+[loss]
+@losses = "SequenceCategoricalCrossentropy.v1"
+
+[training]
+batch_size = 128
+words_per_subbatch = 2000
+n_epoch = 10
+"""
+
+
+# %% markdown
+# NOTE: here is more info on how to make configs for other pretrained models like TransformerXL, XLNet: https://huggingface.co/transformers/v2.1.1/pretrained_models.html
 
 # %% markdown
 # ## Step 1: Defining the Model
@@ -88,7 +146,10 @@ from transformers import AutoTokenizer
 def TransformersTokenizer(name: str) -> Model[List[List[str]], TokensPlus]:
 
     def forward(model: Model, texts: List[List[str]], is_train: bool):
+        # TODO: how to use XLNet tokenizer: https://hyp.is/JEDZOFZWEeqe4HuuJNc_Rg/huggingface.co/transformers/v2.1.1/model_doc/xlnet.html
         tokenizer = model.attrs["tokenizer"]
+
+        # TODO error here in the tutorial: https://hyp.is/fy3LAFZUEeqG8RsZY4eyWg/huggingface.co/transformers/v2.1.1/_modules/transformers/tokenization_utils.html
         # encode_plus() arguments: https://huggingface.co/transformers/main_classes/tokenizer.html#transformers.PreTrainedTokenizer.encode_plus
         tokenData = tokenizer.encode_plus(
             [(text, None) for text in texts],
@@ -99,7 +160,7 @@ def TransformersTokenizer(name: str) -> Model[List[List[str]], TokensPlus]:
             return_tensors="pt",
         )
 
-        #tokenData = tokenizer.encode_plus(
+        #tokenData = tokenizer.batch_encode_plus(
         #    batch_text_or_text_pairs = [(text, None) for text in texts],
         #    add_special_tokens=True,
         #    #return_token_type_ids=True,
@@ -215,7 +276,7 @@ def TransformersTagger(starter: str, numTags: int = 17) -> Model[List[List[str]]
 # The result: is a config object with a model, an optimizer (a function to calculate loss and training settings).
 # %% codecell
 from thinc.api import Config, registry
-C = registry.make_from_config(Config().from_str(CONFIG))
+C = registry.make_from_config(Config().from_str(CONFIG_FOR_BERT))
 C
 
 # %% codecell
