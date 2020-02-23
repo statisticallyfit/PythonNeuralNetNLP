@@ -81,40 +81,50 @@ class TokensPlus:
 import thinc
 from thinc.api import Model
 from transformers import AutoTokenizer
+# from transformers import PreTrainedTokenizer
+# # from transformers.tokenization_utils import PreTrainedTokenizer
 
 @thinc.registry.layers("transformers_tokenizer.v1")
 def TransformersTokenizer(name: str) -> Model[List[List[str]], TokensPlus]:
 
-    def forward(model: Model, texts: List[List[str]], isTrain: bool) -> TokensPlus:
-        '''Take the model and texts and output the `TokensPlus` dataclass and a callback to use during the backward pass (which in this case does nothing)
-        '''
+    def forward(model: Model, texts: List[List[str]], is_train: bool):
         tokenizer = model.attrs["tokenizer"]
-
-        tokenData = tokenizer.batch_encode_plus(
+        # encode_plus() arguments: https://huggingface.co/transformers/main_classes/tokenizer.html#transformers.PreTrainedTokenizer.encode_plus
+        tokenData = tokenizer.encode_plus(
             [(text, None) for text in texts],
-            add_special_tokens = True,
-            return_token_type_ids = True,
-            return_attention_masks = True,
-            return_input_lengths = True,
-            return_tensors = "pt",
+            add_special_tokens=True,
+            return_token_type_ids=True,
+            return_attention_masks=True,
+            #return_input_lengths=True,
+            return_tensors="pt",
         )
 
+        #tokenData = tokenizer.encode_plus(
+        #    batch_text_or_text_pairs = [(text, None) for text in texts],
+        #    add_special_tokens=True,
+        #    #return_token_type_ids=True,
+        #    return_attention_masks=True,
+        #    return_input_lengths=True,
+        #    return_tensors="pt",
+        #)
         return TokensPlus(**tokenData), lambda dTokens: []
 
-    return Model(name = "tokenizer", forward = forward,
-                 attrs = {"tokenizer": AutoTokenizer.from_pretrained(name)})
+    return Model(name = "tokenizer",
+                 forward = forward,
+                 attrs={"tokenizer": AutoTokenizer.from_pretrained(pretrained_model_name_or_path = name)})
+
 
 # %% markdown
 # ### 2. Wrapping the Transformer
 #
-# **`Transformer`**: takes `TokenPlus` data as input (from tokenizer) and outputs a list of 2-dimensional arrays. The convert functions can **map inputs and outputs to and from the PyTorch model**. Each returns the converted output and a callback to use during the backward pass.
+# **`Transformer`**: takes `TokensPlus` data as input (from tokenizer) and outputs a list of 2-dimensional arrays. The convert functions can **map inputs and outputs to and from the PyTorch model**. Each returns the converted output and a callback to use during the backward pass.
 #
 #  * NOTE: To make the arbitrary positional and keyword arguments easier to manage, Thinc uses an `ArgsKwargs`  dataclass, essentially a named tuple with `args` and `kwargs` that can be spread into a function as *`ArgsKwargs.args` and **`ArgsKwargs.kwargs`. The `ArgsKwargs` objects will be passed straight into the model in the forward pass and straight into the `torch.autograd.backward` during the backward pass.
 
 # %% codecell
 from thinc.api import ArgsKwargs, torch2xp, xp2torch
 
-def convertTransformerInputs(model: Model, tokens: TokensPlus, isTrain: bool):
+def convertTransformerInputs(model: Model, tokens: TokensPlus, is_train: bool):
     kwargs = {
         "inputIDs": tokens.inputIDs,
         "attentionMask": tokens.attentionMask,
@@ -125,7 +135,7 @@ def convertTransformerInputs(model: Model, tokens: TokensPlus, isTrain: bool):
 
 
 
-def convertTransformerOutputs(model: Model, inputsOutputs, isTrain: bool):
+def convertTransformerOutputs(model: Model, inputsOutputs, is_train: bool):
 
     layerInputs, torchOutputs = inputsOutputs
 
@@ -222,4 +232,18 @@ cfg
 # Passing batch of inputs along with using `Model.initialize` helps Thinc **infer missing dimensions** when we are getting the AnCora data via `ml-datasets`:
 # %% codecell
 import ml_datasets
+
 (trainX, trainY), (devX, devY) = ml_datasets.ud_ancora_pos_tags()
+
+# convert to cupy if needed
+trainY = list(map(model.ops.asarray, trainY))
+# convert to cupy if needed
+devY = list(map(model.ops.asarray, devY))
+
+# Initialize the model providing data batches to do type inference
+model.initialize(X = trainX[:5], Y = trainY[:5])
+
+
+# %% markdown
+# ### 2. Helper Functions for Training and Evaluation
+#
