@@ -1,0 +1,4 @@
+---
+pandoc-minted:
+  language: python
+---

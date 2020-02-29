@@ -1,10 +1,57 @@
+%%
+% Copyright (c) 2017 - 2020, Pascal Wagler;
+% Copyright (c) 2014 - 2020, John MacFarlane
+%
+% All rights reserved.
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions
+% are met:
+%
+% - Redistributions of source code must retain the above copyright
+% notice, this list of conditions and the following disclaimer.
+%
+% - Redistributions in binary form must reproduce the above copyright
+% notice, this list of conditions and the following disclaimer in the
+% documentation and/or other materials provided with the distribution.
+%
+% - Neither the name of John MacFarlane nor the names of other
+% contributors may be used to endorse or promote products derived
+% from this software without specific prior written permission.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+% FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+% COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+% INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+% BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+% LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+% CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+% LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+% ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
+%%
+
+%%
+% This is the Eisvogel pandoc LaTeX template.
+%
+% For usage information and examples visit the official GitHub page:
+% https://github.com/Wandmalfarbe/pandoc-latex-template
+%%
+
 % Options for packages loaded elsewhere
 \PassOptionsToPackage{unicode}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames*,x11names*,table}{xcolor}
 %
 \documentclass[
-]{article}
-\usepackage{lmodern} 
+  a4paper,
+,tablecaptionabove
+]{scrartcl}
+\usepackage{lmodern}
+\usepackage{setspace}
+\setstretch{1.2}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
@@ -33,13 +80,25 @@
   \KOMAoptions{parskip=half}}
 \makeatother
 \usepackage{xcolor}
+\definecolor{default-linkcolor}{HTML}{A50000}
+\definecolor{default-filecolor}{HTML}{A50000}
+\definecolor{default-citecolor}{HTML}{4077C0}
+\definecolor{default-urlcolor}{HTML}{4077C0}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
 \hypersetup{
   hidelinks,
-  pdfcreator={LaTeX via pandoc}}
+  breaklinks=true,
+  pdfcreator={LaTeX via pandoc with the Eisvogel template}}
 \urlstyle{same} % disable monospaced font for URLs
-\usepackage{graphicx}
+\usepackage[margin=2.5cm,includehead=true,includefoot=true,centering,]{geometry}
+\usepackage{listings}
+\newcommand{\passthrough}[1]{#1}
+\lstset{defaultdialect=[5.3]Lua}
+\lstset{defaultdialect=[x86masm]Assembler}
+% add backlinks to footnote references, cf. https://tex.stackexchange.com/questions/302266/make-footnote-clickable-both-ways
+\usepackage{footnotebackref}
+\usepackage{graphicx,grffile}
 \makeatletter
 \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
 \def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
@@ -48,84 +107,311 @@
 % margins by default, and it is still possible to overwrite the defaults
 % using explicit options in \includegraphics[width, height, ...]{}
 \setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
-% Set default figure placement to htbp
-\makeatletter
-\def\fps@figure{htbp}
-\makeatother
-\setlength{\emergencystretch}{3em} % prevent overfull lines
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
-\usepackage{fancyvrb,newverbs,xcolor} % for code highlighting
-\usepackage[top=2cm, bottom=1.5cm, left=2cm, right=2cm]{geometry} % for page margins
 
-\usepackage[english]{babel}
-% Ana: adding graphics package for images
-\usepackage{graphics}
-\usepackage{graphicx}
-
-% change background color for inline code in
-% markdown files. The following code does not work well for
-% long text as the text will exceed the page boundary
-%\definecolor{bgcolor}{HTML}{E0E0E0}
-%\let\oldtexttt\texttt
-
-% \renewcommand{\texttt}[1]{
-% \colorbox{bgcolor}{\oldtexttt{#1}}
-% }
-
-%% color and other settings for hyperref package -----------------------------
-\hypersetup{
-    bookmarksopen=true,
-    linkcolor=blue,
-    filecolor=magenta,
-    urlcolor=RoyalBlue,
-}
-
-% Font Setup  ---------------------------------------------------------
-\usepackage{unicode-math} % load 'fontspec' automatically
-\setmainfont{Crimson}
-\setmathfont{TeX Gyre Schola Math}
+% Make use of float-package and set default placement for figures to H.
+% The option H means 'PUT IT HERE' (as  opposed to the standard h option which means 'You may put it here if you like').
+\usepackage{float}
+\floatplacement{figure}{H}
 
 
-% Code syntax highlighting ---------------------------------------------------
-
-%\definecolor{Light}{HTML}{F4F4F4}
-
-%\let\oldtexttt\texttt
-%\renewcommand{\texttt}[1]{
-%  \colorbox{Light}{\oldtexttt{#1}}
-%}
-
-\usepackage{minted}
-\usemintedstyle{manni}
-\setmonofont{Inconsolata}
-
-\author{}
 \date{}
 
+
+
+%%
+%% added
+%%
+
+%
+% language specification
+%
+% If no language is specified, use English as the default main document language.
+%
+
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[shorthands=off,main=english]{babel}
+\else
+    % Workaround for bug in Polyglossia that breaks `\familydefault` when `\setmainlanguage` is used.
+  % See https://github.com/Wandmalfarbe/pandoc-latex-template/issues/8
+  % See https://github.com/reutenauer/polyglossia/issues/186
+  % See https://github.com/reutenauer/polyglossia/issues/127
+  \renewcommand*\familydefault{\sfdefault}
+    % load polyglossia as late as possible as it *could* call bidi if RTL lang (e.g. Hebrew or Arabic)
+  \usepackage{polyglossia}
+  \setmainlanguage[]{english}
+\fi
+
+
+
+%
+% for the background color of the title page
+%
+
+%
+% break urls
+%
+\PassOptionsToPackage{hyphens}{url}
+
+%
+% When using babel or polyglossia with biblatex, loading csquotes is recommended
+% to ensure that quoted texts are typeset according to the rules of your main language.
+%
+\usepackage{csquotes}
+
+%
+% captions
+%
+\definecolor{caption-color}{HTML}{777777}
+\usepackage[font={stretch=1.2}, textfont={color=caption-color}, position=top, skip=4mm, labelfont=bf, singlelinecheck=false, justification=raggedright]{caption}
+\setcapindent{0em}
+
+%
+% blockquote
+%
+\definecolor{blockquote-border}{RGB}{221,221,221}
+\definecolor{blockquote-text}{RGB}{119,119,119}
+\usepackage{mdframed}
+\newmdenv[rightline=false,bottomline=false,topline=false,linewidth=3pt,linecolor=blockquote-border,skipabove=\parskip]{customblockquote}
+\renewenvironment{quote}{\begin{customblockquote}\list{}{\rightmargin=0em\leftmargin=0em}%
+\item\relax\color{blockquote-text}\ignorespaces}{\unskip\unskip\endlist\end{customblockquote}}
+
+%
+% Source Sans Pro as the de­fault font fam­ily
+% Source Code Pro for monospace text
+%
+% 'default' option sets the default
+% font family to Source Sans Pro, not \sfdefault.
+%
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+    \usepackage[default]{sourcesanspro}
+  \usepackage{sourcecodepro}
+  \else % if not pdftex
+    \usepackage[default]{sourcesanspro}
+  \usepackage{sourcecodepro}
+
+  % XeLaTeX specific adjustments for straight quotes: https://tex.stackexchange.com/a/354887
+  % This issue is already fixed (see https://github.com/silkeh/latex-sourcecodepro/pull/5) but the
+  % fix is still unreleased.
+  % TODO: Remove this workaround when the new version of sourcecodepro is released on CTAN.
+  \ifxetex
+    \makeatletter
+    \defaultfontfeatures[\ttfamily]
+      { Numbers   = \sourcecodepro@figurestyle,
+        Scale     = \SourceCodePro@scale,
+        Extension = .otf }
+    \setmonofont
+      [ UprightFont    = *-\sourcecodepro@regstyle,
+        ItalicFont     = *-\sourcecodepro@regstyle It,
+        BoldFont       = *-\sourcecodepro@boldstyle,
+        BoldItalicFont = *-\sourcecodepro@boldstyle It ]
+      {SourceCodePro}
+    \makeatother
+  \fi
+  \fi
+
+%
+% heading color
+%
+\definecolor{heading-color}{RGB}{40,40,40}
+\addtokomafont{section}{\color{heading-color}}
+% When using the classes report, scrreprt, book,
+% scrbook or memoir, uncomment the following line.
+%\addtokomafont{chapter}{\color{heading-color}}
+
+%
+% variables for title and author
+%
+\usepackage{titling}
+\title{}
+\author{}
+
+%
+% tables
+%
+
+%
+% remove paragraph indention
+%
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+
+%
+%
+% Listings
+%
+%
+
+
+%
+% general listing colors
+%
+\definecolor{listing-background}{HTML}{F7F7F7}
+\definecolor{listing-rule}{HTML}{B3B2B3}
+\definecolor{listing-numbers}{HTML}{B3B2B3}
+\definecolor{listing-text-color}{HTML}{000000}
+\definecolor{listing-keyword}{HTML}{435489}
+\definecolor{listing-keyword-2}{HTML}{1284CA} % additional keywords
+\definecolor{listing-keyword-3}{HTML}{9137CB} % additional keywords
+\definecolor{listing-identifier}{HTML}{435489}
+\definecolor{listing-string}{HTML}{00999A}
+\definecolor{listing-comment}{HTML}{8E8E8E}
+
+\lstdefinestyle{eisvogel_listing_style}{
+  language         = java,
+  numbers          = left,
+  xleftmargin      = 2.7em,
+  framexleftmargin = 2.5em,
+  backgroundcolor  = \color{listing-background},
+  basicstyle       = \color{listing-text-color}\linespread{1.0}\small\ttfamily{},
+  breaklines       = true,
+  frame            = single,
+  framesep         = 0.19em,
+  rulecolor        = \color{listing-rule},
+  frameround       = ffff,
+  tabsize          = 4,
+  numberstyle      = \color{listing-numbers},
+  aboveskip        = 1.0em,
+  belowskip        = 0.1em,
+  abovecaptionskip = 0em,
+  belowcaptionskip = 1.0em,
+  keywordstyle     = {\color{listing-keyword}\bfseries},
+  keywordstyle     = {[2]\color{listing-keyword-2}\bfseries},
+  keywordstyle     = {[3]\color{listing-keyword-3}\bfseries\itshape},
+  sensitive        = true,
+  identifierstyle  = \color{listing-identifier},
+  commentstyle     = \color{listing-comment},
+  stringstyle      = \color{listing-string},
+  showstringspaces = false,
+  escapeinside     = {/*@}{@*/}, % Allow LaTeX inside these special comments
+  literate         =
+  {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+  {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+  {à}{{\`a}}1 {è}{{\'e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+  {À}{{\`A}}1 {È}{{\'E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+  {ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+  {Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+  {â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+  {Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+  {œ}{{\oe}}1 {Œ}{{\OE}}1 {æ}{{\ae}}1 {Æ}{{\AE}}1 {ß}{{\ss}}1
+  {ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
+  {€}{{\EUR}}1 {£}{{\pounds}}1 {«}{{\guillemotleft}}1
+  {»}{{\guillemotright}}1 {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {¿}{{?`}}1
+  {…}{{\ldots}}1 {≥}{{>=}}1 {≤}{{<=}}1 {„}{{\glqq}}1 {“}{{\grqq}}1
+  {”}{{''}}1
+}
+\lstset{style=eisvogel_listing_style}
+
+%
+% Java (Java SE 12, 2019-06-22)
+%
+\lstdefinelanguage{Java}{
+  morekeywords={
+    % normal keywords (without data types)
+    abstract,assert,break,case,catch,class,continue,default,
+    do,else,enum,exports,extends,final,finally,for,if,implements,
+    import,instanceof,interface,module,native,new,package,private,
+    protected,public,requires,return,static,strictfp,super,switch,
+    synchronized,this,throw,throws,transient,try,volatile,while,
+    % var is an identifier
+    var
+  },
+  morekeywords={[2] % data types
+    % primitive data types
+    boolean,byte,char,double,float,int,long,short,
+    % String
+    String,
+    % primitive wrapper types
+    Boolean,Byte,Character,Double,Float,Integer,Long,Short
+    % number types
+    Number,AtomicInteger,AtomicLong,BigDecimal,BigInteger,DoubleAccumulator,DoubleAdder,LongAccumulator,LongAdder,Short,
+    % other
+    Object,Void,void
+  },
+  morekeywords={[3] % literals
+    % reserved words for literal values
+    null,true,false,
+  },
+  sensitive,
+  morecomment  = [l]//,
+  morecomment  = [s]{/*}{*/},
+  morecomment  = [s]{/**}{*/},
+  morestring   = [b]",
+  morestring   = [b]',
+}
+
+\lstdefinelanguage{XML}{
+  morestring      = [b]",
+  moredelim       = [s][\bfseries\color{listing-keyword}]{<}{\ },
+  moredelim       = [s][\bfseries\color{listing-keyword}]{</}{>},
+  moredelim       = [l][\bfseries\color{listing-keyword}]{/>},
+  moredelim       = [l][\bfseries\color{listing-keyword}]{>},
+  morecomment     = [s]{<?}{?>},
+  morecomment     = [s]{<!--}{-->},
+  commentstyle    = \color{listing-comment},
+  stringstyle     = \color{listing-string},
+  identifierstyle = \color{listing-identifier}
+}
+
+%
+% header and footer
+%
+\usepackage{fancyhdr}
+
+\fancypagestyle{eisvogel-header-footer}{
+  \fancyhead{}
+  \fancyfoot{}
+  \lhead[]{}
+  \chead[]{}
+  \rhead[]{}
+  \lfoot[\thepage]{}
+  \cfoot[]{}
+  \rfoot[]{\thepage}
+  \renewcommand{\headrulewidth}{0.4pt}
+  \renewcommand{\footrulewidth}{0.4pt}
+}
+\pagestyle{eisvogel-header-footer}
+
+%%
+%% end added
+%%
+
 \begin{document}
+
+%%
+%% begin titlepage
+%%
+
+%%
+%% end titlepage
+%%
+
+
 
 Author: Ana-Maria Vintila, based off work from Srijith Rajamohan based
 off the work by Robert Guthrie
 
 Source: https://srijithr.gitlab.io/post/word2vec/
 
-\begin{verbatim}
+\begin{lstlisting}
 import os
 from IPython.display import Image
 
 pth = os.getcwd()
 pth
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 '/content/gdrive/My Drive/StatFitScholarshipProject/PythonNeuralNetNLP'
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 Image(filename=pth + '/src/NLPstudy/images/Skip-gram.png')
-\end{verbatim}
+\end{lstlisting}
 
 \begin{figure}
 \centering
@@ -135,7 +421,7 @@ Image(filename=pth + '/src/NLPstudy/images/Skip-gram.png')
 
 Loading the imports:
 
-\begin{verbatim}
+\begin{lstlisting}
 import torch
 import torch.tensor as Tensor
 import torch.nn as nn
@@ -151,11 +437,11 @@ from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import euclidean_distances
 
 torch.manual_seed(1)
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 <torch._C.Generator at 0x7f9c3be47370>
-\end{verbatim}
+\end{lstlisting}
 
 \hypertarget{step-1-initialization}{%
 \section{Step 1: Initialization}\label{step-1-initialization}}
@@ -166,7 +452,7 @@ which we build vocabulary.
 
 Tokenizing the text occurs later while reading in the data.
 
-\begin{verbatim}
+\begin{lstlisting}
 CONTEXT_SIZE = 3
 EMBEDDING_DIM = 10
 
@@ -191,7 +477,7 @@ That sensitivity informed “Freedom’s Fearful Foe: Poverty,” his celebrated
   Amanda Maddox, the book also includes a recent interview with Mr. da Silva and essays by
   Beatriz Jaguaribe, Maria Alice Rezende de Carvalho and Sérgio Burgi.
 """.split()
-\end{verbatim}
+\end{lstlisting}
 
 \hypertarget{step-2-build-the-n-grams}{%
 \section{\texorpdfstring{Step 2: Build the
@@ -200,23 +486,24 @@ That sensitivity informed “Freedom’s Fearful Foe: Poverty,” his celebrated
 Next we build the \(n\)-grams, or sequence of words, as a list of
 tuples.
 
-Each tuple is ({[} \texttt{word}\(_{i-2}\), \texttt{word}\(_{i-1}\) {]},
-\texttt{targetWord})
+Each tuple is ({[} \passthrough{\lstinline!word!}\(_{i-2}\),
+\passthrough{\lstinline!word!}\(_{i-1}\) {]},
+\passthrough{\lstinline!targetWord!})
 
-\begin{verbatim}
+\begin{lstlisting}
 ngrams = []
 for i in range(len(testSentence) - CONTEXT_SIZE):
     tup = [testSentence[j] for j in np.arange(i + 1, i + CONTEXT_SIZE + 1)]
     # skip-gram way of appending:
     ngrams.append( (testSentence[i], tup) )
     # cbow# ngrams.append( (tup, testSentence[i + CONTEXT_SIZE]) )
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 ngrams[:20] # showing a few sample n-grams
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 [('Empathy', ['for', 'the', 'poor']),
  ('for', ['the', 'poor', 'may']),
  ('the', ['poor', 'may', 'not']),
@@ -237,24 +524,24 @@ ngrams[:20] # showing a few sample n-grams
  ('the', ['victims', 'and', 'insist']),
  ('victims', ['and', 'insist', 'their']),
  ('and', ['insist', 'their', 'predicament'])]
-\end{verbatim}
+\end{lstlisting}
 
 \hypertarget{step-3-create-vocabulary}{%
 \section{Step 3: Create Vocabulary}\label{step-3-create-vocabulary}}
 
-Create the vocabulary by converting the text into a \texttt{set} to
-remove duplicate words.
+Create the vocabulary by converting the text into a
+\passthrough{\lstinline!set!} to remove duplicate words.
 
-\begin{verbatim}
+\begin{lstlisting}
 vocabulary = set(testSentence)
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 len(vocabulary)
 list(vocabulary)[:20] # showing first 20 words in vocabulary
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 ['lived',
  'psychologically',
  'prophecies',
@@ -275,7 +562,7 @@ list(vocabulary)[:20] # showing first 20 words in vocabulary
  'understand',
  'cycle',
  'who']
-\end{verbatim}
+\end{lstlisting}
 
 \hypertarget{step-4-create-map-of-words-to-indices}{%
 \section{Step 4: Create Map of Words to
@@ -286,18 +573,18 @@ the given index in the dictionary argument. Basically, we get a list of
 tuples (number, word) from zipping the sequence \(0,1,2,3 ....\) with
 the vocabulary word list.
 
-\begin{verbatim}
+\begin{lstlisting}
 wordToIndex = {word : i for i, word in enumerate(vocabulary)}
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 # Showing first 20 word to index pairs
 len(wordToIndex)
 itemsList = list(wordToIndex.items())
 itemsList[:20]
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 [('lived', 0),
  ('psychologically', 1),
  ('prophecies', 2),
@@ -318,9 +605,9 @@ itemsList[:20]
  ('understand', 17),
  ('cycle', 18),
  ('who', 19)]
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 def printKey(iWord, wordToIndexDict):
     """
     Prints the key (the word) corresponding to the given index in the given dictionary.
@@ -361,7 +648,7 @@ def readData(filePath):
     cleanedWords = [word for word in tokenizedData if word not in stopWordsSet]
 
     return cleanedWords
-\end{verbatim}
+\end{lstlisting}
 
 \hypertarget{step-6-create-skip-gram-model}{%
 \section{Step 6: Create Skip-Gram
@@ -373,8 +660,9 @@ The skip-gram neural network has three components:
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  embedding layer, created using pytorch's \texttt{nn.Embedding}, to
-  convert tensors into word embeddings.
+  embedding layer, created using pytorch's
+  \passthrough{\lstinline!nn.Embedding!}, to convert tensors into word
+  embeddings.
 \item
   hidden layer, in this case it is a linear layer.
 \item
@@ -389,29 +677,29 @@ Skip-Gram:}\label{forward-pass-of-skip-gram}}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  Convert the tensor \texttt{inputs} to word embeddings via the
-  skip-gram's \texttt{nn.Embedding} layer
+  Convert the tensor \passthrough{\lstinline!inputs!} to word embeddings
+  via the skip-gram's \passthrough{\lstinline!nn.Embedding!} layer
 \item
   Pass the embeddings to the hidden layer and transform the result using
-  the \texttt{relu} function
+  the \passthrough{\lstinline!relu!} function
 \item
   Transform the hidden layer results using the output layer.
 \item
   Finally, create a probability distribution over words using the
-  \texttt{softmax} function. (Here we actually use the
-  \texttt{log\_softmax} so the results are log probabilities instead of
-  probabilities. )
+  \passthrough{\lstinline!softmax!} function. (Here we actually use the
+  \passthrough{\lstinline!log\_softmax!} so the results are log
+  probabilities instead of probabilities. )
 \end{enumerate}
 
 \hypertarget{predictions}{%
 \subsubsection{Predictions:}\label{predictions}}
 
-To generate predictions we need to execute the \texttt{forward} pass of
-the skip-gram model and get the index of the maximum probability from
-the output layer. Then that index is used to find the corresponding
-prediction word.
+To generate predictions we need to execute the
+\passthrough{\lstinline!forward!} pass of the skip-gram model and get
+the index of the maximum probability from the output layer. Then that
+index is used to find the corresponding prediction word.
 
-\begin{verbatim}
+\begin{lstlisting}
 class SkipGramModeler(nn.Module):
 
     def __init__(self, vocabSize: int, embeddingDim: int, contextSize: int):
@@ -509,9 +797,9 @@ class SkipGramModeler(nn.Module):
         for i in self.embeddings.parameters():
             weights = i.data.numpy()
         np.save(filename, weights)
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 # Trial : testing out the predict() inner workings
 
 inputStr = "psychologically"
@@ -522,15 +810,15 @@ print("contextIndices: ", contextIndices)
 print("contextIndices dim: ", contextIndices.dim())
 print("contextIndices size: ", contextIndices.size())
 
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 contextIndices:  tensor([137])
 contextIndices dim:  1
 contextIndices size:  torch.Size([1])
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 dummyModel = SkipGramModeler(vocabSize=len(vocabulary), embeddingDim=EMBEDDING_DIM,
                          contextSize=CONTEXT_SIZE)
 
@@ -576,9 +864,9 @@ for i in indices:
 
 print("\nlength of key,ind pairs: ", len(keyIndFilteredPairs))
 print("keyIndFilteredPairs: ", keyIndFilteredPairs)
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 logProbsDecr dim :  2
 logProbsDecr shape :  torch.Size([3, 195])
 logProbsDecr squeezed:  tensor([[-5.7581, -5.7919, -5.8080, -5.8146, -5.8202],
@@ -597,7 +885,7 @@ indices =  [tensor(107), tensor(142), tensor(167)]
 
 length of key,ind pairs:  3
 keyIndFilteredPairs:  [[('traveling', 107)], [('outside', 142)], [('Foundation),', 167)]]
-\end{verbatim}
+\end{lstlisting}
 
 \hypertarget{step-7-train-the-skip-gram-model}{%
 \section{Step 7: Train the Skip-Gram
@@ -610,23 +898,24 @@ Training the model requires the following steps:
 \tightlist
 \item
   Convert the context words into integer indices using the
-  \texttt{wordToIndex} dictionary, and make their type a
-  \texttt{Tensor}.
+  \passthrough{\lstinline!wordToIndex!} dictionary, and make their type
+  a \passthrough{\lstinline!Tensor!}.
 \item
   Set the model gradients to zero so they do not accumulate artificially
   (feature of pytorch)
 \item
-  Do the \texttt{forward} pass of the Skip-Gram model, resulting in the
-  log probabilities of the context words.
+  Do the \passthrough{\lstinline!forward!} pass of the Skip-Gram model,
+  resulting in the log probabilities of the context words.
 \item
   For each word in the correct target context wrods, convert it to an
-  index using the \texttt{wordToIndex} dictionary and wrap it in a
-  \texttt{Tensor} type.
+  index using the \passthrough{\lstinline!wordToIndex!} dictionary and
+  wrap it in a \passthrough{\lstinline!Tensor!} type.
 \item
   Compute the loss between the log probabilities and target contexts.
 \item
-  Do the \texttt{backward} pass over the neural network to update the
-  gradients by calling \texttt{loss.backward()}.
+  Do the \passthrough{\lstinline!backward!} pass over the neural network
+  to update the gradients by calling
+  \passthrough{\lstinline!loss.backward()!}.
 \item
   Do one step using the optimizer, so that weights are updated using
   stochastic gradient descent.
@@ -634,7 +923,7 @@ Training the model requires the following steps:
   Increment the total loss by this epoch's current loss.
 \end{enumerate}
 
-\begin{verbatim}
+\begin{lstlisting}
 %time
 
 learningRate = 0.001
@@ -685,9 +974,9 @@ for epoch in range(NUM_EPOCHS):
         print("Epoch = {}, Total loss = {}".format(epoch, totalLoss))
 
     losses.append(totalLoss)
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 CPU times: user 2 µs, sys: 0 ns, total: 2 µs
 Wall time: 4.53 µs
 Epoch = 0, Total loss = 1640.9999227523804
@@ -701,18 +990,18 @@ Epoch = 350, Total loss = 742.0071568489075
 Epoch = 400, Total loss = 655.678228020668
 Epoch = 450, Total loss = 594.8056415319443
 Epoch = 500, Total loss = 552.3266983032227
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 skipGramModel.predict(inputStr = "psychologically", wordToIndexDict=wordToIndex)
 skipGramModel.writeEmbeddingToFile(filename = pth + "/src/NLPstudy/SkipGramModel/rajamohan_skipgram_embeddings.txt")
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 clusterEmbeddings(filename = pth + "/src/NLPstudy/SkipGramModel/rajamohan_skipgram_embeddings.txt.npy", numClusters=5)
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 3
 shaming
 28
@@ -723,9 +1012,9 @@ It
 book,
 87
 Silva,
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
-\end{verbatim}
+\begin{lstlisting}
+\end{lstlisting}
 
 \end{document}

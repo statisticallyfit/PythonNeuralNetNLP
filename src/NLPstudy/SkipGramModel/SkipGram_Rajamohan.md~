@@ -1,141 +1,47 @@
-% Options for packages loaded elsewhere
-\PassOptionsToPackage{unicode}{hyperref}
-\PassOptionsToPackage{hyphens}{url}
-%
-\documentclass[
-]{article}
-\usepackage{lmodern} 
-\usepackage{amssymb,amsmath}
-\usepackage{ifxetex,ifluatex}
-\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
-  \usepackage[T1]{fontenc}
-  \usepackage[utf8]{inputenc}
-  \usepackage{textcomp} % provide euro and other symbols
-\else % if luatex or xetex
-  \usepackage{unicode-math}
-  \defaultfontfeatures{Scale=MatchLowercase}
-  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
-\fi
-% Use upquote if available, for straight quotes in verbatim environments
-\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-\IfFileExists{microtype.sty}{% use microtype if available
-  \usepackage[]{microtype}
-  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
-}{}
-\makeatletter
-\@ifundefined{KOMAClassName}{% if non-KOMA class
-  \IfFileExists{parskip.sty}{%
-    \usepackage{parskip}
-  }{% else
-    \setlength{\parindent}{0pt}
-    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
-}{% if KOMA class
-  \KOMAoptions{parskip=half}}
-\makeatother
-\usepackage{xcolor}
-\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
-\hypersetup{
-  hidelinks,
-  pdfcreator={LaTeX via pandoc}}
-\urlstyle{same} % disable monospaced font for URLs
-\usepackage{graphicx}
-\makeatletter
-\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
-\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
-\makeatother
-% Scale images if necessary, so that they will not overflow the page
-% margins by default, and it is still possible to overwrite the defaults
-% using explicit options in \includegraphics[width, height, ...]{}
-\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
-% Set default figure placement to htbp
-\makeatletter
-\def\fps@figure{htbp}
-\makeatother
-\setlength{\emergencystretch}{3em} % prevent overfull lines
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
-\usepackage{fancyvrb,newverbs,xcolor} % for code highlighting
-\usepackage[top=2cm, bottom=1.5cm, left=2cm, right=2cm]{geometry} % for page margins
-
-\usepackage[english]{babel}
-% Ana: adding graphics package for images
-\usepackage{graphics}
-\usepackage{graphicx}
-
-% change background color for inline code in
-% markdown files. The following code does not work well for
-% long text as the text will exceed the page boundary
-%\definecolor{bgcolor}{HTML}{E0E0E0}
-%\let\oldtexttt\texttt
-
-% \renewcommand{\texttt}[1]{
-% \colorbox{bgcolor}{\oldtexttt{#1}}
-% }
-
-%% color and other settings for hyperref package -----------------------------
-\hypersetup{
-    bookmarksopen=true,
-    linkcolor=blue,
-    filecolor=magenta,
-    urlcolor=RoyalBlue,
-}
-
-% Font Setup  ---------------------------------------------------------
-\usepackage{unicode-math} % load 'fontspec' automatically
-\setmainfont{Crimson}
-\setmathfont{TeX Gyre Schola Math}
+---
+pandoc-minted:
+  language: python
+---
 
 
-% Code syntax highlighting ---------------------------------------------------
+<a href="https://colab.research.google.com/github/statisticallyfit/PythonNeuralNetNLP/blob/master/SkipGram_Rajamohan.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
-%\definecolor{Light}{HTML}{F4F4F4}
-
-%\let\oldtexttt\texttt
-%\renewcommand{\texttt}[1]{
-%  \colorbox{Light}{\oldtexttt{#1}}
-%}
-
-\usepackage{minted}
-\usemintedstyle{manni}
-\setmonofont{Inconsolata}
-
-\author{}
-\date{}
-
-\begin{document}
-
-Author: Ana-Maria Vintila, based off work from Srijith Rajamohan based
-off the work by Robert Guthrie
+Author: Ana-Maria Vintila, based off work from Srijith Rajamohan based off the work by Robert Guthrie
 
 Source: https://srijithr.gitlab.io/post/word2vec/
 
-\begin{verbatim}
+
+```
 import os
 from IPython.display import Image
 
 pth = os.getcwd()
 pth
-\end{verbatim}
+```
 
-\begin{verbatim}
-'/content/gdrive/My Drive/StatFitScholarshipProject/PythonNeuralNetNLP'
-\end{verbatim}
 
-\begin{verbatim}
+
+
+    '/content/gdrive/My Drive/StatFitScholarshipProject/PythonNeuralNetNLP'
+
+
+
+
+```
 Image(filename=pth + '/src/NLPstudy/images/Skip-gram.png')
-\end{verbatim}
+```
 
-\begin{figure}
-\centering
-\includegraphics{SkipGram_Rajamohan_files/SkipGram_Rajamohan_3_0.png}
-\caption{png}
-\end{figure}
+
+
+
+![png](SkipGram_Rajamohan_files/SkipGram_Rajamohan_3_0.png)
+
+
 
 Loading the imports:
 
-\begin{verbatim}
+
+```
 import torch
 import torch.tensor as Tensor
 import torch.nn as nn
@@ -151,22 +57,22 @@ from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import euclidean_distances
 
 torch.manual_seed(1)
-\end{verbatim}
+```
 
-\begin{verbatim}
-<torch._C.Generator at 0x7f9c3be47370>
-\end{verbatim}
 
-\hypertarget{step-1-initialization}{%
-\section{Step 1: Initialization}\label{step-1-initialization}}
 
-Here we set the context window size to \(3\) words and the word
-embedding dimension to \(10\), and also pass in the text corpora from
-which we build vocabulary.
+
+    <torch._C.Generator at 0x7f9c3be47370>
+
+
+
+# Step 1: Initialization
+Here we set the context window size to $3$ words and the word embedding dimension to $10$, and also pass in the text corpora from which we build vocabulary.
 
 Tokenizing the text occurs later while reading in the data.
 
-\begin{verbatim}
+
+```
 CONTEXT_SIZE = 3
 EMBEDDING_DIM = 10
 
@@ -191,136 +97,139 @@ That sensitivity informed “Freedom’s Fearful Foe: Poverty,” his celebrated
   Amanda Maddox, the book also includes a recent interview with Mr. da Silva and essays by
   Beatriz Jaguaribe, Maria Alice Rezende de Carvalho and Sérgio Burgi.
 """.split()
-\end{verbatim}
+```
 
-\hypertarget{step-2-build-the-n-grams}{%
-\section{\texorpdfstring{Step 2: Build the
-\(n\)-grams}{Step 2: Build the n-grams}}\label{step-2-build-the-n-grams}}
+# Step 2: Build the $n$-grams
+Next we build the $n$-grams, or sequence of words, as a list of tuples.
 
-Next we build the \(n\)-grams, or sequence of words, as a list of
-tuples.
+Each tuple is ([ `word`$_{i-2}$, `word`$_{i-1}$ ], `targetWord`)
 
-Each tuple is ({[} \texttt{word}\(_{i-2}\), \texttt{word}\(_{i-1}\) {]},
-\texttt{targetWord})
 
-\begin{verbatim}
+```
 ngrams = []
 for i in range(len(testSentence) - CONTEXT_SIZE):
     tup = [testSentence[j] for j in np.arange(i + 1, i + CONTEXT_SIZE + 1)]
     # skip-gram way of appending:
     ngrams.append( (testSentence[i], tup) )
     # cbow# ngrams.append( (tup, testSentence[i + CONTEXT_SIZE]) )
-\end{verbatim}
+```
 
-\begin{verbatim}
+
+```
 ngrams[:20] # showing a few sample n-grams
-\end{verbatim}
+```
 
-\begin{verbatim}
-[('Empathy', ['for', 'the', 'poor']),
- ('for', ['the', 'poor', 'may']),
- ('the', ['poor', 'may', 'not']),
- ('poor', ['may', 'not', 'come']),
- ('may', ['not', 'come', 'easily']),
- ('not', ['come', 'easily', 'to']),
- ('come', ['easily', 'to', 'people']),
- ('easily', ['to', 'people', 'who']),
- ('to', ['people', 'who', 'never']),
- ('people', ['who', 'never', 'experienced']),
- ('who', ['never', 'experienced', 'it.']),
- ('never', ['experienced', 'it.', 'They']),
- ('experienced', ['it.', 'They', 'may']),
- ('it.', ['They', 'may', 'blame']),
- ('They', ['may', 'blame', 'the']),
- ('may', ['blame', 'the', 'victims']),
- ('blame', ['the', 'victims', 'and']),
- ('the', ['victims', 'and', 'insist']),
- ('victims', ['and', 'insist', 'their']),
- ('and', ['insist', 'their', 'predicament'])]
-\end{verbatim}
 
-\hypertarget{step-3-create-vocabulary}{%
-\section{Step 3: Create Vocabulary}\label{step-3-create-vocabulary}}
 
-Create the vocabulary by converting the text into a \texttt{set} to
-remove duplicate words.
 
-\begin{verbatim}
+    [('Empathy', ['for', 'the', 'poor']),
+     ('for', ['the', 'poor', 'may']),
+     ('the', ['poor', 'may', 'not']),
+     ('poor', ['may', 'not', 'come']),
+     ('may', ['not', 'come', 'easily']),
+     ('not', ['come', 'easily', 'to']),
+     ('come', ['easily', 'to', 'people']),
+     ('easily', ['to', 'people', 'who']),
+     ('to', ['people', 'who', 'never']),
+     ('people', ['who', 'never', 'experienced']),
+     ('who', ['never', 'experienced', 'it.']),
+     ('never', ['experienced', 'it.', 'They']),
+     ('experienced', ['it.', 'They', 'may']),
+     ('it.', ['They', 'may', 'blame']),
+     ('They', ['may', 'blame', 'the']),
+     ('may', ['blame', 'the', 'victims']),
+     ('blame', ['the', 'victims', 'and']),
+     ('the', ['victims', 'and', 'insist']),
+     ('victims', ['and', 'insist', 'their']),
+     ('and', ['insist', 'their', 'predicament'])]
+
+
+
+# Step 3: Create Vocabulary
+Create the vocabulary by converting the text into a `set` to remove duplicate words.
+
+
+```
 vocabulary = set(testSentence)
-\end{verbatim}
+```
 
-\begin{verbatim}
+
+```
 len(vocabulary)
 list(vocabulary)[:20] # showing first 20 words in vocabulary
-\end{verbatim}
+```
 
-\begin{verbatim}
-['lived',
- 'psychologically',
- 'prophecies',
- 'Gordon',
- 'Silva',
- 'They',
- 'abstract',
- 'perpetual',
- 'hills',
- 'Silva,',
- 'power',
- 'magazine',
- 'imagination.',
- 'something',
- 'recent',
- 'all',
- 'may',
- 'understand',
- 'cycle',
- 'who']
-\end{verbatim}
 
-\hypertarget{step-4-create-map-of-words-to-indices}{%
-\section{Step 4: Create Map of Words to
-Indices}\label{step-4-create-map-of-words-to-indices}}
 
-Creating word to index map that prints the key (word) corresponding to
-the given index in the dictionary argument. Basically, we get a list of
-tuples (number, word) from zipping the sequence \(0,1,2,3 ....\) with
-the vocabulary word list.
 
-\begin{verbatim}
+    ['lived',
+     'psychologically',
+     'prophecies',
+     'Gordon',
+     'Silva',
+     'They',
+     'abstract',
+     'perpetual',
+     'hills',
+     'Silva,',
+     'power',
+     'magazine',
+     'imagination.',
+     'something',
+     'recent',
+     'all',
+     'may',
+     'understand',
+     'cycle',
+     'who']
+
+
+
+# Step 4: Create Map of Words to Indices
+
+Creating word to index map that prints the key (word) corresponding to the given index in the dictionary argument. Basically, we get a list of tuples (number, word) from zipping the sequence $0,1,2,3 ....$ with the vocabulary word list.
+
+
+```
 wordToIndex = {word : i for i, word in enumerate(vocabulary)}
-\end{verbatim}
+```
 
-\begin{verbatim}
+
+```
 # Showing first 20 word to index pairs
 len(wordToIndex)
 itemsList = list(wordToIndex.items())
 itemsList[:20]
-\end{verbatim}
+```
 
-\begin{verbatim}
-[('lived', 0),
- ('psychologically', 1),
- ('prophecies', 2),
- ('Gordon', 3),
- ('Silva', 4),
- ('They', 5),
- ('abstract', 6),
- ('perpetual', 7),
- ('hills', 8),
- ('Silva,', 9),
- ('power', 10),
- ('magazine', 11),
- ('imagination.', 12),
- ('something', 13),
- ('recent', 14),
- ('all', 15),
- ('may', 16),
- ('understand', 17),
- ('cycle', 18),
- ('who', 19)]
-\end{verbatim}
 
-\begin{verbatim}
+
+
+    [('lived', 0),
+     ('psychologically', 1),
+     ('prophecies', 2),
+     ('Gordon', 3),
+     ('Silva', 4),
+     ('They', 5),
+     ('abstract', 6),
+     ('perpetual', 7),
+     ('hills', 8),
+     ('Silva,', 9),
+     ('power', 10),
+     ('magazine', 11),
+     ('imagination.', 12),
+     ('something', 13),
+     ('recent', 14),
+     ('all', 15),
+     ('may', 16),
+     ('understand', 17),
+     ('cycle', 18),
+     ('who', 19)]
+
+
+
+
+```
 def printKey(iWord, wordToIndexDict):
     """
     Prints the key (the word) corresponding to the given index in the given dictionary.
@@ -361,57 +270,27 @@ def readData(filePath):
     cleanedWords = [word for word in tokenizedData if word not in stopWordsSet]
 
     return cleanedWords
-\end{verbatim}
+```
 
-\hypertarget{step-6-create-skip-gram-model}{%
-\section{Step 6: Create Skip-Gram
-Model}\label{step-6-create-skip-gram-model}}
-
+# Step 6: Create Skip-Gram Model
 The skip-gram neural network has three components:
 
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  embedding layer, created using pytorch's \texttt{nn.Embedding}, to
-  convert tensors into word embeddings.
-\item
-  hidden layer, in this case it is a linear layer.
-\item
-  output layer, in this case also linear layer.
-\end{enumerate}
+1. embedding layer, created using pytorch's `nn.Embedding`, to convert tensors into word embeddings.
+2. hidden layer, in this case it is a linear layer.
+3. output layer, in this case also linear layer.
 
-\hypertarget{forward-pass-of-skip-gram}{%
-\subsubsection{Forward Pass of
-Skip-Gram:}\label{forward-pass-of-skip-gram}}
+### Forward Pass of Skip-Gram:
+1. Convert the tensor `inputs` to word embeddings via the skip-gram's `nn.Embedding` layer
+2. Pass the embeddings to the hidden layer and transform the result using the `relu` function
+3. Transform the hidden layer results using the output layer.
+4. Finally, create a probability distribution over words using the `softmax` function. (Here we actually use the `log_softmax` so the results are log probabilities instead of probabilities. )
 
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  Convert the tensor \texttt{inputs} to word embeddings via the
-  skip-gram's \texttt{nn.Embedding} layer
-\item
-  Pass the embeddings to the hidden layer and transform the result using
-  the \texttt{relu} function
-\item
-  Transform the hidden layer results using the output layer.
-\item
-  Finally, create a probability distribution over words using the
-  \texttt{softmax} function. (Here we actually use the
-  \texttt{log\_softmax} so the results are log probabilities instead of
-  probabilities. )
-\end{enumerate}
+### Predictions:
+To generate predictions we need to execute the `forward` pass of the skip-gram model and get the index of the maximum probability from the output layer. Then that index is used to find the corresponding prediction word.
 
-\hypertarget{predictions}{%
-\subsubsection{Predictions:}\label{predictions}}
 
-To generate predictions we need to execute the \texttt{forward} pass of
-the skip-gram model and get the index of the maximum probability from
-the output layer. Then that index is used to find the corresponding
-prediction word.
 
-\begin{verbatim}
+```
 class SkipGramModeler(nn.Module):
 
     def __init__(self, vocabSize: int, embeddingDim: int, contextSize: int):
@@ -509,9 +388,10 @@ class SkipGramModeler(nn.Module):
         for i in self.embeddings.parameters():
             weights = i.data.numpy()
         np.save(filename, weights)
-\end{verbatim}
+```
 
-\begin{verbatim}
+
+```
 # Trial : testing out the predict() inner workings
 
 inputStr = "psychologically"
@@ -522,15 +402,16 @@ print("contextIndices: ", contextIndices)
 print("contextIndices dim: ", contextIndices.dim())
 print("contextIndices size: ", contextIndices.size())
 
-\end{verbatim}
 
-\begin{verbatim}
-contextIndices:  tensor([137])
-contextIndices dim:  1
-contextIndices size:  torch.Size([1])
-\end{verbatim}
+```
 
-\begin{verbatim}
+    contextIndices:  tensor([137])
+    contextIndices dim:  1
+    contextIndices size:  torch.Size([1])
+
+
+
+```
 dummyModel = SkipGramModeler(vocabSize=len(vocabulary), embeddingDim=EMBEDDING_DIM,
                          contextSize=CONTEXT_SIZE)
 
@@ -576,65 +457,42 @@ for i in indices:
 
 print("\nlength of key,ind pairs: ", len(keyIndFilteredPairs))
 print("keyIndFilteredPairs: ", keyIndFilteredPairs)
-\end{verbatim}
+```
 
-\begin{verbatim}
-logProbsDecr dim :  2
-logProbsDecr shape :  torch.Size([3, 195])
-logProbsDecr squeezed:  tensor([[-5.7581, -5.7919, -5.8080, -5.8146, -5.8202],
-        [-5.5920, -5.6021, -5.6844, -5.7157, -5.7189],
-        [-5.6294, -5.6362, -5.6638, -5.6691, -5.7091]],
-       grad_fn=<SliceBackward>)
-logProbsDecr squeezed dim :   2
-logProbsDecr squeezed shape:  torch.Size([3, 195])
+    logProbsDecr dim :  2
+    logProbsDecr shape :  torch.Size([3, 195])
+    logProbsDecr squeezed:  tensor([[-5.7581, -5.7919, -5.8080, -5.8146, -5.8202],
+            [-5.5920, -5.6021, -5.6844, -5.7157, -5.7189],
+            [-5.6294, -5.6362, -5.6638, -5.6691, -5.7091]],
+           grad_fn=<SliceBackward>)
+    logProbsDecr squeezed dim :   2
+    logProbsDecr squeezed shape:  torch.Size([3, 195])
+    
+    iSorted dim:  2
+    iSorted:  tensor([[107,  95,  74,  63,  11],
+            [142, 106, 100,  10,  93],
+            [167,   1,  44,   9,   8]])
+    
+    indices =  [tensor(107), tensor(142), tensor(167)]
+    
+    length of key,ind pairs:  3
+    keyIndFilteredPairs:  [[('traveling', 107)], [('outside', 142)], [('Foundation),', 167)]]
 
-iSorted dim:  2
-iSorted:  tensor([[107,  95,  74,  63,  11],
-        [142, 106, 100,  10,  93],
-        [167,   1,  44,   9,   8]])
 
-indices =  [tensor(107), tensor(142), tensor(167)]
-
-length of key,ind pairs:  3
-keyIndFilteredPairs:  [[('traveling', 107)], [('outside', 142)], [('Foundation),', 167)]]
-\end{verbatim}
-
-\hypertarget{step-7-train-the-skip-gram-model}{%
-\section{Step 7: Train the Skip-Gram
-Model}\label{step-7-train-the-skip-gram-model}}
-
+# Step 7: Train the Skip-Gram Model
 Training the model requires the following steps:
 
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  Convert the context words into integer indices using the
-  \texttt{wordToIndex} dictionary, and make their type a
-  \texttt{Tensor}.
-\item
-  Set the model gradients to zero so they do not accumulate artificially
-  (feature of pytorch)
-\item
-  Do the \texttt{forward} pass of the Skip-Gram model, resulting in the
-  log probabilities of the context words.
-\item
-  For each word in the correct target context wrods, convert it to an
-  index using the \texttt{wordToIndex} dictionary and wrap it in a
-  \texttt{Tensor} type.
-\item
-  Compute the loss between the log probabilities and target contexts.
-\item
-  Do the \texttt{backward} pass over the neural network to update the
-  gradients by calling \texttt{loss.backward()}.
-\item
-  Do one step using the optimizer, so that weights are updated using
-  stochastic gradient descent.
-\item
-  Increment the total loss by this epoch's current loss.
-\end{enumerate}
+1. Convert the context words into integer indices using the `wordToIndex` dictionary, and make their type a `Tensor`.
+2. Set the model gradients to zero so they do not accumulate artificially (feature of pytorch)
+3. Do the `forward` pass of the Skip-Gram model, resulting in the log probabilities of the context words.
+4. For each word in the correct target context wrods, convert it to an index using the `wordToIndex` dictionary and wrap it in a `Tensor` type.
+5. Compute the loss between the log probabilities and target contexts.
+6. Do the `backward` pass over the neural network to update the gradients by calling `loss.backward()`.
+7. Do one step using the optimizer, so that weights are updated using stochastic gradient descent.
+8. Increment the total loss by this epoch's current loss.
 
-\begin{verbatim}
+
+```
 %time
 
 learningRate = 0.001
@@ -685,47 +543,47 @@ for epoch in range(NUM_EPOCHS):
         print("Epoch = {}, Total loss = {}".format(epoch, totalLoss))
 
     losses.append(totalLoss)
-\end{verbatim}
+```
 
-\begin{verbatim}
-CPU times: user 2 µs, sys: 0 ns, total: 2 µs
-Wall time: 4.53 µs
-Epoch = 0, Total loss = 1640.9999227523804
-Epoch = 50, Total loss = 1518.4927296638489
-Epoch = 100, Total loss = 1414.1443753242493
-Epoch = 150, Total loss = 1292.492782831192
-Epoch = 200, Total loss = 1149.2484674453735
-Epoch = 250, Total loss = 998.4024060964584
-Epoch = 300, Total loss = 857.8129457235336
-Epoch = 350, Total loss = 742.0071568489075
-Epoch = 400, Total loss = 655.678228020668
-Epoch = 450, Total loss = 594.8056415319443
-Epoch = 500, Total loss = 552.3266983032227
-\end{verbatim}
+    CPU times: user 2 µs, sys: 0 ns, total: 2 µs
+    Wall time: 4.53 µs
+    Epoch = 0, Total loss = 1640.9999227523804
+    Epoch = 50, Total loss = 1518.4927296638489
+    Epoch = 100, Total loss = 1414.1443753242493
+    Epoch = 150, Total loss = 1292.492782831192
+    Epoch = 200, Total loss = 1149.2484674453735
+    Epoch = 250, Total loss = 998.4024060964584
+    Epoch = 300, Total loss = 857.8129457235336
+    Epoch = 350, Total loss = 742.0071568489075
+    Epoch = 400, Total loss = 655.678228020668
+    Epoch = 450, Total loss = 594.8056415319443
+    Epoch = 500, Total loss = 552.3266983032227
 
-\begin{verbatim}
+
+
+```
 skipGramModel.predict(inputStr = "psychologically", wordToIndexDict=wordToIndex)
 skipGramModel.writeEmbeddingToFile(filename = pth + "/src/NLPstudy/SkipGramModel/rajamohan_skipgram_embeddings.txt")
-\end{verbatim}
+```
 
-\begin{verbatim}
+
+```
 clusterEmbeddings(filename = pth + "/src/NLPstudy/SkipGramModel/rajamohan_skipgram_embeddings.txt.npy", numClusters=5)
-\end{verbatim}
+```
 
-\begin{verbatim}
-3
-shaming
-28
-victims
-191
-It
-18
-book,
-87
-Silva,
-\end{verbatim}
+    3
+    shaming
+    28
+    victims
+    191
+    It
+    18
+    book,
+    87
+    Silva,
 
-\begin{verbatim}
-\end{verbatim}
 
-\end{document}
+
+```
+
+```

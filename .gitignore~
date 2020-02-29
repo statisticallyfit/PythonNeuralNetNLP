@@ -20,7 +20,5 @@ tut5_bestModel.pt
 transformer_bestModel.pt
 
 
-TRAINED_MODEL/
-
-
+trainedModel/
 __pycache__/

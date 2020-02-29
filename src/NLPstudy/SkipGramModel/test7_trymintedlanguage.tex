@@ -1,10 +1,11 @@
+% SOMETHING HERE
 % Options for packages loaded elsewhere
 \PassOptionsToPackage{unicode}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
 %
 \documentclass[
 ]{article}
-\usepackage{lmodern} 
+\usepackage{lmodern}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
@@ -74,6 +75,12 @@
 % \colorbox{bgcolor}{\oldtexttt{#1}}
 % }
 
+
+%% Setting pythong ??? -----------------------------------------------------
+%default_block_language: "lexer"
+%default_inline_language: "lexer"
+
+
 %% color and other settings for hyperref package -----------------------------
 \hypersetup{
     bookmarksopen=true,
@@ -84,22 +91,91 @@
 
 % Font Setup  ---------------------------------------------------------
 \usepackage{unicode-math} % load 'fontspec' automatically
-\setmainfont{Crimson}
+%\setmainfont{Crimson}
+%\setmainfont{Libertinus Sans} 
+\setmainfont{Alegreya}
 \setmathfont{TeX Gyre Schola Math}
 
 
 % Code syntax highlighting ---------------------------------------------------
 
-%\definecolor{Light}{HTML}{F4F4F4}
+% OLD PART -----------------
+%\usepackage{minted}
+%\usemintedstyle{manni}
+%\setmonofont{Inconsolata}
+% ---------------------------
 
-%\let\oldtexttt\texttt
-%\renewcommand{\texttt}[1]{
-%  \colorbox{Light}{\oldtexttt{#1}}
-%}
 
+% Preliminary macro things for code (snatched from macros in REPORT):  ------
+\newcommand\CodeFontSizeSmall{\fontsize{9pt}{9pt}\selectfont}
+
+\definecolor{originalmannibg}{HTML}{f2f2ff}
+\colorlet{BasePurple}{originalmannibg!90}
+\newcommand{\lighten}[3]{% Reference Color, Percentage, New Color Name
+    \colorlet{#3}{#1!#2!white}
+}
+\lighten{BasePurple}{50}{mannibg}
+
+% Code things --------------------
 \usepackage{minted}
+\usepackage{verbatim}  % has commenting
+
+
+
 \usemintedstyle{manni}
-\setmonofont{Inconsolata}
+
+%\setmonofont{Inconsolata} % setting code font
+\setmonofont{Fira Mono}
+
+% General code environment, used like: \begin{code}{python} .... \end{code}
+% NOTE: this is how to nest two environments together: 
+\newenvironment{code}[2][]
+ {\vspace{-3pt}%
+ \VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines, mathescape,
+    style=manni, bgcolor=mannibg,  #1]{#2}}
+ {\end{minted}\end{adjustwidth} 
+     \vspace{-10pt}
+ }
+ 
+% TODO: test if possible to do \renewenvironment to renew the minted environment and just include this logic below whenever calling \begin{minted}[]{python} ... 
+ 
+% Python code environment, used like \begin{pythonCode} ... \end{pythonCode}
+\newenvironment{pythonCode}
+ {\vspace{-3pt}%
+ \VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines, mathescape,
+    style=manni, bgcolor=mannibg]{python}}
+ {\end{minted}\end{adjustwidth} 
+     \vspace{-10pt}
+ }
+
+
+
+% General code output environment
+\newenvironment{outputCode}
+ {\VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines]{text}}
+ {\end{minted}\end{adjustwidth}}
+
+
+% Creating inline code font (equivalent to backticks in jupyter notebooks)
+% Must use like: \pythoninline{...text here ... }
+\newmintinline{python}{python3, fontsize=\CodeFontSizeSmall, bgcolor=mannibg}
+
+%\newenvironment{mintInline}[1][]{\mintinline{latex}{#1}}{}
+%\DeclareTextFontCommand{\mint}{\mintInline}
+
+
 
 \author{}
 \date{}
@@ -111,21 +187,21 @@ off the work by Robert Guthrie
 
 Source: https://srijithr.gitlab.io/post/word2vec/
 
-\begin{verbatim}
+\begin{minted}[]{python}
 import os
 from IPython.display import Image
 
 pth = os.getcwd()
 pth
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 '/content/gdrive/My Drive/StatFitScholarshipProject/PythonNeuralNetNLP'
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 Image(filename=pth + '/src/NLPstudy/images/Skip-gram.png')
-\end{verbatim}
+\end{minted}
 
 \begin{figure}
 \centering
@@ -135,7 +211,7 @@ Image(filename=pth + '/src/NLPstudy/images/Skip-gram.png')
 
 Loading the imports:
 
-\begin{verbatim}
+\begin{minted}[]{python}
 import torch
 import torch.tensor as Tensor
 import torch.nn as nn
@@ -151,11 +227,11 @@ from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import euclidean_distances
 
 torch.manual_seed(1)
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 <torch._C.Generator at 0x7f9c3be47370>
-\end{verbatim}
+\end{minted}
 
 \hypertarget{step-1-initialization}{%
 \section{Step 1: Initialization}\label{step-1-initialization}}
@@ -166,7 +242,7 @@ which we build vocabulary.
 
 Tokenizing the text occurs later while reading in the data.
 
-\begin{verbatim}
+\begin{minted}[]{python}
 CONTEXT_SIZE = 3
 EMBEDDING_DIM = 10
 
@@ -191,7 +267,7 @@ That sensitivity informed “Freedom’s Fearful Foe: Poverty,” his celebrated
   Amanda Maddox, the book also includes a recent interview with Mr. da Silva and essays by
   Beatriz Jaguaribe, Maria Alice Rezende de Carvalho and Sérgio Burgi.
 """.split()
-\end{verbatim}
+\end{minted}
 
 \hypertarget{step-2-build-the-n-grams}{%
 \section{\texorpdfstring{Step 2: Build the
@@ -200,23 +276,24 @@ That sensitivity informed “Freedom’s Fearful Foe: Poverty,” his celebrated
 Next we build the \(n\)-grams, or sequence of words, as a list of
 tuples.
 
-Each tuple is ({[} \texttt{word}\(_{i-2}\), \texttt{word}\(_{i-1}\) {]},
-\texttt{targetWord})
+Each tuple is ({[} \mintinline[]{python}{word}\(_{i-2}\),
+\mintinline[]{python}{word}\(_{i-1}\) {]},
+\mintinline[]{python}{targetWord})
 
-\begin{verbatim}
+\begin{minted}[]{python}
 ngrams = []
 for i in range(len(testSentence) - CONTEXT_SIZE):
     tup = [testSentence[j] for j in np.arange(i + 1, i + CONTEXT_SIZE + 1)]
     # skip-gram way of appending:
     ngrams.append( (testSentence[i], tup) )
     # cbow# ngrams.append( (tup, testSentence[i + CONTEXT_SIZE]) )
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 ngrams[:20] # showing a few sample n-grams
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 [('Empathy', ['for', 'the', 'poor']),
  ('for', ['the', 'poor', 'may']),
  ('the', ['poor', 'may', 'not']),
@@ -237,24 +314,24 @@ ngrams[:20] # showing a few sample n-grams
  ('the', ['victims', 'and', 'insist']),
  ('victims', ['and', 'insist', 'their']),
  ('and', ['insist', 'their', 'predicament'])]
-\end{verbatim}
+\end{minted}
 
 \hypertarget{step-3-create-vocabulary}{%
 \section{Step 3: Create Vocabulary}\label{step-3-create-vocabulary}}
 
-Create the vocabulary by converting the text into a \texttt{set} to
-remove duplicate words.
+Create the vocabulary by converting the text into a
+\mintinline[]{python}{set} to remove duplicate words.
 
-\begin{verbatim}
+\begin{minted}[]{python}
 vocabulary = set(testSentence)
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 len(vocabulary)
 list(vocabulary)[:20] # showing first 20 words in vocabulary
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 ['lived',
  'psychologically',
  'prophecies',
@@ -275,7 +352,7 @@ list(vocabulary)[:20] # showing first 20 words in vocabulary
  'understand',
  'cycle',
  'who']
-\end{verbatim}
+\end{minted}
 
 \hypertarget{step-4-create-map-of-words-to-indices}{%
 \section{Step 4: Create Map of Words to
@@ -286,18 +363,18 @@ the given index in the dictionary argument. Basically, we get a list of
 tuples (number, word) from zipping the sequence \(0,1,2,3 ....\) with
 the vocabulary word list.
 
-\begin{verbatim}
+\begin{minted}[]{python}
 wordToIndex = {word : i for i, word in enumerate(vocabulary)}
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 # Showing first 20 word to index pairs
 len(wordToIndex)
 itemsList = list(wordToIndex.items())
 itemsList[:20]
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 [('lived', 0),
  ('psychologically', 1),
  ('prophecies', 2),
@@ -318,9 +395,9 @@ itemsList[:20]
  ('understand', 17),
  ('cycle', 18),
  ('who', 19)]
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 def printKey(iWord, wordToIndexDict):
     """
     Prints the key (the word) corresponding to the given index in the given dictionary.
@@ -361,7 +438,7 @@ def readData(filePath):
     cleanedWords = [word for word in tokenizedData if word not in stopWordsSet]
 
     return cleanedWords
-\end{verbatim}
+\end{minted}
 
 \hypertarget{step-6-create-skip-gram-model}{%
 \section{Step 6: Create Skip-Gram
@@ -373,8 +450,9 @@ The skip-gram neural network has three components:
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  embedding layer, created using pytorch's \texttt{nn.Embedding}, to
-  convert tensors into word embeddings.
+  embedding layer, created using pytorch's
+  \mintinline[]{python}{nn.Embedding}, to convert tensors into word
+  embeddings.
 \item
   hidden layer, in this case it is a linear layer.
 \item
@@ -389,29 +467,29 @@ Skip-Gram:}\label{forward-pass-of-skip-gram}}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  Convert the tensor \texttt{inputs} to word embeddings via the
-  skip-gram's \texttt{nn.Embedding} layer
+  Convert the tensor \mintinline[]{python}{inputs} to word embeddings
+  via the skip-gram's \mintinline[]{python}{nn.Embedding} layer
 \item
   Pass the embeddings to the hidden layer and transform the result using
-  the \texttt{relu} function
+  the \mintinline[]{python}{relu} function
 \item
   Transform the hidden layer results using the output layer.
 \item
   Finally, create a probability distribution over words using the
-  \texttt{softmax} function. (Here we actually use the
-  \texttt{log\_softmax} so the results are log probabilities instead of
-  probabilities. )
+  \mintinline[]{python}{softmax} function. (Here we actually use the
+  \mintinline[]{python}{log_softmax} so the results are log
+  probabilities instead of probabilities. )
 \end{enumerate}
 
 \hypertarget{predictions}{%
 \subsubsection{Predictions:}\label{predictions}}
 
-To generate predictions we need to execute the \texttt{forward} pass of
-the skip-gram model and get the index of the maximum probability from
-the output layer. Then that index is used to find the corresponding
-prediction word.
+To generate predictions we need to execute the
+\mintinline[]{python}{forward} pass of the skip-gram model and get the
+index of the maximum probability from the output layer. Then that index
+is used to find the corresponding prediction word.
 
-\begin{verbatim}
+\begin{minted}[]{python}
 class SkipGramModeler(nn.Module):
 
     def __init__(self, vocabSize: int, embeddingDim: int, contextSize: int):
@@ -509,9 +587,9 @@ class SkipGramModeler(nn.Module):
         for i in self.embeddings.parameters():
             weights = i.data.numpy()
         np.save(filename, weights)
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 # Trial : testing out the predict() inner workings
 
 inputStr = "psychologically"
@@ -522,15 +600,16 @@ print("contextIndices: ", contextIndices)
 print("contextIndices dim: ", contextIndices.dim())
 print("contextIndices size: ", contextIndices.size())
 
-\end{verbatim}
 
-\begin{verbatim}
+\end{minted}
+
+\begin{minted}[]{python}
 contextIndices:  tensor([137])
 contextIndices dim:  1
 contextIndices size:  torch.Size([1])
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 dummyModel = SkipGramModeler(vocabSize=len(vocabulary), embeddingDim=EMBEDDING_DIM,
                          contextSize=CONTEXT_SIZE)
 
@@ -576,9 +655,9 @@ for i in indices:
 
 print("\nlength of key,ind pairs: ", len(keyIndFilteredPairs))
 print("keyIndFilteredPairs: ", keyIndFilteredPairs)
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 logProbsDecr dim :  2
 logProbsDecr shape :  torch.Size([3, 195])
 logProbsDecr squeezed:  tensor([[-5.7581, -5.7919, -5.8080, -5.8146, -5.8202],
@@ -597,7 +676,7 @@ indices =  [tensor(107), tensor(142), tensor(167)]
 
 length of key,ind pairs:  3
 keyIndFilteredPairs:  [[('traveling', 107)], [('outside', 142)], [('Foundation),', 167)]]
-\end{verbatim}
+\end{minted}
 
 \hypertarget{step-7-train-the-skip-gram-model}{%
 \section{Step 7: Train the Skip-Gram
@@ -610,23 +689,24 @@ Training the model requires the following steps:
 \tightlist
 \item
   Convert the context words into integer indices using the
-  \texttt{wordToIndex} dictionary, and make their type a
-  \texttt{Tensor}.
+  \mintinline[]{python}{wordToIndex} dictionary, and make their type a
+  \mintinline[]{python}{Tensor}.
 \item
   Set the model gradients to zero so they do not accumulate artificially
   (feature of pytorch)
 \item
-  Do the \texttt{forward} pass of the Skip-Gram model, resulting in the
-  log probabilities of the context words.
+  Do the \mintinline[]{python}{forward} pass of the Skip-Gram model,
+  resulting in the log probabilities of the context words.
 \item
   For each word in the correct target context wrods, convert it to an
-  index using the \texttt{wordToIndex} dictionary and wrap it in a
-  \texttt{Tensor} type.
+  index using the \mintinline[]{python}{wordToIndex} dictionary and wrap
+  it in a \mintinline[]{python}{Tensor} type.
 \item
   Compute the loss between the log probabilities and target contexts.
 \item
-  Do the \texttt{backward} pass over the neural network to update the
-  gradients by calling \texttt{loss.backward()}.
+  Do the \mintinline[]{python}{backward} pass over the neural network to
+  update the gradients by calling
+  \mintinline[]{python}{loss.backward()}.
 \item
   Do one step using the optimizer, so that weights are updated using
   stochastic gradient descent.
@@ -634,7 +714,7 @@ Training the model requires the following steps:
   Increment the total loss by this epoch's current loss.
 \end{enumerate}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 %time
 
 learningRate = 0.001
@@ -685,9 +765,9 @@ for epoch in range(NUM_EPOCHS):
         print("Epoch = {}, Total loss = {}".format(epoch, totalLoss))
 
     losses.append(totalLoss)
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 CPU times: user 2 µs, sys: 0 ns, total: 2 µs
 Wall time: 4.53 µs
 Epoch = 0, Total loss = 1640.9999227523804
@@ -701,18 +781,18 @@ Epoch = 350, Total loss = 742.0071568489075
 Epoch = 400, Total loss = 655.678228020668
 Epoch = 450, Total loss = 594.8056415319443
 Epoch = 500, Total loss = 552.3266983032227
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 skipGramModel.predict(inputStr = "psychologically", wordToIndexDict=wordToIndex)
 skipGramModel.writeEmbeddingToFile(filename = pth + "/src/NLPstudy/SkipGramModel/rajamohan_skipgram_embeddings.txt")
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 clusterEmbeddings(filename = pth + "/src/NLPstudy/SkipGramModel/rajamohan_skipgram_embeddings.txt.npy", numClusters=5)
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
+\begin{minted}[]{python}
 3
 shaming
 28
@@ -723,9 +803,10 @@ It
 book,
 87
 Silva,
-\end{verbatim}
+\end{minted}
 
-\begin{verbatim}
-\end{verbatim}
+\begin{minted}[]{python}
+
+\end{minted}
 
 \end{document}

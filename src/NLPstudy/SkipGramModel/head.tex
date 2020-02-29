@@ -16,6 +16,12 @@
 % \colorbox{bgcolor}{\oldtexttt{#1}}
 % }
 
+
+%% Setting pythong ??? -----------------------------------------------------
+%default_block_language: "lexer"
+%default_inline_language: "lexer"
+
+
 %% color and other settings for hyperref package -----------------------------
 \hypersetup{
     bookmarksopen=true,
@@ -26,19 +32,88 @@
 
 % Font Setup  ---------------------------------------------------------
 \usepackage{unicode-math} % load 'fontspec' automatically
-\setmainfont{Crimson}
+%\setmainfont{Crimson}
+%\setmainfont{Libertinus Sans} 
+\setmainfont{Alegreya}
 \setmathfont{TeX Gyre Schola Math}
 
 
 % Code syntax highlighting ---------------------------------------------------
 
-%\definecolor{Light}{HTML}{F4F4F4}
+% OLD PART -----------------
+%\usepackage{minted}
+%\usemintedstyle{manni}
+%\setmonofont{Inconsolata}
+% ---------------------------
 
-%\let\oldtexttt\texttt
-%\renewcommand{\texttt}[1]{
-%  \colorbox{Light}{\oldtexttt{#1}}
-%}
 
+% Preliminary macro things for code (snatched from macros in REPORT):  ------
+\newcommand\CodeFontSizeSmall{\fontsize{9pt}{9pt}\selectfont}
+
+\definecolor{originalmannibg}{HTML}{f2f2ff}
+\colorlet{BasePurple}{originalmannibg!90}
+\newcommand{\lighten}[3]{% Reference Color, Percentage, New Color Name
+    \colorlet{#3}{#1!#2!white}
+}
+\lighten{BasePurple}{50}{mannibg}
+
+% Code things --------------------
 \usepackage{minted}
+\usepackage{verbatim}  % has commenting
+
+
+
 \usemintedstyle{manni}
-\setmonofont{Inconsolata}
+
+%\setmonofont{Inconsolata} % setting code font
+\setmonofont{Fira Mono}
+
+% General code environment, used like: \begin{code}{python} .... \end{code}
+% NOTE: this is how to nest two environments together: 
+\newenvironment{code}[2][]
+ {\vspace{-3pt}%
+ \VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines, mathescape,
+    style=manni, bgcolor=mannibg,  #1]{#2}}
+ {\end{minted}\end{adjustwidth} 
+     \vspace{-10pt}
+ }
+ 
+% TODO: test if possible to do \renewenvironment to renew the minted environment and just include this logic below whenever calling \begin{minted}[]{python} ... 
+ 
+% Python code environment, used like \begin{pythonCode} ... \end{pythonCode}
+\newenvironment{pythonCode}
+ {\vspace{-3pt}%
+ \VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines, mathescape,
+    style=manni, bgcolor=mannibg]{python}}
+ {\end{minted}\end{adjustwidth} 
+     \vspace{-10pt}
+ }
+
+
+
+% General code output environment
+\newenvironment{outputCode}
+ {\VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines]{text}}
+ {\end{minted}\end{adjustwidth}}
+
+
+% Creating inline code font (equivalent to backticks in jupyter notebooks)
+% Must use like: \pythoninline{...text here ... }
+\newmintinline{python}{python3, fontsize=\CodeFontSizeSmall, bgcolor=mannibg}
+
+%\newenvironment{mintInline}[1][]{\mintinline{latex}{#1}}{}
+%\DeclareTextFontCommand{\mint}{\mintInline}
+
+

@@ -1,0 +1,5 @@
+---
+pandoc-minted:
+  language: python
+  highlight: pythonCode
+---

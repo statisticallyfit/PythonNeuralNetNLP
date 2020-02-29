@@ -1,20 +1,118 @@
-\usepackage{fancyvrb,newverbs}
-\usepackage[top=2cm, bottom=1.5cm, left=2cm, right=2cm]{geometry}
+\usepackage{fancyvrb,newverbs,xcolor} % for code highlighting
+\usepackage[top=2cm, bottom=1.5cm, left=2cm, right=2cm]{geometry} % for page margins
+
+\usepackage[english]{babel}
+% Ana: adding graphics package for images
+\usepackage{graphics}
+\usepackage{graphicx}
 
 % change background color for inline code in
 % markdown files. The following code does not work well for
 % long text as the text will exceed the page boundary
-\definecolor{bgcolor}{HTML}{E0E0E0}
-\let\oldtexttt\texttt
+%\definecolor{bgcolor}{HTML}{E0E0E0}
+%\let\oldtexttt\texttt
 
-\renewcommand{\texttt}[1]{
-\colorbox{bgcolor}{\oldtexttt{#1}}
-}
+% \renewcommand{\texttt}[1]{
+% \colorbox{bgcolor}{\oldtexttt{#1}}
+% }
 
-%% color and other settings for hyperref package
+
+%% Setting pythong ??? -----------------------------------------------------
+%default_block_language: "lexer"
+%default_inline_language: "lexer"
+
+
+%% color and other settings for hyperref package -----------------------------
 \hypersetup{
     bookmarksopen=true,
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=RoyalBlue,
 }
+
+% Font Setup  ---------------------------------------------------------
+\usepackage{unicode-math} % load 'fontspec' automatically
+%\setmainfont{Crimson}
+%\setmainfont{Libertinus Sans} 
+\setmainfont{Alegreya}
+\setmathfont{TeX Gyre Schola Math}
+
+
+% Code syntax highlighting ---------------------------------------------------
+
+% OLD PART -----------------
+%\usepackage{minted}
+%\usemintedstyle{manni}
+%\setmonofont{Inconsolata}
+% ---------------------------
+
+
+\usepackage{minted}
+\usepackage{verbatim}  % has commenting
+
+
+
+\usemintedstyle{manni}
+
+%\setmonofont{Inconsolata} % setting code font
+\setmonofont{Fira Mono}
+%\setmonofont{DejaVu Sans Mono}
+%\setmonofont{Droid Sans Mono}
+
+
+% Background for manni theme: 
+%\definecolor{mannibg}{HTML}{LightPurple}
+
+% For larger line numbers: 
+%\renewcommand{\theFancyVerbLine}{
+%  \sffamily\textcolor[rgb]{0.5,0.5,0.5}{\scriptsize\arabic{FancyVerbLine}}}
+
+
+% General code environment, used like: \begin{code}{python} .... \end{code}
+% NOTE: this is how to nest two environments together: 
+\newenvironment{code}[2][]
+ {\vspace{-3pt}%
+ \VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines, mathescape,
+    style=manni, bgcolor=mannibg,  #1]{#2}}
+ {\end{minted}\end{adjustwidth} 
+     \vspace{-10pt}
+ }
+ 
+ 
+% Python code environment, used like \begin{pythonCode} ... \end{pythonCode}
+\newenvironment{pythonCode}
+ {\vspace{-3pt}%
+ \VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines, mathescape,
+    style=manni, bgcolor=mannibg]{python}}
+ {\end{minted}\end{adjustwidth} 
+     \vspace{-10pt}
+ }
+
+
+
+% General code output environment
+\newenvironment{outputCode}
+ {\VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines]{text}}
+ {\end{minted}\end{adjustwidth}}
+
+
+% Creating inline code font (equivalent to backticks in jupyter notebooks)
+
+\newmintinline{python}{python3, fontsize=\CodeFontSizeSmall, bgcolor=mannibg}
+
+%\newenvironment{mintInline}[1][]{\mintinline{latex}{#1}}{}
+%\DeclareTextFontCommand{\mint}{\mintInline}
+
+
