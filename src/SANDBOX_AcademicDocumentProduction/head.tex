@@ -32,9 +32,9 @@
 
 % Font Setup  ---------------------------------------------------------
 \usepackage{unicode-math} % load 'fontspec' automatically
-%\setmainfont{Crimson}
+\setmainfont{Crimson}
 %\setmainfont{Libertinus Sans} 
-\setmainfont{Alegreya}
+%\setmainfont{Alegreya}
 \setmathfont{TeX Gyre Schola Math}
 
 
@@ -47,6 +47,17 @@
 % ---------------------------
 
 
+% Preliminary macro things for code (snatched from macros in REPORT):  ------
+\newcommand\CodeFontSizeSmall{\fontsize{9pt}{9pt}\selectfont}
+
+\definecolor{originalmannibg}{HTML}{f2f2ff}
+\colorlet{BasePurple}{originalmannibg!90}
+\newcommand{\lighten}[3]{% Reference Color, Percentage, New Color Name
+    \colorlet{#3}{#1!#2!white}
+}
+\lighten{BasePurple}{50}{mannibg}
+
+% Code things --------------------
 \usepackage{minted}
 \usepackage{verbatim}  % has commenting
 
@@ -56,17 +67,6 @@
 
 %\setmonofont{Inconsolata} % setting code font
 \setmonofont{Fira Mono}
-%\setmonofont{DejaVu Sans Mono}
-%\setmonofont{Droid Sans Mono}
-
-
-% Background for manni theme: 
-%\definecolor{mannibg}{HTML}{LightPurple}
-
-% For larger line numbers: 
-%\renewcommand{\theFancyVerbLine}{
-%  \sffamily\textcolor[rgb]{0.5,0.5,0.5}{\scriptsize\arabic{FancyVerbLine}}}
-
 
 % General code environment, used like: \begin{code}{python} .... \end{code}
 % NOTE: this is how to nest two environments together: 
@@ -82,6 +82,7 @@
      \vspace{-10pt}
  }
  
+% TODO: test if possible to do \renewenvironment to renew the minted environment and just include this logic below whenever calling \begin{minted}[]{python} ... 
  
 % Python code environment, used like \begin{pythonCode} ... \end{pythonCode}
 \newenvironment{pythonCode}
@@ -109,7 +110,7 @@
 
 
 % Creating inline code font (equivalent to backticks in jupyter notebooks)
-
+% Must use like: \pythoninline{...text here ... }
 \newmintinline{python}{python3, fontsize=\CodeFontSizeSmall, bgcolor=mannibg}
 
 %\newenvironment{mintInline}[1][]{\mintinline{latex}{#1}}{}

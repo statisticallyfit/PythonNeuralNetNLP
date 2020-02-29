@@ -1,0 +1,225 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{fancyvrb,newverbs,xcolor} % for code highlighting
+\usepackage[top=2cm, bottom=1.5cm, left=2cm, right=2cm]{geometry} % for page margins
+
+\usepackage[english]{babel}
+% Ana: adding graphics package for images
+\usepackage{graphics}
+\usepackage{graphicx}
+
+% change background color for inline code in
+% markdown files. The following code does not work well for
+% long text as the text will exceed the page boundary
+%\definecolor{bgcolor}{HTML}{E0E0E0}
+%\let\oldtexttt\texttt
+
+% \renewcommand{\texttt}[1]{
+% \colorbox{bgcolor}{\oldtexttt{#1}}
+% }
+
+
+%% Setting pythong ??? -----------------------------------------------------
+%default_block_language: "lexer"
+%default_inline_language: "lexer"
+
+
+%% color and other settings for hyperref package -----------------------------
+\hypersetup{
+    bookmarksopen=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=RoyalBlue,
+}
+
+% Font Setup  ---------------------------------------------------------
+\usepackage{unicode-math} % load 'fontspec' automatically
+\setmainfont{Crimson}
+%\setmainfont{Libertinus Sans} 
+%\setmainfont{Alegreya}
+\setmathfont{TeX Gyre Schola Math}
+
+
+% Code syntax highlighting ---------------------------------------------------
+
+% OLD PART -----------------
+%\usepackage{minted}
+%\usemintedstyle{manni}
+%\setmonofont{Inconsolata}
+% ---------------------------
+
+
+% Preliminary macro things for code (snatched from macros in REPORT):  ------
+\newcommand\CodeFontSizeSmall{\fontsize{9pt}{9pt}\selectfont}
+
+\definecolor{originalmannibg}{HTML}{f2f2ff}
+\colorlet{BasePurple}{originalmannibg!90}
+\newcommand{\lighten}[3]{% Reference Color, Percentage, New Color Name
+    \colorlet{#3}{#1!#2!white}
+}
+\lighten{BasePurple}{50}{mannibg}
+
+% Code things --------------------
+\usepackage{minted}
+\usepackage{verbatim}  % has commenting
+
+
+
+\usemintedstyle{manni}
+
+%\setmonofont{Inconsolata} % setting code font
+\setmonofont{Fira Mono}
+
+% General code environment, used like: \begin{code}{python} .... \end{code}
+% NOTE: this is how to nest two environments together: 
+\newenvironment{code}[2][]
+ {\vspace{-3pt}%
+ \VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines, mathescape,
+    style=manni, bgcolor=mannibg,  #1]{#2}}
+ {\end{minted}\end{adjustwidth} 
+     \vspace{-10pt}
+ }
+ 
+% TODO: test if possible to do \renewenvironment to renew the minted environment and just include this logic below whenever calling \begin{minted}[]{python} ... 
+ 
+% Python code environment, used like \begin{pythonCode} ... \end{pythonCode}
+\newenvironment{pythonCode}
+ {\vspace{-3pt}%
+ \VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines, mathescape,
+    style=manni, bgcolor=mannibg]{python}}
+ {\end{minted}\end{adjustwidth} 
+     \vspace{-10pt}
+ }
+
+
+
+% General code output environment
+\newenvironment{outputCode}
+ {\VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines]{text}}
+ {\end{minted}\end{adjustwidth}}
+
+
+% Creating inline code font (equivalent to backticks in jupyter notebooks)
+% Must use like: \pythoninline{...text here ... }
+\newmintinline{python}{python3, fontsize=\CodeFontSizeSmall, bgcolor=mannibg}
+
+%\newenvironment{mintInline}[1][]{\mintinline{latex}{#1}}{}
+%\DeclareTextFontCommand{\mint}{\mintInline}
+
+
+
+\author{}
+\date{}
+
+\begin{document}
+
+\hypertarget{question-1a.}{%
+\paragraph{Question 1a.}\label{question-1a.}}
+
+\[
+\mathbf{S} = \left[\begin{array}
+{rr}
+10.9 & -12.7 \\
+-12.7 & 26.7
+\end{array}\right]
+\]
+
+\[
+\begin{array}{ll}
+r_t = \text{sigmoid}(W_{ir} x_t + b_{ir} + W_{hr} h_{t-1} + b_{hr}) \\
+z_t = \text{sigmoid}(W_{iz} x_t + b_{iz} + W_{hz} h_{t-1} + b_{hz}) \\
+n_t = \text{tanh}(W_{in} x_t + b_{in} + r_t * (W_{hn} h_{t-1} + b_{hn})) \\
+h_t = (1 - z_t) * n_t + z_t + h_{t-1} \\
+\end{array}
+\]
+
+\begin{minted}[]{python}
+mylist = [1,2,3,4]
+print(mylist)
+\end{minted}
+
+\begin{minted}[]{python}
+[1, 2, 3, 4]
+\end{minted}
+
+This is a formula here: \[
+x^2 + y^3 + 4*zyx
+\]
+
+\begin{minted}[]{python}
+mylist.append(5)
+mylist
+\end{minted}
+
+\begin{minted}[]{python}
+[1, 2, 3, 4, 5]
+\end{minted}
+
+\begin{minted}[]{python}
+print("hi my name is giraffe i like to pirouette during nutracker ballet")
+\end{minted}
+
+\begin{minted}[]{python}
+hi my name is giraffe i like to pirouette during nutracker ballet
+\end{minted}
+
+\[
+\sum_{n = 0}^{\infty} \frac {x^n} {n!}
+\]
+
+\end{document}
