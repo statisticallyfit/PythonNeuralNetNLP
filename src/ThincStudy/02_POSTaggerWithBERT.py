@@ -9,6 +9,7 @@
 
 # %% codecell
 from thinc.api import prefer_gpu, use_pytorch_for_gpu_memory
+from thinc.config import Config
 
 isGPU: bool = prefer_gpu()
 isGPU
@@ -27,7 +28,8 @@ if isGPU:
 # %% markdown
 # THe config for BERT model:
 # %% codecell
-CONFIG_FOR_BERT: str = """
+# todo: can these labels (initial_rate) be named something else? (initialRate)? or do these go into specific functions which expect these exact names?
+CONFIG_BERT_STR: str = """
 [model]
 @layers = "TransformersTagger.v1"
 starter = "bert-base-multilingual-cased"
@@ -53,7 +55,7 @@ n_epoch = 10
 # %% markdown
 # The config for Transformer XL model:
 # %% codecell
-CONFIG_FOR_TransformerXL: str = """
+CONFIG_TransformerXL_STR: str = """
 [model]
 @layers = "TransformersTagger.v1"
 starter = "transfo-xl-wt103"
@@ -79,7 +81,7 @@ n_epoch = 10
 # %% markdown
 # The config for XLNet model:
 # %% codecell
-CONFIG_FOR_XLNet: str = """
+CONFIG_XLNET_STR: str = """
 [model]
 @layers = "TransformersTagger.v1"
 starter = "xlnet-large-cased"
@@ -139,35 +141,38 @@ class TokensPlus:
 import thinc
 from thinc.api import Model
 from transformers import AutoTokenizer
+# from transformers.tokenization_bert import BertTokenizer
 # from transformers import PreTrainedTokenizer
 # # from transformers.tokenization_utils import PreTrainedTokenizer
 
 @thinc.registry.layers("transformers_tokenizer.v1")
 def TransformersTokenizer(name: str) -> Model[List[List[str]], TokensPlus]:
 
-    def forward(model: Model, texts: List[List[str]], is_train: bool):
-        # TODO: how to use XLNet tokenizer: https://hyp.is/JEDZOFZWEeqe4HuuJNc_Rg/huggingface.co/transformers/v2.1.1/model_doc/xlnet.html
+    def forward(model: Model, inputTexts: List[List[str]], is_train: bool):
+        # todo: how to use XLNet tokenizer: https://hyp.is/JEDZOFZWEeqe4HuuJNc_Rg/huggingface.co/transformers/v2.1.1
+        # /model_doc/xlnet.html
         tokenizer = model.attrs["tokenizer"]
 
-        # TODO error here in the tutorial: https://hyp.is/fy3LAFZUEeqG8RsZY4eyWg/huggingface.co/transformers/v2.1.1/_modules/transformers/tokenization_utils.html
-        # encode_plus() arguments: https://huggingface.co/transformers/main_classes/tokenizer.html#transformers.PreTrainedTokenizer.encode_plus
-        tokenData = tokenizer.encode_plus(
-            [(text, None) for text in texts],
+        # todo error here in the tutorial: https://hyp.is/fy3LAFZUEeqG8RsZY4eyWg/huggingface.co/transformers/v2.1.1/_modules/transformers/tokenization_utils.html
+
+        ## todo My try to adapt code:
+        # todo encode_plus() arguments: https://huggingface.co/transformers/main_classes/tokenizer.html#transformers.PreTrainedTokenizer.encode_plus
+        #tokenData = tokenizer.encode_plus(
+        #    text=[(aText, None) for aText in inputTexts],
+        #    add_special_tokens=True,
+        #    return_token_type_ids=True,
+        #    return_attention_masks=True,
+        #    #return_input_lengths=True,
+        #    return_tensors="pt",
+        tokenData = tokenizer.batch_encode_plus(
+            [(aText, None) for aText in inputTexts],
             add_special_tokens=True,
             return_token_type_ids=True,
             return_attention_masks=True,
-            #return_input_lengths=True,
+            return_input_lengths=True,
             return_tensors="pt",
         )
 
-        #tokenData = tokenizer.batch_encode_plus(
-        #    batch_text_or_text_pairs = [(text, None) for text in texts],
-        #    add_special_tokens=True,
-        #    #return_token_type_ids=True,
-        #    return_attention_masks=True,
-        #    return_input_lengths=True,
-        #    return_tensors="pt",
-        #)
         return TokensPlus(**tokenData), lambda dTokens: []
 
     return Model(name = "tokenizer",
@@ -204,6 +209,7 @@ def convertTransformerOutputs(model: Model, inputsOutputs, is_train: bool):
 
     torchOutputs = None # free the memory as soon as we can
 
+    # TODO: get the type of this list here when debugging (after file is fixed)
     lengths: list = list(layerInputs.inputLength)
 
     tokenVectors: List[Array2d] = model.ops.unpad(padded = torch2xp(torch_tensor = torchTokenVectors),
@@ -276,18 +282,24 @@ def TransformersTagger(starter: str, numTags: int = 17) -> Model[List[List[str]]
 # The result: is a config object with a model, an optimizer (a function to calculate loss and training settings).
 # %% codecell
 from thinc.api import Config, registry
-C = registry.make_from_config(Config().from_str(CONFIG_FOR_BERT))
-C
+from thinc.optimizers import Optimizer
+from thinc.loss import SequenceCategoricalCrossentropy
+
+CONFIG_BERT: Config = registry.make_from_config(Config().from_str(CONFIG_BERT_STR))
+CONFIG_BERT
 
 # %% codecell
-model: Model = C["model"]
-model
-optimizer = C["optimizer"]
+modelBERT: Model = CONFIG_BERT["model"]
+modelBERT
+# %% codecell
+optimizer: Optimizer = CONFIG_BERT["optimizer"]
 optimizer
-calculateLoss = C["loss"]
+# %% codecell
+calculateLoss: SequenceCategoricalCrossentropy = CONFIG_BERT["loss"]
 calculateLoss
-cfg = C["training"]
-cfg
+# %% codecell
+configBertObj: Config = CONFIG_BERT["training"]
+configBertObj
 
 # %% markdown
 # Passing batch of inputs along with using `Model.initialize` helps Thinc **infer missing dimensions** when we are getting the AnCora data via `ml-datasets`:
@@ -297,14 +309,93 @@ import ml_datasets
 (trainX, trainY), (devX, devY) = ml_datasets.ud_ancora_pos_tags()
 
 # convert to cupy if needed
-trainY = list(map(model.ops.asarray, trainY))
+trainY = list(map(modelBERT.ops.asarray, trainY))
+trainY
+# %% codecell
 # convert to cupy if needed
-devY = list(map(model.ops.asarray, devY))
-
+devY = list(map(modelBERT.ops.asarray, devY))
+devY
+# %% codecell
 # Initialize the model providing data batches to do type inference
-model.initialize(X = trainX[:5], Y = trainY[:5])
+modelBERT.initialize(X =trainX[:5], Y =trainY[:5])
 
 
 # %% markdown
 # ### 2. Helper Functions for Training and Evaluation
+# Before we can train the model, we also need to set up the following helper functions for batching and evaluation:
+# * `minibatchByWords`: group pairs of sequences into minibatches with size less than `max_words`, while accounting for padding. The size of a padded batch is the length of its longest sequence multiplied by the number of elements in the batch.
+# * `evaluateSequences`: evaluate the model sequences of two-dimensional arrays and return the score.
+# %% codecell
+# todo: what are the types of pairs, and return type of function?
+def minibatchByWords(pairs, MAX_WORDS: int) -> list:
+    pairs = list(zip(*pairs))
+    pairs.sort(key = lambda xy: len(xy[0]), reverse = True)
+
+    batch = []
+
+    for X, Y in pairs:
+        batch.append((X, Y))
+
+        numWords: int = max(len(xy[0]) for xy in batch) * len(batch)
+
+        if numWords >= MAX_WORDS:
+            yield batch[:-1] # last element in batch
+            batch = [(X, Y)]
+
+    if batch:
+        yield batch
+
+
+def evaluateSequences(model: Model, Xs: List[Array2d], Ys: List[Array2d], BATCH_SIZE: int) -> float:
+    numCorrect: float = 0.0
+    total: float = 0.0
+
+    for X, Y in model.ops.multibatch(BATCH_SIZE, Xs, Ys):
+        # todo type of ypred??
+        YPred = model.predict(X)
+        for currYPred, currY in zip(YPred, Y):
+            numCorrect += (currY.argmax(axis = 1) == currYPred.argmax(axis=1)).sum()
+
+            # todo: what is the name of the dimension shape[0]?
+            total += currY.shape[0]
+
+    return float(numCorrect / total)
+
+# %% markdown
+# ### 3. The Training Loop
+# Transformers learn best with large batch sizes (larger than what fits in GPU memory). But we don't have to backprop the whole batch at once.
 #
+# **Definition: BATCH SIZE: ** number of examples per update.
+#
+# Here we consider the ``logical" batch size separately from the physical batch size. For physical batch size, we care about the **number of words** (considering padding too), and we want to sort by length, for efficiency.
+#
+# At the end of the batch, we call the optimizer with the accumulated gradients to advance the learning rate schedules. Optionally can evaluate more often than once per epoch.
+# %% codecell
+from tqdm.notebook import tqdm
+from thinc.api import fix_random_seed
+
+fix_random_seed(0)
+
+for epoch in range(configBertObj["n_epoch"]:
+        # todo: type??
+        batches = model.ops.multibatch(configBertObj["batch_size"], trainX, trainY, shuffle=True)
+
+        for outerBatch in tqdm(batches, leave=False):
+
+                for batch in minibatchByWords(pairs = outerBatch, MAX_WORDS, configBertObj["words_per_subbatch"]):
+                    inputs, truths = zip(*batch)
+                    # todo: can we renamed is_train to isTrain, or this this predefined in some other method?
+                    guesses, backprop = model(inputs, is_train=True)
+
+                    # Do backpropagation:
+                    backprop(calculateLoss.get_grad(guesses = guesses, truths = truths))
+
+                model.finish_update(optimizer = optimizer)
+                # Advance the learning rate schedule:
+                optimizer.step_schedules()
+
+            # todo: type??
+            score = evaluateSequences(model = model, Xs = devX, Ys = devY,
+                                      BATCH_SIZE = configBertObj["batch_size"])
+
+            print("Epoch: {}, Score: {}".format(epoch, score))
