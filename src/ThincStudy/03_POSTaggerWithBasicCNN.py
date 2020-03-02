@@ -33,6 +33,7 @@ fix_random_seed(0)
 def trainModel(model: Model, optimizer: Optimizer, numIters: int, batchSize: int):
 
     (trainX, trainY), (devX, devY) = ml_datasets.ud_ancora_pos_tags()
+    # Need to do shape inference:
     model.initialize(X = trainX[:5], Y = trainY[:5])
 
     for epoch in range(numIters):
@@ -41,34 +42,40 @@ def trainModel(model: Model, optimizer: Optimizer, numIters: int, batchSize: int
         batches = model.ops.multibatch(batchSize, trainX, trainY, shuffle=True)
 
         for X, Y in tqdm(batches, leave = False):
-            YPred, backprop = model.begin_update(X = X)
+            Yh, backprop = model.begin_update(X = X)
             # todo type ??
             dLoss = []
-            loss += ((YPred[epoch] - Y[epoch]) ** 2).sum()
 
-        backprop(dLoss)
-        model.finish_update(optimizer = optimizer)
+            for i in range(len(Yh)):
+                dLoss.append(Yh[i])
+                loss += ((Yh[i] - Y[i]) ** 2).sum()
+
+            backprop(dLoss)
+            model.finish_update(optimizer = optimizer)
 
         # todo type?
-        score = evaluate(model, devX, devY, batchSize)
+        score = evaluate(model = model, devX = devX, devY = devY, batchSize = batchSize)
         #print(f"{i}\t{loss:.2f}\t{score:.3f}")
         print("Epoch: {} | Loss: {} | Score: {}".format(epoch, loss, score))
 
 
+
+
 # todo types??
-def evaluate(model: Model, devX: List[Array2d], devY: List[Array2d], batchSize: int) -> float:
+def evaluate(model: Model, devX, devY, batchSize: int) -> float:
+
     numCorrect: float = 0.0
     total: float = 0.0
 
     for X, Y in model.ops.multibatch(batchSize, devX, devY):
         # todo type of ypred??
-        YPred = model.predict(X = X)
+        Yh = model.predict(X = X)
 
-        for currYPred, currY in zip(YPred, Y):
-            numCorrect += (currY.argmax(axis = 1) == currYPred.argmax(axis=1)).sum()
+        for yh, y in zip(Yh, Y):
+            numCorrect += (y.argmax(axis = 1) == yh.argmax(axis=1)).sum()
 
             # todo: what is the name of the dimension shape[0]?
-            total += currY.shape[0]
+            total += y.shape[0]
 
     return float(numCorrect / total)
 
@@ -93,14 +100,16 @@ numIters: int = 10
 batchSize: int = 128
 
 with Model.define_operators(operators = {">>": chain}):
+
     modelFromCode = strings2arrays() >> with_array(
+
         layer = HashEmbed(nO = width, nV = vectorWidth, column=0)
         >> expand_window(window_size=1)
         >> Relu(nO = width, nI = width * 3)
         >> Relu(nO = width, nI = width)
         >> Softmax(nO = numClasses, nI = width)
     )
-
+# %% codecell
 optimizer = Adam(learn_rate = learnRate)
 # %% codecell
 modelFromCode
@@ -111,4 +120,25 @@ trainModel(model = modelFromCode,
            optimizer = optimizer,
            numIters = numIters,
            batchSize = batchSize)
-# 
+#
+
+
+# %% markdown
+# ## 2. Composing the Model via a Config File
+# Thinc's config system lets describe **arbitrary trees of objects**:
+#
+# 1. The config can include values like hyperparameters or training settings, or references to functions and the values of their arguments.
+# 2. Thinc then creates the config **bottom-up** so you can define one function with its arguments, then pass the return value into another function.
+#
+# To rebuild the model in the above config file we need to break down its structure:
+#
+# * `chain` (takes any number of positional arguments)
+# * `strings2array` (with no arguments)
+# * `with_array` (one argument **layer**)
+#   * **layer:** `chain` (any number of positional arguments)
+#   * `HashEmbed`
+#   * `Relu`
+#   * `Relu`
+#   * `Softmax`
+#
+# `chain` takes arbitrarily many positional arguments (layers to compose). 

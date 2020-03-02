@@ -346,18 +346,18 @@ def minibatchByWords(pairs, MAX_WORDS: int) -> list:
         yield batch
 
 
-def evaluateSequences(model: Model, Xs: List[Array2d], Ys: List[Array2d], BATCH_SIZE: int) -> float:
+def evaluateSequences(model: Model, Xs: List[Array2d], Ys: List[Array2d], batchSize: int) -> float:
     numCorrect: float = 0.0
     total: float = 0.0
 
-    for X, Y in model.ops.multibatch(BATCH_SIZE, Xs, Ys):
+    for X, Y in model.ops.multibatch(batchSize, Xs, Ys):
         # todo type of ypred??
-        YPred = model.predict(X)
-        for currYPred, currY in zip(YPred, Y):
-            numCorrect += (currY.argmax(axis = 1) == currYPred.argmax(axis=1)).sum()
+        Yh = model.predict(X)
 
+        for yh, y in zip(Yh, Y):
+            numCorrect += (y.argmax(axis = 1) == yh.argmax(axis=1)).sum()
             # todo: what is the name of the dimension shape[0]?
-            total += currY.shape[0]
+            total += y.shape[0]
 
     return float(numCorrect / total)
 
@@ -400,7 +400,7 @@ def trainModel(model: Model, optimizer: Optimizer, numIters: int, batchSize: int
             optimizer.step_schedules()
 
         # todo type?
-        score = evaluateSequences(model , devX, devY, batchSize)
+        score = evaluateSequences(model = model , Xs = devX, Ys = devY, batchSize = batchSize)
 
         print("Epoch: {} | Score: {}".format(epoch, score))
 
@@ -408,6 +408,7 @@ def trainModel(model: Model, optimizer: Optimizer, numIters: int, batchSize: int
 # %% codecell
 fix_random_seed(0)
 
-trainModel(model = modelBERT, optimizer = optimizer,
+trainModel(model = modelBERT,
+           optimizer = optimizer,
            numIters= configBertObj["n_epoch"],
            batchSize = configBertObj["batch_size"])
