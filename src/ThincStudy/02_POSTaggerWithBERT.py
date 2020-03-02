@@ -374,28 +374,40 @@ def evaluateSequences(model: Model, Xs: List[Array2d], Ys: List[Array2d], BATCH_
 from tqdm.notebook import tqdm
 from thinc.api import fix_random_seed
 
+
+
+def trainModel(model: Model, optimizer: Optimizer, numIters: int, batchSize: int):
+
+    # (trainX, trainY), (devX, devY) = ml_datasets.ud_ancora_pos_tags()
+    # model.initialize(X = trainX[:5], Y = trainY[:5])
+    # todo types?
+
+
+    for epoch in range(numIters):
+        # loss: float = 0.0
+        # todo: type??
+        batches = model.ops.multibatch(batchSize, trainX, trainY, shuffle=True)
+
+        for outerBatch in tqdm(batches, leave = False):
+
+            for batch in minibatchByWords(pairs = outerBatch,
+                                          MAX_WORDS=configBertObj["words_per_subbatch"]):
+                inputs, truths = zip(*batch)
+                guesses, backprop = model(X = inputs, is_train = True)
+                backprop(calculateLoss.get_grad(guesses = guesses, truths = truths))
+
+            model.finish_update(optimizer = optimizer)
+            optimizer.step_schedules()
+
+        # todo type?
+        score = evaluateSequences(model , devX, devY, batchSize)
+
+        print("Epoch: {} | Score: {}".format(epoch, score))
+
+
+# %% codecell
 fix_random_seed(0)
 
-for epoch in range(configBertObj["n_epoch"]:
-        # todo: type??
-        batches = model.ops.multibatch(configBertObj["batch_size"], trainX, trainY, shuffle=True)
-
-        for outerBatch in tqdm(batches, leave=False):
-
-                for batch in minibatchByWords(pairs = outerBatch, MAX_WORDS, configBertObj["words_per_subbatch"]):
-                    inputs, truths = zip(*batch)
-                    # todo: can we renamed is_train to isTrain, or this this predefined in some other method?
-                    guesses, backprop = model(inputs, is_train=True)
-
-                    # Do backpropagation:
-                    backprop(calculateLoss.get_grad(guesses = guesses, truths = truths))
-
-                model.finish_update(optimizer = optimizer)
-                # Advance the learning rate schedule:
-                optimizer.step_schedules()
-
-            # todo: type??
-            score = evaluateSequences(model = model, Xs = devX, Ys = devY,
-                                      BATCH_SIZE = configBertObj["batch_size"])
-
-            print("Epoch: {}, Score: {}".format(epoch, score))
+trainModel(model = modelBERT, optimizer = optimizer,
+           numIters= configBertObj["n_epoch"],
+           batchSize = configBertObj["batch_size"])
