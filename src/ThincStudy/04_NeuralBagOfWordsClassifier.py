@@ -156,8 +156,14 @@ model: Model = CONFIG["model"]
 model.get_ref(name = "embed").set_dim(name = "nV", value = len(vocab))
 
 model
+
+
+
 # %% codecell
+# TODO ERROR HERE
 model.initialize(X = trainX, Y = trainY)
+
+
 # %% codecell
 def evaluateModel(model: Model, devX, devY, batchSize: int) -> float:
 
@@ -207,7 +213,7 @@ def trainModel(model: Model, trainX, trainY, optimizer: Optimizer, numIters: int
         # todo type?
         score = evaluateModel(model = model, devX = devX, devY = devY, batchSize = batchSize)
         #print(f"{i}\t{loss:.2f}\t{score:.3f}")
-        
+
         print("Epoch: {} | Loss: {} | Score: {}".format(epoch, loss, score))
 
 
