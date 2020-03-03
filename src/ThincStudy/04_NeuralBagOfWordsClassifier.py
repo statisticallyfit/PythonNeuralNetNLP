@@ -159,4 +159,63 @@ model
 # %% codecell
 model.initialize(X = trainX, Y = trainY)
 # %% codecell
-#def evaluateModel(model: Model, devX, devY, batchSize: int) -> float:
+def evaluateModel(model: Model, devX, devY, batchSize: int) -> float:
+
+    numCorrect = 0.0
+    total = 0.0
+
+    for X, Y in model.ops.multibatch(batchSize, devX, devY):
+        Yh = model.predict(X)
+
+        for j in range(len(Yh)):
+            numCorrect += Yh[j].argmax(axis=0) == Y[j].argmax(axis=0)
+        total += len(Y)
+
+    return float(numCorrect / total)
+
+# %% markdown
+# ## 3. Training the Model
+# %% codecell
+from tqdm.notebook import tqdm
+from thinc.api import fix_random_seed, Model
+from thinc.optimizers import Optimizer
+
+from thinc.types import Array2d
+from typing import Optional, List
+
+
+# todo types?
+def trainModel(model: Model, trainX, trainY, optimizer: Optimizer, numIters: int, batchSize: int):
+
+    for epoch in range(numIters):
+        loss: float = 0.0
+        # todo: type??
+        batches = model.ops.multibatch(batchSize, trainX, trainY, shuffle=True)
+
+        for X, Y in tqdm(batches, leave = False):
+            Yh, backprop = model.begin_update(X = X)
+            # todo type ??
+            dLoss = []
+
+            for i in range(len(Yh)):
+                dLoss.append(Yh[i] - Y[i])
+                loss += ((Yh[i] - Y[i]) ** 2).sum()
+
+            backprop(numpy.array(dLoss)) # TODO: why here convert to  numpy array? in tut3 there was no need??
+            model.finish_update(optimizer = optimizer)
+
+        # todo type?
+        score = evaluateModel(model = model, devX = devX, devY = devY, batchSize = batchSize)
+        #print(f"{i}\t{loss:.2f}\t{score:.3f}")
+        
+        print("Epoch: {} | Loss: {} | Score: {}".format(epoch, loss, score))
+
+
+# %% codecell
+fix_random_seed(0)
+
+trainModel(model = model,
+           trainX = trainX, trainY = trainY,
+           optimizer = optimizer,
+           numIters = range(CONFIG["training"]["n_iter"]),
+           batchSize = batchSize)

@@ -48,7 +48,7 @@ def trainModel(model: Model, optimizer: Optimizer, numIters: int, batchSize: int
             dLoss = []
 
             for i in range(len(Yh)):
-                dLoss.append(Yh[i])
+                dLoss.append(Yh[i] - Y[i])
                 loss += ((Yh[i] - Y[i]) ** 2).sum()
 
             backprop(dLoss)
