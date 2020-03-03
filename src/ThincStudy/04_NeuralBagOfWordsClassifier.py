@@ -56,7 +56,7 @@ def loadData():
 
     # Generate simple vocabulary mapping
     vocab = {}
-    indexCounter: int = 1
+    indexCounter = 1 # used to make vocab float type not int
 
     for tokText in trainTokenized:
         for tok in tokText:
@@ -68,12 +68,15 @@ def loadData():
     trainX = [] # the training data from which we predict
     for tokText in trainTokenized:
         trainX.append(numpy.array([vocab.get(tok, 0) for tok in tokText]))
+    # making float type:
+    trainX = map(float, trainX)
 
     # Map texts using vocab for the dev data:
     devX = []
     for tokText in devTokenized:
         devX.append(numpy.array([vocab.get(tok, 0) for tok in tokText]))
-
+    # making float type
+    devX = map(float, devX)
 
     return (trainX, trainY), (devX, devY), vocab
 
@@ -108,3 +111,52 @@ def EmbedPoolTextcat(embed: Model[Array2d, Array2d]) -> Model[List[Array2d], Arr
 # ### Defining the Config:
 # The config defines the top-level model using the registered `EmbedPoolTestcat` function and the `embed` argument, referencing the `Embed` layer.
 # %% codecell
+CONFIG_STR: str = """
+[hyper_params]
+width = 64
+
+[model]
+@layers = "EmbedPoolTextcat.v1"
+
+[model.embed]
+@layers = "Embed.v1"
+nO = ${hyper_params:width}
+
+[optimizer]
+@optimizers = "Adam.v1"
+learn_rate = 0.001
+
+[training]
+batch_size = 8
+n_iter = 10
+"""
+# %% markdown
+# ## 3. Training Setup
+# When the config is loaded, it's first parsed as a dictionary and all references to values from other sections, e.g. `${hyper_params:width}` are replaced. The result is a nested dictionary describing the objects defined in the config. `registry.make_from_config` then creates the objects and calls the functions **bottom-up**.
+# %% codecell
+from thinc.api import registry, Config
+CONFIG: Config = registry.make_from_config(Config().from_str(CONFIG_STR))
+CONFIG
+
+# %% markdown
+# Training the model now: once the data is loaded, we will know the vocabulary size and can set the dimension of the embedding layer `nV`:
+#
+# * `model.get_ref("embed")` returns the layer defined as the ref "`embed`"
+# * `set_dim` sets a value for the dimension.
+# * use `model.initialize` with input and output data to fill in the other missing shapes.
+# %% codecell
+from thinc.optimizers import Optimizer
+
+(trainX, trainY), (devX, devY), vocab = loadData()
+# %% codecell
+batchSize: int = CONFIG["training"]["batch_size"]
+optimizer: Optimizer = CONFIG["optimizer"]
+# %% codecell
+model: Model = CONFIG["model"]
+model.get_ref(name = "embed").set_dim(name = "nV", value = len(vocab))
+
+model
+# %% codecell
+model.initialize(X = trainX, Y = trainY)
+# %% codecell
+#def evaluateModel(model: Model, devX, devY, batchSize: int) -> float:
