@@ -42,7 +42,10 @@ dependencies:
       - tqdm>=4.41
       - mxnet>=1.5.1,<1.6.0
       - gluonnlp
-      #- tensorflow-gpu
+      - syntok # additional
+      - pydot
+      - graphviz
+      - svgwrite
 
 
 prefix: /development/bin/python/conda3_ana/envs/pythinc_env
