@@ -1,6 +1,6 @@
-# %% markdown
+# %% markdown [markdown]
 # Source: https://github.com/explosion/thinc/blob/master/examples/00_intro_to_thinc.ipynb
-
+#
 # # Intro to Thinc: Defining Model and Config and Wrapping PyTorch, TensorFlow and MXNet
 #
 # ## Defining Model in Thinc
@@ -9,7 +9,7 @@
 from thinc.api import prefer_gpu
 prefer_gpu()  # returns boolean indicating if GPU was activated
 
-# %% markdown
+# %% markdown [markdown]
 # Declaring data below for the whole file:
 # Using ml-datasets package in Thinc for some common datasets including MNIST:
 # %% codecell
@@ -19,7 +19,7 @@ import ml_datasets
 (trainX, trainY), (devX, devY) = ml_datasets.mnist()
 print(f"Training size={len(trainX)}, dev size={len(devX)}")
 
-# %% markdown
+# %% markdown [markdown]
 # ### Step 1: Define the Model
 #
 # Defining a model with two *Relu-activated hidden layers*, followed by a *softmax-activated output layer*. Also add *dropout* after the two hidden layers to help model generalize better.
@@ -38,7 +38,7 @@ model: Model = chain(Relu(nO=numHidden, dropout=dropout),
 # %% codecell
 model
 
-# %% markdown
+# %% markdown [markdown]
 # ### Step 2: Initialize the Model
 #
 # Call `Model.initialize` after creating the model and pass in a small batch of input data X and small batch of output data Y. Lets Thinc *infer the missing dimensions* (when we defined the model we didn't tell it the input size `nI` or the output size `nO`)
@@ -65,7 +65,7 @@ print(
     f"Initialized model with input dimension nI = {nI} and output dimension nO = {nO}"
 )
 
-# %% markdown
+# %% markdown [markdown]
 # ### Step 3: Train the Model
 #
 # Create optimizer and make several passes over the data, randomly selecting paired batches of the inputs and labels each time.
@@ -126,7 +126,7 @@ trainModel(data=((trainX, trainY), (devX, devY)),
            numIter=NUM_ITERATIONS,
            batchSize=BATCH_SIZE)
 
-# %% markdown
+# %% markdown [markdown]
 # ## Another Way to Define Model: Operator Overloading
 #
 # * Thinc lets you *overload operators* and bind arbitrary functions to operators like +, *, and >> or @.
@@ -143,10 +143,10 @@ with Model.define_operators({">>": chain}):
     modelByMyOp = Relu(nO=numHidden, dropout=dropout) >> Relu(
         nO=numHidden, dropout=dropout) >> Softmax()
 
-# %% markdown
+# %% markdown [markdown]
 # NOTE: bunch of things here in source tutorial about config files ...
 
-# %% markdown
+# %% markdown [markdown]
 # ## Wrapping TensorFlow, PyTorch, and MXNet models
 #
 # Can wrap the underlying model using Thinc interface to get type hints and use config system.
@@ -172,13 +172,13 @@ tfModel.add(Dense(width, activation="relu", input_shape=(nI, )))
 tfModel.add(Dropout(dropout))
 tfModel.add(Dense(nO, activation="softmax"))
 tfModel
-# %% markdown
+# %% markdown [markdown]
 # The wrapped tensorflow model:
 # %% codecell
 wrappedTFModel: Model = TensorFlowWrapper(tensorflow_model=tfModel)
 wrappedTFModel
 
-# %% markdown
+# %% markdown [markdown]
 # Training the wrapped tensorflow model:
 # %% codecell
 data = ml_datasets.mnist()
@@ -203,7 +203,7 @@ trainModel(data=data,
            numIter=NUM_ITERATIONS,
            batchSize=BATCH_SIZE)
 
-# %% markdown
+# %% markdown [markdown]
 # ### 2. Wrapping PyTorch Models
 # Thinc's `PyTorchWrapper` wraps the model and turns it into a regular Thinc `Model`.
 
@@ -260,7 +260,7 @@ wrappedPyTorchModel: Model = PyTorchWrapper(pytorch_model=
 
 wrappedPyTorchModel
 
-# %% markdown
+# %% markdown [markdown]
 # Training the wrapped pytorch model:
 # %% codecell
 
@@ -285,7 +285,7 @@ trainModel(data=data,
 #
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### 3. Wrapping MXNet Models
 # Thinc's `MXNetWrapper` wraps the model and turns it into a regular Thinc `Model`.
 #
@@ -320,7 +320,7 @@ wrappedMxnetModel: Model = chain(layer1 = MXNetWrapper(mxnet_model = mxnetModel)
 wrappedMxnetModel
 
 
-# %% markdown
+# %% markdown [markdown]
 # Training the wrapped mxnet model
 # %% codecell
 

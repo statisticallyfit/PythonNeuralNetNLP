@@ -1,4 +1,4 @@
-name: pythinc_env
+name: pythinc_clone_env
 channels:
   - conda-forge
   - defaults
@@ -225,5 +225,5 @@ dependencies:
     - syntok==1.2.2
     - thinc==8.0.0a1
     - wasabi==0.6.0
-prefix: /development/bin/python/conda3_ana/envs/pythinc_env
+prefix: /development/bin/python/conda3_ana/envs/pythinc_clone_env
 

@@ -1,0 +1,721 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{fancyvrb,newverbs,xcolor} % for code highlighting
+\usepackage[top=2cm, bottom=1.5cm, left=2cm, right=2cm]{geometry} % for page margins
+
+\usepackage[english]{babel}
+% Ana: adding graphics package for images
+\usepackage{graphics}
+\usepackage{graphicx}
+
+% change background color for inline code in
+% markdown files. The following code does not work well for
+% long text as the text will exceed the page boundary
+%\definecolor{bgcolor}{HTML}{E0E0E0}
+%\let\oldtexttt\texttt
+
+% \renewcommand{\texttt}[1]{
+% \colorbox{bgcolor}{\oldtexttt{#1}}
+% }
+
+
+%% Setting pythong ??? -----------------------------------------------------
+%default_block_language: "lexer"
+%default_inline_language: "lexer"
+
+
+%% color and other settings for hyperref package -----------------------------
+\hypersetup{
+    bookmarksopen=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=RoyalBlue,
+}
+
+% Font Setup  ---------------------------------------------------------
+\usepackage{unicode-math} % load 'fontspec' automatically
+\setmainfont{Crimson}
+%\setmainfont{Libertinus Sans} 
+%\setmainfont{Alegreya}
+\setmathfont{TeX Gyre Schola Math}
+
+
+% Code syntax highlighting ---------------------------------------------------
+
+% OLD PART -----------------
+%\usepackage{minted}
+%\usemintedstyle{manni}
+%\setmonofont{Inconsolata}
+% ---------------------------
+
+
+% Preliminary macro things for code (snatched from macros in REPORT):  ------
+\newcommand\CodeFontSizeSmall{\fontsize{9pt}{9pt}\selectfont}
+
+\definecolor{originalmannibg}{HTML}{f2f2ff}
+\colorlet{BasePurple}{originalmannibg!90}
+\newcommand{\lighten}[3]{% Reference Color, Percentage, New Color Name
+    \colorlet{#3}{#1!#2!white}
+}
+\lighten{BasePurple}{50}{mannibg}
+
+% Code things --------------------
+\usepackage{minted}
+\usepackage{verbatim}  % has commenting
+
+
+
+\usemintedstyle{manni}
+
+%\setmonofont{Inconsolata} % setting code font
+\setmonofont{Fira Mono}
+
+% General code environment, used like: \begin{code}{python} .... \end{code}
+% NOTE: this is how to nest two environments together: 
+\newenvironment{code}[2][]
+ {\vspace{-3pt}%
+ \VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines, mathescape,
+    style=manni, bgcolor=mannibg,  #1]{#2}}
+ {\end{minted}\end{adjustwidth} 
+     \vspace{-10pt}
+ }
+ 
+% TODO: test if possible to do \renewenvironment to renew the minted environment and just include this logic below whenever calling \begin{minted}[]{python} ... 
+ 
+% Python code environment, used like \begin{pythonCode} ... \end{pythonCode}
+\newenvironment{pythonCode}
+ {\vspace{-3pt}%
+ \VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines, mathescape,
+    style=manni, bgcolor=mannibg]{python}}
+ {\end{minted}\end{adjustwidth} 
+     \vspace{-10pt}
+ }
+
+
+
+% General code output environment
+\newenvironment{outputCode}
+ {\VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines]{text}}
+ {\end{minted}\end{adjustwidth}}
+
+
+% Creating inline code font (equivalent to backticks in jupyter notebooks)
+% Must use like: \pythoninline{...text here ... }
+\newmintinline{python}{python3, fontsize=\CodeFontSizeSmall, bgcolor=mannibg}
+
+%\newenvironment{mintInline}[1][]{\mintinline{latex}{#1}}{}
+%\DeclareTextFontCommand{\mint}{\mintInline}
+
+
+
+\author{}
+\date{}
+
+\begin{document}
+
+Source:
+https://github.com/explosion/thinc/blob/master/examples/01\_intro\_model\_definition\_methods.ipynb
+
+\hypertarget{intro-to-thincs-model-class-model-definition-and-methods}{%
+\section{\texorpdfstring{Intro to Thinc's \mintinline[]{python}{Model}
+class, model definition, and
+methods}{Intro to Thinc's  class, model definition, and methods}}\label{intro-to-thincs-model-class-model-definition-and-methods}}
+
+Thinc uses a functional-programming approach to model definition,
+effective for: * complicated network architectures and, * use cases
+where different data types need to be passed through the network to
+reach specific subcomponents.
+
+This notebook shows how to compose Thinc models and use the
+\mintinline[]{python}{Model} class and its methods.
+
+\emph{Principles:} * Thinc provides layers (functions to create
+\mintinline[]{python}{Model} instances) * Thinc tries to avoid
+inheritance, preferring function composition.
+
+\begin{minted}[]{python}
+import numpy
+from thinc.api import Linear, zero_init
+
+nI: int = 16
+nO: int = 10
+NUM_HIDDEN: int = 128
+
+
+nIn = numpy.zeros((NUM_HIDDEN, nI), dtype="f")
+nOut = numpy.zeros((NUM_HIDDEN, nO), dtype="f")
+\end{minted}
+
+\begin{minted}[]{python}
+nIn.shape
+nOut.shape
+\end{minted}
+
+\begin{minted}[]{python}
+(128, 10)
+\end{minted}
+
+\begin{minted}[]{python}
+model = Linear(nI = nI, nO = nO, init_W = zero_init)
+model
+
+model.get_dim("nI")
+model.get_dim("nO")
+
+print(f"Initialized model with input dimension nI={nI} and output dimension nO={nO}.")
+\end{minted}
+
+\begin{minted}[]{python}
+Initialized model with input dimension nI=16 and output dimension nO=10.
+\end{minted}
+
+\emph{Key Point}: Models support dimension inference from data. You can
+defer some or all of the dimensions.
+
+\begin{minted}[]{python}
+modelDeferDims = Linear(init_W = zero_init)
+modelDeferDims
+print(f"Initialized model with no input/ouput dimensions.")
+\end{minted}
+
+\begin{minted}[]{python}
+Initialized model with no input/ouput dimensions.
+\end{minted}
+
+\begin{minted}[]{python}
+X = numpy.zeros((NUM_HIDDEN, nI), dtype="f")
+Y = numpy.zeros((NUM_HIDDEN, nO), dtype="f")
+
+# Here is where the dimension inference happens: during initialization of the model
+modelDeferDims.initialize(X = X, Y = Y)
+modelDeferDims
+
+# We can see that dimension inference has occurred:
+modelDeferDims.get_dim("nI")
+modelDeferDims.get_dim("nO")
+
+print(f"Initialized model with input dimension nI={nI} and output dimension nO={nO}.")
+\end{minted}
+
+\begin{minted}[]{python}
+Initialized model with input dimension nI=16 and output dimension nO=10.
+\end{minted}
+
+\hypertarget{combinators}{%
+\subsection{\texorpdfstring{\href{https://thinc.ai/docs/api-layers\#combinators}{Combinators}}{Combinators}}\label{combinators}}
+
+There are functions like \mintinline[]{python}{chain} and
+\mintinline[]{python}{concatenate} which are called
+\href{https://thinc.ai/docs/api-layers\#combinators}{\mintinline[]{python}{combinators}}.
+\emph{Combinators} take one or more models as arguments, and return
+another model instance, without introducing any new weight parameters.
+
+Combinators are layers that express higher-order functions: they take
+one or more layers as arguments and express some relationship or perform
+some additional logic around the child layers.
+
+\hypertarget{chain}{%
+\subsubsection{\texorpdfstring{\href{https://thinc.ai/docs/api-layers\#chain}{\mintinline[]{python}{chain()}}}{}}\label{chain}}
+
+\textbf{Purpose of \mintinline[]{python}{chain}}: The
+\mintinline[]{python}{chain} function wires two models together with a
+feed-forward relationship. Composes two models \mintinline[]{python}{f}
+and \mintinline[]{python}{g} such that they become layers of a single
+feed-forward model that computes \mintinline[]{python}{g(f(x))}.
+
+Also supports chaining more than 2 layers. * NOTE: dimension inference
+is useful here.
+
+\begin{minted}[]{python}
+from thinc.api import chain, glorot_uniform_init
+
+NUM_HIDDEN: int = 128
+X = numpy.zeros((NUM_HIDDEN, nI), dtype="f")
+Y = numpy.zeros((NUM_HIDDEN, nO), dtype="f")
+
+# Linear layer multiplies inputs by a weights matrix and adds a bias vector
+# layer 1: Linear layer wih only the output dimension provided
+# layer 2: Linear layer with all dimensions deferred
+modelChained = chain(layer1 = Linear(nO = NUM_HIDDEN, init_W = glorot_uniform_init),
+                     layer2 = Linear(init_W = zero_init), )
+modelChained
+\end{minted}
+
+\begin{minted}[]{python}
+<thinc.model.Model at 0x7efefad64730>
+\end{minted}
+
+\begin{minted}[]{python}
+# Initializing model
+modelChained.initialize(X = X, Y = Y)
+modelChained
+
+modelChained.layers
+\end{minted}
+
+\begin{minted}[]{python}
+[<thinc.model.Model at 0x7effb03f98c8>, <thinc.model.Model at 0x7effb03f96a8>]
+\end{minted}
+
+\begin{minted}[]{python}
+nI: int = modelChained.get_dim("nI")
+nI
+nO: int = modelChained.get_dim("nO")
+nO
+
+nO_hidden = modelChained.layers[0].get_dim("nO")
+nO_hidden
+
+
+print(f"Initialized model with input dimension nI={nI} and output dimension nO={nO}.")
+print(f"The size of the hidden layer is {nO_hidden}.")
+\end{minted}
+
+\begin{minted}[]{python}
+Initialized model with input dimension nI=16 and output dimension nO=10.
+The size of the hidden layer is 128.
+\end{minted}
+
+\hypertarget{concatenate}{%
+\subsection{\texorpdfstring{\href{https://thinc.ai/docs/api-layers\#concatenate}{\mintinline[]{python}{concatenate()}}}{}}\label{concatenate}}
+
+\textbf{Purpose of \mintinline[]{python}{concatenate()}}: the
+\mintinline[]{python}{concatenate} combinator function produces a layer
+that \emph{runs the child layer separately} and then \emph{concatenates
+their outputs together}. Useful for combining features from different
+sources. (Thinc uses this to build spacy's embedding layers). Composes
+two or more models \mintinline[]{python}{f}, \mintinline[]{python}{g},
+etc, such that their outputs are concatenated,
+i.e.~\mintinline[]{python}{concatenate(f, g)(x)} computes
+\mintinline[]{python}{hstack(f(x), g(x))}. * NOTE: functional approach
+here
+
+\begin{minted}[]{python}
+from thinc.api import concatenate
+
+modelConcat = concatenate(Linear(nO = NUM_HIDDEN), Linear(nO = NUM_HIDDEN))
+modelConcat
+modelConcat.layers
+
+# Initializing model, and this is where dimension inference occurs (for nI)
+modelConcat.initialize(X = X)
+
+# Can see that dimension nI was inferred
+nI: int = modelConcat.get_dim("nI")
+nI
+
+# Can see that dimension nO is now twice the NUM_HIDDEN which we passed in: 256 = 128 + 128 since concatenation occurred.
+nO: int = modelConcat.get_dim("nO")
+nO
+print(f"Initialized model with input dimension nI={nI} and output dimension nO={nO}.")
+\end{minted}
+
+\begin{minted}[]{python}
+Initialized model with input dimension nI=16 and output dimension nO=256.
+\end{minted}
+
+\hypertarget{clone}{%
+\subsection{\texorpdfstring{\href{https://thinc.ai/docs/api-layers\#clone}{\mintinline[]{python}{clone()}}}{}}\label{clone}}
+
+Some combinators work on a layer and a numeric argument. The
+\mintinline[]{python}{clone} combinator creates a number of copies of a
+layer and chains them together into a deep feed-forward network.
+
+\textbf{Purpose of \mintinline[]{python}{clone}}: Construct
+\mintinline[]{python}{n} copies of a layer with distinct weights. For
+example, \mintinline[]{python}{clone(f, 3)(x)} computes
+\mintinline[]{python}{f(f'(f''(x)))}
+
+\begin{itemize}
+\tightlist
+\item
+  NOTE: shape inference is useful here: we want the first and last
+  layers to have different shapes so we can avoid giving any dimensions
+  into the layer we clone. Then we just have to specify the first
+  layer's output size and let the res of the dimensions be inferred from
+  the data.
+\end{itemize}
+
+\begin{minted}[]{python}
+from thinc.api import clone
+
+modelClone = clone(orig = Linear(), n = 5)
+modelClone
+modelClone.layers
+\end{minted}
+
+\begin{minted}[]{python}
+[<thinc.model.Model at 0x7efefad64ea0>,
+ <thinc.model.Model at 0x7efefad64f28>,
+ <thinc.model.Model at 0x7efefad647b8>,
+ <thinc.model.Model at 0x7efefad64598>,
+ <thinc.model.Model at 0x7efefad64510>]
+\end{minted}
+
+\begin{minted}[]{python}
+modelClone.layers[0].set_dim("nO", NUM_HIDDEN)
+modelClone.layers[0].get_dim("nO")
+
+# Initializing the model here
+modelClone.initialize(X = X, Y = Y)
+
+nI: int = model.get_dim("nI")
+nI
+nO: int = model.get_dim("nO")
+nO
+
+# num hidden is still 128
+modelClone.layers[0].get_dim("nO")
+
+print(f"Initialized model with input dimension nI={nI} and output dimension nO={nO}.")
+\end{minted}
+
+\begin{minted}[]{python}
+Initialized model with input dimension nI=16 and output dimension nO=10.
+\end{minted}
+
+Can apply \mintinline[]{python}{clone} to model instances that have
+child layers, making it easier to define complex architectures. For
+instance: usually we want to attach an activation and dropout to a
+linear layer and then repeat that substructure a number of times.
+
+\begin{minted}[]{python}
+from thinc.api import Relu, Dropout
+
+def hiddenLayer(dropout: float = 0.2):
+    return chain(Linear(), Relu(),  Dropout(dropout))
+
+modelCloneHidden = clone(hiddenLayer(), 5)
+modelCloneHidden
+\end{minted}
+
+\begin{minted}[]{python}
+<thinc.model.Model at 0x7efefad0a9d8>
+\end{minted}
+
+\hypertarget{with_array}{%
+\subsection{\texorpdfstring{\href{https://thinc.ai/docs/api-layers\#with_array}{\mintinline[]{python}{with_array()}}}{}}\label{with_array}}
+
+Some combinators are unary functions (they take only one model). These
+are usually **input and output transformations*. For instance:
+\textbf{Purpose of \mintinline[]{python}{with_array}:} produce a model
+that flattens lists of arrays into a single array and then calls the
+child layer to get the flattened output. Then, it reverses the
+transformation on the output. (In other words: Transforms sequence of
+data into a continguous two-dim array on the way into and out of a
+model.)
+
+\begin{minted}[]{python}
+from thinc.api import with_array, Model
+
+modelWithArray: Model = with_array(layer = Linear(nO = 4, nI = 2))
+modelWithArray
+
+Xs = [modelWithArray.ops.alloc2f(d0 = 10, d1 = 2, dtype = "f")]
+Xs
+Xs[0].shape
+
+modelWithArray.initialize(X = Xs)
+modelWithArray
+
+# predict(X: InT) -> OutT: call the model's `forward` function with `is_train = False` and return the output instead of the tuple `(output, callback)`.
+Ys = modelWithArray.predict(X = Xs)
+Ys
+
+print(f"Prediction shape: {Ys[0].shape}.")
+\end{minted}
+
+\begin{minted}[]{python}
+Prediction shape: (10, 4).
+\end{minted}
+
+\hypertarget{example-of-concise-model-definition-with-combinators}{%
+\subsection{Example of Concise Model Definition with
+Combinators}\label{example-of-concise-model-definition-with-combinators}}
+
+Combinators allow you to wire complex models very concisely.
+
+Can take advantage of Thinc's \textbf{operator overloading} which lets
+you use infox notation. Must be careful to use \textbf{in a
+contextmananger} to avoid unexpected results.
+
+\textbf{Example network}:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Below, the network expects a list of arrays as input, where each array
+  has two columns with different numeric identifier features.
+\item
+  The two arrays are embedded using separate embedding tables
+\item
+  The two resulting vectors are added
+\item
+  Then passed through the \mintinline[]{python}{Maxout} layer with layer
+  normalization and dropout.
+\item
+  The vectors pass through two pooling functions
+  (\mintinline[]{python}{reduce_max} and
+  \mintinline[]{python}{reduce_mean}) and the results are concatenated.
+\item
+  The concatenated results are passed through two
+  \mintinline[]{python}{Relu} layers with dropout and residual
+  connections.
+\item
+  The vectors are passed through an output layer, which has a
+  \mintinline[]{python}{Softmax} activation.
+\end{enumerate}
+
+\begin{minted}[]{python}
+from thinc.api import add, chain, concatenate, clone
+from thinc.api import with_array, reduce_max, reduce_mean, residual
+from thinc.api import Model, Embed, Maxout, Softmax
+
+nH: int = 5 # num hidden layers
+
+with Model.define_operators({">>": chain, "|":concatenate, "+":add, "**":clone}):
+    modelOp: Model = (
+        with_array(layer =
+                   # Embed: map integers to vectors using fixed-size lookup table.
+                   (Embed(nO = 128, column = 0) + Embed(nO = 64, column=1))
+        >> Maxout(nO = nH, normalize = True, dropout = 0.2)
+    )
+    >> (reduce_max() | reduce_mean())
+    >> residual(layer = Relu() >> Dropout(rate = 0.2)) ** 2
+    >> Softmax()
+)
+
+modelOp
+modelOp.layers
+modelOp.attrs
+modelOp.param_names
+modelOp.grad_names
+modelOp.dim_names
+modelOp.ref_names
+modelOp.define_operators
+modelOp.walk
+modelOp.to_dict
+\end{minted}
+
+\begin{minted}[]{python}
+<bound method Model.to_dict of <thinc.model.Model object at 0x7efefad20b70>>
+\end{minted}
+
+\hypertarget{using-a-model}{%
+\subsection{Using A Model}\label{using-a-model}}
+
+Defining the model:
+
+\begin{minted}[]{python}
+from thinc.api import Linear, Adam
+import numpy
+
+nI, nO, nH = 10, 10, 128
+nI, nO, nH
+
+X = numpy.zeros((nH, nI), dtype="f")
+dY = numpy.zeros((nH, nO), dtype="f")
+
+modelBackpropExample: Model = Linear(nO = nO, nI = nI)
+\end{minted}
+
+Initialize the model with a sample of the data:
+
+\begin{minted}[]{python}
+modelBackpropExample.initialize(X=X, Y=dY)
+\end{minted}
+
+\begin{minted}[]{python}
+<thinc.model.Model at 0x7efefad20bf8>
+\end{minted}
+
+Run some data through the model:
+
+\begin{minted}[]{python}
+Y = modelBackpropExample.predict(X = X)
+Y
+\end{minted}
+
+\begin{minted}[]{python}
+array([[0., 0., 0., ..., 0., 0., 0.],
+       [0., 0., 0., ..., 0., 0., 0.],
+       [0., 0., 0., ..., 0., 0., 0.],
+       ...,
+       [0., 0., 0., ..., 0., 0., 0.],
+       [0., 0., 0., ..., 0., 0., 0.],
+       [0., 0., 0., ..., 0., 0., 0.]], dtype=float32)
+\end{minted}
+
+Get a callback to backpropagate:
+
+\begin{minted}[]{python}
+# begin_update(X: InT) -> Tuple[OutT, Callable[[InT], OutT]]
+# Purpose: Run the model over a batch of data, returning the output and a callback to complete the backward pass.
+# Return: tuple (Y, finish_update), where Y = batch of output data, and finish_update = callback that takes the gradient with respect to the output and an optimizer function to return the gradient with respect to the input.
+Y, backprop = modelBackpropExample.begin_update(X = X)
+Y, backprop
+\end{minted}
+
+\begin{minted}[]{python}
+(array([[0., 0., 0., ..., 0., 0., 0.],
+        [0., 0., 0., ..., 0., 0., 0.],
+        [0., 0., 0., ..., 0., 0., 0.],
+        ...,
+        [0., 0., 0., ..., 0., 0., 0.],
+        [0., 0., 0., ..., 0., 0., 0.],
+        [0., 0., 0., ..., 0., 0., 0.]], dtype=float32),
+ <function thinc.layers.linear.forward.<locals>.backprop(dY:thinc.types.Floats2d) -> thinc.types.Floats2d>)
+\end{minted}
+
+Run the callback to calculate the gradient with respect to the inputs.
+
+\mintinline[]{python}{backprop()}: * is a callback to calculate gradient
+with respect to inputs. * only increments the parameter gradients,
+doesn't actually change the weights. To increment the weights, call
+\mintinline[]{python}{model.finish_update()} and pass an optimizer * If
+the model has trainable parameters, gradients for the parameters are
+accumulated internally, as a side-effect.
+
+\begin{minted}[]{python}
+dX = backprop(dY)
+dX
+\end{minted}
+
+\begin{minted}[]{python}
+array([[0., 0., 0., ..., 0., 0., 0.],
+       [0., 0., 0., ..., 0., 0., 0.],
+       [0., 0., 0., ..., 0., 0., 0.],
+       ...,
+       [0., 0., 0., ..., 0., 0., 0.],
+       [0., 0., 0., ..., 0., 0., 0.],
+       [0., 0., 0., ..., 0., 0., 0.]], dtype=float32)
+\end{minted}
+
+Incrementing the weights now by calling
+\mintinline[]{python}{model.finish_update()} and by passing an
+optimizer.
+
+\mintinline[]{python}{finish_update(optimizer: Optimizer) -> None} *
+update parameters with current gradients * the optimizer is called with
+each parameter and gradient of the model
+
+\begin{minted}[]{python}
+adamOptimizer = Adam()
+
+modelBackpropExample.finish_update(optimizer = adamOptimizer)
+modelBackpropExample
+\end{minted}
+
+\begin{minted}[]{python}
+<thinc.model.Model at 0x7efefad20bf8>
+\end{minted}
+
+Get and set dimensions, parameters, attributes, by name:
+
+\begin{minted}[]{python}
+modelBackpropExample.get_dim("nO")
+# weights matrix
+W = modelBackpropExample.get_param("W")
+W
+
+modelBackpropExample.attrs["something"] = "here"
+
+modelBackpropExample.attrs.get("foo", "bar")
+\end{minted}
+
+\begin{minted}[]{python}
+'bar'
+\end{minted}
+
+Get parameter gradients and increment them explicitly:
+
+\begin{minted}[]{python}
+dW = modelBackpropExample.get_grad("W")
+dW
+
+modelBackpropExample.inc_grad(name = "W", value = 1 + 0.1)
+modelBackpropExample.get_grad("W")
+\end{minted}
+
+\begin{minted}[]{python}
+array([[1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1],
+       [1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1],
+       [1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1],
+       [1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1],
+       [1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1],
+       [1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1],
+       [1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1],
+       [1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1],
+       [1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1],
+       [1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1]], dtype=float32)
+\end{minted}
+
+Can serialize model to bytes and to dist and load them back with
+\mintinline[]{python}{from_bytes} and \mintinline[]{python}{from_disk}
+
+\begin{minted}[]{python}
+modelBytes = modelBackpropExample.to_bytes()
+modelBytes
+\end{minted}
+
+\begin{minted}[]{python}
+b'\x84\xa5nodes\x91\x84\xa5index\x00\xa4name\xa6linear\xa4dims\x82\xa2nO\n\xa2nI\n\xa4refs\x80\xa5attrs\x91\x81\xa9something\xc4\x05\xa4here\xa6params\x91\x82\xa1W\x85\xc4\x02nd\xc3\xc4\x04type\xa3<f4\xc4\x04kind\xc4\x00\xc4\x05shape\x92\n\n\xc4\x04data\xc5\x01\x90\x19\xc0~\xbe2gk\xbe\x9c\xbd\xa2\xbe\xbf\xabs\xbd\x986\x86<\xfcx\x1a=\xa8\xc2\x8c\xbe3Y\xcd>qt\xde>\x06\x8b\xd7=m\xf9;\xbe\x04i\x83\xbeZ\x93\xba>\xabU\xf2>t\xd9Q\xbe&1r\xbcWA\x98\xbe)\xd8\x90>\xf0\x95\x9c=A\xaf\xad\xbc\xf9uo>\x8a\x14\xaa>\x87\x0f\x9e\xbe\xf5\x10\x81\xbeFo>\xbe\x96tm\xbd\xc7T\xf1>[\xc4\x96>\xba#\xd7\xbe\xc1.W\xbe\xa8\xefM>+2\xa7\xbe;n\x97\xbd\x14\x8b\xb0>\xb9>\x97>x\xa5\xcc>\x13\xc5j\xbe;\x97\xa7=\xde\xbc\xe0\xbe\x16:\xb2>K\xf01\xbd2\xaa\xe1\xbc8Y\x19=U\rQ>\x89\xb6\xe8\xbe\xe2h\xf4\xbd>\x9a\x96\xbe\'7\xd9\xbe\x0e\xb6\xbc\xbc\x12\x1b\x04?\x07\xdd\xae>\xb8\x885\xbcH\x9d\xb1\xbe\xfa\xcb\x03\xbeO\xcb\xd6>\x88\x1b\xef\xbee\x18\x13\xbe<\x07\xe4\xbe\x0b\xd1\xa9\xbe\x00\x07\x96\xbe0\x8d\'>\x17\xf8\xe3>`@\xee\xbeH\x94\x98>p\xbd"<3;\xdb>c\xd7\xf3\xbeU\x11Y\xbe\x90\x8c2\xbe\xb4\x0fV>\xecl\xde\xbe\xbb\x88\x8d\xbe\x90K4>\xf5\xe2}>\xdee\xc7>\x91>\x80;\x95.;>\xc8\xe9\x00>\xa9\xccb\xbd\x9aC3\xbeM\xf7\x83\xbe\xa9g\xef\xbeg\xbd\xe7\xbe\xb8\x98\xa3>\xdal\xd4>H\x91\xc2>=\xd4\xd2>(\xc8\xa3>\x98\xc5\xde>UER>f6\x0f\xbe\xa5\xc4V=\xcbw\x1c\xbe9r\x02\xbfE\xb1\x9e>=cX>82\xcb>La\xb7\xbe\x7f\xf8\xf2\xbeT\xcc\xb4>\xa1b\x85\xc4\x02nd\xc3\xc4\x04type\xa3<f4\xc4\x04kind\xc4\x00\xc4\x05shape\x91\n\xc4\x04data\xc4(\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xa5shims\x91\x90'
+\end{minted}
+
+\end{document}

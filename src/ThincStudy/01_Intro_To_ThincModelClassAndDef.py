@@ -1,7 +1,7 @@
-# %% markdown
+# %% markdown [markdown]
 # Source: https://github.com/explosion/thinc/blob/master/examples/01_intro_model_definition_methods.ipynb
 
-# %% markdown
+# %% markdown [markdown]
 # # Intro to Thinc's `Model` class, model definition, and methods
 #
 # Thinc uses a functional-programming approach to model definition, effective for:
@@ -40,7 +40,7 @@ model.get_dim("nO")
 print(f"Initialized model with input dimension nI={nI} and output dimension nO={nO}.")
 
 
-# %% markdown
+# %% markdown [markdown]
 # *Key Point*: Models support dimension inference from data. You can defer some or all of the dimensions.
 # %% codecell
 modelDeferDims = Linear(init_W = zero_init)
@@ -62,7 +62,7 @@ modelDeferDims.get_dim("nO")
 print(f"Initialized model with input dimension nI={nI} and output dimension nO={nO}.")
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## [Combinators](https://thinc.ai/docs/api-layers#combinators)
 #
 # There are functions like `chain` and `concatenate` which are called [`combinators`](https://thinc.ai/docs/api-layers#combinators). *Combinators* take one or more models as arguments, and return another model instance, without introducing any new weight parameters.
@@ -110,7 +110,7 @@ print(f"Initialized model with input dimension nI={nI} and output dimension nO={
 print(f"The size of the hidden layer is {nO_hidden}.")
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## [`concatenate()`](https://thinc.ai/docs/api-layers#concatenate)
 #
 # **Purpose of `concatenate()`**: the `concatenate` combinator function produces a layer that *runs the child layer separately* and then *concatenates their outputs together*. Useful for combining features from different sources. (Thinc uses this to build spacy's embedding layers).  Composes two or more models `f`, `g`, etc, such that their outputs are concatenated, i.e. `concatenate(f, g)(x)` computes `hstack(f(x), g(x))`.
@@ -136,7 +136,7 @@ nO
 print(f"Initialized model with input dimension nI={nI} and output dimension nO={nO}.")
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## [`clone()`](https://thinc.ai/docs/api-layers#clone)
 # Some combinators work on a layer and a numeric argument. The `clone` combinator creates a number of copies of a layer and chains them together into a deep feed-forward network.
 #
@@ -168,7 +168,7 @@ modelClone.layers[0].get_dim("nO")
 
 print(f"Initialized model with input dimension nI={nI} and output dimension nO={nO}.")
 
-# %% markdown
+# %% markdown [markdown]
 # Can apply `clone` to model instances that have child layers, making it easier to define complex architectures. For instance: usually we want to attach an activation and dropout to a linear layer and then repeat that substructure a number of times.
 # %% codecell
 from thinc.api import Relu, Dropout
@@ -180,7 +180,7 @@ modelCloneHidden = clone(hiddenLayer(), 5)
 modelCloneHidden
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## [`with_array()`](https://thinc.ai/docs/api-layers#with_array)
 # Some combinators are unary functions (they take only one model). These are usually **input and output transformations*. For instance:
 # **Purpose of `with_array`:** produce a model that flattens lists of arrays into a single array and then calls the child layer to get the flattened output. Then, it reverses the transformation on the output. (In other words: Transforms sequence of data into a continguous two-dim array on the way into and out of a model.)
@@ -204,7 +204,7 @@ Ys
 print(f"Prediction shape: {Ys[0].shape}.")
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## Example of Concise Model Definition with Combinators
 # Combinators allow you to wire complex models very concisely.
 #
@@ -249,7 +249,7 @@ modelOp.define_operators
 modelOp.walk
 modelOp.to_dict
 
-# %% markdown
+# %% markdown [markdown]
 # ## Using A Model
 # Defining the model:
 # %% codecell
@@ -264,18 +264,18 @@ dY = numpy.zeros((nH, nO), dtype="f")
 
 modelBackpropExample: Model = Linear(nO = nO, nI = nI)
 
-# %% markdown
+# %% markdown [markdown]
 # Initialize the model with a sample of the data:
 # %% codecell
 modelBackpropExample.initialize(X=X, Y=dY)
 
-# %% markdown
+# %% markdown [markdown]
 # Run some data through the model:
 # %% codecell
 Y = modelBackpropExample.predict(X = X)
 Y
 
-# %% markdown
+# %% markdown [markdown]
 # Get a callback to backpropagate:
 # %% codecell
 # begin_update(X: InT) -> Tuple[OutT, Callable[[InT], OutT]]
@@ -284,7 +284,7 @@ Y
 Y, backprop = modelBackpropExample.begin_update(X = X)
 Y, backprop
 
-# %% markdown
+# %% markdown [markdown]
 #
 # Run the callback to calculate the gradient with respect to the inputs.
 #
@@ -298,7 +298,7 @@ Y, backprop
 dX = backprop(dY)
 dX
 
-# %% markdown
+# %% markdown [markdown]
 # Incrementing the weights now by calling `model.finish_update()` and by passing an optimizer.
 #
 # `finish_update(optimizer: Optimizer) -> None`
@@ -310,7 +310,7 @@ adamOptimizer = Adam()
 modelBackpropExample.finish_update(optimizer = adamOptimizer)
 modelBackpropExample
 
-# %% markdown
+# %% markdown [markdown]
 # Get and set dimensions, parameters, attributes, by name:
 # %% codecell
 modelBackpropExample.get_dim("nO")
@@ -322,7 +322,7 @@ modelBackpropExample.attrs["something"] = "here"
 
 modelBackpropExample.attrs.get("foo", "bar")
 
-# %% markdown
+# %% markdown [markdown]
 # Get parameter gradients and increment them explicitly:
 # %% codecell
 dW = modelBackpropExample.get_grad("W")
@@ -331,7 +331,7 @@ dW
 modelBackpropExample.inc_grad(name = "W", value = 1 + 0.1)
 modelBackpropExample.get_grad("W")
 
-# %% markdown
+# %% markdown [markdown]
 # Can serialize model to bytes and to dist and load them back with `from_bytes` and `from_disk`
 # %% codecell
 modelBytes = modelBackpropExample.to_bytes()

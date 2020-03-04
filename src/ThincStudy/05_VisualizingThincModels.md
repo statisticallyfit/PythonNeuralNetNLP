@@ -1,12 +1,13 @@
-# %% markdown [markdown]
-# Source: https://github.com/explosion/thinc/blob/master/examples/05_visualizing_models.ipynb
-#
-# # Visualizing Thinc Models (with shape inference)
-# **Goal**: to visualize Thinc models and their inputs and outputs.
-#
-# ## 1. Define the Model
-# Start by defining the model with a number of layers chained together using the `chain` combinator.
-# %% codecell
+Source: https://github.com/explosion/thinc/blob/master/examples/05_visualizing_models.ipynb
+
+# Visualizing Thinc Models (with shape inference)
+**Goal**: to visualize Thinc models and their inputs and outputs.
+
+## 1. Define the Model
+Start by defining the model with a number of layers chained together using the `chain` combinator.
+
+
+```python
 from typing import Dict, Any
 
 from pydot import Dot, Node
@@ -25,14 +26,27 @@ model: Model = chain(
     Relu(nO = numHidden, dropout = dropout),
     Softmax(),
 )
-# %% codecell
+```
+
+
+```python
 model
-# %% markdown [markdown]
-# ## 2. Visualizing the model
-# Must add a node for each layer, edges connecting the nodes to the previous enode (except for first/last), and labels like "`name | (nO, nI)`", for instance "`maxout | (128, 32)`".
-#
-# Function below takes a Thinc layer (such as a `Model` instance) and returns a label with the layer name and its dimensions, if available:
-# %% codecell
+```
+
+
+
+
+    <thinc.model.Model at 0x7f978417da60>
+
+
+
+## 2. Visualizing the model
+Must add a node for each layer, edges connecting the nodes to the previous enode (except for first/last), and labels like "`name | (nO, nI)`", for instance "`maxout | (128, 32)`".
+
+Function below takes a Thinc layer (such as a `Model` instance) and returns a label with the layer name and its dimensions, if available:
+
+
+```python
 import thinc
 
 # todo: type?
@@ -43,14 +57,16 @@ def getLabel(layer) -> str:
     nI: int = layer.get_dim("nI") if layer.has_dim("nI") else "?"
 
     return f"{layer.name}|({nO}, {nI})".replace(">", "&gt;")
+```
 
-# %% markdown [markdown]
-# Can now use `pydot` to create a visualization for a given model. Can customize the direction of the notes by setting "`rankdir`" (e.g. specifying "`TB`" for "top to bottom") and adjust the font and arrow styling. Call IPython's utilities so visualization renders nicely in the notebook.
-# %% codecell
+Can now use `pydot` to create a visualization for a given model. Can customize the direction of the notes by setting "`rankdir`" (e.g. specifying "`TB`" for "top to bottom") and adjust the font and arrow styling. Call IPython's utilities so visualization renders nicely in the notebook.
+
+
+```python
 import pydot
 
 #from pydot import Dot
-from IPython.display import Image, SVG, display
+from IPython.display import SVG, display
 
 
 def visualizeModel(model: Model):
@@ -87,28 +103,44 @@ def visualizeModel(model: Model):
             dot.add_edge(graph_edge= pydot.Edge(fromNode, toNode))
 
     display(SVG(dot.create_svg()))
-    #display(Image(dot, format = "png"))
-    #display(dot.write_png(path = "dotimage.png"))
-
-
-    #return dot
-
 # strange: dot.create_svg() Ctrl-B says "cannot find declaration to go to" in IntelliJ but the code still runs!? - why is this method not visible?
+```
+
+Dimensions will show up as `(?, ?)` instead of the actual dimensions because Thinc allows the **defining of models with missing shapes** and can **infer the missing shapes from the data**.
 
 
-# %% markdown [markdown]
-# Dimensions will show up as `(?, ?)` instead of the actual dimensions because Thinc allows the **defining of models with missing shapes** and can **infer the missing shapes from the data**.
-# %% codecell
+```python
 visualizeModel(model = model)
-# %% markdown [markdown]
-# Call `model.initialize` to infer the missing shapes (using examples of expected input $X$ and expected output $Y$).
-# %% codecell
+```
+
+
+![svg](05_VisualizingThincModels_files/05_VisualizingThincModels_8_0.svg)
+
+
+Call `model.initialize` to infer the missing shapes (using examples of expected input $X$ and expected output $Y$).
+
+
+```python
 import numpy
 
 X = numpy.zeros(shape=(5, 784), dtype="f")
 Y = numpy.zeros(shape=(54000, 10), dtype="f")
 
 model.initialize(X = X, Y = Y)
+```
 
-# %% codecell
+
+
+
+    <thinc.model.Model at 0x7f978417da60>
+
+
+
+
+```python
 visualizeModel(model = model)
+```
+
+
+![svg](05_VisualizingThincModels_files/05_VisualizingThincModels_11_0.svg)
+

@@ -1,4 +1,4 @@
-# %% markdown
+# %% markdown [markdown]
 # [Source](https://github.com/explosion/thinc/blob/master/examples/03_pos_tagger_basic_cnn.ipynb)
 
 # # Basic CNN Part-of-Speech Tagger with Thinc
@@ -16,7 +16,7 @@ from thinc.config import Config
 
 prefer_gpu()
 
-# %% markdown
+# %% markdown [markdown]
 # Define the helper functions for loading data, and training and evaluating a given model.
 # * NOTE: need to call `model.initialize` with a batch of input and output data to initialize model and infer missing shape dimensions.
 # %% codecell
@@ -81,7 +81,7 @@ def evaluate(model: Model, devX, devY, batchSize: int) -> float:
     return float(numCorrect / total)
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## 1. Composing the Model in Code
 # Here's the model definition, using ...
 # * `>>` operator for the `chain` combinator.
@@ -114,7 +114,7 @@ with Model.define_operators(operators = {">>": chain}):
 optimizer = Adam(learn_rate = learnRate)
 # %% codecell
 modelFromCode
-# %% markdown
+# %% markdown [markdown]
 # Training the model now:
 # %% codecell
 trainModel(model = modelFromCode,
@@ -124,7 +124,7 @@ trainModel(model = modelFromCode,
 #
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## 2. Composing the Model via a Config File
 # Thinc's config system lets describe **arbitrary trees of objects**:
 #
@@ -201,20 +201,20 @@ nI = ${hyper_params:width}
 learn_rate = ${hyper_params:learn_rate}
 """
 
-# %% markdown
+# %% markdown [markdown]
 # When the config is loaded it is parsed as a dictionary and all references to values from other sections (like `${hyperParams:width}`) are replaced by their defined values. The result is a nested dictionary describing the objects defined in the config.
 # %% codecell
 from thinc.api import registry, Config
 
 config: Config = Config().from_str(CONFIG_STR)
 config
-# %% markdown
+# %% markdown [markdown]
 # Next, use `registry.make_from_config` to create the objects and call the functions **bottom-up**.
 # %% codecell
 CONFIG: Config = registry.make_from_config(config)
 CONFIG
 
-# %% markdown
+# %% markdown [markdown]
 # Training the model, since we have declared the model, optimizer, and training settings:
 # %% codecell
 modelFromConfig: Model = CONFIG["model"]
@@ -230,7 +230,7 @@ trainModel(model = modelFromConfig,
            numIters = numIters,
            batchSize = batchSize)
 
-# %% markdown
+# %% markdown [markdown]
 # ## 3. Composing the Model with Code and Config
 # ### Creating the Code:
 # Can register your own layers and model definitions using the `@thinc.registry` decorator. These can later be referenced in config files $\rightarrow$ gives flexibility while keeping config and model definitions concise.
@@ -255,7 +255,7 @@ def createCnnTagger(width: int, vectorWidth: int, numClasses: int = 17):
 
         return model
 
-# %% markdown
+# %% markdown [markdown]
 # ### Creating the Config:
 # The config now must only define one model block with @layers = "CnnTagger.v1" and the function arguments. Can optionally move function arguments to a section like `[hyper_param]` or could hard-code them into the block.
 #
@@ -284,7 +284,7 @@ learn_rate = ${hyper_params:learn_rate}
 # %% codecell
 CONFIG: Config = registry.make_from_config(Config().from_str(CONFIG_STR))
 CONFIG
-# %% markdown
+# %% markdown [markdown]
 # Training the model now:
 # %% codecell
 modelFromCodeAndConfig: Model = CONFIG["model"]

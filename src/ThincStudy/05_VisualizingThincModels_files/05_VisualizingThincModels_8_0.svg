@@ -1,0 +1,97 @@
+<svg height="47pt" viewBox="0.00 0.00 966.00 47.00" width="966pt" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g class="graph" id="graph0" transform="scale(1 1) rotate(0) translate(4 43)">
+<title>G</title>
+<polygon fill="white" points="-4,4 -4,-43 962,-43 962,4 -4,4" stroke="none"/>
+<!-- 1 -->
+<g class="node" id="node1"><title>1</title>
+<polygon fill="none" points="0,-0.5 0,-38.5 91,-38.5 91,-0.5 0,-0.5" stroke="black"/>
+<text font-family="calibri" font-size="10.00" text-anchor="middle" x="45.5" y="-26.5">expand_window</text>
+<polyline fill="none" points="0,-19.5 91,-19.5 " stroke="black"/>
+<text font-family="calibri" font-size="10.00" text-anchor="middle" x="45.5" y="-7.5">(?, ?)</text>
+</g>
+<!-- 6 -->
+<g class="node" id="node2"><title>6</title>
+<polygon fill="none" points="127,-0.5 127,-38.5 281,-38.5 281,-0.5 127,-0.5" stroke="black"/>
+<text font-family="calibri" font-size="10.00" text-anchor="middle" x="204" y="-26.5">relu&gt;&gt;layernorm&gt;&gt;dropout</text>
+<polyline fill="none" points="127,-19.5 281,-19.5 " stroke="black"/>
+<text font-family="calibri" font-size="10.00" text-anchor="middle" x="204" y="-7.5">(?, ?)</text>
+</g>
+<!-- 1&#45;&gt;6 -->
+<g class="edge" id="edge1"><title>1-&gt;6</title>
+<path d="M91.3466,-19.5C100.286,-19.5 109.942,-19.5 119.704,-19.5" fill="none" stroke="black"/>
+<polygon fill="black" points="119.821,-21.9501 126.821,-19.5 119.821,-17.0501 119.821,-21.9501" stroke="black"/>
+</g>
+<!-- 7 -->
+<g class="node" id="node3"><title>7</title>
+<polygon fill="none" points="317,-0.5 317,-38.5 371,-38.5 371,-0.5 317,-0.5" stroke="black"/>
+<text font-family="calibri" font-size="10.00" text-anchor="middle" x="344" y="-26.5">maxout</text>
+<polyline fill="none" points="317,-19.5 371,-19.5 " stroke="black"/>
+<text font-family="calibri" font-size="10.00" text-anchor="middle" x="344" y="-7.5">(128, ?)</text>
+</g>
+<!-- 6&#45;&gt;7 -->
+<g class="edge" id="edge2"><title>6-&gt;7</title>
+<path d="M281.265,-19.5C291.297,-19.5 301.122,-19.5 309.879,-19.5" fill="none" stroke="black"/>
+<polygon fill="black" points="309.965,-21.9501 316.965,-19.5 309.965,-17.0501 309.965,-21.9501" stroke="black"/>
+</g>
+<!-- 8 -->
+<g class="node" id="node4"><title>8</title>
+<polygon fill="none" points="407,-0.5 407,-38.5 461,-38.5 461,-0.5 407,-0.5" stroke="black"/>
+<text font-family="calibri" font-size="10.00" text-anchor="middle" x="434" y="-26.5">linear</text>
+<polyline fill="none" points="407,-19.5 461,-19.5 " stroke="black"/>
+<text font-family="calibri" font-size="10.00" text-anchor="middle" x="434" y="-7.5">(64, ?)</text>
+</g>
+<!-- 7&#45;&gt;8 -->
+<g class="edge" id="edge3"><title>7-&gt;8</title>
+<path d="M371.403,-19.5C380.359,-19.5 390.48,-19.5 399.891,-19.5" fill="none" stroke="black"/>
+<polygon fill="black" points="399.919,-21.9501 406.919,-19.5 399.919,-17.0501 399.919,-21.9501" stroke="black"/>
+</g>
+<!-- 13 -->
+<g class="node" id="node5"><title>13</title>
+<polygon fill="none" points="497,-0.5 497,-38.5 651,-38.5 651,-0.5 497,-0.5" stroke="black"/>
+<text font-family="calibri" font-size="10.00" text-anchor="middle" x="574" y="-26.5">relu&gt;&gt;layernorm&gt;&gt;dropout</text>
+<polyline fill="none" points="497,-19.5 651,-19.5 " stroke="black"/>
+<text font-family="calibri" font-size="10.00" text-anchor="middle" x="574" y="-7.5">(?, ?)</text>
+</g>
+<!-- 8&#45;&gt;13 -->
+<g class="edge" id="edge4"><title>8-&gt;13</title>
+<path d="M461.282,-19.5C469.669,-19.5 479.444,-19.5 489.658,-19.5" fill="none" stroke="black"/>
+<polygon fill="black" points="489.788,-21.9501 496.788,-19.5 489.788,-17.0501 489.788,-21.9501" stroke="black"/>
+</g>
+<!-- 14 -->
+<g class="node" id="node6"><title>14</title>
+<polygon fill="none" points="687,-0.5 687,-38.5 741,-38.5 741,-0.5 687,-0.5" stroke="black"/>
+<text font-family="calibri" font-size="10.00" text-anchor="middle" x="714" y="-26.5">linear</text>
+<polyline fill="none" points="687,-19.5 741,-19.5 " stroke="black"/>
+<text font-family="calibri" font-size="10.00" text-anchor="middle" x="714" y="-7.5">(32, ?)</text>
+</g>
+<!-- 13&#45;&gt;14 -->
+<g class="edge" id="edge5"><title>13-&gt;14</title>
+<path d="M651.265,-19.5C661.297,-19.5 671.122,-19.5 679.879,-19.5" fill="none" stroke="black"/>
+<polygon fill="black" points="679.965,-21.9501 686.965,-19.5 679.965,-17.0501 679.965,-21.9501" stroke="black"/>
+</g>
+<!-- 17 -->
+<g class="node" id="node7"><title>17</title>
+<polygon fill="none" points="777,-0.5 777,-38.5 866,-38.5 866,-0.5 777,-0.5" stroke="black"/>
+<text font-family="calibri" font-size="10.00" text-anchor="middle" x="821.5" y="-26.5">relu&gt;&gt;dropout</text>
+<polyline fill="none" points="777,-19.5 866,-19.5 " stroke="black"/>
+<text font-family="calibri" font-size="10.00" text-anchor="middle" x="821.5" y="-7.5">(?, ?)</text>
+</g>
+<!-- 14&#45;&gt;17 -->
+<g class="edge" id="edge6"><title>14-&gt;17</title>
+<path d="M741.079,-19.5C749.72,-19.5 759.658,-19.5 769.514,-19.5" fill="none" stroke="black"/>
+<polygon fill="black" points="769.656,-21.9501 776.656,-19.5 769.656,-17.0501 769.656,-21.9501" stroke="black"/>
+</g>
+<!-- 18 -->
+<g class="node" id="node8"><title>18</title>
+<polygon fill="none" points="902,-0.5 902,-38.5 958,-38.5 958,-0.5 902,-0.5" stroke="black"/>
+<text font-family="calibri" font-size="10.00" text-anchor="middle" x="930" y="-26.5">softmax</text>
+<polyline fill="none" points="902,-19.5 958,-19.5 " stroke="black"/>
+<text font-family="calibri" font-size="10.00" text-anchor="middle" x="930" y="-7.5">(?, ?)</text>
+</g>
+<!-- 17&#45;&gt;18 -->
+<g class="edge" id="edge7"><title>17-&gt;18</title>
+<path d="M866.125,-19.5C875.644,-19.5 885.587,-19.5 894.683,-19.5" fill="none" stroke="black"/>
+<polygon fill="black" points="894.771,-21.9501 901.771,-19.5 894.771,-17.0501 894.771,-21.9501" stroke="black"/>
+</g>
+</g>
+</svg>

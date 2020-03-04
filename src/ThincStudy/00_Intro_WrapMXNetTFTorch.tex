@@ -1,0 +1,935 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{fancyvrb,newverbs,xcolor} % for code highlighting
+\usepackage[top=2cm, bottom=1.5cm, left=2cm, right=2cm]{geometry} % for page margins
+
+\usepackage[english]{babel}
+% Ana: adding graphics package for images
+\usepackage{graphics}
+\usepackage{graphicx}
+
+% change background color for inline code in
+% markdown files. The following code does not work well for
+% long text as the text will exceed the page boundary
+%\definecolor{bgcolor}{HTML}{E0E0E0}
+%\let\oldtexttt\texttt
+
+% \renewcommand{\texttt}[1]{
+% \colorbox{bgcolor}{\oldtexttt{#1}}
+% }
+
+
+%% Setting pythong ??? -----------------------------------------------------
+%default_block_language: "lexer"
+%default_inline_language: "lexer"
+
+
+%% color and other settings for hyperref package -----------------------------
+\hypersetup{
+    bookmarksopen=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=RoyalBlue,
+}
+
+% Font Setup  ---------------------------------------------------------
+\usepackage{unicode-math} % load 'fontspec' automatically
+\setmainfont{Crimson}
+%\setmainfont{Libertinus Sans} 
+%\setmainfont{Alegreya}
+\setmathfont{TeX Gyre Schola Math}
+
+
+% Code syntax highlighting ---------------------------------------------------
+
+% OLD PART -----------------
+%\usepackage{minted}
+%\usemintedstyle{manni}
+%\setmonofont{Inconsolata}
+% ---------------------------
+
+
+% Preliminary macro things for code (snatched from macros in REPORT):  ------
+\newcommand\CodeFontSizeSmall{\fontsize{9pt}{9pt}\selectfont}
+
+\definecolor{originalmannibg}{HTML}{f2f2ff}
+\colorlet{BasePurple}{originalmannibg!90}
+\newcommand{\lighten}[3]{% Reference Color, Percentage, New Color Name
+    \colorlet{#3}{#1!#2!white}
+}
+\lighten{BasePurple}{50}{mannibg}
+
+% Code things --------------------
+\usepackage{minted}
+\usepackage{verbatim}  % has commenting
+
+
+
+\usemintedstyle{manni}
+
+%\setmonofont{Inconsolata} % setting code font
+\setmonofont{Fira Mono}
+
+% General code environment, used like: \begin{code}{python} .... \end{code}
+% NOTE: this is how to nest two environments together: 
+\newenvironment{code}[2][]
+ {\vspace{-3pt}%
+ \VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines, mathescape,
+    style=manni, bgcolor=mannibg,  #1]{#2}}
+ {\end{minted}\end{adjustwidth} 
+     \vspace{-10pt}
+ }
+ 
+% TODO: test if possible to do \renewenvironment to renew the minted environment and just include this logic below whenever calling \begin{minted}[]{python} ... 
+ 
+% Python code environment, used like \begin{pythonCode} ... \end{pythonCode}
+\newenvironment{pythonCode}
+ {\vspace{-3pt}%
+ \VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines, mathescape,
+    style=manni, bgcolor=mannibg]{python}}
+ {\end{minted}\end{adjustwidth} 
+     \vspace{-10pt}
+ }
+
+
+
+% General code output environment
+\newenvironment{outputCode}
+ {\VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines]{text}}
+ {\end{minted}\end{adjustwidth}}
+
+
+% Creating inline code font (equivalent to backticks in jupyter notebooks)
+% Must use like: \pythoninline{...text here ... }
+\newmintinline{python}{python3, fontsize=\CodeFontSizeSmall, bgcolor=mannibg}
+
+%\newenvironment{mintInline}[1][]{\mintinline{latex}{#1}}{}
+%\DeclareTextFontCommand{\mint}{\mintInline}
+
+
+
+\author{}
+\date{}
+
+\begin{document}
+
+Source:
+https://github.com/explosion/thinc/blob/master/examples/00\_intro\_to\_thinc.ipynb
+
+\hypertarget{intro-to-thinc-defining-model-and-config-and-wrapping-pytorch-tensorflow-and-mxnet}{%
+\section{Intro to Thinc: Defining Model and Config and Wrapping PyTorch,
+TensorFlow and
+MXNet}\label{intro-to-thinc-defining-model-and-config-and-wrapping-pytorch-tensorflow-and-mxnet}}
+
+\hypertarget{defining-model-in-thinc}{%
+\subsection{Defining Model in Thinc}\label{defining-model-in-thinc}}
+
+\begin{minted}[]{python}
+from thinc.api import prefer_gpu
+prefer_gpu()  # returns boolean indicating if GPU was activated
+\end{minted}
+
+\begin{minted}[]{python}
+False
+\end{minted}
+
+Declaring data below for the whole file: Using ml-datasets package in
+Thinc for some common datasets including MNIST:
+
+\begin{minted}[]{python}
+import ml_datasets
+
+# note: these are numpy arrays
+(trainX, trainY), (devX, devY) = ml_datasets.mnist()
+print(f"Training size={len(trainX)}, dev size={len(devX)}")
+\end{minted}
+
+\begin{minted}[]{python}
+Training size=54000, dev size=10000
+\end{minted}
+
+\hypertarget{step-1-define-the-model}{%
+\subsubsection{Step 1: Define the Model}\label{step-1-define-the-model}}
+
+Defining a model with two \emph{Relu-activated hidden layers}, followed
+by a \emph{softmax-activated output layer}. Also add \emph{dropout}
+after the two hidden layers to help model generalize better.
+
+The \mintinline[]{python}{chain} combinator: acts like
+\mintinline[]{python}{Sequential} in PyTorch or Keras since it combines
+a list of layers together with a feed-forward relationship.
+
+\begin{minted}[]{python}
+from thinc.api import chain, Relu, Softmax, Model
+
+numHidden = 32
+dropout = 0.2
+
+model: Model = chain(Relu(nO=numHidden, dropout=dropout),
+              Relu(nO=numHidden, dropout=dropout), Softmax())
+\end{minted}
+
+\begin{minted}[]{python}
+model
+\end{minted}
+
+\begin{minted}[]{python}
+<thinc.model.Model at 0x7fdd3038e048>
+\end{minted}
+
+\hypertarget{step-2-initialize-the-model}{%
+\subsubsection{Step 2: Initialize the
+Model}\label{step-2-initialize-the-model}}
+
+Call \mintinline[]{python}{Model.initialize} after creating the model
+and pass in a small batch of input data X and small batch of output data
+Y. Lets Thinc \emph{infer the missing dimensions} (when we defined the
+model we didn't tell it the input size \mintinline[]{python}{nI} or the
+output size \mintinline[]{python}{nO})
+
+When passing in the data, call \mintinline[]{python}{model.ops.asarray}
+to make sure the data is on the right device (transforms the arrays to
+\mintinline[]{python}{cupy} when running on GPU)
+
+\begin{minted}[]{python}
+from thinc.backends.ops import  ArrayXd
+
+
+# Making sure the data is on the right device
+trainX: ArrayXd = model.ops.asarray(trainX)
+trainY: ArrayXd = model.ops.asarray(trainY)
+devX: ArrayXd = model.ops.asarray(devX)
+devY: ArrayXd = model.ops.asarray(devY)
+
+# Initializing model
+model.initialize(X=trainX[:5], Y=trainY[:5])
+
+nI: int = model.get_dim("nI")
+nO: int = model.get_dim("nO")
+
+print(
+    f"Initialized model with input dimension nI = {nI} and output dimension nO = {nO}"
+)
+\end{minted}
+
+\begin{minted}[]{python}
+Initialized model with input dimension nI = 784 and output dimension nO = 10
+\end{minted}
+
+\hypertarget{step-3-train-the-model}{%
+\subsubsection{Step 3: Train the Model}\label{step-3-train-the-model}}
+
+Create optimizer and make several passes over the data, randomly
+selecting paired batches of the inputs and labels each time.
+
+** Key difference between Thinc and other ML libraries:** other
+libraries provide a single \mintinline[]{python}{.fit()} method to train
+a model all at once, but Thinc lets you \emph{shuffle and batch your
+data}.
+
+\begin{minted}[]{python}
+from tqdm.notebook import tqdm
+
+def trainModel(data, model, optimizer, numIter: int, batchSize: int):
+    (trainX, trainY), (devX, devY) = data
+    # todo why need indices?
+    # indices = model.ops.xp.arange(trainX.shape[0], dtype="i")
+
+    for i in range(numIter):
+        # multibatch(): minimatch one or more sequences of data and yield lists with one batch per sequence.
+        batches = model.ops.multibatch(batchSize, trainX, trainY, shuffle=True)
+
+        for X, Y in tqdm(batches, leave=False):
+            # begin_update(self, X: InT) -> Tuple[OutT, Callable[[InT], OutT]]:
+            # Purpose: run the model over a batch of data, returning the output and a callback to complete the backward
+            # pass.
+            # Returned: tuple (Y, finishedUpdated), where Y = batch of output data, and finishedUpdate = callback that takes the gradient with respect to the output and an optimizer function, and returns the gradient with respect to the input.
+            Yh, backprop = model.begin_update(X=X)
+
+            backprop(Yh - Y)
+
+            # finish_update(): update parameters with current gradients. The optimizer is called with each parameter and gradient of the model.
+            model.finish_update(optimizer=optimizer)
+
+        # Evaluate and print progress
+        numCorrect: int = 0
+        totalCount: int = 0
+
+        for X, Y in model.ops.multibatch(batchSize, devX, devY):
+            # predict(X: InT) -> OutT: calls the model's forward function with is_train=False, and returns only the output, instead of the (output, callback) tuple
+            Yh = model.predict(X=X)
+            numCorrect += (Yh.argmax(axis=1) == Y.argmax(axis=1)).sum()
+            # todo?
+            totalCount += Yh.shape[0]
+
+        score = numCorrect / totalCount
+
+        print(f" {i}: {float(score):.3f}")
+\end{minted}
+
+\begin{minted}[]{python}
+from thinc.api import Adam, fix_random_seed
+
+fix_random_seed(0)
+adamOptimizer = Adam(0.001)
+BATCH_SIZE: int = 128
+NUM_ITERATIONS: int = 10
+print("Measuring performance across iterations: ")
+
+trainModel(data=((trainX, trainY), (devX, devY)),
+           model=model,
+           optimizer=adamOptimizer,
+           numIter=NUM_ITERATIONS,
+           batchSize=BATCH_SIZE)
+\end{minted}
+
+\begin{minted}[]{python}
+Measuring performance across iterations: 
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 0: 0.844
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 1: 0.882
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 2: 0.891
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 3: 0.904
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 4: 0.909
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 5: 0.914
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 6: 0.916
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 7: 0.923
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 8: 0.923
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 9: 0.926
+\end{minted}
+
+\hypertarget{another-way-to-define-model-operator-overloading}{%
+\subsection{Another Way to Define Model: Operator
+Overloading}\label{another-way-to-define-model-operator-overloading}}
+
+\begin{itemize}
+\tightlist
+\item
+  Thinc lets you \emph{overload operators} and bind arbitrary functions
+  to operators like +, *, and \textgreater\textgreater{} or @.
+\item
+  The \mintinline[]{python}{Model.define_operators} contextmanager takes
+  a dictionary of operators mapped to functions (typically combinators
+  like \mintinline[]{python}{chain})
+\item
+  Operators in the dict are onl valid for the
+  \mintinline[]{python}{with} block
+\end{itemize}
+
+\begin{minted}[]{python}
+# Example of using the operators:
+from thinc.api import Model, chain, Relu, Softmax
+
+numHidden: int = 32
+dropout: float = 0.2
+
+with Model.define_operators({">>": chain}):
+    modelByMyOp = Relu(nO=numHidden, dropout=dropout) >> Relu(
+        nO=numHidden, dropout=dropout) >> Softmax()
+\end{minted}
+
+NOTE: bunch of things here in source tutorial about config files
+\ldots{}
+
+\hypertarget{wrapping-tensorflow-pytorch-and-mxnet-models}{%
+\subsection{Wrapping TensorFlow, PyTorch, and MXNet
+models}\label{wrapping-tensorflow-pytorch-and-mxnet-models}}
+
+Can wrap the underlying model using Thinc interface to get type hints
+and use config system.
+
+\hypertarget{wrapping-tensorflow-models}{%
+\subsubsection{1. Wrapping TensorFlow
+Models}\label{wrapping-tensorflow-models}}
+
+Tensorflow's \mintinline[]{python}{Sequential} layer is equivalent to
+Thinc's \mintinline[]{python}{chain}. Defining here model with two Relu
+and dropout and softmax output.
+
+\begin{minted}[]{python}
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.models import Sequential
+from thinc.api import TensorFlowWrapper, Adam
+
+width: int = 32
+nO: int = 10
+nI: int = 784
+dropout: float = 0.2
+
+tfModel: Sequential = Sequential()
+tfModel.add(Dense(width, activation="relu", input_shape=(nI, )))
+tfModel.add(Dropout(dropout))
+tfModel.add(Dense(width, activation="relu", input_shape=(nI, )))
+tfModel.add(Dropout(dropout))
+tfModel.add(Dense(nO, activation="softmax"))
+tfModel
+\end{minted}
+
+\begin{minted}[]{python}
+<tensorflow.python.keras.engine.sequential.Sequential at 0x7fdd29e2eeb8>
+\end{minted}
+
+The wrapped tensorflow model:
+
+\begin{minted}[]{python}
+wrappedTFModel: Model = TensorFlowWrapper(tensorflow_model=tfModel)
+wrappedTFModel
+\end{minted}
+
+\begin{minted}[]{python}
+<thinc.model.Model at 0x7fdd29e44840>
+\end{minted}
+
+Training the wrapped tensorflow model:
+
+\begin{minted}[]{python}
+data = ml_datasets.mnist()
+#data
+\end{minted}
+
+\begin{minted}[]{python}
+from thinc.optimizers import Optimizer
+
+adamOptimizer: Optimizer = Adam(learn_rate=0.001)
+adamOptimizer
+\end{minted}
+
+\begin{minted}[]{python}
+<thinc.optimizers.Optimizer at 0x7fdd2a0536d8>
+\end{minted}
+
+\begin{minted}[]{python}
+# Providing batch of input data and batch of output data to do shape inference.
+wrappedTFModel.initialize(X=trainX[:5], Y=trainY[:5])
+\end{minted}
+
+\begin{minted}[]{python}
+<thinc.model.Model at 0x7fdd29e44840>
+\end{minted}
+
+\begin{minted}[]{python}
+# Training the model
+NUM_ITERATIONS = 10
+BATCH_SIZE = 128
+
+trainModel(data=data,
+           model=wrappedTFModel,
+           optimizer=adamOptimizer,
+           numIter=NUM_ITERATIONS,
+           batchSize=BATCH_SIZE)
+\end{minted}
+
+\begin{minted}[]{python}
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 0: 0.915
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 1: 0.927
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 2: 0.933
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 3: 0.939
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 4: 0.945
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 5: 0.946
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 6: 0.947
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 7: 0.949
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 8: 0.950
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 9: 0.951
+\end{minted}
+
+\hypertarget{wrapping-pytorch-models}{%
+\subsubsection{2. Wrapping PyTorch
+Models}\label{wrapping-pytorch-models}}
+
+Thinc's \mintinline[]{python}{PyTorchWrapper} wraps the model and turns
+it into a regular Thinc \mintinline[]{python}{Model}.
+
+\begin{minted}[]{python}
+import torch
+import torch.nn
+
+# Renaming imports for reading clarity:
+#import torch.nn.modules.dropout.Dropout2d as Dropout2d
+#import torch.nn.Linear as Linear
+import torch.tensor as Tensor
+import torch.nn.functional as F
+
+# Thinc imports
+from thinc.api import PyTorchWrapper, Adam
+
+width: int = 32
+nO: int = 10
+nI: int = 784
+dropout: float = 0.2
+
+class PyTorchModel(torch.nn.Module):
+    def __init__(self, width: int, nO: int, nI: int, dropout: float):
+        super(PyTorchModel, self).__init__()
+
+        self.firstDropout: torch.nn.Dropout2d = torch.nn.Dropout2d(dropout)
+        self.secondDropout: torch.nn.Dropout2d = torch.nn.Dropout2d(dropout)
+
+        self.firstLinearLayer: torch.nn.Linear = torch.nn.Linear(in_features=nI,
+                                               out_features=width)
+
+        self.secondLinearLayer: torch.nn.Linear = torch.nn.Linear(in_features=width,
+                                                out_features=nO)
+
+
+    def forward(self, x: Tensor) -> Tensor:
+        x: Tensor = F.relu(x)
+        x: Tensor = self.firstDropout(x)
+        x: Tensor = self.firstLinearLayer(x)
+        x: Tensor = F.relu(x)
+        x: Tensor = self.secondDropout(x)
+        x: Tensor = self.secondLinearLayer(x)
+
+        output: Tensor = F.log_softmax(input = x, dim = 1)
+
+        return output
+
+
+wrappedPyTorchModel: Model = PyTorchWrapper(pytorch_model=
+                                            PyTorchModel(width = width,
+                                                         nO = nO,
+                                                         nI = nI,
+                                                         dropout=dropout))
+
+wrappedPyTorchModel
+\end{minted}
+
+\begin{minted}[]{python}
+<thinc.model.Model at 0x7fdd2a6e38c8>
+\end{minted}
+
+Training the wrapped pytorch model:
+
+\begin{minted}[]{python}
+
+data = ml_datasets.mnist()
+adamOptimizer: Optimizer = Adam(learn_rate = 0.001)
+
+wrappedPyTorchModel.initialize(X = trainX[:5], Y = trainY[:5])
+wrappedPyTorchModel
+\end{minted}
+
+\begin{minted}[]{python}
+<thinc.model.Model at 0x7fdd2a6e38c8>
+\end{minted}
+
+\begin{minted}[]{python}
+NUM_ITERATIONS = 10
+BATCH_SIZE = 128
+
+trainModel(data=data,
+           model=wrappedPyTorchModel,
+           optimizer=adamOptimizer,
+           numIter=NUM_ITERATIONS,
+           batchSize=BATCH_SIZE)
+
+
+
+#
+\end{minted}
+
+\begin{minted}[]{python}
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 0: 0.913
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 1: 0.920
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 2: 0.925
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 3: 0.925
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 4: 0.931
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 5: 0.931
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 6: 0.933
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 7: 0.936
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 8: 0.938
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 9: 0.939
+\end{minted}
+
+\hypertarget{wrapping-mxnet-models}{%
+\subsubsection{3. Wrapping MXNet Models}\label{wrapping-mxnet-models}}
+
+Thinc's \mintinline[]{python}{MXNetWrapper} wraps the model and turns it
+into a regular Thinc \mintinline[]{python}{Model}.
+
+MXNet uses a \mintinline[]{python}{.softmax()} method instead of a
+\mintinline[]{python}{Softmax} layer so to integrate it with the rest of
+the components, we must combine it with a
+\mintinline[]{python}{Softmax()} Thinc layer using the
+\mintinline[]{python}{chain} combinator. * NOTE: make sure to
+\mintinline[]{python}{initialize()} the MXNet model and the Thinc model
+(both).
+
+\begin{minted}[]{python}
+from mxnet.gluon.nn import Dense, Sequential, Dropout
+from thinc.api import MXNetWrapper, chain, Softmax
+
+width: int = 32
+nO: int = 10
+nI: int = 784
+dropout: float = 0.2
+
+mxnetModel = Sequential()
+mxnetModel.add(Dense(units = width, activation = "relu"))
+mxnetModel.add(Dropout(rate = dropout))
+mxnetModel.add(Dense(units = width, activation = "relu"))
+mxnetModel.add(Dropout(rate = dropout))
+mxnetModel.add(Dense(units = nO))
+
+mxnetModel
+\end{minted}
+
+\begin{minted}[]{python}
+Sequential(
+  (0): Dense(None -> 32, Activation(relu))
+  (1): Dropout(p = 0.2, axes=())
+  (2): Dense(None -> 32, Activation(relu))
+  (3): Dropout(p = 0.2, axes=())
+  (4): Dense(None -> 10, linear)
+)
+\end{minted}
+
+\begin{minted}[]{python}
+mxnetModel.initialize()
+mxnetModel
+\end{minted}
+
+\begin{minted}[]{python}
+Sequential(
+  (0): Dense(None -> 32, Activation(relu))
+  (1): Dropout(p = 0.2, axes=())
+  (2): Dense(None -> 32, Activation(relu))
+  (3): Dropout(p = 0.2, axes=())
+  (4): Dense(None -> 10, linear)
+)
+\end{minted}
+
+\begin{minted}[]{python}
+wrappedMxnetModel: Model = chain(layer1 = MXNetWrapper(mxnet_model = mxnetModel),
+                                 layer2 = Softmax())
+wrappedMxnetModel
+\end{minted}
+
+\begin{minted}[]{python}
+<thinc.model.Model at 0x7fdd2a6ef6a8>
+\end{minted}
+
+Training the wrapped mxnet model
+
+\begin{minted}[]{python}
+
+data = ml_datasets.mnist()
+adamOptimizer: Optimizer = Adam(learn_rate = 0.001)
+
+wrappedMxnetModel.initialize(X = trainX[:5], Y = trainY[:5])
+wrappedMxnetModel
+\end{minted}
+
+\begin{minted}[]{python}
+<thinc.model.Model at 0x7fdd2a6ef6a8>
+\end{minted}
+
+\begin{minted}[]{python}
+NUM_ITERATIONS = 10
+BATCH_SIZE = 128
+
+trainModel(data=data,
+           model=wrappedMxnetModel,
+           optimizer=adamOptimizer,
+           numIter=NUM_ITERATIONS,
+           batchSize=BATCH_SIZE)
+\end{minted}
+
+\begin{minted}[]{python}
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 0: 0.744
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 1: 0.877
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 2: 0.909
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 3: 0.925
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 4: 0.932
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 5: 0.937
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 6: 0.941
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 7: 0.944
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 8: 0.945
+
+
+
+HBox(children=(FloatProgress(value=0.0, max=422.0), HTML(value='')))
+
+
+ 9: 0.950
+\end{minted}
+
+\end{document}
