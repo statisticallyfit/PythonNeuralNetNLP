@@ -16,8 +16,10 @@
 # Knowing the thinc types we want enables us to create an alias for our model, so we only have to type out the verbose generic signature once.
 # %% codecell
 from typing import List
+
+from numpy.core._multiarray_umath import ndarray
 from thinc.api import Model
-from thinc.types import Ints2d, Floats1d
+from thinc.types import Ints2d, Floats1d, SizedGenerator
 
 # Creating aliases for the types
 ModelX = Ints2d
@@ -68,7 +70,9 @@ def encodeInput(text: str) -> ModelX:
     return ops.asarray2i(indices) # converts type to Ints2d
 
 # %% markdown
-# **Try It:** Try this out on some fixed data
+# **Try It**
+#
+# Try this out on some fixed data
 # %% codecell
 outputs: ModelX = encodeInput("4+2")
 outputs
@@ -107,7 +111,7 @@ def generatePolyProblems(numLikeTerms: int, exclude: Optional[Set[str]] = None) 
 
     return problems
 # %% markdown
-# **Try It:**
+# **Try It**
 # %% codecell
 generatePolyProblems(numLikeTerms = 10)
 
@@ -150,7 +154,8 @@ def countLikeTerms(inputProblem: str) -> int:
             # If the key may be in node groups dict, then append the current term node at that key value.
             nodeGroups[key].append(termNode)
 
-        # Initializing number of like terms
+
+    # Initializing number of like terms
     numLikeTerms: int = 0
 
     for key, termNode in nodeGroups.items():
@@ -167,7 +172,7 @@ def countLikeTerms(inputProblem: str) -> int:
 parser
 
 # %% markdown
-# **Try It:**
+# **Try It**
 # %% codecell
 assert countLikeTerms("4x - 2y + q") == 0
 # %% codecell
@@ -176,7 +181,7 @@ assert countLikeTerms("x + x + z") == 2
 assert countLikeTerms("4x + 2x - x + 7") == 3
 
 # %% markdown
-# Counts TOTAL number of terms that are LIKE (so since there are 3 terms with exponent two, 2 terms with exponent one, 2 terms with exponent 3, and only 1 term with exponent six, that results in $3 + 2 + 2 \rightarrow 7$ like terms)
+# Counts TOTAL number of terms that are LIKE (so since there are $3$ terms with exponent two, $2$ terms with exponent one, $2$ terms with exponent three, and only $1$ term with exponent six, that results in $3 + 2 + 2 \rightarrow 7$ like terms)
 # %% codecell
 assert countLikeTerms("7x^3 + 8x^6 + 2x + 3x^2 + x^2 + 9x + 9x^3 + 7x^2") == 7
 
@@ -199,7 +204,7 @@ def toExample(inputProblem: str) -> Tuple[str, ModelX, ModelY]:
 
 
 # %% markdown
-# **Try It:**
+# **Try It**
 # %% codecell
 inputProblem, X, Y = toExample(inputProblem = "x + 2x")
 # %% codecell
@@ -270,7 +275,9 @@ def buildModel(numHiddenLayers: int, dropout: float = 0.1) -> ModelT:
 
 
 # %% markdown
-# **Try It:** passing an example through the model to make sure the sizes are being built correctly.
+# **Try It**
+#
+# Passing an example through the model to make sure the sizes are being built correctly.
 # %% codecell
 inputProblem, X, Y = toExample(inputProblem = "14x + 2y - 3x + 7x")
 # %% codecell
@@ -298,7 +305,7 @@ assert yPred.ndim == 2
 
 
 # %% markdown
-# 7. Generate Training Datasets
+# ## 7. Generate Training Datasets
 # Now that we can generate examples and have model to process them it is time to generate random unique training and evaluation datasets.
 #
 # For this, need to write another helper function to generate $n$ training examples and respects an exclude list to avoid overlaping examples from the training and test sets.
@@ -320,22 +327,35 @@ def generateDataset(size: int, exclude: Optional[Set[str]] = None) -> DatasetTup
         encodedExamples.append(x)
         outputLabels.append(y)
 
-    return inputProb, encodedExamples, outputLabels
+    return inputProblemList, encodedExamples, outputLabels
 
 
 # %% markdown
-# **Try It:** Generate a small dataset
+# **Try It**
+#
+# Generate a small dataset
 # %% codecell
+import numpy as np
+
 inputProblems, x, y = generateDataset(size = 10)
+inputProblems
+# %% codecell
 assert len(inputProblems) == 10
 assert len(x) == 10
 assert len(y) == 10
 # %% codecell
+arrX: ndarray = np.array(x)
+print("shape = {}".format(arrX.shape))
+print("ndim = {}".format(arrX.ndim))
+# %% codecell
 x
 # %% codecell
-y
+arrY: ndarray = np.array(y)
+print("shape = {}".format(arrY.shape))
+print("ndim = {}".format(arrY.ndim))
 # %% codecell
-inputProblems
+y
+
 
 
 # %% markdown
@@ -348,8 +368,11 @@ from typing import List
 from wasabi import msg
 
 
-def evaluateModel(model: ModelT, *, isPrintProblems: bool = False, inputProblemList: List[str],
-                  X: List[ModelX], Y: List[ModelY]):
+def evaluateModel(model: ModelT, *,
+                  isPrintProblems: bool = False,
+                  inputProblemList: List[str],
+                  X: List[ModelX],
+                  Y: List[ModelY]) -> float:
 
     yEval: ModelY = model.predict(X = X)
     numCorrect: int = 0
@@ -376,3 +399,226 @@ def evaluateModel(model: ModelT, *, isPrintProblems: bool = False, inputProblemL
 
     if isPrintProblems:
         print(f"Model predicted {numCorrect} out of {len(X)} correctly.")
+
+    return numCorrect / len(X)
+
+# %% markdown
+# **Try It**
+# Trying it out with an untrained model, which will do a really bad job.
+# %% codecell
+inputProblemList, X, Y = generateDataset(size = 128)
+inputProblemList
+# %% codecell
+# X # not showing, too long
+arrX: ndarray = np.array(X)
+print("shape = {}".format(arrX.shape))
+print("ndim = {}".format(arrX.ndim))
+# %% codecell
+arrY: ndarray = np.array(Y)
+print("shape = {}".format(arrY.shape))
+print("ndim = {}".format(arrY.ndim))
+
+# %% markdown
+# Build and initialize the model:
+# %% codecell
+# Does it matter if type is Model or ModelT???
+polyModel: ModelT = buildModel(numHiddenLayers = 12)
+polyModel
+# %% codecell
+type(polyModel)
+# %% codecell
+polyModel.initialize(X = X, Y = polyModel.ops.asarray(Y, dtype="f"))
+polyModel
+# %% codecell
+evaluateModel(model = polyModel, inputProblemList = inputProblemList, X = X, Y = Y)
+
+# %% markdown
+# ## 9. Train and Evaluate a Model
+# The final helper function is to help train and evaluate a model given two input datasets. The function does these things ...
+#
+# 1. Create an Adam optimizer for minimizing the model's prediction error.
+# 2. Loop over the given training dataset (epoch) number of times.
+# 3. For each epoch, make batches of `(batchSize)` examples. For each batch $X$, predict the number of like terms $Yh$ and subtract the known answers $Y$ to get the prediction error. Update the model using the optimizer with the calculated error.
+# 4. After each epoch, check the model performance against the evaluation dataset.
+# 5. Save the model weights for the best score out of all the training epochs.
+# 6. After the training is done, restore the best model and print results from the evaluation set.
+# %% codecell
+from thinc.api import Adam
+
+# Typing help
+from thinc.types import SizedGenerator # a generator with length that can repeatedly call the generator function.
+from thinc.optimizers import Optimizer
+
+from wasabi import msg
+import numpy
+from tqdm.auto import tqdm
+
+def trainAndEvaluate(model: ModelT,
+                     trainTuple: DatasetTuple, evalTuple: DatasetTuple, *,
+                     learnRate: float = 3e-3,
+                     batchSize: int = 64,
+                     numEpochs: int = 48) -> float:
+
+    # Unpack the tuple values
+    (trainTexts, trainX, trainY) = trainTuple
+    (evalTexts, evalX, evalY) = evalTuple
+
+    # Send a message to console
+    msg.divider("Train and Evaluate Model...")
+    msg.info(f"Batch size = {batchSize}\tEpochs = {numEpochs}\tLearning Rate = {learnRate}")
+
+
+
+    # Part 1: Training the model
+    print(f"Training the Model ...")
+
+    # Step 1: create optimizer
+    adamOptimizer: Optimizer = Adam(learn_rate = learnRate)
+    # Variables for recording model info
+    bestScore: float = 0.0
+    bestModel: Optional[bytes] = None
+
+    # Step 2: looping over the training dataset numEpoch number of times.
+    for epoch in range(numEpochs):
+        loss: float = 0.0
+
+        # Step 3: make batches of batchSized examples.
+        batches: SizedGenerator = model.ops.multibatch(batchSize,
+                                                       trainX,
+                                                       trainY,
+                                                       shuffle = True)
+
+        # Step 3 ... For each batch X, ...
+        for X, Y in tqdm(batches, leave = False, unit = "batches"):
+
+            # Converting the Y array to another type
+            Y = model.ops.asarray(Y, dtype = "float32")
+
+            # Step 3: For each batch X, predict the number of like terms (Yh)
+            Yh, backprop = model.begin_update(X = X)
+            # Step 3: subtract the correct number of like terms (Y) from the predicted number of like terms (Yh) to get the error
+            error = Yh - Y
+            # Step 3: Backpropagate the errors over the computational graph to update gradients.
+            backprop(error)
+            # Step 3: Update the loss with the error
+            loss += (error ** 2).sum()
+            # Step 3: Update the model using the optimizer with the calculated error
+            # todo: how is the loss above incorporated into updating the model here?
+            model.finish_update(optimizer = adamOptimizer)
+
+        # Step 4: Preparing to check model performance against evaluation dataset.
+        score: float = evaluateModel(model = model,
+                                     inputProblemList = evalTexts,
+                                     X = evalX,
+                                     Y = evalY)
+
+        # Record the best score
+        if score > bestScore:
+            bestModel = model.to_bytes() # todo why convret to bytes?
+            bestScore = score
+        print(f"Epoch: {epoch}\tScore: {score:.2f}\tLoss: {loss:.2f}")
+
+    if bestModel is not None:
+        model.from_bytes(bytes_data = bestModel) # todo why conversion to bytes above??
+
+
+    # Part 2: Now evaluating the model
+    print(f"Evaluating with Best Model...")
+
+    score = evaluateModel(model = model,
+                          inputProblemList = evalTexts,
+                          isPrintProblems=True,
+                          X = evalX,
+                          Y = evalY)
+
+    print(f"Final score: {score}")
+
+    return score
+
+# %% markdown
+# Generate the dataset first so we can iterate on the model without having to spend time generating examples for each run. This also ensures we have the same dataset across different model runs, to make it easier to compare performance.
+# %% codecell
+trainSize: int = 1024 * 8
+testSize: int = 2048
+seenTexts: Set[str] = set()
+
+# DatasetTuple = Tuple[List[str], List[ModelX], List[ModelY]]
+
+with msg.loading(f"Generating train dataset with {trainSize} examples ..."):
+    trainDataset: DatasetTuple = generateDataset(size = trainSize, exclude = seenTexts)
+
+msg.good(f"Train set created with {trainSize} examples.")
+
+with msg.loading(f"Generating eval dataset with {testSize} examples ..."):
+    evalDataset: DatasetTuple = generateDataset(size = testSize, exclude = seenTexts)
+
+msg.good(f"Eval set created with {testSize} examples.")
+
+# DatasetTuple = Tuple[List[str], List[ModelX], List[ModelY]]
+# Getting second in first tuple (List[ModelX]) and selecting three elements from it, which we shall use for shape inference when initializing the model.
+initX: List[ModelX] = trainDataset[1][:2]
+initY: List[ModelY] = trainDataset[2][:2]
+
+# %% markdown
+# Build, train, evaluate the model:
+# %% codecell
+mainPolyModel: ModelT = buildModel(numHiddenLayers= 64)
+mainPolyModel
+# %% codecell
+mainPolyModel.initialize(X = initX, Y = initY) # shape inference.
+# %% codecell
+trainAndEvaluate(model = mainPolyModel,
+                 trainTuple = trainDataset,
+                 evalTuple = evalDataset,
+                 learnRate = 2e-3,
+                 batchSize = 64,
+                 numEpochs = 16)
+
+# %% markdown
+# # TODO !
+# ## Intermediate Exercise: Towards Fewer Epochs
+# The model we built can train up to ~80% given 100 or more epochs. Improve the model architecture so that it trains to a similar accuracy while requiring fewer epochs or a smaller dataset size.
+# %% codecell
+from typing import List
+from thinc.model import Model
+from thinc.types import Array2d, Array1d
+from thinc.api import chain, clone, list2ragged, reduce_mean, Mish, with_array, Embed, residual
+
+def customModel(numHiddenLayers: int, dropout: float = 0.1) -> Model[List[Array2d], Array2d]:
+    # Put your custom architecture here
+    return buildModel(numHiddenLayers = numHiddenLayers, dropout = dropout)
+
+model = customModel(64)
+model.initialize(X = initX, Y = initY)
+trainAndEvaluate(model = mainPolyModel,
+                 trainTuple = trainDataset,
+                 evalTuple = evalDataset,
+                 learnRate = 2e-3,
+                 batchSize = 64,
+                 numEpochs = 16)
+
+# %% markdown
+# # TODO !
+# ## Advanced Exercise: Encode with BiLSTM
+# Rewrite the model to encode the whole expression with a BiLSTM, and then generate pairs of terms, using the BiLSTM vectors. Over each pair of terms, predict whether the terms are alike or unlike.
+# %% codecell
+from dataclasses import dataclass
+from thinc.types import Array2d, Ragged
+from thinc.model import Model
+
+
+@dataclass
+class Comparisons:
+    data: Array2d  # Batch of vectors for each pair
+    indices: Array2d  # Int array of shape (N, 3), showing the (batch, term1, term2) positions
+
+def pairify() -> Model[Ragged, Comparisons]:
+    """Create pair-wise comparisons for items in a sequence. For each sequence of N
+    items, there will be (N**2-N)/2 comparisons."""
+    ...
+
+def predictOverPairs(model: Model[Array2d, Array2d]) -> Model[Comparisons, Comparisons]:
+    """Apply a prediction model over a batch of comparisons. Outputs a Comparisons
+    object where the data is the scores. The prediction model should predict over
+    two classes, True and False."""
+    ...

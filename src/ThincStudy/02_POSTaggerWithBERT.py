@@ -154,6 +154,7 @@ def TransformersTokenizer(name: str) -> Model[List[List[str]], TokensPlus]:
         tokenizer = model.attrs["tokenizer"]
 
         # todo error here in the tutorial: https://hyp.is/fy3LAFZUEeqG8RsZY4eyWg/huggingface.co/transformers/v2.1.1/_modules/transformers/tokenization_utils.html
+        # todo follow up on this response here from lkhphuc: https://github.com/explosion/thinc/issues/313#issuecomment-595911015
 
         ## todo My try to adapt code:
         # todo encode_plus() arguments: https://huggingface.co/transformers/main_classes/tokenizer.html#transformers.PreTrainedTokenizer.encode_plus
@@ -165,15 +166,21 @@ def TransformersTokenizer(name: str) -> Model[List[List[str]], TokensPlus]:
         #    #return_input_lengths=True,
         #    return_tensors="pt",
         tokenData = tokenizer.batch_encode_plus(
-            [(aText, None) for aText in inputTexts],
+            text = [(aText, None) for aText in inputTexts],
             add_special_tokens=True,
             return_token_type_ids=True,
             return_attention_masks=True,
             return_input_lengths=True,
+            # add this line, todo understand better
+            pad_to_max_length = True,
             return_tensors="pt",
         )
 
+        # todo understand why add
+        tokenData['inputLength'] = [len(aText) for aText in inputTexts]
+
         return TokensPlus(**tokenData), lambda dTokens: []
+        # end forward()
 
     return Model(name = "tokenizer",
                  forward = forward,
