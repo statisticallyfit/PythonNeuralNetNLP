@@ -1,4 +1,4 @@
-name: pythinc_env
+name: pyhugface_env
 channels:
   - conda-forge
   - defaults
@@ -20,10 +20,19 @@ dependencies:
   # ========================
   # NLP
   # ========================
+  - numpy
+  - scipy
+  - sympy
+  - spacy
+  - statsmodels
+  - pandas
+  - nltk
+  - scikit-learn
+  - gensim
   - pytorch
   - pytorch-pretrained-bert
-  - transformers
-  - tensorflow>2.0
+  #- transformers #>=2.5.0
+  - tensorflow
 
   # ==============
   # Plotting
@@ -33,20 +42,6 @@ dependencies:
   - plotly
 
 
-  # ==============
-  # Pip things
-  # ============== 
-  - pip:
-      - thinc>=8.0.0a0
-      - ml_datasets
-      - tqdm>=4.41
-      - mxnet>=1.5.1,<1.6.0
-      - gluonnlp
-      - syntok # additional
-      - pydot
-      - graphviz
-      - svgwrite
 
-
-prefix: /development/bin/python/conda3_ana/envs/pythinc_env
+prefix: /development/bin/python/conda3_ana/envs/pyhugface_env
 
