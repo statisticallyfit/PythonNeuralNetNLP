@@ -17,7 +17,6 @@ from transformers import pipeline
 nlp = pipeline("question-answering")
 nlp
 # %% codecell
-# todo continue here to get types of the pipeline thingy
 context: str = r"""Extractive Question Answering is the task of extracting an answer from a text given a question. An example of a
 question answering dataset is the SQuAD dataset, which is entirely based on that task. If you would like to fine-tune
 a model on a SQuAD task, you may leverage the `run_squad.py`."""
@@ -39,16 +38,29 @@ print(nlp(question = "What is a good example of a question answering dataset?", 
 
 # %% codecell
 from transformers import AutoTokenizer, AutoModelForQuestionAnswering
+from transformers import XLMTokenizer, DistilBertTokenizer, BertTokenizer, TransfoXLTokenizer, \
+    RobertaTokenizer, OpenAIGPTTokenizer, XLNetTokenizer, CTRLTokenizer, GPT2Tokenizer
 import torch
 from typing import Dict, List, Union
 
 
 BERT_QA_MODEL_NAME: str = "bert-large-uncased-whole-word-masking-finetuned-squad"
+
 TokenizerTypes = Union[DistilBertTokenizer, RobertaTokenizer, BertTokenizer, OpenAIGPTTokenizer, GPT2Tokenizer, TransfoXLTokenizer, XLNetTokenizer, XLMTokenizer, CTRLTokenizer]
 
+# %% codecell
 bertTokenizer: TokenizerTypes = AutoTokenizer.from_pretrained(BERT_QA_MODEL_NAME)
+# %% markdown
+# This is the `BertTokenizer` type, since we loaded the bert model
+# %% codecell
+type(bertTokenizer)
+# %% codecell
+bertTokenizer
+# %% codecell
 bertQAModel = AutoModelForQuestionAnswering.from_pretrained(BERT_QA_MODEL_NAME)
-
+# %% codecell
+type(bertQAModel)
+# %% codecell
 text = r"""Transformers (formerly known as pytorch-transformers and pytorch-pretrained-bert) provides general-purpose architectures (BERT, GPT-2, RoBERTa, XLM, DistilBert, XLNet…) for Natural Language Understanding (NLU) and Natural Language Generation (NLG) with over 32+ pretrained models in 100+ languages and deep interoperability between TensorFlow 2.0 and PyTorch"""
 
 questions = [

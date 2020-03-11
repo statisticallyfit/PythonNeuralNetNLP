@@ -7,7 +7,7 @@
 # ### Pipeline Method:
 # Here is an example using pipelines to do [sentiment analysis](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1474986047/sentiment+analysis).
 # %% codecell
-
+import torch.tensor as Tensor
 
 import transformers
 from transformers import pipeline, XLMTokenizer, DistilBertTokenizer, BertTokenizer, TransfoXLTokenizer, \
@@ -15,6 +15,8 @@ from transformers import pipeline, XLMTokenizer, DistilBertTokenizer, BertTokeni
 
 nlp = pipeline("sentiment-analysis")
 
+# %% codecell
+nlp
 # %% codecell
 print(nlp("I hate you"))
 print(nlp("I love you"))
@@ -32,22 +34,25 @@ print(nlp("I love you"))
 
 # %% codecell
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import XLMTokenizer, DistilBertTokenizer, BertTokenizer, TransfoXLTokenizer, \
+    RobertaTokenizer, OpenAIGPTTokenizer, XLNetTokenizer, CTRLTokenizer, GPT2Tokenizer
 import torch
 
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Tuple
 
 BERT_SEQ_CLASSIFICATION_MODEL_NAME: str = "bert-base-cased-finetuned-mrpc"
 
 # Set the bert tokenizer type (this is the inferred type)
 TokenizerTypes = Union[DistilBertTokenizer, RobertaTokenizer, BertTokenizer, OpenAIGPTTokenizer, GPT2Tokenizer, TransfoXLTokenizer, XLNetTokenizer, XLMTokenizer, CTRLTokenizer]
 
+# %% codecell
 # Downloading here ...
 bertTokenizer: TokenizerTypes = AutoTokenizer.from_pretrained(BERT_SEQ_CLASSIFICATION_MODEL_NAME)
-
+bertTokenizer
 # %% codecell
 # Downloading here ...
 bertSeqClassModel = AutoModelForSequenceClassification.from_pretrained(BERT_SEQ_CLASSIFICATION_MODEL_NAME)
-
+bertSeqClassModel
 # %% codecell
 # Setting the sequences...
 classes: List[str] = ["not paraphrase", "is paraphrase"]
@@ -57,17 +62,40 @@ sequence_1: str = "Apples are especially bad for your health"
 sequence_2: str = "HuggingFace's headquarters are situated in Manhattan"
 
 # %% codecell
-paraphrase = bertTokenizer.encode_plus(sequence_0, sequence_2, return_tensors="pt")
-notParaphrase = bertTokenizer.encode_plus(sequence_0, sequence_1, return_tensors ="pt")
-
-temp = bertSeqClassModel(**paraphrase)
-paraphraseClassificationLogits = temp[0]
-notParaphraseClassificationLogits = bertSeqClassModel(**notParaphrase)[0]
-
-temp2 = torch.softmax(paraphraseClassificationLogits, dim = 1).tolist()
-paraphraseResults = temp2[0]
-notParaphraseResults = torch.softmax(notParaphraseClassificationLogits, dim = 1).tolist()[0]
-
+paraphrase: Dict[str, Tensor] = bertTokenizer.encode_plus(sequence_0, sequence_2, return_tensors="pt")
+paraphrase
+# %% codecell
+notParaphrase: Dict[str, Tensor] = bertTokenizer.encode_plus(sequence_0, sequence_1, return_tensors ="pt")
+notParaphrase
+# %% markdown
+# This result `tupleOfLogits` is a tuple where only the first part is filled as a tensor, and that is the tensor of logits.
+# %% codecell
+tupleOfLogits: Tuple[Tensor, ]  = bertSeqClassModel(**paraphrase)
+type(tupleOfLogits)
+type(tupleOfLogits[0])
+# %% codecell
+paraphraseClassificationLogits: Tensor = tupleOfLogits[0]
+paraphraseClassificationLogits
+# %% codecell
+notParaphraseClassificationLogits: Tensor = bertSeqClassModel(**notParaphrase)[0]
+notParaphraseClassificationLogits
+# %% markdown
+# Getting the `Tensor` of softmax probabilities ...
+# %% codecell
+softmaxProbsTensor: Tensor = torch.softmax(paraphraseClassificationLogits, dim = 1)
+softmaxProbsTensor
+# %% codecell
+# This is a lsit of lists, ...
+softmaxProbsTensor.tolist()
+# ... so to get the paraphrase and non-paraphrase results we choose the first element, which is just the inner list of two elements.
+paraphraseResults: List[float] = softmaxProbsTensor.tolist()[0]
+paraphraseResults
+# %% codecell
+notParaphraseResults: List[float] = torch.softmax(notParaphraseClassificationLogits, dim = 1).tolist()[0]
+notParaphraseResults
+# %% markdown
+# Printing out probabilities ...
+# %% codecell
 print("Should be paraphrase: ")
 for i in range(len(classes)):
     print(f"{classes[i]}: {round(paraphraseResults[i] * 100)}%")
