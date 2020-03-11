@@ -36,6 +36,7 @@ print(nlp("I love you"))
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from transformers import XLMTokenizer, DistilBertTokenizer, BertTokenizer, TransfoXLTokenizer, \
     RobertaTokenizer, OpenAIGPTTokenizer, XLNetTokenizer, CTRLTokenizer, GPT2Tokenizer
+from transformers import BertForSequenceClassification
 import torch
 
 from typing import List, Dict, Union, Tuple
@@ -48,10 +49,16 @@ TokenizerTypes = Union[DistilBertTokenizer, RobertaTokenizer, BertTokenizer, Ope
 # %% codecell
 # Downloading here ...
 bertTokenizer: TokenizerTypes = AutoTokenizer.from_pretrained(BERT_SEQ_CLASSIFICATION_MODEL_NAME)
+# %% codecell
+type(bertTokenizer)
+# %% codecell
 bertTokenizer
 # %% codecell
 # Downloading here ...
-bertSeqClassModel = AutoModelForSequenceClassification.from_pretrained(BERT_SEQ_CLASSIFICATION_MODEL_NAME)
+bertSeqClassModel: BertForSequenceClassification = AutoModelForSequenceClassification.from_pretrained(BERT_SEQ_CLASSIFICATION_MODEL_NAME)
+# %% codecell
+type(bertSeqClassModel)
+# %% codecell
 bertSeqClassModel
 # %% codecell
 # Setting the sequences...
