@@ -1,9 +1,7 @@
 # %% markdown
 # Source: [https://huggingface.co/transformers/usage.html#extractive-question-answering](https://huggingface.co/transformers/usage.html#extractive-question-answering)
 
-# # Extractive Question Answering
-#
-# ### [Definition: Extractive Question Answering](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1669300256/extractive+question+answering)
+# # [Extractive Question Answering](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1669300256/extractive+question+answering)
 #
 # ### Pipeline Method:
 # Here is an example using pipelines to do [extractive question answering](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1669300256/extractive+question+answering).
@@ -23,7 +21,8 @@ a model on a SQuAD task, you may leverage the `run_squad.py`."""
 
 print(nlp(question = "What is extractive question answering?", context = context))
 print(nlp(question = "What is a good example of a question answering dataset?", context = context))
-
+# %% codecell
+print(nlp(question = "How do you fine-tune a model on a SQuAD task?"), context=context)
 # %% markdown
 # ### Manual Method
 # Here is an example of [extractive question answering](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1669300256/extractive+question+answering) using a **model** and tokenizer. The procedure is as following:
@@ -231,7 +230,3 @@ for question in listOfQuestions:
 
     print(f"Question: {question}")
     print(f"Answer: {answer}\n")
-
-
-
- # %% markdown
