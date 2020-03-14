@@ -42,6 +42,7 @@ from transformers import XLMTokenizer, DistilBertTokenizer, BertTokenizer, Trans
 # from transformers.modeling_bert import BertForQuestionAnswering
 from transformers import BertForQuestionAnswering
 import torch
+from torch import Size
 import torch.tensor as Tensor
 from torch.nn.parameter import Parameter
 from typing import Dict, List, Union, Tuple
@@ -70,32 +71,6 @@ bertQAModel.bert
 # %% codecell
 bertQAModel.num_labels
 # %% codecell
-bertQAModel.num_parameters()
-# %% codecell
-len(list(bertQAModel.parameters()))
-# %% codecell
-# These are just the unnamed parameters, below see all the parameter values WITH their names
-list(bertQAModel.parameters())[0:10]
-# %% codecell
-bertParams: List[Tuple[str, Parameter]] = list(bertQAModel.named_parameters())
-# %% markdown
-# Example of one parameter in the `bertParams` list.
-# %% codecell
-bertParams[1][0]
-bertParams[1][1]
-# %% codecell
-len(list(bertQAModel.named_parameters()))
-# %% markdown
-# Printing names of all bert's parameters
-# %% codecell
-bertParamNames: List[str] = [paramName for (paramName, paramTensor) in bertParams]
-bertParamNames
-# %% codecell
-for i in range(len(bertParams)):
-    print(f"Parameter {i}: {bertParamNames[i]}")
-# for i in range(len(bertParams)):
-#     print(f"Parameter {i}: {bertParams[i][0]}")
-# %% codecell
 type(bertQAModel)
 type(bertQAModel.base_model)
 type(bertQAModel.bert)
@@ -110,9 +85,32 @@ bertQAModel.get_input_embeddings()
 # %% codecell
 bertQAModel.get_output_embeddings()
 # %% markdown
-# `named_children` Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.
+# Looking at `Bert` parameters:
+
+# %% markdown
+# `named_children` gives a short list with many types of children.  Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.
 # %% codecell
-list(bertQAModel.named_children()) # very similar to how bertQAModel looks like??
+bertNamedChildren = list(bertQAModel.named_children())
+bertNamedChildren
+# %% codecell
+print(len(bertNamedChildren))
+print(type(bertNamedChildren[0][1]))
+print(type(bertNamedChildren[1][1]))
+# %% markdown
+# Many more `named_parameters` than there are `named_children`
+# %% codecell
+bertQAModel.num_parameters()
+# %% codecell
+assert len(list(bertQAModel.parameters())) == len(list(bertQAModel.named_parameters())) == 393, "Test number of parameters"
+
+bertParams: List[Tuple[str, Parameter]] = list(bertQAModel.named_parameters())
+
+# Printing names of all bert's parameters
+bertParamNameSizes: Dict[str, Size] = [(paramName, paramTensor.size()) for (paramName, paramTensor) in bertParams]
+
+for i in range(len(bertParamNameSizes)):
+    print(f"Parameter {i}: {bertParamNameSizes[i]}")
+
 
 # %% codecell
 text: str = r"""Transformers (formerly known as pytorch-transformers and pytorch-pretrained-bert) provides general-purpose architectures (BERT, GPT-2, RoBERTa, XLM, DistilBert, XLNet…) for Natural Language Understanding (NLU) and Natural Language Generation (NLG) with over 32+ pretrained models in 100+ languages and deep interoperability between TensorFlow 2.0 and PyTorch"""
