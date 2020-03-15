@@ -25,6 +25,7 @@ print(nlp(question = "What is a good example of a question answering dataset?", 
 print(nlp(question = "How do you fine-tune a model on a SQuAD task?"), context=context)
 # %% markdown
 # ### Manual Method
+# #### (1) Studying The Model
 # Here is an example of [extractive question answering](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1669300256/extractive+question+answering) using a **model** and tokenizer. The procedure is as following:
 #
 # 1. Instantiate a tokenizer and a model from the checkpoint name. The model is identified as a BERT model and loads it with the weights stored in the checkpoint.
@@ -111,7 +112,8 @@ bertParamNameSizes: Dict[str, Size] = [(paramName, paramTensor.size()) for (para
 for i in range(len(bertParamNameSizes)):
     print(f"Parameter {i}: {bertParamNameSizes[i]}")
 
-
+# %% markdown
+# #### (2) Studying the Application: Extractive Question Answering
 # %% codecell
 text: str = r"""Transformers (formerly known as pytorch-transformers and pytorch-pretrained-bert) provides general-purpose architectures (BERT, GPT-2, RoBERTa, XLM, DistilBert, XLNet…) for Natural Language Understanding (NLU) and Natural Language Generation (NLG) with over 32+ pretrained models in 100+ languages and deep interoperability between TensorFlow 2.0 and PyTorch"""
 

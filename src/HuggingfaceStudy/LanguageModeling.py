@@ -17,6 +17,7 @@ print(nlp(f"HuggingFace is creating a {nlp.tokenizer.mask_token} that the commun
 
 # %% markdown
 # ### Manual Method
+# #### (1) Studying the Model
 # Here is an example doing masked language modeling using a model and a tokenizer. The procedure is as following:
 #
 # 1. Instantiate a tokenizer and model from the checkpoint name. The model below we will use is DistilBERT and we load it with weights stored in the checkpoint.
@@ -49,6 +50,7 @@ TokenizerTypes = Union[DistilBertTokenizer, RobertaTokenizer, BertTokenizer, Ope
 # %% codecell
 # distilbertTokenizer: TokenizerTypes = AutoTokenizer.from_pretrained(DISTILBERT_MODEL_NAME)
 distilbertTokenizer: DistilBertTokenizer = AutoTokenizer.from_pretrained(DISTILBERT_MODEL_NAME)
+
 distilbertTokenizer
 # %% codecell
 type(distilbertTokenizer)
@@ -77,7 +79,7 @@ distilbertLangModel.base_model_prefix
 distilbertLangModel.base_model
 # %% codecell
 assert distilbertLangModel.base_model == distilbertLangModel.distilbert, "Assertion 1 not true"
-assert distilbertLangModel != distilbertLangModel.bert, "Assertion 2 not true"
+assert distilbertLangModel != distilbertLangModel.distilbert, "Assertion 2 not true"
 
 # %% codecell
 distilbertLangModel.output_attentions
@@ -114,6 +116,26 @@ distilbertParamNameSizes: Dict[str, Size] = [(paramName, paramTensor.size()) for
 
 for i in range(len(distilbertParamNameSizes)):
     print(f"Parameter {i}: {distilbertParamNameSizes[i]}")
+
+# %% markdown
+# #### (2) Studying the Application: Language Modeling
+# First creating the [input ids](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1668972549/input+ID) with the `encode()` method:
+# %% codecell
+sequence: str = f"Distilled models are smaller than the models they mimic. Using them instead of the large versions would help {distilbertTokenizer.mask_token} our carbon footprint."
+
+input: Tensor = distilbertTokenizer.encode(text = sequence, return_tensors="pt")
+input
+# %% markdown
+# Id of the mask token in the vocabulary. E.g. when training a model with masked-language modeling. Log an error if used while not having been set.
+#   < Python 3.6 (pyhugface_env) >
+# %% codecell
+distilbertTokenizer.mask_toke
+maskTokenIndex = torch.where(condition = input == distilbertTokenizer.mask_token_id)[1]
+
+# %% codecell
+tokenLogits = distilbertLangModel(input)[0]
+# %% codecell
+maskTokenLogits = tokenLogits[0, maskTokenIndex, :]
 
 
 
