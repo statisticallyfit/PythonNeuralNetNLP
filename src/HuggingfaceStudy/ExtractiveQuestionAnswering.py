@@ -1,6 +1,6 @@
 # %% markdown
 # Source: [https://huggingface.co/transformers/usage.html#extractive-question-answering](https://huggingface.co/transformers/usage.html#extractive-question-answering)
-
+# 
 # # [Extractive Question Answering](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1669300256/extractive+question+answering)
 #
 # ### Pipeline Method:
