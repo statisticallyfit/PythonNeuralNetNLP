@@ -17,7 +17,6 @@ print(nlp(f"HuggingFace is creating a {nlp.tokenizer.mask_token} that the commun
 
 # %% markdown
 # ### Manual Method
-# #### Step 1: Instantiate Tokenizer and Model
 # Here is an example doing masked language modeling using a model and a tokenizer. The procedure is as following:
 #
 # 1. Instantiate a tokenizer and model from the checkpoint name. The model below we will use is DistilBERT and we load it with weights stored in the checkpoint.
@@ -26,6 +25,8 @@ print(nlp(f"HuggingFace is creating a {nlp.tokenizer.mask_token} that the commun
 # 4. Retrieve the predictions at the index of the mask token: this tensor has the same size as the vocabulary, and the values are the scores attributed to each token. The model gives higher scores to tokens it deems probable in that context.
 # 5. Retrieve the top 5 tokens using the PyTorch `topk` or TensorFlow `tok_k` methods.
 # 6. Replace the mask token by the tokens and print the results.
+#
+# #### Step 1: Instantiate Tokenizer and Model
 # %% codecell
 from transformers import AutoModelWithLMHead, AutoTokenizer
 
