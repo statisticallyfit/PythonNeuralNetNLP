@@ -52,17 +52,22 @@ print(nlp(sequence))
 # %% codecell
 # Imports
 from transformers import AutoModelForTokenClassification, AutoTokenizer
+from transformers import PreTrainedModel
 from transformers import XLNetTokenizer, XLNetForTokenClassification
-from transformers import BertForTokenClassification
+from transformers import BertTokenizer, BertForTokenClassification
 
 import torch
+import torch.nn as nn
+
 from torch import Size
+
 import torch.tensor as Tensor
 from torch.nn.parameter import Parameter
 from typing import Dict, List, Union, Tuple
 
 
-TokenizerTypes = Union[DistilBertTokenizer, RobertaTokenizer, BertTokenizer, OpenAIGPTTokenizer, GPT2Tokenizer, TransfoXLTokenizer, XLNetTokenizer, XLMTokenizer, CTRLTokenizer]
+#TokenizerTypes = Union[xlnetTokenizer, RobertaTokenizer, BertTokenizer, OpenAIGPTTokenizer, GPT2Tokenizer,
+# TransfoXLTokenizer, XLNetTokenizer, XLMTokenizer, CTRLTokenizer]
 
 # %% codecell
 # Loading BERT model for NER (named entity recognition)
@@ -85,6 +90,134 @@ xlnetTokenizer
 xlnetNERModel: XLNetForTokenClassification = XLNetForTokenClassification.from_pretrained('xlnet-large-cased')
 # %% codecell
 xlnetNERModel
+
+# %% codecell
+# The transformer and classifier are the two components in the above XLNet model:
+xlnetNERModel.transformer
+# %% codecell
+xlnetNERModel.classifier
+# %% codecell
+# TODO no output embeddings???
+oe = xlnetNERModel.get_output_embeddings()
+oe
+# %% codecell
+from torch.nn import Embedding
+
+ie: Embedding = xlnetNERModel.get_input_embeddings()
+ie
+
+type(ie)
+list(ie.named_children())
+list(ie.named_buffers())
+list(ie.named_parameters())
+list(ie.named_parameters())[0][1].size()
+list(ie.named_modules())
+ie.num_embeddings
+ie.embedding_dim
+# %% codecell
+list(xlnetNERModel.named_buffers())
+
+
+
+# %% codecell
+xlnetNERModel.base_model_prefix
+# %% codecell
+xlnetNERModel.base_model
+# %% codecell
+assert xlnetNERModel.base_model == xlnetNERModel.transformer, "Assertion 1 not true"
+assert xlnetNERModel != xlnetNERModel.transformer, "Assertion 2 not true"
+
+
+# %% markdown
+# Looking at `XLNet` parameters:
+#
+# `named_children()` gives a short list with many types of children.  Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.
+# %% codecell
+
+# Type aliases
+ModelType = type
+ModelObject = object
+
+def getNamedChildrenInfo(model: PreTrainedModel) -> Tuple[Dict[str, ModelType], List[ModelObject]]:
+    """
+    Uses the model's named children list to return the names of the named children along with the types of the named children objects.
+    """
+    # Get the names and types first
+    namesAndTypes: Dict[str, ModelType] = [(name, type(childObj)) for (name, childObj) in model.named_children()]
+    # Get the objects first (lengthy to the eye, so zipping them separately below)
+    objects: List[ModelObject] = [childObj for (_, childObj) in model.named_children()]
+
+    # Then pass in a tuple:
+    return (namesAndTypes, objects)
+
+
+
+(namesTypes, objs) = getNamedChildrenInfo(xlnetNERModel)
+# %% codecell
+namesTypes # just transformer and classifier are the two components
+# %% codecell
+objs
+# %% markdown
+# Many more `named_parameters` than there are `named_children`
+
+# %% codecell
+
+def printParamSizes(model: PreTrainedModel):
+    print(f"Number of parameters = {model.num_parameters()}")
+    print(f"Length of parameter list = {len(list(model.parameters()))}")
+    print(f"Number of modules = {len(list(model.named_modules()))}")
+
+printParamSizes(xlnetNERModel)
+
+# %% codecell
+# Type alias
+ParameterName = str
+
+def getParamInfo(model: nn.Module) -> Dict[ParameterName, Size] :
+    params: List[Tuple[ParameterName, Parameter]] = list(model.named_parameters())
+
+    # Getting names of all model's parameters
+    paramNameAndSizes: Dict[ParameterName, Size] = [(name, tensor.size()) for (name, tensor) in params]
+
+    return paramNameAndSizes
+
+def printParamInfo(model: nn.Module):
+    paramInfo: Dict[ParameterName, Size] = getParamInfo(model)
+
+    # Print info
+    NUM_PARAMS: int = len(paramInfo)
+
+    for i in range(NUM_PARAMS):
+        print(f"Parameter {i} \n\t | Name = {paramInfo[i][0]} \n\t | Size = {paramInfo[i][1]}")
+
+
+# %% codecell
+printParamInfo(xlnetNERModel)
+
+
+# %% codecell
+
+# Type alias
+ModuleName = str
+ModuleObject = object
+ModuleType = type
+
+def getModuleInfo(model: nn.Module) -> Tuple[Dict[ModuleName, ModuleType], List[ModuleObject]]:
+    moduleNamesAndTypes: Dict[ModuleName, ModuleType] = [(name, type(obj)) for (name, obj) in model.named_modules()]
+    moduleObjects: List[ModuleObject] = [obj for (_, obj) in model.named_modules()]
+
+    return (moduleNamesAndTypes, moduleObjects)
+
+def printModuleInfo(model: nn.Module):
+    (moduleNamesAndTypes, moduleObjects) = getModuleInfo(model)
+    assert len(moduleNamesAndTypes) == len(moduleObjects), "Lengths not equal!"
+    NUM_MODULES: int = len(moduleNamesAndTypes)
+
+    for i in range(NUM_MODULES):
+        print(f"Module {i} \n\t | Name = {moduleNamesAndTypes[i][0]} \n\t | Type = {moduleNamesAndTypes[i][1]}")
+
+# %% codecell
+printModuleInfo(xlnetNERModel)
 
 
 # %% markdown
