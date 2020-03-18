@@ -128,9 +128,12 @@ os[1]
 os[0]
 
 # %% codecell
-(ns, tsgetParamInfo(xlnetNERModel)
+(ns, zs, ps) = getParamInfo(xlnetNERModel)
+printLengthInfo(xlnetNERModel)
 # %% codecell
-
+ps[:5]
+# %% codecell
+list(zip(ns, zs))
 # %% codecell
 xlnetNERModel.base_model_prefix
 # %% codecell

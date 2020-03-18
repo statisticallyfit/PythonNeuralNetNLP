@@ -59,8 +59,8 @@ def printChildInfo(model: nn.Module):
 
 # Parameters ------------------------------------------------------------------------
 
-def printParamSizes(model: PreTrainedModel):
-    #print(f"Number of parameters = {model.num_parameters()}")
+def printLengthInfo(model: PreTrainedModel):
+    print(f"Number of parameters = {model.num_parameters()}")
     print(f"Length of parameter list = {len(list(model.parameters()))}")
     print(f"Number of modules = {len(list(model.named_modules()))}")
 
