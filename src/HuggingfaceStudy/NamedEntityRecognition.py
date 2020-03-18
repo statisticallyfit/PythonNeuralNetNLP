@@ -50,7 +50,7 @@ print(nlp(sequence))
 #
 # #### Step 1: Instantiate Tokenizer and Model
 # %% codecell
-# Imports
+# All Imports
 from transformers import AutoModelForTokenClassification, AutoTokenizer
 from transformers import PreTrainedModel
 from transformers import XLNetTokenizer, XLNetForTokenClassification
@@ -58,11 +58,10 @@ from transformers import BertTokenizer, BertForTokenClassification
 
 import torch
 import torch.nn as nn
-
 from torch import Size
-
 import torch.tensor as Tensor
 from torch.nn.parameter import Parameter
+
 from typing import Dict, List, Union, Tuple
 
 
@@ -91,11 +90,7 @@ xlnetNERModel: XLNetForTokenClassification = XLNetForTokenClassification.from_pr
 # %% codecell
 xlnetNERModel
 
-# %% codecell
-# The transformer and classifier are the two components in the above XLNet model:
-xlnetNERModel.transformer
-# %% codecell
-xlnetNERModel.classifier
+
 # %% codecell
 # TODO no output embeddings???
 oe = xlnetNERModel.get_output_embeddings()
@@ -105,24 +100,44 @@ from torch.nn import Embedding
 
 ie: Embedding = xlnetNERModel.get_input_embeddings()
 ie
-
-type(ie)
-list(ie.named_children())
-list(ie.named_buffers())
-list(ie.named_parameters())
-list(ie.named_parameters())[0][1].size()
-list(ie.named_modules())
 ie.num_embeddings
 ie.embedding_dim
+
+from src.HuggingfaceStudy.Util import *
+#printParamSizes(ie)
+
+getChildInfo(ie)
+getParamInfo(ie)
+getModuleInfo(ie)
+printModuleInfo(ie)
+
+# %% codecell
+(ns, ts, os) = getModuleInfo(ie)
+ns
+ts
+os
+
+
+ns
+os
+
+import collections
+# Create named tuple class with names "Names" and "Objects"
+ModuleInfo = collections.namedtuple("ModuleInfo", ["Names", "Objects"] , verbose=False, rename = False)
+m = ModuleInfo(Names = ns, Objects = os)
+m.Names
+type(ModuleInfo(ns, os))
+d
+type(d)
 # %% codecell
 list(xlnetNERModel.named_buffers())
 
-
+getChildInfo(ie)
 
 # %% codecell
 xlnetNERModel.base_model_prefix
 # %% codecell
-xlnetNERModel.base_model
+getModuleInfo(xlnetNERModel.base_model) == getModuleInfo(base)
 # %% codecell
 assert xlnetNERModel.base_model == xlnetNERModel.transformer, "Assertion 1 not true"
 assert xlnetNERModel != xlnetNERModel.transformer, "Assertion 2 not true"
@@ -132,27 +147,39 @@ assert xlnetNERModel != xlnetNERModel.transformer, "Assertion 2 not true"
 # Looking at `XLNet` parameters:
 #
 # `named_children()` gives a short list with many types of children.  Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.
+
 # %% codecell
+printChildInfo(xlnetNERModel)
 
-# Type aliases
-ModelType = type
-ModelObject = object
+# %% codecell
+from transformers import XLNetModel
+base: XLNetModel = xlnetNERModel.base_model
+type(base)
+base.n_layer
 
-def getNamedChildrenInfo(model: PreTrainedModel) -> Tuple[Dict[str, ModelType], List[ModelObject]]:
-    """
-    Uses the model's named children list to return the names of the named children along with the types of the named children objects.
-    """
-    # Get the names and types first
-    namesAndTypes: Dict[str, ModelType] = [(name, type(childObj)) for (name, childObj) in model.named_children()]
-    # Get the objects first (lengthy to the eye, so zipping them separately below)
-    objects: List[ModelObject] = [childObj for (_, childObj) in model.named_children()]
+printChildInfo(base)
+(ns, os) = getChildInfo(base)
 
-    # Then pass in a tuple:
-    return (namesAndTypes, objects)
+# %% codecell
+from torch.nn import ModuleList
+from transformers.modeling_xlnet import XLNetLayer
+
+layerlist: ModuleList = os[1]
+(ns, os) = getChildInfo(layerlist)
+onelayer: XLNetLayer = os[3]
+printChildInfo(onelayer)
+
+
+onelayer
+
+layerlist
+
+base
 
 
 
-(namesTypes, objs) = getNamedChildrenInfo(xlnetNERModel)
+# %% codecell
+(namesTypes, objs) = getChildInfo(xlnetNERModel)
 # %% codecell
 namesTypes # just transformer and classifier are the two components
 # %% codecell
@@ -161,60 +188,13 @@ objs
 # Many more `named_parameters` than there are `named_children`
 
 # %% codecell
-
-def printParamSizes(model: PreTrainedModel):
-    print(f"Number of parameters = {model.num_parameters()}")
-    print(f"Length of parameter list = {len(list(model.parameters()))}")
-    print(f"Number of modules = {len(list(model.named_modules()))}")
-
 printParamSizes(xlnetNERModel)
 
 # %% codecell
-# Type alias
-ParameterName = str
-
-def getParamInfo(model: nn.Module) -> Dict[ParameterName, Size] :
-    params: List[Tuple[ParameterName, Parameter]] = list(model.named_parameters())
-
-    # Getting names of all model's parameters
-    paramNameAndSizes: Dict[ParameterName, Size] = [(name, tensor.size()) for (name, tensor) in params]
-
-    return paramNameAndSizes
-
-def printParamInfo(model: nn.Module):
-    paramInfo: Dict[ParameterName, Size] = getParamInfo(model)
-
-    # Print info
-    NUM_PARAMS: int = len(paramInfo)
-
-    for i in range(NUM_PARAMS):
-        print(f"Parameter {i} \n\t | Name = {paramInfo[i][0]} \n\t | Size = {paramInfo[i][1]}")
-
+from src.HuggingfaceStudy.Util import *
 
 # %% codecell
 printParamInfo(xlnetNERModel)
-
-
-# %% codecell
-
-# Type alias
-ModuleName = str
-ModuleObject = object
-ModuleType = type
-
-def getModuleInfo(model: nn.Module) -> Tuple[Dict[ModuleName, ModuleType], List[ModuleObject]]:
-    moduleNamesAndTypes: Dict[ModuleName, ModuleType] = [(name, type(obj)) for (name, obj) in model.named_modules()]
-    moduleObjects: List[ModuleObject] = [obj for (_, obj) in model.named_modules()]
-
-    return (moduleNamesAndTypes, moduleObjects)
-
-def printModuleInfo(model: nn.Module):
-    (moduleNamesAndTypes, moduleObjects) = getModuleInfo(model)
-    assert len(moduleNamesAndTypes) == len(moduleObjects), "Lengths not equal!"
-    NUM_MODULES: int = len(moduleNamesAndTypes)
-
-    for i in range(NUM_MODULES):
-        print(f"Module {i} \n\t | Name = {moduleNamesAndTypes[i][0]} \n\t | Type = {moduleNamesAndTypes[i][1]}")
 
 # %% codecell
 printModuleInfo(xlnetNERModel)
