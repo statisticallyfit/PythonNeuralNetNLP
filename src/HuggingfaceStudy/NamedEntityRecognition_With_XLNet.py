@@ -93,6 +93,12 @@ os[1]
 # %% codecell
 os[0]
 
+
+
+# %% codecell
+(ns, ts, os) = getModuleInfo(xlnetNERModel)
+printModuleInfo(xlnetNERModel)
+
 # %% codecell
 (ns, zs, ps) = getParamInfo(xlnetNERModel)
 printLengthInfo(xlnetNERModel)
@@ -101,9 +107,6 @@ printParamInfo(xlnetNERModel)
 # %% codecell
 ps[:2]
 
-# %% codecell
-(ns, ts, os) = getModuleInfo(xlnetNERModel)
-printModuleInfo(xlnetNERModel)
 
 # %% markdown
 # Looking at a feedforward layer in the XLNet model:
@@ -114,11 +117,10 @@ ff: XLNetFeedForward = os[238]
 ff
 # %% codecell
 (ns, ts, os) = getChildInfo(ff)
-list(zip(ns, ts))
+printChildInfo(ff)
 # %% codecell
-os
+printModuleInfo(ff)
 # %% codecell
-(ns, ss, ps) = getParamInfo(ff)
 printParamInfo(ff)
 
 # %% markdown
@@ -141,11 +143,25 @@ printModuleInfo(emb)
 # %% markdown
 # Looking at ModuleList (list of layers) in XLNet model:
 # %% codecell
+from torch.nn import ModuleList
+
 (ns, ts, os) = getModuleInfo(xlnetNERModel)
-modlist = os[3]
+modList: ModuleList = os[3]
+
 # %% codecell
-os[1]
-ff
+printChildInfo(modList)
+# %% codecell
+printModuleInfo(modList)
+# %% codecell
+(ns, ts, os) = getModuleInfo(modList)
+# The matryoshka of layers: (getting ever deeper, not just one level as in children above)
+printModuleInfo(modList)
+
+
+# %% codecell
+printParamInfo(modList)
+
+
 
 # %% markdown
 # Looking at the Base Model:
@@ -154,38 +170,112 @@ assert xlnetNERModel.base_model == xlnetNERModel.transformer, "Assertion 1 not t
 assert xlnetNERModel != xlnetNERModel.transformer, "Assertion 2 not true"
 
 xlnetNERModel.base_model_prefix
-# %% markdown
-# Looking at `XLNet` parameters:
-#
-# `named_children()` gives a short list with many types of children.  Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.
-
-
 
 # %% codecell
 from transformers import XLNetModel
+
 base: XLNetModel = xlnetNERModel.base_model
 type(base)
 base.n_layer
 
+# %% codecell
 printChildInfo(base)
-(ns, os) = getChildInfo(base)
+# %% codecell
+printModuleInfo(base)
+# %% codecell
+printParamInfo(base)
 
+
+# %% markdown
+# Looking at one XLNetLayer
 # %% codecell
 from torch.nn import ModuleList
 from transformers.modeling_xlnet import XLNetLayer
 
-layerlist: ModuleList = os[1]
-(ns, os) = getChildInfo(layerlist)
-onelayer: XLNetLayer = os[3]
-printChildInfo(onelayer)
+(ns, ts, os) = getModuleInfo(xlnetNERModel)
+layers: ModuleList = os[3]
+oneLayer: XLNetLayer = layers[0]
+# %% codecell
+printChildInfo(oneLayer)
 
-
-onelayer
-
-layerlist
-
-base
-
+# %% codecell
+printModuleInfo(oneLayer)
+# %% codecell
+printParamInfo(oneLayer)
 
 
 # %% markdown
+# #### Step 2: Define Label List Model Was Trained On
+# %% codecell
+labelList: List[str] = [
+    "O",       # Outside of a named entity
+    "B-MISC",  # Beginning of a miscellaneous entity right after another miscellaneous entity
+    "I-MISC",  # Miscellaneous entity
+    "B-PER",   # Beginning of a person's name right after another person's name
+    "I-PER",   # Person's name
+    "B-ORG",   # Beginning of an organisation right after another organisation
+    "I-ORG",   # Organisation
+    "B-LOC",   # Beginning of a location right after another location
+    "I-LOC"    # Location
+]
+
+# %% markdown
+# #### Step 3: Define Sequence with Known Entities
+# The entities in the below sequence are known from training:
+# %% codecell
+sequence: str = "Hugging Face Inc. is a company based in New York City. Its headquarters are in DUMBO, therefore very" \
+                "close to the Manhattan Bridge."
+
+# %% markdown
+# #### Step 4: Split Words Into Tokens
+# Splitting words into tokens so they can be mapped to the predictions. NOTE:  We use a small hack by firstly completely encoding and decoding the sequence, so that we’re left with a string that contains the special tokens.
+# %% codecell
+# Bit of a hack to get the tokens with the special tokens
+tokens: List[str] = xlnetTokenizer.tokenize(xlnetTokenizer.decode(xlnetTokenizer.encode(sequence)))
+print(tokens)
+# %% codecell
+inputIDs: Tensor = xlnetTokenizer.encode(sequence, return_tensors="pt")
+inputIDs
+
+# %% markdown
+# Taking closer look at tokenization steps:
+# %% codecell
+inputIDs_first: List[int] = xlnetTokenizer.encode(sequence)
+print(inputIDs_first)
+# %% codecell
+decoded_first: str = xlnetTokenizer.decode(inputIDs_first)
+decoded_first
+# %% codecell
+tokens: List[str] = xlnetTokenizer.tokenize(decoded_first)
+print(tokens)
+# %% markdown
+# Whereas if we just tokenize the sequence directly we don't get the special tokens `<sep>` and `<cls>`
+# %% codecell
+tokensWithoutSpecialTokens: List[str] = xlnetTokenizer.tokenize(sequence)
+
+assert tokensWithoutSpecialTokens != tokens, "Test: special tokens must be missing"
+
+print(tokensWithoutSpecialTokens)
+
+
+# %% markdown
+# #### Step 5: Retrieve the predictions
+# Retrieve predictions by passing the input to the model and getting the first output. This results in a distribution over the 9 possible classes for each token. We take the argmax to retrieve the most likely class for each token.
+# %% codecell
+
+# NOTE: getting first element of the resulting tuple, since the second element is empty
+outputs: Tensor = xlnetNERModel(inputIDs)[0]
+outputs
+
+
+# %% codecell
+predictions: Tensor = torch.argmax(outputs, dim = 2)
+predictions
+
+# %% markdown
+# #### Step 6: Show Predictions
+# Zip together each token with its prediction and print it.
+# %% codecell
+print([(token, labelList[prediction]) for token, prediction in zip(tokens, predictions[0].tolist())])
+
+# TODO: why aren't predictions recognized as correct entities?
