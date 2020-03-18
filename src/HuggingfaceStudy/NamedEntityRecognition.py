@@ -64,6 +64,7 @@ from torch.nn.parameter import Parameter
 
 from typing import Dict, List, Union, Tuple
 
+from src.HuggingfaceStudy.Util import *
 
 #TokenizerTypes = Union[xlnetTokenizer, RobertaTokenizer, BertTokenizer, OpenAIGPTTokenizer, GPT2Tokenizer,
 # TransfoXLTokenizer, XLNetTokenizer, XLMTokenizer, CTRLTokenizer]
@@ -119,9 +120,7 @@ getModuleInfo(ie)
 # Looking specifically at XLNet model components:
 # %% codecell
 (ns, ts, os) = getChildInfo(xlnetNERModel)
-ns
-# %% codecell
-ts
+printChildInfo(xlnetNERModel)
 # %% codecell
 os[1]
 # %% codecell
@@ -131,13 +130,41 @@ os[0]
 (ns, zs, ps) = getParamInfo(xlnetNERModel)
 printLengthInfo(xlnetNERModel)
 # %% codecell
-ps[:5]
+printParamInfo(xlnetNERModel)
 # %% codecell
-list(zip(ns, zs))
+ps[:2]
+
+
+# %% codecell
+(ns, ts, os) = getModuleInfo(xlnetNERModel)
+printModuleInfo(xlnetNERModel)
+
+# %% markdown
+# Looking at a feedforward layer in the XLNet model:
+# %% codecell
+from transformers.modeling_xlnet import XLNetFeedForward
+
+ff: XLNetFeedForward = os[238]
+ff
+# %% codecell
+(ns, ts, os) = getChildInfo(ff)
+list(zip(ns, ts))
+# %% codecell
+os
+# %% codecell
+(ns, ss, ps) = getParamInfo(ff)
+list(zip(ns, ss))
+# %% codecell
+(ns, ts, os) = getModuleInfo(ff)
+list(zip(ns, ts))
+# %% codecell
+os[3]
+
+
+# %% markdown
+# Looking at the Base Model:
 # %% codecell
 xlnetNERModel.base_model_prefix
-# %% codecell
-getModuleInfo(xlnetNERModel.base_model) == getModuleInfo(base)
 # %% codecell
 assert xlnetNERModel.base_model == xlnetNERModel.transformer, "Assertion 1 not true"
 assert xlnetNERModel != xlnetNERModel.transformer, "Assertion 2 not true"
@@ -148,8 +175,7 @@ assert xlnetNERModel != xlnetNERModel.transformer, "Assertion 2 not true"
 #
 # `named_children()` gives a short list with many types of children.  Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.
 
-# %% codecell
-printChildInfo(xlnetNERModel)
+
 
 # %% codecell
 from transformers import XLNetModel
