@@ -91,48 +91,45 @@ xlnetNERModel: XLNetForTokenClassification = XLNetForTokenClassification.from_pr
 xlnetNERModel
 
 
+# %% markdown
+# Looking at XLNet's embedding information:
 # %% codecell
 # TODO no output embeddings???
 oe = xlnetNERModel.get_output_embeddings()
-oe
+type(oe)
+
 # %% codecell
 from torch.nn import Embedding
 
 ie: Embedding = xlnetNERModel.get_input_embeddings()
 ie
+# %% codecell
 ie.num_embeddings
+# %% codecell
 ie.embedding_dim
 
-from src.HuggingfaceStudy.Util import *
-#printParamSizes(ie)
-
+# %% codecell
 getChildInfo(ie)
+# %% codecell
 getParamInfo(ie)
+# %% codecell
 getModuleInfo(ie)
-printModuleInfo(ie)
 
+# %% markdown
+# Looking specifically at XLNet model components:
 # %% codecell
-(ns, ts, os) = getModuleInfo(ie)
+(ns, ts, os) = getChildInfo(xlnetNERModel)
 ns
+# %% codecell
 ts
-os
-
-
-ns
-os
-
-import collections
-# Create named tuple class with names "Names" and "Objects"
-ModuleInfo = collections.namedtuple("ModuleInfo", ["Names", "Objects"] , verbose=False, rename = False)
-m = ModuleInfo(Names = ns, Objects = os)
-m.Names
-type(ModuleInfo(ns, os))
-d
-type(d)
 # %% codecell
-list(xlnetNERModel.named_buffers())
+os[1]
+# %% codecell
+os[0]
 
-getChildInfo(ie)
+# %% codecell
+(ns, tsgetParamInfo(xlnetNERModel)
+# %% codecell
 
 # %% codecell
 xlnetNERModel.base_model_prefix

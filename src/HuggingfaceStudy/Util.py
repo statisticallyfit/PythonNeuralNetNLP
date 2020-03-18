@@ -24,31 +24,37 @@ ParameterName = str
 
 
 
+import collections
+
+# Create named tuple class with names "Names" and "Objects"
+Info = collections.namedtuple("Info", ["Names", "Types", "Objects"], verbose=False, rename = False)
+
+
+
 # Children ------------------------------------------------------------------------
 
-def getChildInfo(model: nn.Module) -> Tuple[Dict[Name, Type], List[Object]]:
+def getChildInfo(model: nn.Module) -> Info: # -> Tuple[Dict[Name, Type], List[Object]]:
     """
     Uses the model's named children list to return the names of the named children along with the types of the named children objects.
     """
     # Get the names and types first
-    namesAndTypes: Dict[str, Type] = [(name, type(childObj)) for (name, childObj) in model.named_children()]
-    # Get the objects first (lengthy to the eye, so zipping them separately below)
-    objects: List[Object] = [childObj for (_, childObj) in model.named_children()]
+    names: List[Name] = [name for (name, _) in model.named_children()]
+    types: List[Type] = [type(obj) for (_, obj) in model.named_children()]
+    objs: List[Object] = [obj for (_, obj) in model.named_children()]
 
-    # Then pass in a tuple:
-    return (namesAndTypes, objects)
+    return Info(Names = names, Types = types, Objects  = objs)
 
 
 
 def printChildInfo(model: nn.Module):
-    (namesAndTypes, objects) = getChildInfo(model)
+    (names, types, objects) = getChildInfo(model)
 
-    assert len(namesAndTypes) == len(objects), "Lengths not equal!"
+    assert len(names) == len(types) == len(objects), "Lengths not equal!"
 
-    NUM_NAMED_CHILDREN: int = len(namesAndTypes)
+    NUM_CHILDREN: int = len(names)
 
-    for i in range(NUM_NAMED_CHILDREN):
-        print(f"Child {i} \n\t | Name = {namesAndTypes[i][0]} \n\t | Type = {namesAndTypes[i][1]}")
+    for i in range(NUM_CHILDREN):
+        print(f"Child {i} \n\t | Name = {names[i]} \n\t | Type = {names[i]}")
 
 
 # Parameters ------------------------------------------------------------------------
@@ -60,41 +66,43 @@ def printParamSizes(model: PreTrainedModel):
 
 
 
-def getParamInfo(model: nn.Module) -> Dict[ParameterName, Size] :
-    params: List[Tuple[ParameterName, Parameter]] = list(model.named_parameters())
 
+# Creating my named tuple to hold parameter information.
+ParameterInfo = collections.namedtuple("ParameterInfo", ["Names", "Sizes", "Tensors"], verbose=False, rename = False)
+
+
+def getParamInfo(model: nn.Module) -> ParameterInfo:
     # Getting names of all model's parameters
-    paramNameAndSizes: Dict[ParameterName, Size] = [(name, tensor.size()) for (name, tensor) in params]
+    names: List[ParameterName] = [name for (name, paramTensor) in model.named_parameters()]
+    sizes: List[Size] = [paramTensor.size() for (name, paramTensor) in model.named_parameters()]
+    tensors: List[Parameter] = [paramTensor for (name, paramTensor) in model.named_parameters()]
 
-    return paramNameAndSizes
+    return ParameterInfo(Names = names, Sizes = sizes, Tensors = tensors)
 
 
 def printParamInfo(model: nn.Module):
-    paramInfo: Dict[ParameterName, Size] = getParamInfo(model)
+    (names, sizes, tensors) = getParamInfo(model)
+
+    assert len(names) == len(sizes) == len(tensors), "Param info lengths not equal!"
 
     # Print info
-    NUM_PARAMS: int = len(paramInfo)
+    NUM_PARAMS: int = len(names)
 
     for i in range(NUM_PARAMS):
-        print(f"Parameter {i} \n\t | Name = {paramInfo[i][0]} \n\t | Size = {paramInfo[i][1]}")
+        print(f"Parameter {i} \n\t | Name = {names[i]} \n\t | Size = {sizes[i]}")
 
 
 # Modules --------------------------------------------------------------------------
 
-import collections
-
-# Create named tuple class with names "Names" and "Objects"
-ModuleInfo = collections.namedtuple("ModuleInfo", ["Names", "Types", "Objects"] , verbose=False, rename = False)
 
 
-def getModuleInfo(model: nn.Module) -> ModuleInfo: # -> Tuple[Dict[ModuleName, ModuleType], List[ModuleObject]]:
+def getModuleInfo(model: nn.Module) -> Info: # -> Tuple[Dict[ModuleName, ModuleType], List[ModuleObject]]:
 
     names: List[Name] = [name for (name, _) in model.named_modules()]
-    types: List[Name] = [type(obj) for (_, obj) in model.named_modules()]
-    objs: List[Name] = [obj for (_, obj) in model.named_modules()]
+    types: List[Type] = [type(obj) for (_, obj) in model.named_modules()]
+    objs: List[Object] = [obj for (_, obj) in model.named_modules()]
 
-
-    return ModuleInfo(Names = names, Types = types, Objects  = objs)
+    return Info(Names = names, Types = types, Objects  = objs)
 
 
 def printModuleInfo(model: nn.Module):
