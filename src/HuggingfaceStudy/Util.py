@@ -66,7 +66,8 @@ def cleanTypes(typesList: List[Type]) -> List[Type]:
 # BertForTokenClassification
 def simplifyName(uncleanName: Name) -> Name:
     last: str = uncleanName.split(".")[-1]
-    return ''.join(letter for letter in last if letter not in string.punctuation)
+    punctuationWithoutUnderscore: str = string.punctuation.replace("_", "")
+    return ''.join(letter for letter in last if letter not in punctuationWithoutUnderscore)
 
 
 def simplifyTypes(typesList: List[Type]) -> List[Name]:
@@ -104,9 +105,32 @@ def getUniqueModules(model: nn.Module) -> Dict[Name, Type]:
 
 
 
+# -----------------------------------------------------------------------------------
 
 
 
+def allModulesByType(shortTypeName: Name, model: nn.Module) -> List[Name]:
+    """
+    Given a ashort type name, like `BertLayer` or `BertSelfAttention`, this function returns a list of all the module names which have that type.
+    """
+    (names, types, _) = getModuleInfo(model)
+    # Get the long module name from the short  type name
+    shortToLongNames: Dict[Name, Type] = getUniqueModules(model)
+    LongTypeName: Type = shortToLongNames[shortTypeName]
+
+    return [names[i] for i in range(len(types)) if types[i] == LongTypeName]
+
+def allModuleObjsByType(shortTypeName: Name, model: nn.Module) -> Dict[Name, Object]:
+    """
+    Given the model, return a dictionary of PyTorch Embedding string names mapped to the Embedding object itself (since they are short)
+    """
+    (names, types, objs) = getModuleInfo(model)
+    #PytorchEmbeddingType = torch.nn.modules.sparse.Embedding
+    # Get the long module name from the short  type name
+    shortToLongNames: Dict[Name, Type] = getUniqueModules(model)
+    LongTypeName: Type = shortToLongNames[shortTypeName]
+    # Here showing what KINDS of Embeddings, need full name not just short name ( since layernorm weight is different that attention query weight)
+    return dict([(names[i], objs[i]) for i in range(len(types)) if types[i] == LongTypeName])
 
 
 # Children ------------------------------------------------------------------------

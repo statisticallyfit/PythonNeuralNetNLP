@@ -86,23 +86,23 @@ getModuleInfo(ie)
 # %% markdown [markdown]
 # Looking specifically at Bert model components:
 # %% codecell
-(ns, ts, os) = getChildInfo(bertNERModel)
+(names, types, objs) = getChildInfo(bertNERModel)
 printChildInfo(bertNERModel)
 # %% codecell
-os[0]
+objs[0]
 # %% codecell
-os[1]
+objs[1]
 # %% codecell
-os[2]
+objs[2]
 
 
 # %% codecell
-(ns, ts, os) = getModuleInfo(bertNERModel)
+(names, types, objs) = getModuleInfo(bertNERModel)
 
 printModuleInfo(bertNERModel)
 
 # %% codecell
-(ns, zs, ps) = getParamInfo(bertNERModel)
+(names, zs, ps) = getParamInfo(bertNERModel)
 printLengthInfo(bertNERModel)
 # %% codecell
 printParamInfo(bertNERModel)
@@ -118,15 +118,20 @@ from torch.nn import Embedding, LayerNorm, Dropout, ModuleList, Linear, Tanh
 
 # %% markdown
 # Looking at `BertEmbeddings` and what it contains inside:
-embs: BertEmbeddings = os[2]
+# %% codecell
+embs: BertEmbeddings = objs[2]
 embs
 # %% codecell
 printParamInfo(embs)
 
+
+# %% codecell
+# All kinds of a `BertEmbedding` (all the names of the modules with the BertEmbedding type)
+allModulesByType('BertEmbeddings', bertNERModel)
 # %% markdown
 # Looking at `BertEncoder`
 # %% codecell
-enc: BertEncoder = os[8]
+enc: BertEncoder = objs[8]
 enc
 # %% codecell
 printChildInfo(enc)
@@ -137,176 +142,146 @@ getUniqueModules(enc)
 # These are the individual modules inside `BertEncoder`, listed in order of appearance.
 printModuleInfo(enc)
 # %% codecell
-# from transformers.modeling_bert import BertFeedForward
+# Finding all module names with type `BertEncoder`:
+print(allModulesByType('BertEncoder', bertNERModel))
 
-getUniqueModules(bertNERModel)
+# %% markdown
+# Looking at `BertLayer`
+# %% codecell
+layer: BertLayer = objs[10]
+layer
 
 # %% codecell
-(ns, ts, os) = getModuleInfo(bertNERModel)
+# Layer is made up of `BertAttention`, `BertIntermediate`, and `BertOutput`
+printChildInfo(layer)
+# %% codecell
+getUniqueModules(layer)
+# %% codecell
+printParamInfo(layer)
+# %% codecell
+# Finding all module names from type BertLayer:
+print(allModulesByType('BertLayer', bertNERModel))
 
+# %% markdown
+# Looking at `BertAttention`
+# %% codecell
+attn: BertAttention = objs[11]
+attn
+# %% codecell
+printChildInfo(attn)
+# %% codecell
+getUniqueModules(attn)
+# %% codecell
+print(allModulesByType('BertAttention', bertNERModel))
+# %% markdown
+# Looking at `BertSelfAttention`
+# %% codecell
+selfattn: BertSelfAttention = objs[12]
+selfattn
+# %% codecell
+printChildInfo(selfattn)
+# %% codecell
+getUniqueModules(selfattn)
+# %% codecell
+printParamInfo(selfattn)
+# %% codecell
+print(allModulesByType('BertSelfAttention', bertNERModel))
+# %% markdown
+# Looking at `BertSelfOutput`
+# %% codecell
+selfoutput: BertSelfOutput = objs[17]
+selfoutput
+# %% codecell
+printChildInfo(selfoutput)
+# %% codecell
+printParamInfo(selfoutput)
+# %% codecell
+allModulesByType('BertSelfOutput', bertNERModel)
+# %% markdown
+# Looking at `BertIntermediate`
+# %% codecell
+interm: BertIntermediate = objs[21]
+interm
+# %% codecell
+printParamInfo(interm)
+# %% codecell
+printChildInfo(interm)
+# %% codecell
+allModulesByType('BertIntermediate', bertNERModel)
+# %% markdown
+# Looking at `BertOutput`
+# %% codecell
+out: BertOutput = objs[23]
+out
+# %% codecell
+allModulesByType('BertOutput', bertNERModel)
+# %% markdown
+# Looking at PyTorch `Embedding` - extracting and showing any object which is of type `Embedding`, from the list of modules
+# %% codecell
+allModuleObjsByType('Embedding', bertNERModel)
+# %% markdown
+# Looking at PyTorch `LayerNorm` object
+# %% codecell
+(names, types, objs) = getModuleInfo(bertNERModel)
 
-
-listOfSimplerNames: List[Name] = [simplifyName(str(aType)) for aType in typesList]
-listOfSimplerNames
-# Cast them back to type
-return [locate(simpleName) for simpleName in listOfSimplerNames]
-
-
-
-listOfUniquesInDict: List[Dict[Name, Type]] = np.unique(
-    dict(zip(simplifyTypes(types), cleanTypes(types)))
-)
-listOfUniquesInDict
+layernorm: LayerNorm = objs[6]
+layernorm
+# %% codecell
+printModuleInfo(layernorm)
+# %% codecell
+printParamInfo(layernorm)
 
 # %% codecell
+allModuleObjsByType('LayerNorm', bertNERModel)
 
-
-# Converts
-# "<class 'transformers.modeling_bert.BertForTokenClassification'>"
-# INTO
-# 'transformers.modeling_bert.BertForTokenClassification'
-def cleanName(uncleanName: Name) -> Name:
-    return uncleanName.split("'")[1]
-
-def cleanTypes(typesList: List[Type]) -> List[Type]:
-    #strNames: List[Name] = [str(aType) for aType in typesList]
-    listOfCleanerNames: List[Name] = [cleanName(str(aType)) for aType in typesList]
-
-    # Cast them back to type
-    return [locate(cleanName) for cleanName in listOfCleanerNames]
-
-
-# Converts
-# transformers.modeling_bert.BertForTokenClassification'
-# INTO
-# BertForTokenClassification
-def simplifyName(uncleanName: Name) -> Name:
-    last: str = uncleanName.split(".")[-1]
-    return ''.join(letter for letter in last if letter not in string.punctuation)
-
-
-def simplifyTypes(typesList: List[Type]) -> List[Name]:
-    #strNames: List[Name] = [str(aType) for aType in typesList]
-        #list(np.unique([str(aType) for aType in typesList]))
-    listOfSimplerNames: List[Name] = [simplifyName(str(aType)) for aType in typesList]
-
-    # Cast them back to type
-    return listOfSimplerNames # [locate(simpleName) for simpleName in listOfSimplerNames]
-
-
-
-
-def getUniqueChildren(model: nn.Module) -> Dict[Name, Type]:
-    (_, types, _) = getChildInfo(model)
-
-    listOfUniquesInDict: List[Dict[Name, Type]] = np.unique(
-        dict(zip(simplifyTypes(types), cleanTypes(types)))
-    )
-    [uniqueChildrenDict] = listOfUniquesInDict
-
-    return uniqueChildrenDict
-
-def getUniqueModules(model: nn.Module) -> Dict[Name, Type]:
-    (_, types, _) = getModuleInfo(model)
-
-    listOfUniquesInDict: List[Dict[Name, Type]] = np.unique(
-        dict(zip(simplifyTypes(types), cleanTypes(types)))
-    )
-    [uniqueChildrenDict] = listOfUniquesInDict
-
-    return uniqueChildrenDict
-
-
+# %% markdown
+# Looking at Dropout objects from pytorch
 # %% codecell
-ff = os[238]
-ff
+drop7: Dropout = objs[7]
+drop7
 # %% codecell
-(ns, ts, os) = getChildInfo(ff)
-printChildInfo(ff)
+drop16: Dropout = objs[16]
+drop16
 # %% codecell
-printModuleInfo(ff)
+allModuleObjsByType('Dropout', bertNERModel)
 # %% codecell
-printParamInfo(ff)
+printModuleInfo(drop7)
+# %% codecell
+printParamInfo(drop7)
 
-# %% markdown [markdown]
-# Looking now at an embedding in the BertModel:
+# %% markdown
+# Looking at ModuleList from PyTorch
 # %% codecell
-from torch.nn import Embedding
+modlist: ModuleList = objs[9]
+modlist
+# %% codecell
+allModulesByType('ModuleList', bertNERModel)
+# %% codecell
+printChildInfo(modlist) # module list is composed of BertLayers
+# %% markdown
+# Looking at `Linear` object from PyTorch
+# %% codecell
+lin: Linear = objs[14]
+lin
+# %% codecell
+allModuleObjsByType('Linear', bertNERModel)
+# %% codecell
+printChildInfo(lin)
+# %% codecell
+printParamInfo(lin)
 
-(ns, ts, os) = getModuleInfo(bertNERModel)
-emb: Embedding  = os[2]
-emb
-
+# %% markdown
+# Looking finally at PyTorch `Tanh` objects
 # %% codecell
-getChildInfo(emb)
+hyptan: Tanh = objs[216]
+hyptan
 # %% codecell
-printParamInfo(emb)
+printModuleInfo(hyptan)
 # %% codecell
-printModuleInfo(emb)
-
-
-# %% markdown [markdown]
-# Looking at ModuleList (list of layers) in Bert model:
-# %% codecell
-from torch.nn import ModuleList
-
-(ns, ts, os) = getModuleInfo(bertNERModel)
-modList: ModuleList = os[3]
-
-# %% codecell
-printChildInfo(modList)
-# %% codecell
-printModuleInfo(modList)
-# %% codecell
-(ns, ts, os) = getModuleInfo(modList)
-# The matryoshka of layers: (getting ever deeper, not just one level as in children above)
-printModuleInfo(modList)
-
-
-# %% codecell
-printParamInfo(modList)
+allModuleObjsByType('Tanh', bertNERModel)
 
 
 
-# %% markdown [markdown]
-# Looking at the Base Model:
-# %% codecell
-assert bertNERModel.base_model == bertNERModel.transformer, "Assertion 1 not true"
-assert bertNERModel != bertNERModel.transformer, "Assertion 2 not true"
-
-bertNERModel.base_model_prefix
-
-# %% codecell
-from transformers import BertModel
-
-base: BertModel = bertNERModel.base_model
-type(base)
-base.n_layer
-
-# %% codecell
-printChildInfo(base)
-# %% codecell
-printModuleInfo(base)
-# %% codecell
-printParamInfo(base)
-
-
-# %% markdown [markdown]
-# Looking at one BertLayer
-# %% codecell
-from torch.nn import ModuleList
-from transformers.modeling_bert import BertLayer
-
-(ns, ts, os) = getModuleInfo(bertNERModel)
-layers: ModuleList = os[3]
-oneLayer: BertLayer = layers[0]
-# %% codecell
-printChildInfo(oneLayer)
-
-# %% codecell
-printModuleInfo(oneLayer)
-# %% codecell
-printParamInfo(oneLayer)
 
 
 # %% markdown [markdown]
@@ -389,4 +364,4 @@ predictionList: List[int] = predictions[0].tolist()
 
 print([(tok, labelList[pred]) for tok, pred in zip(tokens, predictionList)])
 
-# TODO: why aren't predictions recognized as correct entities?
+# TODO: why aren't predictions recognized as correct entities? They are all B-MISC again, instead of the correct labels...
