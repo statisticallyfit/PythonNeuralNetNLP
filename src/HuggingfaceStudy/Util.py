@@ -10,9 +10,13 @@ from torch import Size
 import torch.tensor as Tensor
 from torch.nn.parameter import Parameter
 
-from typing import Dict, List, Union, Tuple
+from typing import Dict, List, Union, Tuple, Set
+
+import numpy as np
 
 import string # for string.punctuation
+
+from pydoc import locate # for conversion of string back to type
 
 # Type aliases
 Name = str
@@ -29,6 +33,7 @@ import collections
 # Create named tuple class with names "Names" and "Objects"
 Info = collections.namedtuple("Info",
                               ["Names", "Types", "Objects"], verbose=False, rename = False)
+
 
 #OuterInfo = collections.namedtuple("OuterInfo", ["OuterName", "InnerInfo"], verbose=False, rename = False)
 
@@ -58,7 +63,7 @@ def printChildInfo(model: nn.Module):
     NUM_CHILDREN: int = len(names)
 
     for i in range(NUM_CHILDREN):
-        print(f"Child {i} | Name = {names[i]} | Type = {names[i]}")
+        print(f"Child {i} | Name = {names[i]} | Type = {types[i]}")
 
 
 # Parameters ------------------------------------------------------------------------
@@ -135,3 +140,62 @@ def printModuleInfo(model: nn.Module):
 
     for i in range(NUM_MODULES):
         print(f"Module {i} | Name = {names[i]} | Type = {types[i]} ")
+
+
+# Unique Things -----------------------------------------------------------------------------
+
+
+# Converts
+# "<class 'transformers.modeling_bert.BertForTokenClassification'>"
+# INTO
+# 'transformers.modeling_bert.BertForTokenClassification'
+def cleanName(uncleanName: Name) -> Name:
+    return uncleanName.split("'")[1]
+
+def cleanTypes(typesList: List[Type]) -> List[Type]:
+    #strNames: List[Name] = [str(aType) for aType in typesList]
+    listOfCleanerNames: List[Name] = [cleanName(str(aType)) for aType in typesList]
+
+    # Cast them back to type
+    return [locate(cleanName) for cleanName in listOfCleanerNames]
+
+
+# Converts
+# transformers.modeling_bert.BertForTokenClassification'
+# INTO
+# BertForTokenClassification
+def simplifyName(uncleanName: Name) -> Name:
+    last: str = uncleanName.split(".")[-1]
+    return ''.join(letter for letter in last if letter not in string.punctuation)
+
+
+def simplifyTypes(typesList: List[Type]) -> List[Type]:
+    #strNames: List[Name] = [str(aType) for aType in typesList]
+        #list(np.unique([str(aType) for aType in typesList]))
+    listOfSimplerNames: List[Name] = [simplifyName(str(aType)) for aType in typesList]
+
+    # Cast them back to type
+    return [locate(simpleName) for simpleName in listOfSimplerNames]
+
+
+
+
+def getUniqueChildren(model: nn.Module) -> Dict[Name, Type]:
+    (_, types, _) = getChildInfo(model)
+
+    listOfUniquesInDict: List[Dict[Name, Type]] = np.unique(
+        dict(zip(simplifyTypes(types), cleanTypes(types)))
+    )
+    [uniqueChildrenDict] = listOfUniquesInDict
+
+    return uniqueChildrenDict
+
+def getUniqueModules(model: nn.Module) -> Dict[Name, Type]:
+    (_, types, _) = getModuleInfo(model)
+
+    listOfUniquesInDict: List[Dict[Name, Type]] = np.unique(
+        dict(zip(simplifyTypes(types), cleanTypes(types)))
+    )
+    [uniqueChildrenDict] = listOfUniquesInDict
+
+    return uniqueChildrenDict

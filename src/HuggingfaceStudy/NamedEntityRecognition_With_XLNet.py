@@ -1,4 +1,4 @@
-# %% markdown
+# %% markdown [markdown]
 # Source: [https://huggingface.co/transformers/usage.html#named-entity-recognition](https://huggingface.co/transformers/usage.html#named-entity-recognition)
 #
 # # [Named Entity Recognition](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/83460113/named+entity+recognition+NER)
@@ -59,7 +59,7 @@ xlnetNERModel: XLNetForTokenClassification = XLNetForTokenClassification.from_pr
 xlnetNERModel
 
 
-# %% markdown
+# %% markdown [markdown]
 # Looking at XLNet's embedding information:
 # %% codecell
 # TODO no output embeddings???
@@ -83,7 +83,7 @@ getParamInfo(ie)
 # %% codecell
 getModuleInfo(ie)
 
-# %% markdown
+# %% markdown [markdown]
 # Looking specifically at XLNet model components:
 # %% codecell
 (ns, ts, os) = getChildInfo(xlnetNERModel)
@@ -108,7 +108,7 @@ printParamInfo(xlnetNERModel)
 ps[:2]
 
 
-# %% markdown
+# %% markdown [markdown]
 # Looking at a feedforward layer in the XLNet model:
 # %% codecell
 from transformers.modeling_xlnet import XLNetFeedForward
@@ -123,7 +123,7 @@ printModuleInfo(ff)
 # %% codecell
 printParamInfo(ff)
 
-# %% markdown
+# %% markdown [markdown]
 # Looking now at an embedding in the XLNetModel:
 # %% codecell
 from torch.nn import Embedding
@@ -140,7 +140,7 @@ printParamInfo(emb)
 printModuleInfo(emb)
 
 
-# %% markdown
+# %% markdown [markdown]
 # Looking at ModuleList (list of layers) in XLNet model:
 # %% codecell
 from torch.nn import ModuleList
@@ -163,7 +163,7 @@ printParamInfo(modList)
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # Looking at the Base Model:
 # %% codecell
 assert xlnetNERModel.base_model == xlnetNERModel.transformer, "Assertion 1 not true"
@@ -186,7 +186,7 @@ printModuleInfo(base)
 printParamInfo(base)
 
 
-# %% markdown
+# %% markdown [markdown]
 # Looking at one XLNetLayer
 # %% codecell
 from torch.nn import ModuleList
@@ -204,7 +204,7 @@ printModuleInfo(oneLayer)
 printParamInfo(oneLayer)
 
 
-# %% markdown
+# %% markdown [markdown]
 # #### Step 2: Define Label List Model Was Trained On
 # %% codecell
 labelList: List[str] = [
@@ -219,25 +219,27 @@ labelList: List[str] = [
     "I-LOC"    # Location
 ]
 
-# %% markdown
+# %% markdown [markdown]
 # #### Step 3: Define Sequence with Known Entities
 # The entities in the below sequence are known from training:
 # %% codecell
-sequence: str = "Hugging Face Inc. is a company based in New York City. Its headquarters are in DUMBO, therefore very" \
-                "close to the Manhattan Bridge."
+sequence: str = "Hugging Face Inc. is a company based in New York City. Its headquarters are in DUMBO, therefore very close to the Manhattan Bridge."
 
-# %% markdown
+# %% markdown [markdown]
 # #### Step 4: Split Words Into Tokens
 # Splitting words into tokens so they can be mapped to the predictions. NOTE:  We use a small hack by firstly completely encoding and decoding the sequence, so that we’re left with a string that contains the special tokens.
 # %% codecell
 # Bit of a hack to get the tokens with the special tokens
 tokens: List[str] = xlnetTokenizer.tokenize(xlnetTokenizer.decode(xlnetTokenizer.encode(sequence)))
+len(tokens)
+# %% codecell
 print(tokens)
 # %% codecell
 inputIDs: Tensor = xlnetTokenizer.encode(sequence, return_tensors="pt")
+inputIDs.shape
+# %% codecell
 inputIDs
-
-# %% markdown
+# %% markdown [markdown]
 # Taking closer look at tokenization steps:
 # %% codecell
 inputIDs_first: List[int] = xlnetTokenizer.encode(sequence)
@@ -248,7 +250,7 @@ decoded_first
 # %% codecell
 tokens: List[str] = xlnetTokenizer.tokenize(decoded_first)
 print(tokens)
-# %% markdown
+# %% markdown [markdown]
 # Whereas if we just tokenize the sequence directly we don't get the special tokens `<sep>` and `<cls>`
 # %% codecell
 tokensWithoutSpecialTokens: List[str] = xlnetTokenizer.tokenize(sequence)
@@ -258,13 +260,15 @@ assert tokensWithoutSpecialTokens != tokens, "Test: special tokens must be missi
 print(tokensWithoutSpecialTokens)
 
 
-# %% markdown
+# %% markdown [markdown]
 # #### Step 5: Retrieve the predictions
 # Retrieve predictions by passing the input to the model and getting the first output. This results in a distribution over the 9 possible classes for each token. We take the argmax to retrieve the most likely class for each token.
 # %% codecell
 
 # NOTE: getting first element of the resulting tuple, since the second element is empty
 outputs: Tensor = xlnetNERModel(inputIDs)[0]
+outputs.shape
+# %% codecell
 outputs
 
 
@@ -272,10 +276,12 @@ outputs
 predictions: Tensor = torch.argmax(outputs, dim = 2)
 predictions
 
-# %% markdown
+# %% markdown [markdown]
 # #### Step 6: Show Predictions
 # Zip together each token with its prediction and print it.
 # %% codecell
-print([(token, labelList[prediction]) for token, prediction in zip(tokens, predictions[0].tolist())])
+predictionList: List[int] = predictions[0].tolist()
+
+print([(tok, labelList[pred]) for tok, pred in zip(tokens, predictionList)])
 
 # TODO: why aren't predictions recognized as correct entities?
