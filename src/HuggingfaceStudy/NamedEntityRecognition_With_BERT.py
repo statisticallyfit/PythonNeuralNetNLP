@@ -98,6 +98,7 @@ os[2]
 
 # %% codecell
 (ns, ts, os) = getModuleInfo(bertNERModel)
+
 printModuleInfo(bertNERModel)
 
 # %% codecell
@@ -109,18 +110,61 @@ printParamInfo(bertNERModel)
 ps[:2]
 
 
-# %% markdown [markdown]
-# Looking at a feedforward layer in the Bert model:
+# %% markdown
+# ### Study Model Components of BERT NER Model
 # %% codecell
-from transformers.modeling_bert import BertFeedForward
+from transformers.modeling_bert import BertEmbeddings, BertEncoder, BertLayer, BertAttention, BertSelfAttention, BertSelfOutput, BertIntermediate, BertOutput
+from torch.nn import Embedding, LayerNorm, Dropout, ModuleList, Linear, Tanh
 
-(ns, types, os) = getModuleInfo(bertNERModel)
+# %% markdown
+# Looking at `BertEmbeddings` and what it contains inside:
+embs: BertEmbeddings = os[2]
+embs
+# %% codecell
+printParamInfo(embs)
+
+# %% markdown
+# Looking at `BertEncoder`
+# %% codecell
+enc: BertEncoder = os[8]
+enc
+# %% codecell
+printChildInfo(enc)
+# %% codecell
+# These are the individual, unique modules inside the `BertEncoder`
+getUniqueModules(enc)
+# %% codecell
+# These are the individual modules inside `BertEncoder`, listed in order of appearance.
+printModuleInfo(enc)
+# %% codecell
+# from transformers.modeling_bert import BertFeedForward
 
 getUniqueModules(bertNERModel)
 
+# %% codecell
+(ns, ts, os) = getModuleInfo(bertNERModel)
+
+
+
+listOfSimplerNames: List[Name] = [simplifyName(str(aType)) for aType in typesList]
+listOfSimplerNames
+# Cast them back to type
+return [locate(simpleName) for simpleName in listOfSimplerNames]
+
+
+
+listOfUniquesInDict: List[Dict[Name, Type]] = np.unique(
+    dict(zip(simplifyTypes(types), cleanTypes(types)))
+)
+listOfUniquesInDict
 
 # %% codecell
 
+
+# Converts
+# "<class 'transformers.modeling_bert.BertForTokenClassification'>"
+# INTO
+# 'transformers.modeling_bert.BertForTokenClassification'
 def cleanName(uncleanName: Name) -> Name:
     return uncleanName.split("'")[1]
 
@@ -141,13 +185,13 @@ def simplifyName(uncleanName: Name) -> Name:
     return ''.join(letter for letter in last if letter not in string.punctuation)
 
 
-def simplifyTypes(typesList: List[Type]) -> List[Type]:
+def simplifyTypes(typesList: List[Type]) -> List[Name]:
     #strNames: List[Name] = [str(aType) for aType in typesList]
         #list(np.unique([str(aType) for aType in typesList]))
     listOfSimplerNames: List[Name] = [simplifyName(str(aType)) for aType in typesList]
 
     # Cast them back to type
-    return [locate(simpleName) for simpleName in listOfSimplerNames]
+    return listOfSimplerNames # [locate(simpleName) for simpleName in listOfSimplerNames]
 
 
 
@@ -168,11 +212,10 @@ def getUniqueModules(model: nn.Module) -> Dict[Name, Type]:
     listOfUniquesInDict: List[Dict[Name, Type]] = np.unique(
         dict(zip(simplifyTypes(types), cleanTypes(types)))
     )
-    print(dict(zip(simplifyTypes(types), cleanTypes(types))))
-    #print(listOfUniquesInDict)
-    return listOfUniquesInDict
+    [uniqueChildrenDict] = listOfUniquesInDict
 
-#     return uniqueChildrenDict
+    return uniqueChildrenDict
+
 
 # %% codecell
 ff = os[238]
