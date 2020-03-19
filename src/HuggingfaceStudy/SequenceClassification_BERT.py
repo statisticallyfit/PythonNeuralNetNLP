@@ -4,25 +4,6 @@
 # # [Sequence Classification](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1668776028/sequence+classification)
 # ### [Definition: Sequence Classification (or sequence labeling (SL))](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1668776028/sequence+classification)
 #
-# ### Pipeline Method:
-# Here is an example using pipelines to do [sentiment analysis](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1474986047/sentiment+analysis).
-# %% codecell
-import torch.tensor as Tensor
-
-import transformers
-from transformers import pipeline, XLMTokenizer, DistilBertTokenizer, BertTokenizer, TransfoXLTokenizer, \
-    RobertaTokenizer, OpenAIGPTTokenizer, XLNetTokenizer, CTRLTokenizer, GPT2Tokenizer
-
-nlp = pipeline("sentiment-analysis")
-
-# %% codecell
-nlp
-# %% codecell
-print(nlp("I hate you"))
-print(nlp("I love you"))
-
-
-# %% markdown
 # ### Manual Method
 # Here is an example of [sequence classification](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1668776028/sequence+classification) using a **model** to determine if two sequences are paraphrases of each other. The procedure is as following:
 #
@@ -33,33 +14,41 @@ print(nlp("I love you"))
 # 5. Show results
 
 # %% codecell
+# All Imports
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from transformers import XLMTokenizer, DistilBertTokenizer, BertTokenizer, TransfoXLTokenizer, \
-    RobertaTokenizer, OpenAIGPTTokenizer, XLNetTokenizer, CTRLTokenizer, GPT2Tokenizer
-from transformers import BertForSequenceClassification
-import torch
+from transformers import PreTrainedModel
+from transformers import BertTokenizer, BertForSequenceClassification
 
-from typing import List, Dict, Union, Tuple
+import torch
+import torch.nn as nn
+from torch import Size
+import torch.tensor as Tensor
+from torch.nn.parameter import Parameter
+
+from typing import Dict, List, Union, Tuple
+
+from src.HuggingfaceStudy.Util import *
 
 BERT_SEQ_CLASSIFICATION_MODEL_NAME: str = "bert-base-cased-finetuned-mrpc"
 
-# Set the bert tokenizer type (this is the inferred type)
-TokenizerTypes = Union[DistilBertTokenizer, RobertaTokenizer, BertTokenizer, OpenAIGPTTokenizer, GPT2Tokenizer, TransfoXLTokenizer, XLNetTokenizer, XLMTokenizer, CTRLTokenizer]
+# %% markdown
+# ### Step 1: Instantiate Tokenizer and Model
 
 # %% codecell
 # Downloading here ...
 bertTokenizer: TokenizerTypes = AutoTokenizer.from_pretrained(BERT_SEQ_CLASSIFICATION_MODEL_NAME)
-# %% codecell
-type(bertTokenizer)
 # %% codecell
 bertTokenizer
 # %% codecell
 # Downloading here ...
 bertSeqClassModel: BertForSequenceClassification = AutoModelForSequenceClassification.from_pretrained(BERT_SEQ_CLASSIFICATION_MODEL_NAME)
 # %% codecell
-type(bertSeqClassModel)
-# %% codecell
 bertSeqClassModel
+
+# %% markdown
+# ### Step 2: Get [Input IDs](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1668972549/input+ID)
+# `encode()` and `encode_plus()` build a sequence from two user-input sentences, with correct model-specific separators [token type ids](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1669005324/token+type+ID) and [attention masks](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1668775950/attention+mask).
+
 # %% codecell
 # Setting the sequences...
 classes: List[str] = ["not paraphrase", "is paraphrase"]
@@ -75,6 +64,9 @@ paraphrase
 notParaphrase: Dict[str, Tensor] = bertTokenizer.encode_plus(sequence_0, sequence_1, return_tensors ="pt")
 notParaphrase
 # %% markdown
+# ### Step 3: Predict
+# Pass the [input ids](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1668972549/input+ID) sequence through the model so it is classified as either $0$ (not a paraphrase) and $1$ (is a paraphrase).
+#
 # This result `tupleOfLogits` is a tuple where only the first part is filled as a tensor, and that is the tensor of logits.
 # %% codecell
 tupleOfLogits: Tuple[Tensor, ]  = bertSeqClassModel(**paraphrase)
@@ -87,6 +79,9 @@ paraphraseClassificationLogits
 notParaphraseClassificationLogits: Tensor = bertSeqClassModel(**notParaphrase)[0]
 notParaphraseClassificationLogits
 # %% markdown
+# ### Step 4: Softmax Probabilities
+# Compute softmax of result to get probabilities over the classes.
+#
 # Getting the `Tensor` of softmax probabilities ...
 # %% codecell
 softmaxProbsTensor: Tensor = torch.softmax(paraphraseClassificationLogits, dim = 1)
@@ -101,6 +96,7 @@ paraphraseResults
 notParaphraseResults: List[float] = torch.softmax(notParaphraseClassificationLogits, dim = 1).tolist()[0]
 notParaphraseResults
 # %% markdown
+# ### Step 5: Show Results
 # Printing out probabilities ...
 # %% codecell
 print("Should be paraphrase: ")
