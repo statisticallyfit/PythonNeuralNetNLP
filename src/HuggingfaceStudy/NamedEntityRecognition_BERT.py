@@ -29,7 +29,7 @@
 # #### Step 1: Instantiate Tokenizer and Model
 # %% codecell
 # All Imports
-from transformers import AutoModelForTokenClassification, AutoTokenizer
+from transformers import AutoTokenizer, AutoModelForTokenClassification
 from transformers import PreTrainedModel
 from transformers import BertTokenizer, BertForTokenClassification
 
@@ -42,9 +42,6 @@ from torch.nn.parameter import Parameter
 from typing import Dict, List, Union, Tuple
 
 from src.HuggingfaceStudy.Util import *
-
-#TokenizerTypes = Union[bertTokenizer, RobertaTokenizer, BertTokenizer, OpenAIGPTTokenizer, GPT2Tokenizer,
-# TransfoXLTokenizer, BertTokenizer, XLMTokenizer, CTRLTokenizer]
 
 # %% codecell
 # Loading the XLNET model

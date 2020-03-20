@@ -12,6 +12,7 @@
 # 3. Pass this sequence through the model so it is classified as either $0$ (not a paraphrase) and $1$ (is a paraphrase)
 # 4. Compute softmax of result to get probabilities over the classes.
 # 5. Show results
+# ### Step 1: Instantiate Tokenizer and Model
 
 # %% codecell
 # All Imports
@@ -30,9 +31,6 @@ from typing import Dict, List, Union, Tuple
 from src.HuggingfaceStudy.Util import *
 
 BERT_SEQ_CLASSIFICATION_MODEL_NAME: str = "bert-base-cased-finetuned-mrpc"
-
-# %% markdown
-# ### Step 1: Instantiate Tokenizer and Model
 
 # %% codecell
 # Downloading here ...

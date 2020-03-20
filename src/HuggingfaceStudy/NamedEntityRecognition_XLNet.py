@@ -29,7 +29,7 @@
 # #### Step 1: Instantiate Tokenizer and Model
 # %% codecell
 # All Imports
-from transformers import AutoModelForTokenClassification, AutoTokenizer
+from transformers import AutoTokenizer, AutoModelForTokenClassification
 from transformers import PreTrainedModel
 from transformers import XLNetTokenizer, XLNetForTokenClassification
 

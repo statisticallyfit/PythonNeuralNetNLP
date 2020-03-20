@@ -1,31 +1,9 @@
 # %% markdown
 # Source: [https://huggingface.co/transformers/usage.html#extractive-question-answering](https://huggingface.co/transformers/usage.html#extractive-question-answering)
-# 
+#
 # # [Extractive Question Answering](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1669300256/extractive+question+answering)
 #
-# ### Pipeline Method:
-# Here is an example using pipelines to do [extractive question answering](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1669300256/extractive+question+answering).
-#
-# This leverages a fine-tuned model on SQuAD dataset.
-#
-#  This returns an answer extracted from the text, a confidence score, alongside the "start" and "end" values which are the positions of the extract answer in the text.
-# %% codecell
-from transformers import pipeline
-
-nlp = pipeline("question-answering")
-nlp
-# %% codecell
-context: str = r"""Extractive Question Answering is the task of extracting an answer from a text given a question. An example of a
-question answering dataset is the SQuAD dataset, which is entirely based on that task. If you would like to fine-tune
-a model on a SQuAD task, you may leverage the `run_squad.py`."""
-
-print(nlp(question = "What is extractive question answering?", context = context))
-print(nlp(question = "What is a good example of a question answering dataset?", context = context))
-# %% codecell
-print(nlp(question = "How do you fine-tune a model on a SQuAD task?"), context=context)
-# %% markdown
-# ### Manual Method
-# #### (1) Studying The Model
+# ### Manual Method: (with BERT)
 # Here is an example of [extractive question answering](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1669300256/extractive+question+answering) using a **model** and tokenizer. The procedure is as following:
 #
 # 1. Instantiate a tokenizer and a model from the checkpoint name. The model is identified as a BERT model and loads it with the weights stored in the checkpoint.
@@ -35,36 +13,32 @@ print(nlp(question = "How do you fine-tune a model on a SQuAD task?"), context=c
 # 5. Compute the softmax of the result to get probabilities over the tokens
 # 6. Fetch the tokens from the identified start and stop values, convert those tokens to a string.
 # 7. Print the results
-
+#
+# ### Step 1: Instantiate Tokenizer and Model
 # %% codecell
+# All Imports
 from transformers import AutoTokenizer, AutoModelForQuestionAnswering
-from transformers import XLMTokenizer, DistilBertTokenizer, BertTokenizer, TransfoXLTokenizer, \
-    RobertaTokenizer, OpenAIGPTTokenizer, XLNetTokenizer, CTRLTokenizer, GPT2Tokenizer
-# from transformers.modeling_bert import BertForQuestionAnswering
-from transformers import BertForQuestionAnswering
+from transformers import PreTrainedModel
+from transformers import BertTokenizer, BertForQuestionAnswering
+
 import torch
+import torch.nn as nn
 from torch import Size
 import torch.tensor as Tensor
 from torch.nn.parameter import Parameter
+
 from typing import Dict, List, Union, Tuple
 
+from src.HuggingfaceStudy.Util import *
 
 BERT_QA_MODEL_NAME: str = "bert-large-uncased-whole-word-masking-finetuned-squad"
 
-TokenizerTypes = Union[DistilBertTokenizer, RobertaTokenizer, BertTokenizer, OpenAIGPTTokenizer, GPT2Tokenizer, TransfoXLTokenizer, XLNetTokenizer, XLMTokenizer, CTRLTokenizer]
-
 # %% codecell
-bertTokenizer: TokenizerTypes = AutoTokenizer.from_pretrained(BERT_QA_MODEL_NAME)
-# %% markdown
-# This is the `BertTokenizer` type, since we loaded the bert model
-# %% codecell
-type(bertTokenizer)
+bertTokenizer: BertTokenizer = AutoTokenizer.from_pretrained(BERT_QA_MODEL_NAME)
 # %% codecell
 bertTokenizer
 # %% codecell
 bertQAModel: BertForQuestionAnswering = AutoModelForQuestionAnswering.from_pretrained(BERT_QA_MODEL_NAME)
-# %% codecell
-type(bertQAModel)
 # %% codecell
 bertQAModel
 # %% codecell
@@ -113,7 +87,8 @@ for i in range(len(bertParamNameSizes)):
     print(f"Parameter {i}: {bertParamNameSizes[i]}")
 
 # %% markdown
-# #### (2) Studying the Application: Extractive Question Answering
+# ### Step 2: Define a text and a few questions.
+
 # %% codecell
 text: str = r"""Transformers (formerly known as pytorch-transformers and pytorch-pretrained-bert) provides general-purpose architectures (BERT, GPT-2, RoBERTa, XLM, DistilBert, XLNet…) for Natural Language Understanding (NLU) and Natural Language Generation (NLG) with over 32+ pretrained models in 100+ languages and deep interoperability between TensorFlow 2.0 and PyTorch"""
 
@@ -124,10 +99,12 @@ listOfQuestions: List[str] = [
 ]
 
 # %% markdown
-# ### Example Prediction Traversal:
-# We will use one question as an example to show what the different variables contain side of them.
+# ## Example Prediction Traversal
+# Going to use an example to study the features of the different variables. Doing this example for just one question instead of for all questions (the complete loop is at the end)
+# ### Step 3: Build Tokens from Text
+# Iterate over the questions and build a sequence from the text and the current question, with the correct model-specific separators [token type ids](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1669005324/token+type+ID) and [attention masks](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1668775950/attention+mask).
 #
-# #### Step 1: Get Input IDs
+# #### Step 3a: Get Input IDs
 # An input from the tokenizer's `encode_plus()` method has these attributes:
 #
 # * [input ID](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1668972549/input+ID)
@@ -156,7 +133,10 @@ print(arrInput[0].ndim)
 print(arrInput[0].shape)
 # ... so that is why we choose [0] in inputIDs_1
 # %% markdown
-# #### Step 2: Input IDs $\Rightarrow$ Tokens
+# Continuing Step 3 ...
+# ... Iterate over the questions and build a sequence from the text and the current question, with the correct model-specific separators [token type ids](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1669005324/token+type+ID) and [attention masks](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1668775950/attention+mask).
+
+# #### Step 3b: Input IDs $\Rightarrow$ Tokens
 # Getting the tokens from the input IDs (they are subword tokens since they have the '#' symbol). As we can see below, the tokenization includes the information from the first question as well as the input text from which the answers will be drawn.
 # %% codecell
 textToken_1: List[str] = bertTokenizer.convert_ids_to_tokens(inputIDs_1)
@@ -167,8 +147,10 @@ q_1
 # %% codecell
 text
 # %% markdown
-# #### Step 3: Inputs $\Rightarrow$ Answer Scores
-# Get the answer start and end scores by applying the model over the original inputs (though not the input ids)
+# #### Step 4: Inputs $\Rightarrow$ Answer Scores
+# Pass the `input` sequence through the model. This outputs a range of scores across the entire sequence tokens (question and text), for both the start and end positions. This gives the answer's  start and end scores.
+# * NOTE: the `input` is not the same as [`inputID`](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1668972549/input+ID)
+# * $\color{red}{\text{TODO: }}$ why is this true??
 # %% codecell
 answerScores_1: Tuple[Tensor, Tensor] = bertQAModel(**input_1)
 answerStartScores_1, answerEndScores_1 = answerScores_1
@@ -180,7 +162,8 @@ answerEndScores_1
 assert len(list(answerStartScores_1[0])) == len(list(answerStartScores_1[0])) == 108, "Assertion 3 not true"
 
 # %% markdown
-# #### # Step 4: Get the most likely beginning of the answer with the argmax of the score.
+# #### Step 4: Get the most likely beginning of the answer with the argmax of the score.
+
 # %% codecell
 # The result is just an index wrapped in a tensor so the dimension is 0 for a constant (since a 0-dim tensor is constant, a 1-dim tensor is a vector, a 2-dim tensor is a matrix ...)
 indexAnswerStart_1: Tensor = torch.argmax(answerStartScores_1)
@@ -191,16 +174,17 @@ indexAnswerEnd_1: Tensor = torch.argmax(answerEndScores_1) + 1
 assert indexAnswerEnd_1.dim() == 0, "Not a constant"
 # %% markdown
 # #### Step 5: Get the final answer from the input ids $\Rightarrow$ tokens $\Rightarrow$ string procedure.
+# Fetching the tokens from the identified start and stop values, and converting those tokens to a string.
 # %% codecell
 answer_1: str = bertTokenizer.convert_tokens_to_string(tokens = bertTokenizer.convert_ids_to_tokens(ids = inputIDs_1[
     indexAnswerStart_1 : indexAnswerEnd_1]))
 # %% markdown
-# Checking the answer to the first question:
+# #### Step 6: Show Results
 # %% codecell
 print(f"Question 1: {q_1}")
 print(f"Answer 1: {answer_1}")
 # %% markdown
-# #### Actual Prediction Traversal:
+# ## Actual Prediction Traversal:
 # Now doing the actual loop for the given data:
 # %% codecell
 for question in listOfQuestions:
@@ -222,7 +206,7 @@ for question in listOfQuestions:
     # These are just tensors wrapping an index (number) so its dimension is 0.
     # Here: get the most likely beginning of the answer with the argmax of the score.
     indexAnswerStart: Tensor = torch.argmax(answerStartScores)
-    # Here: get the most likely end of the answer with the argmax of the score.
+    # Step 4: Here: get the most likely end of the answer with the argmax of the score.
     indexAnswerEnd: Tensor = torch.argmax(answerEndScores) + 1
 
     # Step 5: Get the final answer
