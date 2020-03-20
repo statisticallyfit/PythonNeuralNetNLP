@@ -204,14 +204,14 @@ PAD_INDEX = SRC.vocab.stoi['<pad>']
 
 # %% codecell
 
-from src.NLPstudy.TransformerModel.IllustratedTransformer.Encoder import *
-from src.NLPstudy.TransformerModel.IllustratedTransformer.EncoderLayer import *
-from src.NLPstudy.TransformerModel.IllustratedTransformer.Decoder import *
-from src.NLPstudy.TransformerModel.IllustratedTransformer.DecoderLayer import *
-from src.NLPstudy.TransformerModel.IllustratedTransformer.Transformer import *
-from src.NLPstudy.TransformerModel.IllustratedTransformer.SelfAttentionLayer import *
-from src.NLPstudy.TransformerModel.IllustratedTransformer.PositionwiseFeedforwardLayer import *
-from src.NLPstudy.TransformerModel.IllustratedTransformer.PositionalEncodingLayer import *
+from src.ModelStudy.TransformerModel.IllustratedTransformer.Encoder import *
+from src.ModelStudy.TransformerModel.IllustratedTransformer.EncoderLayer import *
+from src.ModelStudy.TransformerModel.IllustratedTransformer.Decoder import *
+from src.ModelStudy.TransformerModel.IllustratedTransformer.DecoderLayer import *
+from src.ModelStudy.TransformerModel.IllustratedTransformer.Transformer import *
+from src.ModelStudy.TransformerModel.IllustratedTransformer.SelfAttentionLayer import *
+from src.ModelStudy.TransformerModel.IllustratedTransformer.PositionwiseFeedforwardLayer import *
+from src.ModelStudy.TransformerModel.IllustratedTransformer.PositionalEncodingLayer import *
 
 
 

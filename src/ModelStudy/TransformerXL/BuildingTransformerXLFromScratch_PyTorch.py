@@ -23,8 +23,10 @@ sys.path.append(os.getcwd() + "/src/utils/")
 # Building pathname for images
 pth = os.getcwd()
 pth
-pth += "/src/NLPstudy/images/"
+pth += "/src/ModelStudy/images/"
 pth
+
+from src.utils.ModelUtil import *
 # %% markdown
 # # Building the [Transformer XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716) from Sratch
 #
@@ -44,10 +46,14 @@ wordEmbeddings: Tensor = torch.rand(seqSize, batchSize, embeddingDim)
 wordEmbeddings
 # %% codecell
 wordEmbeddings.shape
+# %% codecell
 wordEmbeddings.ndim
+# %% codecell
 # Gets the first element of wordEmbeddings tensor (first chunk in the seven, along first dimension)
 wordEmbeddings[0,:,:]
+# %% codecell
 wordEmbeddings[0,:,:].ndim
+# %% codecell
 wordEmbeddings[0,:,:].shape
 # %% markdown
 # #### Notes about the [Transformer XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml)
@@ -70,7 +76,7 @@ memory.shape
 # 3. For each query, compute an [attention-weighted](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) sum of the values.
 # 4. Apply a [residual connection](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1511358877/residual+connection+layer+ml) and [layer normalization](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1450213381/layer+normalization).
 #
-# ### Step 1: Linear Transformation over $Q, K, V$ matrices
+# ### Step 1: Linear Transformation over $Q, K, V$ Matrices
 # %% codecell
 from torch.nn import Linear
 
@@ -83,38 +89,29 @@ linearK
 # %% markdown
 # #### Analysis of Weight Matrix for $K$
 # %% codecell
-from torch.nn import Parameter
-
-# Showing the parameters with their names (for matrix K)
-paramsK: List[Tuple[str, Parameter]] = list(linearK.named_parameters())
-paramsK
+printParamInfo(linearK)
 # %% codecell
-# Showing the names of the parameters for matrix K
-paramNamesK: List[str] = [paramName for (paramName, param) in paramsK]
-paramNamesK
+printModuleInfo(linearK)
+getUniqueModules(linearK)
 # %% codecell
-from torch import Size
+getChildInfo(linearK)
 
-# Showing the parameter sizes of all parameters in matrix K
-paramNameAndSizesK: Dict[str, Size] = {paramName : param.size() for (paramName, param) in paramsK}
-paramNameAndSizesK
 # %% markdown
 # #### Analysis of Weight Matrix $V$:
 # %% codecell
-# Getting named parameters for weight matrix V
-paramsV: List[Tuple[str, Parameter]] = list(linearV.named_parameters())
-# Showing the parameter sizes of all parameters in matrix V
-paramNameAndSizesV: Dict[str, Size] = {paramName : param.size() for (paramName, param) in paramsV}
-paramNameAndSizesV
+printParamInfo(linearV)
+# %% codecell
+printModuleInfo(linearV)
+# %% codecell
+getChildInfo(linearV)
 # %% markdown
 # #### Analysis of Weight Matrix $Q$:
 # %% codecell
-# Getting named parameters for weight matrix Q
-paramsQ: List[Tuple[str, Parameter]] = list(linearQ.named_parameters())
-# Showing the parameter sizes of all parameters in matrix Q
-paramNameAndSizesQ: Dict[str, Size] = {paramName : param.size() for (paramName, param) in paramsQ}
-paramNameAndSizesQ
-
+printParamInfo(linearQ)
+# %% codecell
+printModuleInfo(linearQ)
+# %% codecell
+getChildInfo(linearQ)
 # %% markdown
 # The [memory (sequence of hidden states)](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1527480493/segment-level+recurrence+mechanism+ml) is concatenated across the sequence dimension and fed as keys / values.
 #
@@ -123,12 +120,16 @@ paramNameAndSizesQ
 # %% codecell
 # Concatenate the memory and embeddings at dimension = 0 (first dimension)
 wordEmbsWordMemory: Tensor = torch.cat([memory, wordEmbeddings], dim = 0)
+wordEmbsWordMemory.shape
+# %% codecell
+wordEmbsWordMemory.ndim
+# %% codecell
 wordEmbsWordMemory
 # %% codecell
 # Testing the tensors have been concatenated along their first dimension
-assert memory.shape == torch.Size([6, 3, 32]), "Test 1"
-assert wordEmbeddings.shape == torch.Size([7, 3, 32]), "Test 2"
-assert wordEmbsWordMemory.shape[0] == memory.shape[0] + wordEmbeddings.shape[0] == 13, "Test 3"
+assert memory.shape == torch.Size([6, 3, 32]), "Memory shape equality test"
+assert wordEmbeddings.shape == torch.Size([7, 3, 32]), "Embeddings shape equality test"
+assert wordEmbsWordMemory.shape[0] == memory.shape[0] + wordEmbeddings.shape[0] == 13, "Memory + Embeddings Concatenation shape equality test"
 # %% codecell
 # TODO what does "tfmd" mean?
 # Passing each word Embedding ++ Memory(hiddenstates) through the layers by multiplication to create the corresponding matrices.
@@ -148,19 +149,25 @@ wordEmbsWordMemory.shape
 # %% markdown
 # For matrix $K$, first dimension is $13$, as a result of the multiplication of the `linearK` layer with the `wordEmbsWordMemory` whose first dimension is $13$
 # %% codecell
-paramNameAndSizesK
+(ns, ts, _) = getParamInfo(linearK)
+dict(zip(ns, ts))
 # %% codecell
 k_tfmd.shape
 # %% markdown
-# Same with matrix $V$ ...
+# %% markdown
+# Same with matrix $V$: For matrix $V$, first dimension is $13$, as a result of the multiplication of the `linearK` layer with the `wordEmbsWordMemory` whose first dimension is $13$
 # %% codecell
-paramNameAndSizesV
+(ns, ts, _) = getParamInfo(linearV)
+dict(zip(ns, ts))
 # %% codecell
 v_tfmd.shape
 # %% markdown
 # But first dimension of matrix $Q$ is $7$, as a result of the multiplication of the `linearQ` layer with the [`wordEmbeddings`](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/87666969/word+embedding+ml) tensor whose first dimension is $7$ not $13$, like that of `wordEmbsWordMemory`
 # %% codecell
-paramNameAndSizesQ
+(ns, ts, _) = getParamInfo(linearQ)
+dict(zip(ns, ts))
+# %% codecell
+wordEmbeddings.shape
 # %% codecell
 q_tfmd.shape
 
@@ -171,10 +178,8 @@ q_tfmd.shape
 # $$
 # \text{Attention}(Q, K, V) = \text{softmax}\Bigg( \frac{Q K^T }{\sqrt{d_k}} \Bigg) V
 # $$
+# * NOTE: Going to use einsum notation to make code easier to read
+# TODO link to wiki: https://rockt.github.io/2018/04/30/einsum
 # %% codecell
 Image(filename = pth + "ModalNet-19.png")
-
-# %% markdown
-# TODO: https://stackoverflow.com/a/52874352
-# TODO: trying to get the python `pth` variable to input its value here so no more need for python code cells to show images, can use just markdown
-# ![Scaled Dot Product Attention](pth + ModalNet-19.png)
+# %% codecell

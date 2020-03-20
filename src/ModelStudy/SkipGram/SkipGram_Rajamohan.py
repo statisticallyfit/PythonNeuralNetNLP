@@ -9,7 +9,7 @@ from IPython.display import Image
 pth = os.getcwd()
 pth
 # %% codecell
-Image(filename=pth + '/src/NLPstudy/images/Skip-gram.png')
+Image(filename=pth + '/src/ModelStudy/images/Skip-gram.png')
 
 # %% markdown [markdown]
 # Loading the imports:
@@ -330,7 +330,7 @@ print("keyIndFilteredPairs: ", keyIndFilteredPairs)
 # %% markdown [markdown]
 # # Step 7: Train the Skip-Gram Model
 # Training the model requires the following steps:
-# 
+#
 # 1. Convert the context words into integer indices using the `wordToIndex` dictionary, and make their type a `Tensor`.
 # 2. Set the model gradients to zero so they do not accumulate artificially (feature of pytorch)
 # 3. Do the `forward` pass of the Skip-Gram model, resulting in the log probabilities of the context words.

@@ -15,7 +15,7 @@ def setImagePath() -> str:
     sys.path.append(os.getcwd() + "/src/utils/")
 
     pth: str = os.getcwd()
-    imagePath: str = pth + "/src/NLPstudy/images/"
+    imagePath: str = pth + "/src/ModelStudy/images/"
     return imagePath
 
 __all__ = ['sys', 'os', 'IPython.display', 'ImageResizer']

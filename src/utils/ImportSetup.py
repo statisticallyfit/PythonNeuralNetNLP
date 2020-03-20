@@ -11,7 +11,7 @@ import ImageResizer
 # Building pathname for images
 def setImagePath() -> str:
     pth: str = os.getcwd()
-    imagePath: str = pth + "/src/NLPstudy/images/"
+    imagePath: str = pth + "/src/ModelStudy/images/"
     return imagePath
 
 __all__ = ['sys', 'os', 'IPython.display', 'ImageResizer']

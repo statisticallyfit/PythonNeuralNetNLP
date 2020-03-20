@@ -12,10 +12,10 @@ import sys
 sys.path
 
 # Then continue importing after that:
-from src.NLPstudy.TransformerModel.IllustratedTransformer.SelfAttentionLayer import *
-from src.NLPstudy.TransformerModel.IllustratedTransformer.PositionwiseFeedforwardLayer import *
-from src.NLPstudy.TransformerModel.IllustratedTransformer.PositionalEncodingLayer import *
-from src.NLPstudy.TransformerModel.IllustratedTransformer.DecoderLayer import *
+from src.ModelStudy.TransformerModel.IllustratedTransformer.SelfAttentionLayer import *
+from src.ModelStudy.TransformerModel.IllustratedTransformer.PositionwiseFeedforwardLayer import *
+from src.ModelStudy.TransformerModel.IllustratedTransformer.PositionalEncodingLayer import *
+from src.ModelStudy.TransformerModel.IllustratedTransformer.DecoderLayer import *
 
 
 

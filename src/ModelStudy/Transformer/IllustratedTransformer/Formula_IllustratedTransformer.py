@@ -20,7 +20,7 @@ import ImageResizer
 # Building pathname for images
 pth = os.getcwd()
 pth
-pth += "/src/NLPstudy/images/"
+pth += "/src/ModelStudy/images/"
 pth
 
 
