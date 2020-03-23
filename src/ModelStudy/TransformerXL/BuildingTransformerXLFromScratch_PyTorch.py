@@ -255,3 +255,64 @@ termC: Tensor = torch.einsum('sbi, jbi -> sjb', [u, k_tfmd])
 contentAttn_addC: Tensor = contentAttn + termC/ (E ** 0.5)
 
 assert contentAttn_addC.shape == (S, P+S, B), "Test content attention shape after adding term (c)"
+
+# %% markdown
+# Next: compute [relative positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml) necessary for the positional attention terms. For the the [relative positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml), the [Transformer XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716) uses fixed sinusoidal embeddings.
+# %% codecell
+posIndices: Tensor = torch.arange(S + P - 1, -1, -1.0, dtype = torch.float)
+posIndices
+# %% codecell
+invFreq: Tensor = 1 / (10000 ** (torch.arange(0.0, E, 2.0) / E))
+# posIndices shape == (P+S) == (13)
+# invFreq shape == (16)
+
+# Outer Product to get sinusoidal tensor: This notation i, j -> ij means to keep both dimensions (cross product or outer product)
+sinusoidInp: Tensor = torch.einsum('i, j -> ij', [posIndices, invFreq])
+
+assert sinusoidInp.shape == (13, 16)
+
+# Plotting the sinusoidals on some dimensions:
+plt.plot(sinusoidInp[0, :].detach().numpy());
+plt.plot(sinusoidInp[6, :].detach().numpy());
+
+# %% codecell
+# TODO: what does dim =  -1 mean? Here it has same effect as dim = 1?
+a = torch.cat([sinusoidInp.sin(), sinusoidInp.cos()], dim = -1)[:, None,:]
+b = torch.cat([sinusoidInp.sin(), sinusoidInp.cos()], dim = -1).unsqueeze(1)
+
+assert (a == b).all(), "Test another way of adding tensor of dim = 1 in a tensor"
+
+
+# Concatenate the sinusoid (13, 16) on dimension 1 (which has size 16) so result get ssize (13, 32).
+relativePositionalEmbeddings: Tensor = torch.cat([sinusoidInp.sin(), sinusoidInp.cos()], dim = -1).unsqueeze(1)
+
+assert relativePositionalEmbeddings.shape == (13, 1, 32), "Test relative positional embeddings shape"
+
+
+# %% markdown
+# Class for [relative positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml):
+# %% codecell
+#import torch.LongTensor as LongTensor
+
+class RelativePositionalEmbedding(nn.Module):
+    def __init__(self, embeddingDim: int):
+        super().__init__()
+        self.embeddingDim: int = embeddingDim
+        invFreq: Tensor = 1 / (10000 ** (torch.arange(0.0, embeddingDim, 2.0) / embeddingDim))
+        # Register buffer tells pytorch that this tensor is part of the model, so it will be saved into the state_dict and moved to GPU, along with the model
+        self.register_buffer("invFreq", invFreq)
+
+    # positions shape == (S, )    where S = shape size.
+    def forward(self, positions: torch.LongTensor):
+        # Outer product
+        sinusoidInp: Tensor = torch.einsum('i, j -> ij', [positions.float(), self.invFreq])
+        relativePositionalEmbeddings: Tensor = torch.cat([sinusoidInp.sin(), sinusoidInp.cos()], dim = -1)
+
+        # Adding a tensor of dim 1 at spot 1 (why??)
+        return relativePositionalEmbeddings.unsqueeze(1)
+
+# %% markdown
+# Need to apply transformations to the [relative positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml) separate from the values and keys matrices:
+# %% codecell
+linearP = nn.Linear(in_features = embeddingDim, out_features = innerDim)
+pos_tfmd: Tensor = linearP(input = relativePositionalEmbeddings)
