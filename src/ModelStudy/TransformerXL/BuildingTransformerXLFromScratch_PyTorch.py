@@ -42,6 +42,8 @@ Image(filename = pth + "transformerXL_extendedContext.gif")
 from torch.nn import Linear
 
 seqSize, batchSize, embeddingDim = 7, 3, 32
+# short names
+(S, B, E) = (seqSize, batchSize, embeddingDim)
 wordEmbeddings: Tensor = torch.rand(seqSize, batchSize, embeddingDim)
 wordEmbeddings
 # %% codecell
@@ -63,6 +65,8 @@ wordEmbeddings[0,:,:].shape
 # As an example, let the previous sequence have length $6$, and let [`memory`](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1527480493) denote the hidden states (`Tensor`) from the previous sequence.
 # %% codecell
 prevSeqSize: int = 6
+# short name
+P: int = prevSeqSize
 # These are the hidden states from the previous sequence, as an example
 memory: Tensor = torch.rand(prevSeqSize, batchSize, embeddingDim)
 memory
@@ -81,6 +85,7 @@ memory.shape
 from torch.nn import Linear
 
 innerDim: int = 17 # this is the internal dimension size
+I = innerDim # short form
 linearK: Linear = nn.Linear(in_features = embeddingDim, out_features = innerDim)
 linearV: Linear = nn.Linear(in_features = embeddingDim, out_features = innerDim)
 linearQ: Linear = nn.Linear(in_features = embeddingDim, out_features = innerDim)
@@ -127,9 +132,13 @@ wordEmbsWordMemory.ndim
 wordEmbsWordMemory
 # %% codecell
 # Testing the tensors have been concatenated along their first dimension
-assert memory.shape == torch.Size([6, 3, 32]), "Memory shape equality test"
-assert wordEmbeddings.shape == torch.Size([7, 3, 32]), "Embeddings shape equality test"
-assert wordEmbsWordMemory.shape[0] == memory.shape[0] + wordEmbeddings.shape[0] == 13, "Memory + Embeddings Concatenation shape equality test"
+
+assert memory.shape == (P, B, E) == (6, 3, 32), "Test memory shape"
+
+assert wordEmbeddings.shape == (S, B, E) == (7, 3, 32), "Test wordEmbeddings shape"
+
+assert wordEmbsWordMemory.shape == (P + S, B, E) == (13, 3, 32), "Test wordEmbs ++ memory shape"
+
 # %% codecell
 # TODO what does "tfmd" mean?
 # Passing each word Embedding ++ Memory(hiddenstates) through the layers by multiplication to create the corresponding matrices.
@@ -138,14 +147,13 @@ v_tfmd = linearV(wordEmbsWordMemory)
 # NOTE: here is where the warning above applies: there is no memory for the queries
 q_tfmd = linearQ(wordEmbeddings)
 
-# %% markdown
-# Peeking at the dimensions to see how multiplication resulted in a new tensor shape for the matrix $K$:
-# %% codecell
-memory.shape
-# %% codecell
-wordEmbeddings.shape
-# %% codecell
-wordEmbsWordMemory.shape
+assert (P, S, B, I, E) == (6, 7, 3, 17, 32), "Dimension names test"
+
+assert k_tfmd.shape == (P + S, B, I), "Test K shape"
+assert v_tfmd.shape == (P + S, B, I), "Test V shape"
+assert q_tfmd.shape == (S, B, I), "Test Q shape"
+
+
 # %% markdown
 # For matrix $K$, first dimension is $13$, as a result of the multiplication of the `linearK` layer with the `wordEmbsWordMemory` whose first dimension is $13$
 # %% codecell
@@ -153,7 +161,7 @@ wordEmbsWordMemory.shape
 dict(zip(ns, ts))
 # %% codecell
 k_tfmd.shape
-# %% markdown
+
 # %% markdown
 # Same with matrix $V$: For matrix $V$, first dimension is $13$, as a result of the multiplication of the `linearK` layer with the `wordEmbsWordMemory` whose first dimension is $13$
 # %% codecell
@@ -178,8 +186,72 @@ q_tfmd.shape
 # $$
 # \text{Attention}(Q, K, V) = \text{softmax}\Bigg( \frac{Q K^T }{\sqrt{d_k}} \Bigg) V
 # $$
-# * NOTE: Going to use einsum notation to make code easier to read
-# TODO link to wiki: https://rockt.github.io/2018/04/30/einsum
+# * NOTE: Going to use [einsum notation](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1441366077/einsum) to make code easier to read. Einsum denotes the shape of the inputs and outputs using one letter to represent each dimension, same letter representing same size. Einsum is computed by taking the dot product across dimensions with the same character.
+
 # %% codecell
 Image(filename = pth + "ModalNet-19.png")
 # %% codecell
+
+### Calculating first the QK part with scaling
+# q_tfmd shape == (S, B, I)
+# v_tfmd shape == (P + S, B, I)
+# k_tfmd shape == (P + S, B, I)
+# (calling J = P + S)
+# This calculation here means multiplication along inner dimension I = 17
+contentAttn: Tensor = torch.einsum('sbi, jbi -> sjb', [q_tfmd, k_tfmd]) / (E ** 0.5)
+# QK^T shape must be == (7, 13, 3) == (S, P + S, B)
+contentAttn.shape
+
+# %% markdown
+# ### Step 3: Relative Positional Encodings
+# Before applying softmax, we need [**relative positional encodings**](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml). Instead of having a single embedding represent each **absolute** position, the [Transformer XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716) computes an embedding that represents the **relative** distance between any two tokens. This is called the [**relative positional embedding**](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml) and is used to compute the attention between the two word tokens.
+#
+# In the [Transformer model](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1370095641/transformer+model+ml), the [attention score](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) between query $q_i$ and key vector $k_j$ within the same [segment embedding](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1511391715/segment+encoding+ml) can be decomposed as:
+# $$
+# \mathbf{A_{ij}}^\textbf{abs} = \underbrace{\mathbf{E_{x_i}}^T \mathbf{W_q}^T \mathbf{W_k} \mathbf{E_{x_j}}}_{(a)} + \underbrace{\mathbf{E_{x_i}}^T \mathbf{W_q}^T \mathbf{W_k} \mathbf{U_j}}_{(b)} + \underbrace{ \Big( \mathbf{U_i}^T \mathbf{W_q}^T \Big) \mathbf{W_k} \mathbf{E_{x_j}}}_{(c)} + \underbrace{ \Big( \mathbf{U_i}^T \mathbf{W_q}^T \Big) \mathbf{W_k} \mathbf{U_j}}_{(d)}
+# $$
+# where $E_x$ is the [word embedding](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/87666969/word+embedding+ml) for token $x$ and the $W$ are all transformation matrices.
+#
+# But for the [Transformer XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716) the terms are reparametrized as follows (to rely on relative positional information):
+# $$
+# \mathbf{A_{ij}}^\textbf{rel} = \underbrace{\mathbf{E_{x_i}}^T \mathbf{W_q}^T \mathbf{W_{k, E}} \mathbf{E_{x_j}}}_{(a)} + \underbrace{\mathbf{E_{x_i}}^T \mathbf{W_q}^T \mathbf{W_{k, R}} \color{cyan}{\mathbf{R_{i-j}}} }_{(b)} + \underbrace{ {\color{red}{\mathbf{u}^T}} \mathbf{W_{k, E}} \mathbf{E_{x_j}}}_{(c)} + \underbrace{ {\color{red}{\mathbf{v}^T}} \mathbf{W_{k,R}} \color{cyan}{\mathbf{R_{i-j}}} }_{(d)}
+# $$
+#
+# **Describing the Changes:**
+#
+# 1. Replace all absolute positional embeddings $\mathbf{U_j}$ with the equivalent counterpart relative positional embedding $\color{cyan}{\mathbf{R_{i-j}}}$, since only relative distance matters in the attention calculation. NOTE: $\color{cyan}{\mathbf{R}}$ is a sinusoid encoding matrix without learnable parameters.
+# 2. Introduce trainable parameter $\color{red}{u} \in \mathbb{R}^d$ to replace the query $\Big( \mathbf{U_i}^T \mathbf{W_q}^T \Big)$, just in term $(c)$. It was replaced because, in this case, since this query vector is the same for all query positions, the attentive bias towards different words should remain the same regardless of the query position. Similarly, a trainable parameter $\color{red}{v} \in \mathbb{R}^d$ substitutes the query term $\Big( \mathbf{U_i}^T \mathbf{W_q}^T \Big)$ in term $(d)$.
+# 3. Separate the two weight matrices $\mathbf{W}_{k, E}$ and $\mathbf{W}_{k, R}$ for producing the content-based key vectors and location-based key vectors respectively.
+#
+# **Describing Intuition Behind the Changes:**
+#
+# Under this reparametrizing, every term has an intuitive meaning:
+# * **Content-based addressing:** is term $(a)$, represents the original attention score without any [positional encoding](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1470169419/positional+embedding+ml).
+# * **Content-dependent positional bias:** is term $(b)$, and is a positional bias with respect to the current query $Q_i$. It uses a sinusoidal function that gets *relative* distance between tokens (like $i - j$) instead of *absolute* position of a current token.
+# * **Learned global content bias:** is term $(c)$, is a learned vector that accounts for the other tokens in the key matrix $K$.
+# * **Learned global positional bias:** is term $(d)$, is a learned vector that adjusts the importance based only on distance between tokens, using the intuition that recent previous words are more relevant than words from previous paragraphs.
+
+# %% markdown
+# Implementing term $(c)$:
+#
+# $$
+# \mathbf{A_{ij}}^\textbf{rel} = \underbrace{\mathbf{E_{x_i}}^T \mathbf{W_q}^T \mathbf{W_{k, E}} \mathbf{E_{x_j}}}_{(a)} + \underbrace{\mathbf{E_{x_i}}^T \mathbf{W_q}^T \mathbf{W_{k, R}} \color{cyan}{\mathbf{R_{i-j}}} }_{(b)} + \underbrace{ {\color{red}{\mathbf{u}^T}} \mathbf{W_{k, E}} \mathbf{E_{x_j}}}_{(c)} + \underbrace{ {\color{red}{\mathbf{v}^T}} \mathbf{W_{k,R}} \color{cyan}{\mathbf{R_{i-j}}} }_{(d)}
+# $$
+# %% codecell
+u: Tensor = torch.rand(I).expand_as(q_tfmd)
+
+assert u.shape == q_tfmd.shape == (S, B, I) == (7, 3, 17), "Test u.shape == q_tfmd.shape"
+
+assert contentAttn.shape == (S, P+S, B) == (7, 13, 3), "Test content Attn shape before"
+
+assert k_tfmd.shape == (P+S, B, I), "Test k_tfmd.shape"
+
+# Content attention after adding term (c)
+# Rule for getting dimensions:
+## u.shape == 'sbi'
+## k_tfmd.shape == 'jbi'
+## GOAL: to get result after multiplying to have shape equal to contentAttn.shape which is 'sjb' so set the result shape to 'sjb'.
+termC: Tensor = torch.einsum('sbi, jbi -> sjb', [u, k_tfmd])
+contentAttn_addC: Tensor = contentAttn + termC/ (E ** 0.5)
+
+assert contentAttn_addC.shape == (S, P+S, B), "Test content attention shape after adding term (c)"
