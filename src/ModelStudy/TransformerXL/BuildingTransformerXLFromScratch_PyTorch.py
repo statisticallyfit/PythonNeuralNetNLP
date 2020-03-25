@@ -21,18 +21,22 @@ from IPython.display import Image
 from typing import *
 # Making files in utils folder visible here:
 
-
+# Importing my local print functions:
 sys.path.append(os.getcwd() + "/src/utils/")
+from src.utils.ModelUtil import *
 
+# Preparing to show images:
 # import ImageResizer
 
 # Building pathname for images
-pth = os.getcwd()
-pth
+# Set current working directory
+os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP')
+pth = os.getcwd() # now path is the above
+print(f"pth = {pth}\n")
 pth += "/src/ModelStudy/images/"
-pth
+print(f"pth = {pth}")
 
-from src.utils.ModelUtil import *
+
 
 
 # %% markdown
@@ -312,10 +316,10 @@ class RelativePositionalEmbedding(nn.Module):
         # Register buffer tells pytorch that this tensor is part of the model, so it will be saved into the state_dict and moved to GPU, along with the model
         self.register_buffer("invFreq", invFreq)
 
-    # positions shape == (S, )    where S = shape size.
-    def forward(self, positions: torch.LongTensor) -> Tensor:
+    # positions shape == (S, )    (vector) where S = shape size.
+    def forward(self, posIndices: torch.LongTensor) -> Tensor:
         # Outer product
-        sinusoidInp: Tensor = torch.einsum('i, j -> ij', [positions.float(), self.invFreq])
+        sinusoidInp: Tensor = torch.einsum('i, j -> ij', [posIndices.float(), self.invFreq])
         # sinusoidInp.shape == (S, E/2)
 
         lastDim: int = sinusoidInp.ndim - 1
@@ -874,7 +878,7 @@ class StandardWordEmbedding(nn.Module):
             TODO (keep codecell below as test to figure out the dimensions of the  output)
         """
         # weights_embedding * inputSWE ----> output
-        # (N, E) * (S, B) ----> TODO
+        # (N, E) * (S, B) ----> (S, B, E) # TODO why is dimension N ignored? How is this multiplication done?
         return self.embedding(input = inputSWE) * self.scale
 
 # %% codecell
@@ -886,13 +890,14 @@ swe
 printParamInfo(swe)
 # %% codecell
 idx: torch.LongTensor = torch.LongTensor(torch.arange(S*B).reshape(S, B))
-swe(idx)
+#swe(idx)
 # TODO why does this give error????
 
 
 # %% markdown
 # ### Step 8: Build [Transformer XL Model](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml)
 # Putting everything together:
+
 # %% codecell
 class TransformerXL(nn.Module):
 
@@ -910,8 +915,7 @@ class TransformerXL(nn.Module):
             numLayers, numHeads, modelDim, mhaInnerDim, ffInnerDim
 
         # Embedding layers
-        self.wordEmbeddingLayer: StandardWordEmbedding = StandardWordEmbedding(numEmbeddings = numEmbeddings,
-                                                                               embeddingDim = modelDim)
+        self.wordEmbeddingLayer: StandardWordEmbedding = StandardWordEmbedding(numEmbeddings = numEmbeddings, embeddingDim = modelDim)
         self.posEmbeddingLayer: RelativePositionalEmbedding = RelativePositionalEmbedding(embedDim = modelDim)
 
         # Core transformer
@@ -935,14 +939,12 @@ class TransformerXL(nn.Module):
         self.seqLen, self.memoryLen = seqLen, memoryLen
 
         # NOTE (Keita Kurita): u, v are global parameters: maybe changing these to per-head parameters might help performance?
-        self.u: Parameter = Parameter(data = Tensor(self.numHeads, self.mhaInnerDim))
-        self.v: Parameter = Parameter(data = Tensor(self.numHeads, self.mhaInnerDim))
+        self.u: Parameter = Parameter(data = torch.Tensor(self.numHeads, self.mhaInnerDim))
+        self.v: Parameter = Parameter(data = torch.Tensor(self.numHeads, self.mhaInnerDim))
 
 
-
-    def initMemory(self, device = torch.device('cpu')) -> FloatTensor:
+    def initMemory(self, device = torch.device('cpu')) -> List[FloatTensor]:
         return [torch.empty(0, dtype = torch.float).to(device) for _ in range(self.numLayers + 1)]
-
 
 
     def updateMemory(self,
@@ -957,10 +959,8 @@ class TransformerXL(nn.Module):
 
         memoryLen, seqLen = previousMemory[0].size(0), hiddenStates[0].size(0)
 
-        # For the updated memory, we use the most recent `self.memoryLen` states, including the previous memory. So
-        # in other words, if `seqLen` < `self.memoryLen`, some of the previous memory will carry over to the next
-        # memory.
-        with torch.no_grad():
+        # For the updated memory, we use the most recent `self.memoryLen` states, including the previous memory. So in other words, if `seqLen` < `self.memoryLen`, some of the previous memory will carry over to the next memory.
+        with torch.no_grad(): # note: use no_grad() to avoid back propagating TODO why??
             newMemory: List[FloatTensor] = []
             iEnd: int = memoryLen + seqLen
             iBegin = max(0, iEnd - self.memoryLen)
@@ -1005,22 +1005,29 @@ class TransformerXL(nn.Module):
         S, B = indices.size() # currSeqLen, batchSize
         P = memory[0].size(0) # prevSeqSize
 
-        ### Construct attention mask to use in the decoder
+        ### Step 1: Construct attention mask to use in the decoder
         ones: Tensor = torch.ones((S, P+S))
         endDim: int = ones.ndim
 
         decoderAttnMask: Tensor = torch.triu(ones, diagonal = 1+P).bool().unsqueeze(endDim).to(indices.device)
 
+        ### Step 2: create word embeddings by passing indices through word embedding layer
         # TODO SWE obj: indices (S, B) * wordEmbLayer () ---> wordEmbs ()
         wordEmbeddings: Tensor = self.dropoutO(input = self.wordEmbeddingLayer(indices))
-        # wordEmbeddings shape == TODO
+        # wordEmbeddings shape == (S, B, E)
 
+        ### Step 3: create pos embeddings by passind pos indices through pos embedding layer
         # Making decreasing sequence of pos indices, ending at index 0, starting from P+S-1
         # TODO: what is the second -1.0 for??? WARNING: error thrown here?
-        posIndices: Tensor = torch.arange(start = P+S - 1, end = -1, step = -1, -1.0, dtype=torch.float).to(wordEmbeddings.device)
+        posIndices: Tensor = torch.arange(P+S - 1, -1, -1, dtype=torch.float).to(
+            wordEmbeddings.device) # decreasing sequence from P+S-1 ... 0
+        # posIndices shape == (P+S)  (just a vector of this length)
         posEmbeddings: Tensor = self.dropoutO(self.posEmbeddingLayer(posIndices))
+        # posEmbeddings shape == (P+S, 1, E)
 
-        # Main part of Forward Pass
+        # note: Main part of Forward Pass here below
+
+        ### Step 4: Create Hidden States using memory and the decoder layers in transformer XL
         hiddenStates: List[FloatTensor] = [wordEmbeddings]
         layerOut: FloatTensor = wordEmbeddings
 
@@ -1028,23 +1035,59 @@ class TransformerXL(nn.Module):
             # Each layer is a decoder block
             # inputDec = layerOut, posEmbeddings = posEmbeddings, u = self.u, v = self.v, mask = decoderAttnMask,
             # memories = mem
-            layerOut = layer(layerOut, posEmbeddings, self.u, self.v, mask = decoderAttnMask, memories = mem)
+            layerOut: FloatTensor = layer(layerOut, posEmbeddings, self.u, self.v, mask = decoderAttnMask, memories = mem)
             # layerOut shape == (S, B, E) from decoder block
             hiddenStates.append(layerOut)
 
-        ### Applying dropout to last layer out and passing through output proj layer
+        ### Step 5: Calculate Logits
         # Multiplying along dimension E (TODO check)
         # weightsOutputProj (N, E) * layerOut (S, B, E) ---> (S, B, N)
         logits: Tensor = self.outputProjectionLayer(input = self.dropoutO(input = layerOut))
-        # logits.shape == TODO check (S, B, N)
-        loss = self.lossFunction(input = logits.view(-1, logits.size(-1)), target = target.view(-1))
-        # TODO loss shape
-        # TODO target -1 effect
+        # logits.shape == (S, B, N)
 
-        ### Update memory
+        ### Step 6: Calculate Loss
+        # target.view(-1) shape === (target sizes all multiplied together) === (S * B,)
+        # logits.size(-1) == N
+        # logits.view(-1, N).shape == (S*B, N)
+        loss = self.lossFunction(input = logits.view(-1, logits.size(-1)), target = target.view(-1))
+        # loss.shape == [] (since loss is just one number, has dimension zero, is a zero-dim tensor)
+
+        ### Step 7: Update memory:
+        # Ensure memory is treated as a constant and that we do not back propagate through them
+        newMemory: List[FloatTensor] = self.updateMemory(previousMemory = memory,
+                                                         hiddenStates = hiddenStates)
+
+        return {"loss": loss, "logits": logits, "memory": newMemory}
 
 
 # %% codecell
-t = torch.arange(start = 10, end = -1, step = -1, out = -1.0, dtype = torch.float)
-t2 = torch.arange(10.0, -1.0, -1.0, dtype=torch.float)
-t2
+N = 1000
+L = 4
+M = 5
+H = 3
+
+assert (S, P, B, E, I) == (7, 6, 3, 32, 17)
+
+transformerXL: TransformerXL = TransformerXL(numEmbeddings= N, numLayers=L, numHeads = H,
+                                             modelDim = E, mhaInnerDim= I, ffInnerDim= 71,
+                                             memoryLen = M)
+transformerXL
+# %% codecell
+getUniqueModules(transformerXL) # show all modules at a glance, referred once, can even see which are hand-made classes by the __main__ prefix versus which moduels are from pytorch
+# %% codecell
+a = torch.arange(start = P+S - 1, end = -1, step = -1, out = Tensor([-1.0]), dtype=torch.float)
+b = torch.arange(start = P+S - 1, end = -1, step = -1, dtype=torch.float)
+
+assert (a == b).all(), "Test that 'out' argument in 'torch.arange' makes no difference (note: it is also optional)."
+# %% codecell
+# Feeding random inputs to confirm model is working
+indices: torch.LongTensor = torch.randint(N, (5, 9))
+targets: torch.LongTensor = torch.randint(N, (5, 9))
+
+result: Dict[str, Tensor] = transformerXL(indices, targets)
+
+result
+
+
+# %% markdown
+# # Training the Transformer XL
