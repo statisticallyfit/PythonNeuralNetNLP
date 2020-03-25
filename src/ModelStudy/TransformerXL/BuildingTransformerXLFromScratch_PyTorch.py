@@ -2,16 +2,16 @@
 # Blog Source: [https://synergo.atlassian.net/wiki/spaces/DataScience/pages/1511359082/Building+the+Transformer+XL+from+Scratch](https://synergo.atlassian.net/wiki/spaces/DataScience/pages/1511359082/Building+the+Transformer+XL+from+Scratch)
 # Code Source: [https://github.com/keitakurita/Practical_NLP_in_PyTorch/blob/master/deep_dives/transformer_xl_from_scratch.ipynb](https://github.com/keitakurita/Practical_NLP_in_PyTorch/blob/master/deep_dives/transformer_xl_from_scratch.ipynb)
 # %% codecell
-
+from typing import Dict, Any, Callable, Tuple
 
 import numpy as np
 
 import torch
 import torch.nn as nn
 import torch.tensor as Tensor
-from torch import Size
+from torch import Size, Tensor
 from torch.nn.parameter import Parameter
-from torch.nn import Dropout, LayerNorm, Linear, Sequential, ReLU
+from torch.nn import Dropout, LayerNorm, Linear, Sequential, ReLU, Embedding, ModuleList, CrossEntropyLoss
 
 import matplotlib.pyplot as plt
 import sys
@@ -339,7 +339,6 @@ assert rpeResult.shape == (S, 1, E) == (7, 1, 32)
 # %% markdown
 # Apply transformations to the [relative positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml) separate from the values and keys matrices, $V$ and $K$:
 # %% codecell
-from torch.nn import Linear
 
 # Reminder of dimensions:
 assert embeddingDim == E == 32
@@ -461,7 +460,6 @@ assert attnWeightedSum.shape == (S, B, I) == (7, 3, 17)
 # %% markdown
 # Final step: project the attention weighted sums back to their original dimension and apply a residual connection and layer normalization:
 # %% codecell
-from torch.nn import LayerNorm
 
 linearOut: Linear = Linear(in_features= innerDim, out_features=embeddingDim)
 print(linearOut)
@@ -485,7 +483,6 @@ assert output.shape == (S, B, E) == (7, 3, 32)
 # ### Step 4: MultiHeadAttention: The Core Component
 # Aggregating all the above and applying some optimizations by grouping computations and adding dropout, we can create the `MultiHeadAttention` module:
 # %% codecell
-# from torch.nn import Dropout, LayerNorm, Linear
 from torch import FloatTensor
 
 class MaskedMultiHeadAttention(nn.Module):
@@ -561,21 +558,16 @@ class MaskedMultiHeadAttention(nn.Module):
         return shiftedTensor
         # TODO understand how this shifts the relative pos embeddings ???
 
-    # wordEmbeddings (input) shape == (S, B, E)
-    # posEmbs shape == (P+S, B, E)
-    # memory shape == (P, B, E)
-    # u shape == (H, I)
-    # v shape == (H, I)
-    # mask shape ==  TODO  (S, P+S, 1)
-    # output shape == (S, B, E)
-    ### where SYMBOLS ARE:
+
+
+    ### NOTE SYMBOLS ARE:
     #   S = current sequence length
     #   P = previous sequence length
     #   B = batch size
     #   E = inputDim (also called embeddingDim)
     #   I = inner dimension
     #   H = number of heads
-    # NOTE: pass in positional embeddings separately so we can handle relative positions
+    # NOTE: pass in positional embeddings separately here so we can handle relative positions
     def forward(self,
                 inputMHA: FloatTensor, # the word embeddings (?)
                 posEmbeddings: FloatTensor,
@@ -583,6 +575,26 @@ class MaskedMultiHeadAttention(nn.Module):
                 u: FloatTensor,
                 v: FloatTensor,
                 mask: Optional[FloatTensor] = None) -> Tensor:
+        """
+        Applies masked multi-head attention to the word embedding input: does content and positional attention,
+        then softmaxes, dropout, layer normalization.
+
+        Arguments:
+            inputMHA: the word embeddings
+                ---> shape == (S, B, E)
+            posEmbeddings: positional embeddings
+                ---> shape == (P+S, B, E)
+            memory: cached hidden states from segment-level recurrence mechanism
+                ---> shape == (P, B, E)
+            u: the global (query-independent) bias towards certain keys / values = words
+                ---> shape == (H, I)
+            v: the global (query-independent) bias towards certain positions
+                ---> shape == (H, I)
+            mask: attention mask
+                ---> shape TODO (S, P+S, 1)
+            mems: TODO
+                ---> shape TODO
+        """
 
         S: int = inputMHA.shape[0] # sequence length of current segment
         P: int = memory.shape[0] # sequence length of previous segment
@@ -742,9 +754,11 @@ class PositionwiseFeedForward(nn.Module):
         """
         Applies feed forward layer and layer normalization to the input Tensor
         Arguments:
-            inputFF: shape == (S, B, E)
+            inputFF: input for feed forward layer
+                ---> shape == (S, B, E)
         Returns:
-            output: shape == (S, B, E)
+            output
+                ---> shape == (S, B, E)
         """
         # first linear * inputFF: (S, B, E) * (I, E) ---> (S, B, I)
         # second linear * aboveresult: (E, I) * (S, B, I) ---> (S, B, E)
@@ -753,7 +767,7 @@ class PositionwiseFeedForward(nn.Module):
         output = self.layerNorm(input = inputFF + resultFF)
         # output shape == (S, B, E)
 
-        return output
+        return output # output shape == (S, B, E)
 
 # %% markdown
 # ### Step 6: Build the Decoder
@@ -790,8 +804,247 @@ class TransXLDecoderBlock(nn.Module):
                                     dropoutO= dropoutO)
 
 
-    def forward(self, inputDecoder: FloatTensor,
+    def forward(self,
+                inputDec: FloatTensor,
                 posEmbeddings: FloatTensor,
                 u: FloatTensor,
                 v: FloatTensor,
-                mask = None, memories = None):
+                mask = None, memories = None) -> Tensor:
+        """
+        Decoder block is made of masked multi-head attention and positionwise feed forward layer. The forward function applies the layers to the embedding input and positional embeddings.
+
+        Arguments:
+            inputDec: the input for the decoder block
+                ---> shape == (S, B, E)
+            posEmbeddings: the positional embeddings
+                ---> shape == (P+S, E)
+            u: the global (query-independent) bias towards certain keys / values = words
+                ---> shape == (H, I)
+            v: the global (query-independent) bias towards certain positions
+                ---> shape == (H, I)
+            mask: attention mask
+                ---> shape TODO
+            mems: TODO
+                ---> shape TODO
+
+        Returns:
+              output after masked multi-head attention is passed through pos-wise feed forward layer
+                ---> shape == (S, B, E)
+        """
+        return self.poswiseFeedForward(
+            inputFF = self.maskedMultiHeadAttention(inputMHA = inputDec,
+                                          posEmbeddings = posEmbeddings,
+                                          memory = memories,
+                                          u = u, v = v,
+                                          mask = mask
+                                          )
+        )
+
+# %% markdown
+# ### Step 7: Full [TransformerXL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml)
+# Now will all these components we can build the full [Transformer XL model](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml).
+#
+# **Trick**: a common trick on language modeling is tying the input embedding matrix $E$ and output projection matrix $P$. Remember, a language model predicts the next token in a sequence so its output dimension is $\mathbb{R}^{|V|}$ where $|V| =$ vocabulary size. If we constrain the penultimate layer output to be the same dimension as the embeddings $d$, the embedding matrix $E$ will have shape $\mathbb{R}^{|V| \times d}$ and the output projection matrix $P$ will have shape $\mathbb{R}^{d \times |V|}$.
+#
+# [Source: Authors found here that (weight tying) constraining the matrices such that $P = E^T$ improved performance while greatly reducing the total parameter count (and thus memory usage) of the model.](https://hyp.is/iOhfhG6gEeqdJ5-92qbKvQ/arxiv.org/pdf/1608.05859.pdf). Instead of using the exact same weights, we scale the embeddings by the embedding dimension.
+# * NOTE; this trick is included in the codebase but not mentioned in the paper.
+
+# %% codecell
+class StandardWordEmbedding(nn.Module):
+    def __init__(self, numEmbeddings: int,
+                 embeddingDim: int,
+                 divVal: int = 1,
+                 sampleSoftmax: bool = False):
+
+        super().__init__()
+        self.numEmbeddings: int = numEmbeddings
+        self.embeddingDim: int = embeddingDim
+        self.embedding: Embedding = Embedding(num_embeddings= numEmbeddings,
+                                              embedding_dim = embeddingDim)
+        self.scale: float = embeddingDim ** 0.5
+
+
+    def forward(self, inputSWE: torch.LongTensor) -> Tensor:
+        """
+        Applies the embedding layer (embedding matrix of size (N, E)) to the inputSWE, where N = numEmbeddings, E = embeddingDim
+        Arguments:
+            inputSWE: TODO
+                ---> shape == (S, B)
+        Returns:
+            TODO (keep codecell below as test to figure out the dimensions of the  output)
+        """
+        # weights_embedding * inputSWE ----> output
+        # (N, E) * (S, B) ----> TODO
+        return self.embedding(input = inputSWE) * self.scale
+
+# %% codecell
+# Testing here how Embedding layer looks like and how it changes the dimension of the embedding matrix in order to accomplish weight-tying
+swe: StandardWordEmbedding = StandardWordEmbedding(numEmbeddings=10, # N
+                                                   embeddingDim = E)  # E
+swe
+# %% codecell
+printParamInfo(swe)
+# %% codecell
+idx: torch.LongTensor = torch.LongTensor(torch.arange(S*B).reshape(S, B))
+swe(idx)
+# TODO why does this give error????
+
+
+# %% markdown
+# ### Step 8: Build [Transformer XL Model](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml)
+# Putting everything together:
+# %% codecell
+class TransformerXL(nn.Module):
+
+    def __init__(self, numEmbeddings: int,
+                 numLayers: int,
+                 numHeads: int,
+                 modelDim: int,
+                 mhaInnerDim: int, ffInnerDim,
+                 dropoutO: float = 0.1, dropoutA: float = 0.,
+                 seqLen: int = 0, memoryLen: int = 0):
+
+        super().__init__()
+
+        self.numLayers, self.numHeads, self.modelDim, self.mhaInnerDim, self.ffInnerDim = \
+            numLayers, numHeads, modelDim, mhaInnerDim, ffInnerDim
+
+        # Embedding layers
+        self.wordEmbeddingLayer: StandardWordEmbedding = StandardWordEmbedding(numEmbeddings = numEmbeddings,
+                                                                               embeddingDim = modelDim)
+        self.posEmbeddingLayer: RelativePositionalEmbedding = RelativePositionalEmbedding(embedDim = modelDim)
+
+        # Core transformer
+        self.dropoutO: Dropout = Dropout(p = dropoutO)
+        # Constructing numLayers many Decoder blocks in the transformer xl model
+        self.layers = ModuleList(
+            [TransXLDecoderBlock(numHeads = numHeads,
+                                 embedDim = modelDim,
+                                 mhaInnerDim=mhaInnerDim,
+                                 ffInnerDim = ffInnerDim,
+                                 dropoutO = dropoutO,
+                                 dropoutA = dropoutA) for _ in range(numLayers)]
+        )
+
+        # Tying the weights
+        self.outputProjectionLayer: Linear = Linear(in_features = modelDim,
+                                                    out_features = numEmbeddings)
+        self.outputProjectionLayer.weight: Tensor = self.wordEmbeddingLayer.embedding.weight
+        self.lossFunction: CrossEntropyLoss = CrossEntropyLoss()
+
+        self.seqLen, self.memoryLen = seqLen, memoryLen
+
+        # NOTE (Keita Kurita): u, v are global parameters: maybe changing these to per-head parameters might help performance?
+        self.u: Parameter = Parameter(data = Tensor(self.numHeads, self.mhaInnerDim))
+        self.v: Parameter = Parameter(data = Tensor(self.numHeads, self.mhaInnerDim))
+
+
+
+    def initMemory(self, device = torch.device('cpu')) -> FloatTensor:
+        return [torch.empty(0, dtype = torch.float).to(device) for _ in range(self.numLayers + 1)]
+
+
+
+    def updateMemory(self,
+                     previousMemory: List[FloatTensor],
+                     hiddenStates: List[FloatTensor]) -> List[FloatTensor]:
+        """
+        Arguments:
+            previousMemory: each tensor element has shape == (memoryLen, B, I)
+            hiddenStates: each tensor element has shape == (seqLen, B, I)
+        """
+        assert len(hiddenStates) == len(previousMemory)
+
+        memoryLen, seqLen = previousMemory[0].size(0), hiddenStates[0].size(0)
+
+        # For the updated memory, we use the most recent `self.memoryLen` states, including the previous memory. So
+        # in other words, if `seqLen` < `self.memoryLen`, some of the previous memory will carry over to the next
+        # memory.
+        with torch.no_grad():
+            newMemory: List[FloatTensor] = []
+            iEnd: int = memoryLen + seqLen
+            iBegin = max(0, iEnd - self.memoryLen)
+
+            for prevMem, hid in zip(previousMemory, hiddenStates):
+                # Concatenating previous memory and hidden state on dimension 0
+                memAndHidden: FloatTensor = torch.cat([prevMem, hid], dim = 0)
+                # memCatHidden shape == (memoryLen + seqLen, B, I)
+
+                # TODO understand here how some of the previous memory carries over to the next memory
+                newMemory.append(memAndHidden[iBegin : iEnd].detach())
+                # newMemory elements shape == (self.memoryLen, B, I)
+
+        return newMemory
+
+
+    ## TODO what is the point of this?
+    def resetLength(self, seqLen: int, extLen: int, memoryLen: int):
+        self.seqLen = seqLen
+        self.memoryLen = memoryLen
+
+
+
+    def forward(self, indices: torch.LongTensor,
+                target: torch.LongTensor,
+                memory: Optional[List[FloatTensor]] = None) -> Dict[str, Tensor]:
+        """
+        Arguments:
+            indices: TODO meaning?
+                ---> shape == (S, B)
+            target: TODO meaning?
+                ---> shape == (S, B)
+            memory: TODO meaning?
+                ---> each element has shape == (memoryLen, B, I))
+        """
+
+        if memory is None:
+            memory: List[FloatTensor] = self.initMemory(device = indices.device)
+
+        assert len(memory) == len(self.layers) + 1
+
+        S, B = indices.size() # currSeqLen, batchSize
+        P = memory[0].size(0) # prevSeqSize
+
+        ### Construct attention mask to use in the decoder
+        ones: Tensor = torch.ones((S, P+S))
+        endDim: int = ones.ndim
+
+        decoderAttnMask: Tensor = torch.triu(ones, diagonal = 1+P).bool().unsqueeze(endDim).to(indices.device)
+
+        # TODO SWE obj: indices (S, B) * wordEmbLayer () ---> wordEmbs ()
+        wordEmbeddings: Tensor = self.dropoutO(input = self.wordEmbeddingLayer(indices))
+        # wordEmbeddings shape == TODO
+
+        # Making decreasing sequence of pos indices, ending at index 0, starting from P+S-1
+        # TODO: what is the second -1.0 for??? WARNING: error thrown here?
+        posIndices: Tensor = torch.arange(start = P+S - 1, end = -1, step = -1, -1.0, dtype=torch.float).to(wordEmbeddings.device)
+        posEmbeddings: Tensor = self.dropoutO(self.posEmbeddingLayer(posIndices))
+
+        # Main part of Forward Pass
+        hiddenStates: List[FloatTensor] = [wordEmbeddings]
+        layerOut: FloatTensor = wordEmbeddings
+
+        for mem, layer in zip(memory, self.layers):
+            # Each layer is a decoder block
+            # inputDec = layerOut, posEmbeddings = posEmbeddings, u = self.u, v = self.v, mask = decoderAttnMask,
+            # memories = mem
+            layerOut = layer(layerOut, posEmbeddings, self.u, self.v, mask = decoderAttnMask, memories = mem)
+            # layerOut shape == (S, B, E) from decoder block
+            hiddenStates.append(layerOut)
+
+        ### Applying dropout to last layer out and passing through output proj layer
+        # Multiplying along dimension E (TODO check)
+        # weightsOutputProj (N, E) * layerOut (S, B, E) ---> (S, B, N)
+        logits: Tensor = self.outputProjectionLayer(input = self.dropoutO(input = layerOut))
+        # logits.shape == TODO check (S, B, N)
+        loss = self.lossFunction(input = logits.view(-1, logits.size(-1)), target = target.view(-1))
+        # TODO loss shape
+        # TODO target -1 effect
+
+        ### Update memory
+
+
+# %% codecell
+t = torch.arange(start = 10, end = -1, step = -1, out = -1.0, dtype = torch.float)
+t2 = torch.arange(10.0, -1.0, -1.0, dtype=torch.float)
+t2
