@@ -2,21 +2,25 @@
 # Blog Source: [https://synergo.atlassian.net/wiki/spaces/DataScience/pages/1511359082/Building+the+Transformer+XL+from+Scratch](https://synergo.atlassian.net/wiki/spaces/DataScience/pages/1511359082/Building+the+Transformer+XL+from+Scratch)
 # Code Source: [https://github.com/keitakurita/Practical_NLP_in_PyTorch/blob/master/deep_dives/transformer_xl_from_scratch.ipynb](https://github.com/keitakurita/Practical_NLP_in_PyTorch/blob/master/deep_dives/transformer_xl_from_scratch.ipynb)
 # %% codecell
-from typing import *
+
 
 import numpy as np
 
 import torch
 import torch.nn as nn
 import torch.tensor as Tensor
+from torch import Size
+from torch.nn.parameter import Parameter
+from torch.nn import Dropout, LayerNorm, Linear, Sequential, ReLU
+
 import matplotlib.pyplot as plt
-# %% codecell
 import sys
 import os
 from IPython.display import Image
 
+from typing import *
 # Making files in utils folder visible here:
-from torch import Tensor
+
 
 sys.path.append(os.getcwd() + "/src/utils/")
 
@@ -29,6 +33,8 @@ pth += "/src/ModelStudy/images/"
 pth
 
 from src.utils.ModelUtil import *
+
+
 # %% markdown
 # # Building the [Transformer XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716) from Sratch
 #
@@ -41,8 +47,6 @@ from src.utils.ModelUtil import *
 # %% codecell
 Image(filename = pth + "transformerXL_extendedContext.gif")
 # %% codecell
-from torch.nn import Linear
-
 seqSize, batchSize, embeddingDim = 7, 3, 32
 # short names
 (S, B, E) = (seqSize, batchSize, embeddingDim)
@@ -84,13 +88,12 @@ memory.shape
 #
 # ### Step 1: Linear Transformation over $Q, K, V$ Matrices
 # %% codecell
-from torch.nn import Linear
 
 innerDim: int = 17 # this is the internal dimension size
 I = innerDim # short form
-linearK: Linear = nn.Linear(in_features = embeddingDim, out_features = innerDim)
-linearV: Linear = nn.Linear(in_features = embeddingDim, out_features = innerDim)
-linearQ: Linear = nn.Linear(in_features = embeddingDim, out_features = innerDim)
+linearK: Linear = Linear(in_features = embeddingDim, out_features = innerDim)
+linearV: Linear = Linear(in_features = embeddingDim, out_features = innerDim)
+linearQ: Linear = Linear(in_features = embeddingDim, out_features = innerDim)
 
 linearK
 # %% markdown
@@ -298,25 +301,43 @@ assert relativePositionalEmbeddings.shape == (13, 1, 32), "Test relative positio
 # %% codecell
 #import torch.LongTensor as LongTensor
 
+
 class RelativePositionalEmbedding(nn.Module):
-    def __init__(self, embeddingDim: int):
+    def __init__(self, embedDim: int):
         super().__init__()
-        self.embeddingDim: int = embeddingDim
-        invFreq: Tensor = 1 / (10000 ** (torch.arange(0.0, embeddingDim, 2.0) / embeddingDim))
+        self.embeddingDim: int = embedDim
+        invFreq: Tensor = 1 / (10000 ** (torch.arange(0.0, embedDim, 2.0) / embedDim))
+        # invFreq shape == (E/2, )
+
         # Register buffer tells pytorch that this tensor is part of the model, so it will be saved into the state_dict and moved to GPU, along with the model
         self.register_buffer("invFreq", invFreq)
 
     # positions shape == (S, )    where S = shape size.
-    def forward(self, positions: torch.LongTensor):
+    def forward(self, positions: torch.LongTensor) -> Tensor:
         # Outer product
         sinusoidInp: Tensor = torch.einsum('i, j -> ij', [positions.float(), self.invFreq])
-        relativePositionalEmbeddings: Tensor = torch.cat([sinusoidInp.sin(), sinusoidInp.cos()], dim = -1)
+        # sinusoidInp.shape == (S, E/2)
+
+        lastDim: int = sinusoidInp.ndim - 1
+        relativePositionalEmbeddings: Tensor = torch.cat([sinusoidInp.sin(), sinusoidInp.cos()], dim = lastDim) # same as saying dim = -1
+        # relativePositionalEmbeddings.shape == (S, E)
 
         # Adding a tensor of dim 1 at spot 1 (why?? intuition / reason for this??)
         return relativePositionalEmbeddings.unsqueeze(1)
+        # relposembs shape == (S, 1, E)
+
+# %% codecell
+# Testing to see if this class if working:
+rpe: RelativePositionalEmbedding = RelativePositionalEmbedding(embedDim= E)
+print(rpe)
+# %% codecell
+pos: Tensor = torch.rand(S)
+rpeResult: Tensor = rpe(pos)
+assert rpeResult.shape == (S, 1, E) == (7, 1, 32)
+
 
 # %% markdown
-# Apply transformations to the [relative positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml) separate from the values and keys matrices:
+# Apply transformations to the [relative positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml) separate from the values and keys matrices, $V$ and $K$:
 # %% codecell
 from torch.nn import Linear
 
@@ -324,7 +345,7 @@ from torch.nn import Linear
 assert embeddingDim == E == 32
 assert innerDim == I == 17
 
-linearP: Linear = nn.Linear(in_features = embeddingDim, out_features = innerDim)
+linearP: Linear = Linear(in_features = embeddingDim, out_features = innerDim)
 print(f"linearP: {linearP}")
 printParamInfo(linearP)
 # %% codecell
@@ -387,9 +408,9 @@ rawAttn: Tensor = contentAttn_C + posAttnPadded
 assert rawAttn.shape == contentAttn_C.shape == posAttnPadded.shape == (S, P+S, B) == (7, 13, 3), "Test raw attention shape"
 
 # %% markdown
-# When doing language modeling, we must prevent the model from 'cheating' (from looking at the word it should be predicting). The [Transformer](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1370095641/transformer+model+ml) hides prediction words by setting the [attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) score to zero, to [mask](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1462730780/mask) out words the model should not see.
+# When doing language modeling, we must prevent the model from 'cheating' (from looking at the word it should be predicting). In the [Transformer's decoder](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1521090937/decoder+self+attention+in+transformer), the [Transformer](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1370095641/transformer+model+ml) hides prediction words by setting the [attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) score to zero, to [mask](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1462730780/mask) out words the model should not see.
 #
-# Adopting the same [attention masking](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1668775950/attention+mask) implementation for the [Transformer-XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml):
+# Adopting the same [attention masking in the `MultiHeadAttention` module](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1521090937/decoder+self+attention+in+transformer) for the [Transformer-XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml):
 # %% codecell
 # NOTE: triu concatenates upper triangular matrix, starting at upper row index = diagonal = 1+P = 8
 torch.triu(torch.ones((S, P+S)), diagonal = 1+P, ).byte()
@@ -442,11 +463,11 @@ assert attnWeightedSum.shape == (S, B, I) == (7, 3, 17)
 # %% codecell
 from torch.nn import LayerNorm
 
-linearOut: Linear = nn.Linear(in_features= innerDim, out_features=embeddingDim)
+linearOut: Linear = Linear(in_features= innerDim, out_features=embeddingDim)
 print(linearOut)
 printParamInfo(linearOut)
 # %% codecell
-layerNorm: LayerNorm = nn.LayerNorm(normalized_shape= embeddingDim)
+layerNorm: LayerNorm = LayerNorm(normalized_shape= embeddingDim)
 print(layerNorm)
 printParamInfo(layerNorm)
 # %% codecell
@@ -464,205 +485,313 @@ assert output.shape == (S, B, E) == (7, 3, 32)
 # ### Step 4: MultiHeadAttention: The Core Component
 # Aggregating all the above and applying some optimizations by grouping computations and adding dropout, we can create the `MultiHeadAttention` module:
 # %% codecell
-from typing import *
-from torch.nn import Dropout, LayerNorm, Linear
+# from torch.nn import Dropout, LayerNorm, Linear
 from torch import FloatTensor
 
-class MultiHeadAttention(nn.Module):
+class MaskedMultiHeadAttention(nn.Module):
 
-    def __init__(self, embeddingDim: int,
+    def __init__(self, embedDim: int,
                  innerDim: int,
                  numHeads: int = 4,
-                 dropout: float = 0.1,
+                 dropoutO: float = 0.1,
                  dropoutA: float = 0.):
 
         super().__init__()
-        self.embeddingDim: int = embeddingDim
+        self.embeddingDim: int = embedDim
         self.innerDim: int = innerDim
         self.numHeads: int = numHeads
 
         # Linear layer for K, V matrices: applies the linear transformation requires for the keys and values for all the heads SIMULTANEOUSLY (for efficiency)
-        self.linearKV: Linear = nn.Linear(in_features= embeddingDim,
-                                          out_features= (innerDim * numHeads * 2),  #2 is for keys and values
-                                          bias = False) # no bias now, making this a simple matrix multiplication
+        self.linearKV: Linear = Linear(in_features= embedDim,
+                                       out_features= (innerDim * numHeads * 2),  #2 is for keys and values
+                                       bias = False) # no bias now, making this a simple matrix multiplication
 
         # Linear layer for queries (which will not be concatenated with memorized states so it remains separate)
         # TODO: what remains separate: the linearQ or the result q_tfmd = linearQ(input)???
-        self.linearQ: Linear = nn.Linear(in_features= embeddingDim,
-                                         out_features= innerDim * numHeads,
-                                         bias = False)
+        self.linearQ: Linear = Linear(in_features= embedDim,
+                                      out_features= innerDim * numHeads,
+                                      bias = False)
 
         # Linear layer for positional embeddings
-        self.linearP: Linear = nn.Linear(in_features=embeddingDim,
-                                         out_features= innerDim * numHeads,
-                                         bias = False)
+        self.linearP: Linear = Linear(in_features=embedDim,
+                                      out_features= innerDim * numHeads,
+                                      bias = False)
 
         # Scaling factor for scaled dot product attention
         self.scale: float = 1 / (innerDim ** 0.5)
 
-        # TODO what is this for? Stand for?
-        self.dropoutA: Dropout = nn.Dropout(p = dropoutA)
+        # Dropout that is applied to attention weighted values
+        self.dropoutA: Dropout = Dropout(p = dropoutA)
 
         # Linear layer to project back to the input dimension
-        self.linearOut: Linear = nn.Linear(in_features= self.innerDim * self.numHeads,
+        self.linearOut: Linear = Linear(in_features= self.innerDim * self.numHeads,
                                            out_features= self.embeddingDim,
                                            bias = False)
-        self.norm: LayerNorm = nn.LayerNorm(normalized_shape = self.embeddingDim)
-        # TODO what does this stand for? purpose?
-        self.dropoutO: Dropout = nn.Dropout(p = dropout)
+        self.norm: LayerNorm = LayerNorm(normalized_shape = self.embeddingDim)
+        # Dropout that is applied to the output
+        self.dropoutO: Dropout = Dropout(p = dropoutO)
 
 
 
-        def _relativeShift(self, tensorToShift: Tensor) -> Tensor:
-            """Computing a relative positional embedding for each key-query pair in the attention calculation takes O(n^2) time.
-            Reducing this time to O(n) by computing attention for ONE QUERY then shifting the relative positional embeddings for different query positions.
-            """
-            ### zeroPad: Tensor = torch.zeros( (S, 1, B), dtype = torch.float)
-            # note: take first dimension size, put 1, then take rest of the sizes in the .shape tuple
-            firstDim: int = tensorToShift.size(0)
-            secondDim: int = 1
-            remainingDims: List[int] = tensorToShift.size()[2:]
-            zeroPad: Tensor = torch.zeros((firstDim, secondDim, *remainingDims),
-                                          device = tensorToShift.device,
-                                          dtype = tensorToShift.dtype)
+    def _relativeShift(self, tensorToShift: Tensor) -> Tensor:
+        """Computing a relative positional embedding for each key-query pair in the attention calculation takes O(n^2) time.
+        Reducing this time to O(n) by computing attention for ONE QUERY then shifting the relative positional embeddings for different query positions.
+        """
+        ### zeroPad: Tensor = torch.zeros( (S, 1, B), dtype = torch.float)
+        # note: take first dimension size, put 1, then take rest of the sizes in the .shape tuple
+        firstDim: int = tensorToShift.size(0)
+        secondDim: int = 1
+        remainingDims: List[int] = tensorToShift.size()[2:]
+        zeroPad: Tensor = torch.zeros((firstDim, secondDim, *remainingDims),
+                                      device = tensorToShift.device,
+                                      dtype = tensorToShift.dtype)
 
-            ### Example with positional attention:
-            # posAttnPadded: Tensor = (torch.cat([zeroPad, posAttn], dim = 1)
-            #                          .view(P+S+1, S, B)[1:] # switch dim=0 and dim=1 and cut one from dim=0
-            #                          .view_as(posAttn))
-            firstDim: int = tensorToShift.size(1) + 1
-            secondDim: int = tensorToShift.size(0)
-            remainingDims: List[int] = tensorToShift.size()[2:] # get all dims but the first two dims.
-            shiftedTensor: Tensor = (torch.cat([zeroPad, tensorToShift], dim = 1)
-                                    # get tail of elements from dim = 0, so now shape is (firstDim - 1, secondDim, *remainingDims)
-                                    .view(firstDim, secondDim, *remainingDims)[1:]
-                                    .view_as(tensorToShift))
+        ### Example with positional attention:
+        # posAttnPadded: Tensor = (torch.cat([zeroPad, posAttn], dim = 1)
+        #                          .view(P+S+1, S, B)[1:] # switch dim=0 and dim=1 and cut one from dim=0
+        #                          .view_as(posAttn))
+        firstDim: int = tensorToShift.size(1) + 1
+        secondDim: int = tensorToShift.size(0)
+        remainingDims: List[int] = tensorToShift.size()[2:] # get all dims but the first two dims.
+        shiftedTensor: Tensor = (torch.cat([zeroPad, tensorToShift], dim = 1)
+                                # get tail of elements from dim = 0, so now shape is (firstDim - 1, secondDim, *remainingDims)
+                                .view(firstDim, secondDim, *remainingDims)[1:]
+                                .view_as(tensorToShift))
 
-            return shiftedTensor
+        return shiftedTensor
         # TODO understand how this shifts the relative pos embeddings ???
 
-        # input shape == (S, B, E)
-        # posEmbs shape == (P+S, B, E)
+    # wordEmbeddings (input) shape == (S, B, E)
+    # posEmbs shape == (P+S, B, E)
+    # memory shape == (P, B, E)
+    # u shape == (H, I)
+    # v shape == (H, I)
+    # mask shape ==  TODO  (S, P+S, 1)
+    # output shape == (S, B, E)
+    ### where SYMBOLS ARE:
+    #   S = current sequence length
+    #   P = previous sequence length
+    #   B = batch size
+    #   E = inputDim (also called embeddingDim)
+    #   I = inner dimension
+    #   H = number of heads
+    # NOTE: pass in positional embeddings separately so we can handle relative positions
+    def forward(self,
+                inputMHA: FloatTensor, # the word embeddings (?)
+                posEmbeddings: FloatTensor,
+                memory: FloatTensor,
+                u: FloatTensor,
+                v: FloatTensor,
+                mask: Optional[FloatTensor] = None) -> Tensor:
+
+        S: int = inputMHA.shape[0] # sequence length of current segment
+        P: int = memory.shape[0] # sequence length of previous segment
+        H, I, E = self.numHeads, self.innerDim, self.embeddingDim
+
+        ### Concatenate recurrent memory (the sequence of hidden states) to the input, across the sequence dimension (dim = 0, which has size P = previous sequence length)
+        inputWithMemory: Tensor = torch.cat([memory, inputMHA], dim = 0)
         # memory shape == (P, B, E)
-        # u shape == (H, I)
-        # v shape == (H, I)
-        # mask shape ==  TODO  (S, P+S, 1)
+        # input shape == (S, B, E)
+        # inputWithMemory shape == (P+S, B, E)
+
+        ### Passing K, V, Q through the linear layers
+        # (I*H*2, E), (P+S, B, E) -> (P+S, B, I*H*2)
+        kv_tfmd: Tensor = self.linearKV(inputWithMemory)
+        # kv_tfmd shape == (P+S, B, I*H*2)
+        # Chunking along the last dimension:
+        lastDim: int = kv_tfmd.ndim - 1 # or can write dim = -1
+        k_tfmd, v_tfmd = torch.chunk(kv_tfmd, chunks = 2, dim = lastDim)
+        # k_tfmd shape == (P+S, B, I*H)
+        # v_tfmd shape == (P+S, B, I*H)
+
+        q_tfmd: Tensor = self.linearQ(inputMHA)
+        # q_tfmd shape == (S, B, I*H)
+
+
+        ##### Apply scaled dot product attention (look at the following dimensions carefully, since this is the key operation in the Transformer / Transformer XL architecture)
+        _, B, _ = q_tfmd.shape # (S, B, I*H)
+        assert B == k_tfmd.shape[1]
+
+        ### Content-based attention term ((a) + (c) in the paper):
+        # This is the standard attention term in the original Transformer, except without the positional embeddings, which are handled separately in the Transformer XL (see below)
+        # NOTE: 'i' corresponds to number of queries = number of current inputs / targets (seq-wise)
+        # NOTE: 'j' corresponds to number of key / values = number of vectors that we can use to compute the vector for each query
+        a: Tensor = q_tfmd.view(S, B, H, I) # split q_tfmd.shape (S, B, I*H)
+        c: Tensor = u # u represents global (query-independent) bias towards certain keys / values = words. NOTE (by Keita Kurita): maybe this could be a per-attention head parameter?
+        Kview: Tensor = k_tfmd.view(P+S, B, H, I) # split size of k_tfmd
+        # Multiplying along dimension I: (to find contentAttn)
+        # (a + c) * K :   (S, B, H, I) * (P+S, B, H, I) ---->
+        contentAttn: Tensor = torch.einsum('sbhi, jbhi -> sjbh', [a + c, Kview])
+        # contentAttn shape == (S, P+S, B, H)
+
+        ### Position-based attention term ((b) + (d) from the paper)
+        # This attention is solely based on the position of the key/values (i.e. it does not take the content of the key/values into account)
+        # Weights * posEmbs: (I*H, E) * (P+S, B, E) ----> (P+S, B, I*H)
+        p_tfmd: Tensor = self.linearP(posEmbeddings)
+        # p_tfmd shape == (P+S, B, I*H)
+
+        # TODO why is term (a) the same as term (b)?
+        b: Tensor = q_tfmd.view(S, B, H, I) # split size (S, B, H*I)
+        d: Tensor = v # v is global (indpendent of query) bias towards certain positions
+        # TODO: why has batch dim been left out?
+        Pview: Tensor = p_tfmd.view(P+S, H, I)# NOTE: there is no content information regarding keys and values in here.
+        # Multiplying along dimension I to find positional attention
+        # (b + d) * Pview:   (S, B, H, I) * (P+S, H, I) ----> (S, P+S, B, H)
+        positionAttn: Tensor = torch.einsum('sbhi, jhi -> sjbh', [b+d, Pview])
+        # positionAttn shape == (S, P+S, B, H)
+
+
+        ### Relative shift of positional attention (to compute pos attn efficiently for all query positions)
+        positionAttn: Tensor = self._relativeShift(positionAttn)
+
+        # The attention is the sum of the content-based and position-based attentions:
+        attn: Tensor = contentAttn + positionAttn
+        # attn shape == (S, P+S, B, H)
+
+        ### Masking the attention before the softmax layer, exactly the same way as for the Decoder in Transformer model: https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1521090937/decoder+self+attention+in+transformer
+        if mask is not None and mask.any().item():
+            # NOTE: mask.unsqueeze(mask.ndim) == mask[..., None] means adding tensor of dim 1 at the ending dimension
+            # mask[..., None].shape == TODO
+            attn: Tensor = attn.masked_fill(mask = mask.unsqueeze(mask.ndim),
+                                            value = -float('inf'))
+            # attn (masked) shape == (S, P+S, B, H)
+
+        ### Softmax with rescale to prevent values from exploding.
+        # Also softmaxing across dim = 1 (which has size P+S)
+        attn: Tensor = torch.softmax(attn * self.scale, dim = 1)
+        # attn (softmaxed) shape == (S, P+S, B, H)
+
+        ### Apply dropout on the attention
+        attn: Tensor = self.dropoutA(attn)
+        # attn (dropout-ed) shape == (S, P+S, B, H)
+
+        ### Calculated weighted sum of attention with the value matrix V
+        Vview: Tensor = v_tfmd.view(P+S, B, H, I) # split from (P+S, B, H*I)
+        # Multiply along dimension with size (P+S) (the same dimension we softmaxed along)
+        # (S, P+S, B, H) * (P+S, B, H, I) ---> (S, B, H, I)
+        attnWeightedValues: Tensor = (torch.einsum('sjbh, jbhi -> sbhi', [attn, Vview]))
+        # attnWeightedValues shape == (S, B, H, I)
+
+        # NOTE: using contiguous since need to change the memory layout to make the `view` work (to combine the last two dimensions)
+        attnWeightedValues: Tensor = attnWeightedValues.contiguous().view(S, B, H*I)
+        # attnWeightedValues shape == (S, B, H*I)
+
+
+        ### Calculate output
+        # Project back to input dimension and do residual connection
+        # Multiplying along dimensions H*I: Weights_linearOut x attnWeightedValues
+        # (E, H*I) x (S, B, H*I) ---> (S, B, E)
+        output: Tensor = inputMHA + self.dropoutO(self.linearOut(attnWeightedValues))
         # output shape == (S, B, E)
-        ### where SYMBOLS ARE:
-        #   S = current sequence length
-        #   P = previous sequence length
-        #   B = batch size
-        #   E = inputDim (also called embeddingDim)
-        #   I = inner dimension
-        #   H = number of heads
-        # NOTE: pass in positional embeddings separately so we can handle relative positions
-        def forward(self,
-                    wordEmbeddings: FloatTensor,
-                    posEmbeddings: FloatTensor,
-                    memory: FloatTensor,
-                    u: FloatTensor,
-                    v: FloatTensor,
-                    mask: Optional[FloatTensor] = None):
+        ## Doing residual connection and layer normalization.
+        # Multiplying along dimension E: Weights_norm x output
+        # (E,) x (S, B, E) ----> (S, B, E)
+        outputResidConn: Tensor = self.norm(output)
+        # outputResiduConn shape == (S, B, E)
 
-            S: int = wordEmbeddings.shape[0] # sequence length of current segment
-            P: int = memory.shape[0] # sequence length of previous segment
-            H, I, E = self.numHeads, self.innerDim, self.embeddingDim
+        return outputResidConn
 
-            ### Concatenate recurrent memory (the sequence of hidden states) to the input, across the sequence dimension (dim = 0, which has size P = previous sequence length)
-            wordEmbsWithMemory: Tensor = torch.cat([memory, wordEmbeddings], dim = 0)
-            # memory shape == (P, B, E)
-            # input shape == (S, B, E)
-            # inputWithMemory shape == (P+S, B, E)
-
-            ### TODO what is this step called?
-            ### Passing K, V, Q through the linear layers
-            # (I*H*2, E), (P+S, B, E) -> (P+S, B, I*H*2)
-            kv_tfmd: Tensor = self.linearKV(wordEmbsWithMemory)
-            # kv_tfmd shape == (P+S, B, I*H*2)
-            # Chunking along the last dimension:
-            lastDim: int = kv_tfmd.ndim - 1 # or can write dim = -1
-            k_tfmd, v_tfmd = torch.chunk(kv_tfmd, chunks = 2, dim = lastDim)
-            # k_tfmd shape == (P+S, B, I*H)
-            # v_tfmd shape == (P+S, B, I*H)
-
-            q_tfmd: Tensor = self.linearQ(wordEmbeddings)
-            # q_tfmd shape == (S, B, I*H)
-
-
-            ##### Apply scaled dot product attention (look at the following dimensions carefully, since this is the key operation in the Transformer / Transformer XL architecture)
-            _, B, _ = q_tfmd.shape # (S, B, I*H)
-            assert B == k_tfmd.shape[1]
-
-            ### Content-based attention term ((a) + (c) in the paper):
-            # This is the standard attention term in the original Transformer, except without the positional embeddings, which are handled separately in the Transformer XL (see below)
-            # NOTE: 'i' corresponds to number of queries = number of current inputs / targets (seq-wise)
-            # NOTE: 'j' corresponds to number of key / values = number of vectors that we can use to compute the vector for each query
-            a: Tensor = q_tfmd.view(S, B, H, I) # split q_tfmd.shape (S, B, I*H)
-            c: Tensor = u # u represents global (query-independent) bias towards certain keys / values = words. NOTE (by Keita Kurita): maybe this could be a per-attention head parameter?
-            Kview: Tensor = k_tfmd.view(P+S, B, H, I) # split size of k_tfmd
-            # Multiplying along dimension I: (to find contentAttn)
-            # (a + c) * K :   (S, B, H, I) * (P+S, B, H, I) ---->
-            contentAttn: Tensor = torch.einsum('sbhi, jbhi -> sjbh', [a + c, Kview])
-            # contentAttn shape == (S, P+S, B, H)
-
-            ### Position-based attention term ((b) + (d) from the paper)
-            # This attention is solely based on the position of the key/values (i.e. it does not take the content of the key/values into account)
-            # Weights * posEmbs: (I*H, E) * (P+S, B, E) ----> (P+S, B, I*H)
-            p_tfmd: Tensor = self.linearP(posEmbeddings)
-            # p_tfmd shape == (P+S, B, I*H)
-
-            # TODO why is term (a) the same as term (b)?
-            b: Tensor = q_tfmd.view(S, B, H, I) # split size (S, B, H*I)
-            d: Tensor = v # v is global (indpendent of query) bias towards certain positions
-            # TODO: why has batch dim been left out?
-            Pview: Tensor = p_tfmd.view(P+S, H, I)# NOTE: there is no content information regarding keys and values in here.
-            # Multiplying along dimension I to find positional attention
-            # (b + d) * Pview:   (S, B, H, I) * (P+S, H, I) ----> (S, P+S, B, H)
-            positionAttn: Tensor = torch.einsum('sbhi, jhi -> sjbh', [b+d, Pview])
-            # positionAttn shape == (S, P+S, B, H)
-
-
-            ### Relative shift of positional attention (to compute pos attn efficiently for all query positions)
-            positionAttn: Tensor = self._relativeShift(positionAttn)
-
-            # The attention is the sum of the content-based and position-based attentions:
-            attn: Tensor = contentAttn + positionAttn
-            # attn shape == (S, P+S, B, H)
-
-            ### Masking the attention
-            if mask is not None and mask.any().item():
-                # NOTE: mask.unsqueeze(mask.ndim) == mask[..., None] means adding tensor of dim 1 at the ending dimension
-                # mask[..., None].shape == TODO
-                attn: Tensor = attn.masked_fill(mask = mask.unsqueeze(mask.ndim),
-                                                value = -float('inf'))
-                # attn (masked) shape == (S, P+S, B, H)
-
-            ### Softmax with rescale to prevent values from exploding. Softmaxing across dim = 1 (which has size P+S)
-            attn: Tensor = torch.softmax(attn * self.scale, dim = 1)
-            # attn (softmaxed) shape == (S, P+S, B, H)
-
-            ### Apply dropout on the attention
-            attn: Tensor = self.dropoutA(attn)
-
-            ### Calculated weighted sum of attention with the value matrix V
-            Vview: Tensor = v_tfmd.view(P+S, B, H, I) # split from (P+S, B, H*I)
-            # Multiply along dimension dimension with size (P+S) (the same dimension we softmaxed along)
-            # (S, P+S, B, H) * (P+S, B, H, I) ---> (S, B, H, I)
-            attnWeightedValues: Tensor = (torch.einsum('sjbh, jbhi -> sbhi', [attn, Vview]))
-            # attnWeightedValues shape == (S, B, H, I)
-            ## Need to change the memory layout to make the `view` work:
-            attnWeightedValues_contiguous: Tensor = attnWeightedValues.contiguous()
-            attnWeightedValues: Tensor = attnWeightedValues_contiguous().
-            # TODO LEFT OFF HERE
 
 # %% codecell
-attn: Tensor = torch.softmax(rawAttnMasked, dim = 1)
+# Mini-test to see if this class runs successfully:
+H = 4
+mha: MaskedMultiHeadAttention = MaskedMultiHeadAttention(embedDim= E,  # 32
+                                                         innerDim = I,  # 17
+                                                         numHeads = H) # 4
+mha
+# %% codecell
+printParamInfo(mha) # so dropout is not a parameter
+# %% codecell
+inputWordEmbs: Tensor = torch.rand(S, B, E)
+posEmbs: Tensor = torch.rand(P+S, E)
+mem: Tensor = torch.rand(P, B, E)
+u, v = torch.rand(H, I), torch.rand(H, I)
+output: Tensor = mha(inputWordEmbs, posEmbs, mem, u, v)
+assert output.shape == (S, B, E) == (7, 3, 32)
 
-assert attn.shape == (S, P+S, B) == (7, 13, 3)
-assert v_tfmd.shape == (P+S, B, I) == (13, 3, 17)
+# %% markdown
+# ### Step 5: Positionwise Feed Forward Layer
+# After the [`MultiHeadAttention`](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1446445463/multi-head+attention+mechanism) layer is the [`PositionwiseFeedForward`](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/126190352/feed+forward+neural+network+FNN) layer. Both are the key components in the Decoder block.
 
-# TODO: how to know which dimensions on which to do the calculations? Why is the shape 'sji' the one that is required?
-# NOTE: doing calculation on dimension j = P+S so that result has shape SBI
-attnWeightedSum: Tensor = torch.einsum('sjb, jbi -> sbi', [attn, v_tfmd])
 
-assert attnWeightedSum.shape == (S, B, I) == (7, 3, 17)
+# %% codecell
+class PositionwiseFeedForward(nn.Module):
+
+    # embeddingDim (also called inputDim)
+    def __init__(self, embedDim: int, innerDim: int, dropoutO: float):
+        super().__init__()
+
+        self.embeddingDim: int = embedDim
+        self.innerDim: int = innerDim
+        self.dropoutO: float = dropoutO
+
+        # Components of the feed forward layer:
+        self.feedForward: Sequential = Sequential(
+            Linear(in_features=embedDim, out_features=innerDim), # weights shape == (I, E)
+            ReLU(inplace = True),
+            Dropout(p = dropoutO),
+            Linear(in_features=innerDim, out_features=embedDim), # weights shape == (E, I)
+            Dropout(p=dropoutO)
+        )
+
+        self.layerNorm: LayerNorm = LayerNorm(normalized_shape = embedDim)
+
+
+
+    def forward(self, inputFF: FloatTensor) -> FloatTensor:
+        """
+        Applies feed forward layer and layer normalization to the input Tensor
+        Arguments:
+            inputFF: shape == (S, B, E)
+        Returns:
+            output: shape == (S, B, E)
+        """
+        # first linear * inputFF: (S, B, E) * (I, E) ---> (S, B, I)
+        # second linear * aboveresult: (E, I) * (S, B, I) ---> (S, B, E)
+        resultFF = self.feedForward(input = inputFF)
+        # resultFF shape == (S, B, E)
+        output = self.layerNorm(input = inputFF + resultFF)
+        # output shape == (S, B, E)
+
+        return output
+
+# %% markdown
+# ### Step 6: Build the Decoder
+# To construct the decoder block, all we need in addition to the [`MultiHeadAttention`](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1446445463/multi-head+attention+mechanism) layer is the [`PositionwiseFeedForward`](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/126190352/feed+forward+neural+network+FNN) layer.
+#
+# **NOTE:** The [Transformer](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1370095641/transformer+model+ml)'s Encoder is SIMILAR to the [TransformerXL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml)'s Decoder. The [Transformer](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1370095641/transformer+model+ml)'s Encoder block uses un-masked [multi-head attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1446445463/multi-head+attention+mechanism) layer while the [TransformerXL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml) Decoder block uses [**masked** multi head attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1520894410/masked+multi-head+attention) layer. [TransformerXL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml)'s Decoder consists of the following components:
+#
+# * A [masked multi-head attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1521090937/decoder+self+attention+in+transformer) block
+# * A simple [feedforward neural network](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/126190352/feed+forward+neural+network+FNN)
+#
+# These components are connected using [residual connection](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1511358877/residual+connection+layer+ml)s and [layer normalization](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1450213381/layer+normalization)
+# %% codecell
+Image(filename = pth + "transformerEncoder_is_transXLDecoder.png")
+
+# %% codecell
+class TransXLDecoderBlock(nn.Module):
+    def __init__(self,
+                 numHeads: int,
+                 embedDim: int,
+                 mhaInnerDim: int, ffInnerDim: int,
+                 dropoutO: float, dropoutA: float = 0.):
+
+        super().__init__()
+        self.maskedMultiHeadAttention: MaskedMultiHeadAttention = \
+            MaskedMultiHeadAttention(embedDim = embedDim,
+                                     innerDim = mhaInnerDim,
+                                     numHeads = numHeads,
+                                     dropoutO= dropoutO,
+                                     dropoutA = dropoutA)
+
+        self.poswiseFeedForward: PositionwiseFeedForward = \
+            PositionwiseFeedForward(embedDim = embedDim,
+                                    innerDim = ffInnerDim,
+                                    dropoutO= dropoutO)
+
+
+    def forward(self, inputDecoder: FloatTensor,
+                posEmbeddings: FloatTensor,
+                u: FloatTensor,
+                v: FloatTensor,
+                mask = None, memories = None):
