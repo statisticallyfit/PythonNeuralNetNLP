@@ -521,3 +521,70 @@ result
 
 # %% markdown
 # # Training the Transformer XL
+# %% codecell
+TESTING: bool = True
+# %% markdown
+# The configurations we will be using:
+# %% codecell
+class Config(dict):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        for key, val in kwargs.items():
+            setattr(self, key, val)
+
+
+    def set(self, key, val):
+        self[key] = val
+        setattr(self, key, val)
+
+    def update(self, fromDict: dict):
+        for key, val in fromDict.items():
+            self.set(key, val)
+
+
+# %% codecell
+# We will use prime numbers as a dummy test to ensure our implementation is correct
+config: Config = Config(seed = 101, debug = False, warmupStep = 0,
+                        minLearnRate = 0., # Check default params:
+                        dropoutA = 0., # dropout for attention
+                        clip = 0.25,
+                        logInterval = 200,
+                        evalInterval = 100)
+
+if TESTING:
+    config.update(fromDict = dict(
+        debug = True,
+        learningRate = 0.00025,
+        batchSize = 8, # batch size
+        numEpochs = 2,
+        maxStep = 10000, # shorten for testing
+        numLayers = L, # 4
+        numHeads = H, # 3
+        modelDim = E, # 32
+        mhaInnerDim = I, # 17
+        ffInnerDim = 71,
+        dropoutO = 0.1,
+        trainBPTT = 33,
+        evalBPTT = 41,
+        memoryLen = 41,
+        evalMemoryLen = 63
+    ))
+else:
+    config.update(fromDict = dict(
+        #debug = True,
+        learningRate = 0.00025,
+        batchSize = 22, # batch size
+        numEpochs = 2,
+        maxStep = 400000, # shorten for testing
+        numLayers = 12,
+        numHeads = 8,
+        modelDim = 512,
+        mhaInnerDim = 64,
+        ffInnerDim = 2048,
+        dropoutO = 0.1,
+        trainBPTT = 512,
+        evalBPTT = 128,
+        memoryLen = 512,
+        evalMemoryLen = 2100
+    ))
