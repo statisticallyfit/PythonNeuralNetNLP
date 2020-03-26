@@ -1,9 +1,9 @@
 # %% markdown
-# Blog Source: [https://synergo.atlassian.net/wiki/spaces/DataScience/pages/1511359082/Building+the+Transformer+XL+from+Scratch](https://synergo.atlassian.net/wiki/spaces/DataScience/pages/1511359082/Building+the+Transformer+XL+from+Scratch)
-# Code Source: [https://github.com/keitakurita/Practical_NLP_in_PyTorch/blob/master/deep_dives/transformer_xl_from_scratch.ipynb](https://github.com/keitakurita/Practical_NLP_in_PyTorch/blob/master/deep_dives/transformer_xl_from_scratch.ipynb)
+# [Blog Source](https://synergo.atlassian.net/wiki/spaces/DataScience/pages/1511359082/Building+the+Transformer+XL+from+Scratch)
+# $\hspace{1em}$ | $\hspace{1em}$
+# [Code Source](https://github.com/keitakurita/Practical_NLP_in_PyTorch/blob/master/deep_dives/transformer_xl_from_scratch.ipynb)
+# # Building the [Transformer XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716) from Sratch
 # %% codecell
-from typing import Dict, Any, Callable, Tuple
-
 import numpy as np
 
 import torch
@@ -19,9 +19,8 @@ import os
 from IPython.display import Image
 
 from typing import *
-# Making files in utils folder visible here:
 
-# Importing my local print functions:
+# Making files in utils folder visible here: to import my local print functions for nn.Module objects
 sys.path.append(os.getcwd() + "/src/utils/")
 from src.utils.ModelUtil import *
 
@@ -40,8 +39,6 @@ print(f"pth = {pth}")
 
 
 # %% markdown
-# # Building the [Transformer XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716) from Sratch
-#
 # ## A Single [Attention Head](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism)
 # Let us start by implementing a [single attention head](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) in a [`MultiHeadAttention` layer](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1446445463/multi-head+attention+mechanism).
 # ### Assumptions:
@@ -55,18 +52,20 @@ seqSize, batchSize, embeddingDim = 7, 3, 32
 # short names
 (S, B, E) = (seqSize, batchSize, embeddingDim)
 wordEmbeddings: Tensor = torch.rand(seqSize, batchSize, embeddingDim)
-wordEmbeddings
+#wordEmbeddings
 # %% codecell
-wordEmbeddings.shape
-# %% codecell
-wordEmbeddings.ndim
+assert wordEmbeddings.shape == (S, B, E) == (7, 3, 32)
+assert wordEmbeddings.ndim == 3
 # %% codecell
 # Gets the first element of wordEmbeddings tensor (first chunk in the seven, along first dimension)
-wordEmbeddings[0,:,:]
-# %% codecell
-wordEmbeddings[0,:,:].ndim
-# %% codecell
-wordEmbeddings[0,:,:].shape
+assert wordEmbeddings[0,:,:].ndim == 2
+assert wordEmbeddings[0,:,:].shape == (B, E) == (3, 32)
+
+# Indexing along elements along the second dimension, to get elements along the second dimension
+assert wordEmbeddings[:,0,:].shape == (S, E) == (7, 32)
+
+# Indexing along the third dimension, to get elements along third dimension
+assert wordEmbeddings[:,:,0].shape == (S, B) == (7, 3)
 # %% markdown
 # #### Notes about the [Transformer XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml)
 # * [Segment-level recurrence mechanism](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1527480493): we feed the cached outputs of the model for the previous sequence (here this means we are feeding the [word embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/87666969/word+embedding+ml) from the previous sequence as an additional input to our model)
@@ -79,9 +78,9 @@ prevSeqSize: int = 6
 P: int = prevSeqSize
 # These are the hidden states from the previous sequence, as an example
 memory: Tensor = torch.rand(prevSeqSize, batchSize, embeddingDim)
-memory
-# %% codecell
-memory.shape
+
+assert memory.shape == (P, B, E) == (6, 3, 32)
+
 # %% markdown
 # Each [self-attention head](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) takes keys, queries, and values as input. The procedure in the single [attention head](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) is as follows:
 #
@@ -95,101 +94,70 @@ memory.shape
 
 innerDim: int = 17 # this is the internal dimension size
 I = innerDim # short form
+
 linearK: Linear = Linear(in_features = embeddingDim, out_features = innerDim)
 linearV: Linear = Linear(in_features = embeddingDim, out_features = innerDim)
 linearQ: Linear = Linear(in_features = embeddingDim, out_features = innerDim)
 
-linearK
+assert linearK.weight.shape == linearV.weight.shape == linearQ.weight.shape == (I, E)
+assert linearK.bias.shape == linearV.bias.shape == linearQ.bias.shape == (I, )
 # %% markdown
-# #### Analysis of Weight Matrix for $K$
+# #### Analysis of Linear Layer that Will Create Keys Matrix $K$:
 # %% codecell
 printParamInfo(linearK)
-# %% codecell
-printModuleInfo(linearK)
-getUniqueModules(linearK)
 # %% codecell
 getChildInfo(linearK)
 
 # %% markdown
-# #### Analysis of Weight Matrix $V$:
+# #### Analysis of Linear Layer that Will Create Values Matrix $V$:
 # %% codecell
 printParamInfo(linearV)
 # %% codecell
-printModuleInfo(linearV)
-# %% codecell
 getChildInfo(linearV)
 # %% markdown
-# #### Analysis of Weight Matrix $Q$:
+# #### Analysis of Linear Layer that Will Create Query Matrix $Q$:
 # %% codecell
 printParamInfo(linearQ)
-# %% codecell
-printModuleInfo(linearQ)
 # %% codecell
 getChildInfo(linearQ)
 # %% markdown
 # The [memory (sequence of hidden states)](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1527480493/segment-level+recurrence+mechanism+ml) is concatenated across the sequence dimension and fed as keys / values.
 #
-# * $\color{red}{\textbf{WARNING}}$: the memory is not concatenated with the queries, since each query represents one word we want to predict, so it wouldn't make sense to modify the number of queries.
+# * $\color{orange}{\textbf{WARNING}}$: the memory is not concatenated with the queries, since each query represents one word we want to predict, so it wouldn't make sense to modify the number of queries.
 
 # %% codecell
 # Concatenate the memory and embeddings at dimension = 0 (first dimension)
 wordEmbsWordMemory: Tensor = torch.cat([memory, wordEmbeddings], dim = 0)
-wordEmbsWordMemory.shape
-# %% codecell
-wordEmbsWordMemory.ndim
-# %% codecell
-wordEmbsWordMemory
-# %% codecell
+
 # Testing the tensors have been concatenated along their first dimension
-
 assert memory.shape == (P, B, E) == (6, 3, 32), "Test memory shape"
-
 assert wordEmbeddings.shape == (S, B, E) == (7, 3, 32), "Test wordEmbeddings shape"
-
 assert wordEmbsWordMemory.shape == (P + S, B, E) == (13, 3, 32), "Test wordEmbs ++ memory shape"
 
 # %% codecell
-# TODO what does "tfmd" mean?
-# Passing each word Embedding ++ Memory(hiddenstates) through the layers by multiplication to create the corresponding matrices.
-k_tfmd = linearK(wordEmbsWordMemory)
-v_tfmd = linearV(wordEmbsWordMemory)
+assert (P, S, B, I, E) == (6, 7, 3, 17, 32), "Reminder: Dimension names"
+
+
+# Passing each word Embedding ++ Memory(hiddenstates) through the layers by multiplication to create the
+# corresponding matrices. Just like transformer calculation: the query, key, value matrices are formed by m
+# ultiplying the word embedding matrix with the weights in the corresponding linear layer.
+
+# Multiplying along dimension E: weightsK x embeddings: (I, E) x (P+S, B, E) ---> (P+S, B, I)
+keys = linearK(wordEmbsWordMemory)
+assert keys.shape == (P + S, B, I), "Test K shape"
+
+# Multiplying along dimension E: weightsV x embeddings: (I, E) x (P+S, B, E) ---> (P+S, B, I)
+values = linearV(wordEmbsWordMemory)
+assert values.shape == (P + S, B, I), "Test V shape"
+
 # NOTE: here is where the warning above applies: there is no memory for the queries
-q_tfmd = linearQ(wordEmbeddings)
-
-assert (P, S, B, I, E) == (6, 7, 3, 17, 32), "Dimension names test"
-
-assert k_tfmd.shape == (P + S, B, I), "Test K shape"
-assert v_tfmd.shape == (P + S, B, I), "Test V shape"
-assert q_tfmd.shape == (S, B, I), "Test Q shape"
+# Multiplying along dimension E: weightsQ x embeddings: (I, E) x (S, B, E) ---> (S, B, I)
+queries = linearQ(wordEmbeddings)
+assert queries.shape == (S, B, I), "Test Q shape"
 
 
 # %% markdown
-# For matrix $K$, first dimension is $13$, as a result of the multiplication of the `linearK` layer with the `wordEmbsWordMemory` whose first dimension is $13$
-# %% codecell
-(ns, ts, _) = getParamInfo(linearK)
-dict(zip(ns, ts))
-# %% codecell
-k_tfmd.shape
-
-# %% markdown
-# Same with matrix $V$: For matrix $V$, first dimension is $13$, as a result of the multiplication of the `linearK` layer with the `wordEmbsWordMemory` whose first dimension is $13$
-# %% codecell
-(ns, ts, _) = getParamInfo(linearV)
-dict(zip(ns, ts))
-# %% codecell
-v_tfmd.shape
-# %% markdown
-# But first dimension of matrix $Q$ is $7$, as a result of the multiplication of the `linearQ` layer with the [`wordEmbeddings`](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/87666969/word+embedding+ml) tensor whose first dimension is $7$ not $13$, like that of `wordEmbsWordMemory`
-# %% codecell
-(ns, ts, _) = getParamInfo(linearQ)
-dict(zip(ns, ts))
-# %% codecell
-wordEmbeddings.shape
-# %% codecell
-q_tfmd.shape
-
-# %% markdown
-# ### Step 2: Compute [Attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) Scores for each of the Values
+# ### Step 2: Compute [Attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) Scores
 # Now we compute [scaled dot product attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1671856135/scaled+dot+product+attention) as per the usual [Transformer](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1370095641/transformer+model+ml) model. [Scaled dot product attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1671856135/scaled+dot+product+attention) computes the [attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) score as the dot product between the query and key vectors. (To prevent values from exploding as the dimensionality of the vectors increases, we divide the raw attention score by the sqrt of the [embedding](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1474331193/embedding%2Bml) size).
 #
 # $$
@@ -202,12 +170,12 @@ Image(filename = pth + "ModalNet-19.png")
 # %% codecell
 
 ### Calculating first the QK part with scaling
-# q_tfmd shape == (S, B, I)
-# v_tfmd shape == (P + S, B, I)
-# k_tfmd shape == (P + S, B, I)
+# queries shape == (S, B, I)
+# values shape == (P + S, B, I)
+# keys shape == (P + S, B, I)
 # (calling J = P + S)
 # This calculation here means multiplication along inner dimension I = 17
-contentAttn: Tensor = torch.einsum('sbi, jbi -> sjb', [q_tfmd, k_tfmd]) / (E ** 0.5)
+contentAttn: Tensor = torch.einsum('sbi, jbi -> sjb', [queries, keys]) / (E ** 0.5)
 # QK^T shape must be == (7, 13, 3) == (S, P + S, B)
 assert contentAttn.shape == (S, P+S, B) == (7, 13, 3)
 
@@ -247,23 +215,16 @@ assert contentAttn.shape == (S, P+S, B) == (7, 13, 3)
 # \mathbf{A_{ij}}^\textbf{rel} = \underbrace{\mathbf{E_{x_i}}^T \mathbf{W_q}^T \mathbf{W_{k, E}} \mathbf{E_{x_j}}}_{(a)} + \underbrace{\mathbf{E_{x_i}}^T \mathbf{W_q}^T \mathbf{W_{k, R}} \color{cyan}{\mathbf{R_{i-j}}} }_{(b)} + {\Large \underbrace{ {\color{red}{\mathbf{u}^T}} \mathbf{W_{k, E}} \mathbf{E_{x_j}}}_{(c)}} + \underbrace{ {\color{red}{\mathbf{v}^T}} \mathbf{W_{k,R}} \color{cyan}{\mathbf{R_{i-j}}} }_{(d)}
 # $$
 # %% codecell
-assert I == innerDim == 17, "Reminder of inner dimension size"
+u: Tensor = torch.rand(I).expand_as(queries)
 
-u: Tensor = torch.rand(I).expand_as(q_tfmd)
-
-assert u.shape == q_tfmd.shape == (S, B, I) == (7, 3, 17), "Test u.shape == q_tfmd.shape"
-
+assert u.shape == queries.shape == (S, B, I) == (7, 3, 17), "Test u.shape == queries.shape"
+assert keys.shape == (P + S, B, I), "Test keys.shape"
 assert contentAttn.shape == (S, P+S, B) == (7, 13, 3), "Test content Attn shape before"
 
-assert k_tfmd.shape == (P+S, B, I), "Test k_tfmd.shape"
-
-# Content attention after adding term (c)
-# Rule for getting dimensions:
-## u.shape == 'sbi'
-## k_tfmd.shape == 'jbi'
-## GOAL: to get result after multiplying to have shape equal to contentAttn.shape which is 'sjb' so set the result shape to 'sjb'.
-termC: Tensor = torch.einsum('sbi, jbi -> sjb', [u, k_tfmd])
-contentAttn_C: Tensor = contentAttn + termC/ (E ** 0.5)
+### Calculate term C, multiply along dimension I:    u x keys :     (S, B, I) x (P+S, B, I) ---> (S, P+S, B)
+## GOAL: to get result after multiplying to have shape equal to contentAttn.shape which is 'sjb' so set the result shape to 'sjb' instead of other way 'jsb'
+c: Tensor = torch.einsum('sbi, jbi -> sjb', [u, keys])
+contentAttn_C: Tensor = contentAttn + c / (E ** 0.5)
 
 assert contentAttn_C.shape == (S, P+S, B), "Test content attention shape after adding term (c)"
 
@@ -272,40 +233,35 @@ assert contentAttn_C.shape == (S, P+S, B), "Test content attention shape after a
 # %% codecell
 posIndices: Tensor = torch.arange(S + P - 1, -1, -1.0, dtype = torch.float)
 posIndices
+
+assert posIndices.shape == (P+S, ) == (13,)
+
 # %% codecell
 invFreq: Tensor = 1 / (10000 ** (torch.arange(0.0, E, 2.0) / E))
-# posIndices shape == (P+S) == (13)
-# invFreq shape == (16)
+assert invFreq.shape == (E/2,) == (16, )
 
 # Outer Product to get sinusoidal tensor: This notation i, j -> ij means to keep both dimensions (cross product or outer product)
 sinusoidInp: Tensor = torch.einsum('i, j -> ij', [posIndices, invFreq])
-
-assert sinusoidInp.shape == (13, 16)
+assert sinusoidInp.shape == (P+S, E/2) == (13, 16)
 
 # Plotting the sinusoidals on some dimensions:
 plt.plot(sinusoidInp[0, :].detach().numpy());
 plt.plot(sinusoidInp[6, :].detach().numpy());
 
 # %% codecell
-# TODO: what does dim =  -1 mean? Here it has same effect as dim = 1?
+# NOTE: dim = -1 means last dimension, so concatenating on last dimension here, only then adding tensor of dim 1 at dim 1
 a = torch.cat([sinusoidInp.sin(), sinusoidInp.cos()], dim = -1)[:, None,:]
 b = torch.cat([sinusoidInp.sin(), sinusoidInp.cos()], dim = -1).unsqueeze(1)
-
 assert (a == b).all(), "Test another way of adding tensor of dim = 1 in a tensor"
 
-
 # Concatenate the sinusoid (13, 16) on dimension 1 (which has size 16) so result get ssize (13, 32).
-relativePositionalEmbeddings: Tensor = torch.cat([sinusoidInp.sin(), sinusoidInp.cos()], dim = -1).unsqueeze(1)
-
-assert relativePositionalEmbeddings.shape == (13, 1, 32), "Test relative positional embeddings shape"
+relPosEmbsTensor: Tensor = torch.cat([sinusoidInp.sin(), sinusoidInp.cos()], dim = -1).unsqueeze(1)
+assert relPosEmbsTensor.shape == (P+S, 1, E) == (13, 1, 32), "Test relative positional embeddings shape"
 
 
 # %% markdown
 # Gathering up all the above information into a class for [relative positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml):
 # %% codecell
-#import torch.LongTensor as LongTensor
-
-
 class RelativePositionalEmbedding(nn.Module):
     def __init__(self, embedDim: int):
         super().__init__()
@@ -316,48 +272,44 @@ class RelativePositionalEmbedding(nn.Module):
         # Register buffer tells pytorch that this tensor is part of the model, so it will be saved into the state_dict and moved to GPU, along with the model
         self.register_buffer("invFreq", invFreq)
 
-    # positions shape == (S, )    (vector) where S = shape size.
+    # positions shape == (P+S, )    (vector)
     def forward(self, posIndices: torch.LongTensor) -> Tensor:
         # Outer product
         sinusoidInp: Tensor = torch.einsum('i, j -> ij', [posIndices.float(), self.invFreq])
-        # sinusoidInp.shape == (S, E/2)
+        # sinusoidInp.shape == (P+S, E/2)
 
         lastDim: int = sinusoidInp.ndim - 1
-        relativePositionalEmbeddings: Tensor = torch.cat([sinusoidInp.sin(), sinusoidInp.cos()], dim = lastDim) # same as saying dim = -1
-        # relativePositionalEmbeddings.shape == (S, E)
+        relPosEmbsTensor: Tensor = torch.cat([sinusoidInp.sin(), sinusoidInp.cos()], dim = lastDim) # same as saying dim = -1
+        # relativePositionalEmbeddings.shape == (P+S, E)
 
         # Adding a tensor of dim 1 at spot 1 (why?? intuition / reason for this??)
-        return relativePositionalEmbeddings.unsqueeze(1)
-        # relposembs shape == (S, 1, E)
+        return relPosEmbsTensor.unsqueeze(1)
+        # relposembs shape == (P+S, 1, E)
 
 # %% codecell
 # Testing to see if this class if working:
 rpe: RelativePositionalEmbedding = RelativePositionalEmbedding(embedDim= E)
-print(rpe)
+rpe
 # %% codecell
-pos: Tensor = torch.rand(S)
-rpeResult: Tensor = rpe(pos)
-assert rpeResult.shape == (S, 1, E) == (7, 1, 32)
+iPos: Tensor = torch.rand(P+S)
+relPosEmbsTensor: Tensor = rpe(iPos)
+assert relPosEmbsTensor.shape == (P+S, 1, E) == (13, 1, 32)
 
 
 # %% markdown
 # Apply transformations to the [relative positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml) separate from the values and keys matrices, $V$ and $K$:
 # %% codecell
 
-# Reminder of dimensions:
-assert embeddingDim == E == 32
-assert innerDim == I == 17
-
 linearP: Linear = Linear(in_features = embeddingDim, out_features = innerDim)
 print(f"linearP: {linearP}")
 printParamInfo(linearP)
 # %% codecell
-# Wp x relposemb  ----> pos_tfmd
+# weightsLinearP x relPosEmbsTensor  ----> posEmbsTensor
 # (I, E) x (P+S, 1, E) ---> (P+S, 1, I)
-pos_tfmd: Tensor = linearP(input = relativePositionalEmbeddings)
+posEmbsTensor: Tensor = linearP(input = relPosEmbsTensor)
 
-assert relativePositionalEmbeddings.shape == (P+S, 1, E) == (13, 1, 32)
-assert pos_tfmd.shape == (P+S, 1, I) == (13, 1, 17)
+assert relPosEmbsTensor.shape == (P+S, 1, E) == (13, 1, 32)
+assert posEmbsTensor.shape == (P+S, 1, I) == (13, 1, 17)
 
 # %% markdown
 # Adding positional bias during attention computation:
@@ -365,20 +317,17 @@ assert pos_tfmd.shape == (P+S, 1, I) == (13, 1, 17)
 # Positional bias (v)
 v: Tensor = torch.randn(I)
 
-
-
 # The pos_tfmd just without the middle dimension
-pos_tfmd_twoDim: Tensor = pos_tfmd.squeeze(1)
+posEmbsTensor_noMidDim: Tensor = posEmbsTensor.squeeze(1)
 
-assert (pos_tfmd[:, 0, :] == pos_tfmd.squeeze(1)).all(), "Test alternate way of squeezing out a dimension from a tensor"
+assert (posEmbsTensor[:, 0, :] == posEmbsTensor.squeeze(1)).all(), "Test alternate way of squeezing out a dimension from a tensor"
 
-assert pos_tfmd_twoDim.shape == (P+S, I) == (13, 17)
+assert posEmbsTensor_noMidDim.shape == (P+S, I) == (13, 17)
 
-# q_tfmd + v shape == (S, B, I)
-# pos_tfmd_twoDim shape == (P+S, I)
-# TODO: goal is to multiply only along dimension(s) which are the same ????
+### Calculate positional attention, multiplying along dimension I: (queries + v) x posNoMid
+# (S, B, I) x (P+S, I) ---> (S, P+S, B)
 # TODO: why not have: 'sbi, ji -> sbj' ??
-posAttn: Tensor = torch.einsum('sbi, ji -> sjb', [q_tfmd + v,   pos_tfmd_twoDim])
+posAttn: Tensor = torch.einsum('sbi, ji -> sjb', [queries + v, posEmbsTensor_noMidDim])
 
 assert posAttn.shape == (S, P+S, B) == (7, 13, 3)
 
@@ -453,11 +402,11 @@ assert rawAttn.shape == rawAttnMasked.shape == (S, P+S, B) == (7, 13, 3)
 attn: Tensor = torch.softmax(rawAttnMasked, dim = 1)
 
 assert attn.shape == (S, P+S, B) == (7, 13, 3)
-assert v_tfmd.shape == (P+S, B, I) == (13, 3, 17)
+assert values.shape == (P + S, B, I) == (13, 3, 17)
 
 # TODO: how to know which dimensions on which to do the calculations? Why is the shape 'sji' the one that is required?
 # NOTE: doing calculation on dimension j = P+S so that result has shape SBI
-attnWeightedSum: Tensor = torch.einsum('sjb, jbi -> sbi', [attn, v_tfmd])
+attnWeightedSum: Tensor = torch.einsum('sjb, jbi -> sbi', [attn, values])
 
 assert attnWeightedSum.shape == (S, B, I) == (7, 3, 17)
 
@@ -508,7 +457,7 @@ class MaskedMultiHeadAttention(nn.Module):
                                        bias = False) # no bias now, making this a simple matrix multiplication
 
         # Linear layer for queries (which will not be concatenated with memorized states so it remains separate)
-        # TODO: what remains separate: the linearQ or the result q_tfmd = linearQ(input)???
+        # TODO: what remains separate: the linearQ or the result queries = linearQ(input)???
         self.linearQ: Linear = Linear(in_features= embedDim,
                                       out_features= innerDim * numHeads,
                                       bias = False)
@@ -612,29 +561,29 @@ class MaskedMultiHeadAttention(nn.Module):
 
         ### Passing K, V, Q through the linear layers
         # (I*H*2, E), (P+S, B, E) -> (P+S, B, I*H*2)
-        kv_tfmd: Tensor = self.linearKV(inputWithMemory)
-        # kv_tfmd shape == (P+S, B, I*H*2)
+        kvalues: Tensor = self.linearKV(inputWithMemory)
+        # kvalues shape == (P+S, B, I*H*2)
         # Chunking along the last dimension:
-        lastDim: int = kv_tfmd.ndim - 1 # or can write dim = -1
-        k_tfmd, v_tfmd = torch.chunk(kv_tfmd, chunks = 2, dim = lastDim)
-        # k_tfmd shape == (P+S, B, I*H)
-        # v_tfmd shape == (P+S, B, I*H)
+        lastDim: int = kvalues.ndim - 1 # or can write dim = -1
+        keys, values = torch.chunk(kvalues, chunks = 2, dim = lastDim)
+        # keys shape == (P+S, B, I*H)
+        # values shape == (P+S, B, I*H)
 
-        q_tfmd: Tensor = self.linearQ(inputMHA)
-        # q_tfmd shape == (S, B, I*H)
+        queries: Tensor = self.linearQ(inputMHA)
+        # queries shape == (S, B, I*H)
 
 
         ##### Apply scaled dot product attention (look at the following dimensions carefully, since this is the key operation in the Transformer / Transformer XL architecture)
-        _, B, _ = q_tfmd.shape # (S, B, I*H)
-        assert B == k_tfmd.shape[1]
+        _, B, _ = queries.shape # (S, B, I*H)
+        assert B == keys.shape[1]
 
         ### Content-based attention term ((a) + (c) in the paper):
         # This is the standard attention term in the original Transformer, except without the positional embeddings, which are handled separately in the Transformer XL (see below)
         # NOTE: 'i' corresponds to number of queries = number of current inputs / targets (seq-wise)
         # NOTE: 'j' corresponds to number of key / values = number of vectors that we can use to compute the vector for each query
-        a: Tensor = q_tfmd.view(S, B, H, I) # split q_tfmd.shape (S, B, I*H)
+        a: Tensor = queries.view(S, B, H, I) # split queries.shape (S, B, I*H)
         c: Tensor = u # u represents global (query-independent) bias towards certain keys / values = words. NOTE (by Keita Kurita): maybe this could be a per-attention head parameter?
-        Kview: Tensor = k_tfmd.view(P+S, B, H, I) # split size of k_tfmd
+        Kview: Tensor = keys.view(P+S, B, H, I) # split size of keys
         # Multiplying along dimension I: (to find contentAttn)
         # (a + c) * K :   (S, B, H, I) * (P+S, B, H, I) ---->
         contentAttn: Tensor = torch.einsum('sbhi, jbhi -> sjbh', [a + c, Kview])
@@ -647,7 +596,7 @@ class MaskedMultiHeadAttention(nn.Module):
         # p_tfmd shape == (P+S, B, I*H)
 
         # TODO why is term (a) the same as term (b)?
-        b: Tensor = q_tfmd.view(S, B, H, I) # split size (S, B, H*I)
+        b: Tensor = queries.view(S, B, H, I) # split size (S, B, H*I)
         d: Tensor = v # v is global (indpendent of query) bias towards certain positions
         # TODO: why has batch dim been left out?
         Pview: Tensor = p_tfmd.view(P+S, H, I)# NOTE: there is no content information regarding keys and values in here.
@@ -682,7 +631,7 @@ class MaskedMultiHeadAttention(nn.Module):
         # attn (dropout-ed) shape == (S, P+S, B, H)
 
         ### Calculated weighted sum of attention with the value matrix V
-        Vview: Tensor = v_tfmd.view(P+S, B, H, I) # split from (P+S, B, H*I)
+        Vview: Tensor = values.view(P+S, B, H, I) # split from (P+S, B, H*I)
         # Multiply along dimension with size (P+S) (the same dimension we softmaxed along)
         # (S, P+S, B, H) * (P+S, B, H, I) ---> (S, B, H, I)
         attnWeightedValues: Tensor = (torch.einsum('sjbh, jbhi -> sbhi', [attn, Vview]))
@@ -848,10 +797,13 @@ class TransXLDecoderBlock(nn.Module):
 # ### Step 7: Full [TransformerXL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml)
 # Now will all these components we can build the full [Transformer XL model](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml).
 #
-# **Trick**: a common trick on language modeling is tying the input embedding matrix $E$ and output projection matrix $P$. Remember, a language model predicts the next token in a sequence so its output dimension is $\mathbb{R}^{|V|}$ where $|V| =$ vocabulary size. If we constrain the penultimate layer output to be the same dimension as the embeddings $d$, the embedding matrix $E$ will have shape $\mathbb{R}^{|V| \times d}$ and the output projection matrix $P$ will have shape $\mathbb{R}^{d \times |V|}$.
+# #### [Weight-Tying](https://hyp.is/CFMUBm6eEeqnFUdyYjJC_Q/arxiv.org/pdf/1608.05859.pdf) Trick in [Language Modeling](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1474691325/language+model+ml):
+# A common trick on [language modeling](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1474691325/language+model+ml) is [weight tying, or tying the input embedding matrix $E$ and output projection matrix $P$](https://hyp.is/CFMUBm6eEeqnFUdyYjJC_Q/arxiv.org/pdf/1608.05859.pdf). Remember, a [language model](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1474691325/language+model+ml) predicts the next token in a sequence so its output dimension is $\mathbb{R}^{|V|}$ where $|V| =$ vocabulary size. If we constrain the penultimate layer output to be the same dimension as the [embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1474331193/embedding%2Bml) $d$, the [embedding](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1474331193/embedding%2Bml) matrix $E$ will have shape $\mathbb{R}^{|V| \times d}$ and the output projection matrix $P$ will have shape $\mathbb{R}^{d \times |V|}$.
 #
-# [Source: Authors found here that (weight tying) constraining the matrices such that $P = E^T$ improved performance while greatly reducing the total parameter count (and thus memory usage) of the model.](https://hyp.is/iOhfhG6gEeqdJ5-92qbKvQ/arxiv.org/pdf/1608.05859.pdf). Instead of using the exact same weights, we scale the embeddings by the embedding dimension.
-# * NOTE; this trick is included in the codebase but not mentioned in the paper.
+# #### Result of [Weight-Tying](https://hyp.is/CFMUBm6eEeqnFUdyYjJC_Q/arxiv.org/pdf/1608.05859.pdf):
+# Authors found [here]((https://hyp.is/iOhfhG6gEeqdJ5-92qbKvQ/arxiv.org/pdf/1608.05859.pdf)) that this [weight-tying](https://hyp.is/CFMUBm6eEeqnFUdyYjJC_Q/arxiv.org/pdf/1608.05859.pdf) by constraining the matrices such that $P = E^T$ improved performance while greatly reducing the total parameter count (and thus memory usage) of two of the three considered models.
+# * **NOTE 1:** For the [TransformerXL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml) model, instead of using the exact same weights, we scale the [embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1474331193/embedding%2Bml) by the [embedding](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1474331193/embedding%2Bml) dimension.
+# * **NOTE 2:** this trick is included in the codebase but not mentioned in the paper. ($\color{red}{\texttt{Question: in the transformer xl paper??}}$)
 
 # %% codecell
 class StandardWordEmbedding(nn.Module):
