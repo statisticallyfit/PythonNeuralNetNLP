@@ -619,20 +619,13 @@ Image(filename = pth + "batchsizetwo_correct.png")
 #
 # We can implement this in a `DataLoader` like this:
 
-# %% codecell
-a = torch.arange(2*4).reshape(2, 4)
-a
-a.transpose(1)
-# %% codecell
-b = torch.arange(3*2*4).reshape(2, 4, 3)
-b
-b.transpose(0,1)
 
 # %% codecell
 from torch.utils import data
 import math
 
 class LMDataLoader(data.DataLoader):
+
     def __init__(self, data: torch.LongTensor, batchSize: int, bptt: int, device = torch.device("cpu")):
 
         self.batchSize: int = batchSize
@@ -644,8 +637,51 @@ class LMDataLoader(data.DataLoader):
         ### Reshape the data so we can index efficiently into it while training
         # Create index to trim off any elements that don't fit cleanly:
         iClean: int = self.numSteps * batchSize
-        self.data = (data[0 : iClean]
-                     .view(batchSize, self.numSteps)
-                     .transpose(0, 1)
-                     .contiguous().to(device) # put on device as contiguous tensor
-                     )
+        self.data: torch.LongTensor = (data[0 : iClean]
+                                       .view(batchSize, self.numSteps)
+                                       .transpose(0, 1) # TODO maybe this is just how to transpose a tensor?
+                                        .contiguous().to(device) # put on device as contiguous tensor
+                                     )
+
+    def __iter__(self):
+        """
+        Defining how to iterate over the batch data
+        """
+        # start = 0, end = self.data.size(0), step = self.bptt
+        for iBatchStart in range(0, self.data.size(0) - 1, self.bptt):
+
+            iBatchEnd: int = min(iBatchStart + self.bptt, self.data.size(0) - 1)
+
+            # todo (keita kurita): what is `self.ext_len` in original code?
+            batchData: Tensor = self.data[iBatchStart : iBatchEnd]
+
+            target: Tensor = self.data[iBatchStart + 1 : iBatchEnd + 1]
+
+            # Generate the sequence length as well for loss calculation later
+            yield batchData, target, iBatchEnd - iBatchStart
+
+
+    def __len__(self):
+        return math.ceil(self.data.size(0) / self.bptt)
+
+
+# %% codecell
+# Testing out the data loader implementation
+assert N == 1000
+BS = 16
+BPTT = 10
+
+testCorpus: Tensor = torch.arange(N)
+
+testCorpus[:BPTT]
+
+loader: LMDataLoader = LMDataLoader(data = testCorpus, batchSize = BS, bptt = BPTT)
+
+its = iter(loader)
+lits = list(its)
+len(lits)
+[d for _, _, d in lits]
+
+[b.size() for b, _, _ in lits]
+
+[t.size() for _, t, _ in lits]
