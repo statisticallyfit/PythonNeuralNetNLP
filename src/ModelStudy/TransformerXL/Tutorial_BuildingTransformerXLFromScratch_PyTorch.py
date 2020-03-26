@@ -262,9 +262,8 @@ assert relPosEmbsTensor.shape == (P+S, 1, E) == (13, 1, 32), "Test relative posi
 # %% markdown
 # Gathering up all the above information into a class for [relative positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml):
 # %% codecell
-from src.ModelStudy.TransformerXL import RelativePositionalEmbedding
+from src.ModelStudy.TransformerXL.RelativePositionalEmbedding import RelativePositionalEmbedding
 
-# %% codecell
 # Testing to see if this class if working:
 rpe: RelativePositionalEmbedding = RelativePositionalEmbedding(embedDim= E)
 rpe
@@ -414,7 +413,7 @@ assert output.shape == (S, B, E) == (7, 3, 32)
 # ### Step 4: MultiHeadAttention: The Core Component
 # Aggregating all the above and applying some optimizations by grouping computations and adding dropout, we can create the `MultiHeadAttention` module:
 # %% codecell
-from src.ModelStudy.TransformerXL import MaskedMultiHeadAttention
+from src.ModelStudy.TransformerXL.MaskedMultiHeadAttention import MaskedMultiHeadAttention
 
 # Mini-test to see if this class runs successfully:
 H = 4
@@ -438,7 +437,7 @@ assert output.shape == (S, B, E) == (7, 3, 32)
 
 
 # %% codecell
-from src.ModelStudy.TransformerXL import PositionwiseFeedForward
+from src.ModelStudy.TransformerXL.PositionwiseFeedForward import PositionwiseFeedForward
 
 # %% markdown
 # ### Step 6: Build the Decoder
@@ -454,7 +453,7 @@ from src.ModelStudy.TransformerXL import PositionwiseFeedForward
 Image(filename = pth + "transformerEncoder_is_transXLDecoder.png")
 
 # %% codecell
-from src.ModelStudy.TransformerXL import TransXLDecoderBlock
+from src.ModelStudy.TransformerXL.TransXLDecoderBlock import TransXLDecoderBlock
 # %% markdown
 # ### Step 7: Full [TransformerXL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml)
 # Now will all these components we can build the full [Transformer XL model](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml).
@@ -468,7 +467,7 @@ from src.ModelStudy.TransformerXL import TransXLDecoderBlock
 # * **NOTE 2:** this trick is included in the codebase but not mentioned in the paper. ($\color{red}{\texttt{Question: in the transformer xl paper??}}$)
 
 # %% codecell
-from src.ModelStudy.TransformerXL import StandardWordEmbedding
+from src.ModelStudy.TransformerXL.StandardWordEmbedding import StandardWordEmbedding
 
 
 # Testing here how Embedding layer looks like and how it changes the dimension of the embedding matrix in order to accomplish weight-tying
@@ -488,7 +487,8 @@ idx: torch.LongTensor = torch.LongTensor(torch.arange(S*B).reshape(S, B))
 # Putting everything together:
 
 # %% codecell
-from src.ModelStudy.TransformerXL import TransformerXL
+# from src.ModelStudy.package.module import classname
+from src.ModelStudy.TransformerXL.TransformerXL import TransformerXL
 
 
 N = 1000
@@ -524,26 +524,11 @@ result
 # %% codecell
 TESTING: bool = True
 # %% markdown
+# ### Train Step 1: Prepare Configurations
 # The configurations we will be using:
 # %% codecell
-class Config(dict):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+from src.ModelStudy.TransformerXL.Config import Config
 
-        for key, val in kwargs.items():
-            setattr(self, key, val)
-
-
-    def set(self, key, val):
-        self[key] = val
-        setattr(self, key, val)
-
-    def update(self, fromDict: dict):
-        for key, val in fromDict.items():
-            self.set(key, val)
-
-
-# %% codecell
 # We will use prime numbers as a dummy test to ensure our implementation is correct
 config: Config = Config(seed = 101, debug = False, warmupStep = 0,
                         minLearnRate = 0., # Check default params:
@@ -551,7 +536,8 @@ config: Config = Config(seed = 101, debug = False, warmupStep = 0,
                         clip = 0.25,
                         logInterval = 200,
                         evalInterval = 100)
-
+config
+# %% codecell
 if TESTING:
     config.update(fromDict = dict(
         debug = True,
@@ -588,3 +574,78 @@ else:
         memoryLen = 512,
         evalMemoryLen = 2100
     ))
+
+config
+
+
+# %% markdown
+# ### Train Step 2: Preparing the Data Loader
+# Data loading for the Transformer Xl is similar to data loading for an RNN based language model but is different from standard data loading.
+#
+# **Data Loading for Transformer XL:** Suppose we chunked the input into sequence of `batchSize = 4` words to feed into the model. Remember that Transformer XL is stateful, meaning the computations of each minibatch are carried over to the next minibatch. ($\color{red}{\text{Question: is this referring to how } \texttt{newMemory } \text{is computed in the } \texttt{forward } \text{method of the } \texttt{TransformerXL} \text{class?}}$). For a minibatch of size `batchSize = 1`, handling this is simple. We just chunk the input and feed it into the model like this:
+# %% codecell
+Image(filename =  pth + "batchsizeone_wrong.png")
+# %% markdown
+# Now what happens if the `batchSize = 2`? We can't split the sentence like this (below) otherwise we would be breaking the dependencies between segments:
+# %% codecell
+Image(filename = pth + "batchsizetwo_wrong.png")
+# %% markdown
+# The correct way to split the corpus with `batchSize = 2` is to feed the batches like this (below). We should have the sentences split across batches rather than keeping as much of the sentence within the batch, and letting the rest of the sentence split across the rest of the batch.
+# %% codecell
+Image(filename = pth + "batchsizetwo_correct.png")
+
+# %% markdown
+# **General Rule:** Generalizing this, we first divide the corpus into `batchSize` length segments, then feed each segment piece by piece into the model.
+#
+# **Example of Batching and Feeding:** Suppose `batchSize = 4` and our entire corpus looks like this:
+#
+# `pytorch is an amazing deep learning framework that makes nlp really easy`
+#
+# We want to ensure the previous batch contains the previous segment at the same position. In other words, assuming we fed the model one word at a time, we want to iterate over this sentence like this:
+#
+# `Batch 1: pytorch  amazing   framework  nlp
+# Batch 2: is       deep      that       really
+# Batch 3: an       learning  makes      easy`
+#
+# **Key feature of the Method:** We can reconstruct the original sentence by reading from  **top to bottom -> left to right** instead of **left to right -> top to bottom**. Basically we create batches by splitting the sentence *across* batch structure not *within* batch structure.
+#
+# $\color{red}{\text{TODO: understand what is the BPTT length exactly and where I can find it in the below example: }}$
+#
+# In reality, we feed the model with a sequence of words for each batch. The length of this sequence is commonly referred to the `bptt` (back propagation through time) length, since this is the maximum length the gradients propagate through in the sequence direction. With a longer `bptt` length of 2 for example, the `minibatch` would be of shape `(batchSize, bptt)` and would look like:
+#
+# `Batch 1: pytorch  amazing   framework  nlp
+#          is       deep      that       really
+# Batch 2: an       learning  makes      easy`
+#
+# We can implement this in a `DataLoader` like this:
+
+# %% codecell
+a = torch.arange(2*4).reshape(2, 4)
+a
+a.transpose(1)
+# %% codecell
+b = torch.arange(3*2*4).reshape(2, 4, 3)
+b
+b.transpose(0,1)
+
+# %% codecell
+from torch.utils import data
+import math
+
+class LMDataLoader(data.DataLoader):
+    def __init__(self, data: torch.LongTensor, batchSize: int, bptt: int, device = torch.device("cpu")):
+
+        self.batchSize: int = batchSize
+        # BPTT length = the length of the sequence of words for each batch, also called back propagation through time
+        #  length, since this is the maximum length that the gradients propagate through in the sequence direction.
+        self.bptt: int = bptt
+        self.numSteps: int = data.size(0) // batchSize
+
+        ### Reshape the data so we can index efficiently into it while training
+        # Create index to trim off any elements that don't fit cleanly:
+        iClean: int = self.numSteps * batchSize
+        self.data = (data[0 : iClean]
+                     .view(batchSize, self.numSteps)
+                     .transpose(0, 1)
+                     .contiguous().to(device) # put on device as contiguous tensor
+                     )
