@@ -609,8 +609,6 @@ Image(filename = pth + "batchsizetwo_correct.png")
 #
 # **Key feature of the Method:** We can reconstruct the original sentence by reading from  **top to bottom -> left to right** instead of **left to right -> top to bottom**. Basically we create batches by splitting the sentence *across* batch structure not *within* batch structure.
 #
-# $\color{red}{\text{TODO: understand what is the BPTT length exactly and where I can find it in the below example: }}$
-#
 # In reality, we feed the model with a sequence of words for each batch. The length of this sequence is commonly referred to the `bptt` (back propagation through time) length, since this is the maximum length the gradients propagate through in the sequence direction. With a longer `bptt` length of 2 for example, the `minibatch` would be of shape `(batchSize, bptt)` and would look like:
 #
 # `Batch 1: pytorch  amazing   framework  nlp
@@ -621,67 +619,64 @@ Image(filename = pth + "batchsizetwo_correct.png")
 
 
 # %% codecell
-from torch.utils import data
-import math
-
-class LMDataLoader(data.DataLoader):
-
-    def __init__(self, data: torch.LongTensor, batchSize: int, bptt: int, device = torch.device("cpu")):
-
-        self.batchSize: int = batchSize
-        # BPTT length = the length of the sequence of words for each batch, also called back propagation through time
-        #  length, since this is the maximum length that the gradients propagate through in the sequence direction.
-        self.bptt: int = bptt
-        self.numSteps: int = data.size(0) // batchSize
-
-        ### Reshape the data so we can index efficiently into it while training
-        # Create index to trim off any elements that don't fit cleanly:
-        iClean: int = self.numSteps * batchSize
-        self.data: torch.LongTensor = (data[0 : iClean]
-                                       .view(batchSize, self.numSteps)
-                                       .transpose(0, 1) # TODO maybe this is just how to transpose a tensor?
-                                        .contiguous().to(device) # put on device as contiguous tensor
-                                     )
-
-    def __iter__(self):
-        """
-        Defining how to iterate over the batch data
-        """
-        # start = 0, end = self.data.size(0), step = self.bptt
-        for iBatchStart in range(0, self.data.size(0) - 1, self.bptt):
-
-            iBatchEnd: int = min(iBatchStart + self.bptt, self.data.size(0) - 1)
-
-            # todo (keita kurita): what is `self.ext_len` in original code?
-            batchData: Tensor = self.data[iBatchStart : iBatchEnd]
-
-            target: Tensor = self.data[iBatchStart + 1 : iBatchEnd + 1]
-
-            # Generate the sequence length as well for loss calculation later
-            yield batchData, target, iBatchEnd - iBatchStart
+from src.ModelStudy.TransformerXL.LMDataLoader import LMDataLoader
 
 
-    def __len__(self):
-        return math.ceil(self.data.size(0) / self.bptt)
-
-
-# %% codecell
 # Testing out the data loader implementation
-assert N == 1000
-BS = 16
-BPTT = 10
-
+(N, B, BPTT) = (1000, 16, 10)
 testCorpus: Tensor = torch.arange(N)
-
 testCorpus[:BPTT]
-
+# %% codecell
 loader: LMDataLoader = LMDataLoader(data = testCorpus, batchSize = BS, bptt = BPTT)
 
-its = iter(loader)
-lits = list(its)
-len(lits)
+loaderIter: List[Tuple[Tensor, Tensor, int]] = list(iter(loader))
+batch_0, target_0, diff_0 = loaderIter[0]
+batch_0
+# %% codecell
+target_0
+
+assert (batch_0 + 1 == target_0).all(), "Test target values are shifted one higher than values in batch"
+# %% codecell
+assert (batch_0 == batch_0[0:BPTT, :]).all(), "Test first dimension of batch has length BPTT"
+assert batch_0.shape == (BPTT, B) == (10, 16)
+# %% codecell
+allBatches: List[Tensor] = [b for b,_,_ in loaderIter]
+allTargets: List[Tensor] = [t for _,t,_ in loaderIter]
+allDiffs: List[Tensor] = [d for _,_,d in loaderIter]
+
+BatchTensor = Tensor
+BPTTTensor = Tensor
+
+def getBPTTCols(colIndex: int, tensors: List[BatchTensor]) -> Tensor[BPTTTensor]:
+    """
+    Expects the elements in tensors list to have shape == (BPTT, B) so that when indexing along columns, it gets a list of tensors which are all shape == (BPTT, )
+    """
+    return Tensor([tensors[i][:,colIndex] for i in range(0, len(tensors))]).t()
+
+l = Tensor([Tensor([1,2]),Tensor([3,4])])
+
+getBPTTCols(0, allBatches)
+# %% codecell
+getBPTTCols(1, allBatches)
+# %% codecell
+
+[allBatches[i][:,2] for i in range(0, len(allBatches))]
+# %% codecell
+allBatches[0][:,0]
+allBatches[0][:,0]
+allBatches[0][:,0]
+allBatches[0][:,0]
+# %% codecell
+# Getting
 [d for _, _, d in lits]
 
 [b.size() for b, _, _ in lits]
 
 [t.size() for _, t, _ in lits]
+
+# %% codecell
+t = torch.arange(5*3).reshape(3, 5)
+t
+t[0:2,:]
+
+t[:,0:2]
