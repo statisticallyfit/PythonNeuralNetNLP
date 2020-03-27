@@ -30,10 +30,10 @@ from src.utils.ModelUtil import *
 # Building pathname for images
 # Set current working directory
 os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP')
-pth = os.getcwd() # now path is the above
-print(f"pth = {pth}\n")
-pth += "/src/ModelStudy/images/"
-print(f"pth = {pth}")
+imagePath = os.getcwd() # now path is the above
+print(f"pth = {imagePath}\n")
+imagePath += "/src/ModelStudy/images/"
+print(f"pth = {imagePath}")
 
 
 
@@ -46,7 +46,7 @@ print(f"pth = {pth}")
 # * Receive an input of [word embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/87666969) of shape `(seq = 7, batchSize = 3, embeddingDim = 32)`
 # NOTE: the [Transformer XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716) does not add [positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1470169419) to the input.
 # %% codecell
-Image(filename = pth + "transformerXL_extendedContext.gif")
+Image(filename =imagePath + "transformerXL_extendedContext.gif")
 # %% codecell
 seqSize, batchSize, embeddingDim = 7, 3, 32
 # short names
@@ -166,7 +166,7 @@ assert queries.shape == (S, B, I), "Test Q shape"
 # * NOTE: Going to use [einsum notation](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1441366077/einsum) to make code easier to read. Einsum denotes the shape of the inputs and outputs using one letter to represent each dimension, same letter representing same size. Einsum is computed by taking the dot product across dimensions with the same character.
 
 # %% codecell
-Image(filename = pth + "ModalNet-19.png")
+Image(filename =imagePath + "ModalNet-19.png")
 # %% codecell
 
 ### Calculating first the QK part with scaling
@@ -450,7 +450,7 @@ from src.ModelStudy.TransformerXL.PositionwiseFeedForward import PositionwiseFee
 #
 # These components are connected using [residual connection](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1511358877/residual+connection+layer+ml)s and [layer normalization](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1450213381/layer+normalization)
 # %% codecell
-Image(filename = pth + "transformerEncoder_is_transXLDecoder.png")
+Image(filename =imagePath + "transformerEncoder_is_transXLDecoder.png")
 
 # %% codecell
 from src.ModelStudy.TransformerXL.TransXLDecoderBlock import TransXLDecoderBlock
@@ -584,15 +584,15 @@ config
 #
 # **Data Loading for Transformer XL:** Suppose we chunked the input into sequence of `batchSize = 4` words to feed into the model. Remember that Transformer XL is stateful, meaning the computations of each minibatch are carried over to the next minibatch. ($\color{red}{\text{Question: is this referring to how } \texttt{newMemory } \text{is computed in the } \texttt{forward } \text{method of the } \texttt{TransformerXL} \text{class?}}$). For a minibatch of size `batchSize = 1`, handling this is simple. We just chunk the input and feed it into the model like this:
 # %% codecell
-Image(filename =  pth + "batchsizeone_wrong.png")
+Image(filename =imagePath + "batchsizeone_wrong.png")
 # %% markdown
 # Now what happens if the `batchSize = 2`? We can't split the sentence like this (below) otherwise we would be breaking the dependencies between segments:
 # %% codecell
-Image(filename = pth + "batchsizetwo_wrong.png")
+Image(filename =imagePath + "batchsizetwo_wrong.png")
 # %% markdown
 # The correct way to split the corpus with `batchSize = 2` is to feed the batches like this (below). We should have the sentences split across batches rather than keeping as much of the sentence within the batch, and letting the rest of the sentence split across the rest of the batch.
 # %% codecell
-Image(filename = pth + "batchsizetwo_correct.png")
+Image(filename =imagePath + "batchsizetwo_correct.png")
 
 # %% markdown
 # **General Rule:** Generalizing this, we first divide the corpus into `batchSize` length segments, then feed each segment piece by piece into the model.
@@ -647,36 +647,55 @@ allDiffs: List[Tensor] = [d for _,_,d in loaderIter]
 BatchTensor = Tensor
 BPTTTensor = Tensor
 
-def getBPTTCols(colIndex: int, tensors: List[BatchTensor]) -> Tensor[BPTTTensor]:
+def getBPTTCols(colIndex: int, tensors: List[BatchTensor]) -> List[BPTTTensor]:
+    """Expects the elements in tensors list to have shape == (BPTT, B) so that when indexing along columns, it gets a list of tensors which are all shape == (BPTT, )
     """
-    Expects the elements in tensors list to have shape == (BPTT, B) so that when indexing along columns, it gets a list of tensors which are all shape == (BPTT, )
-    """
-    return Tensor([tensors[i][:,colIndex] for i in range(0, len(tensors))]).t()
-
-l = Tensor([Tensor([1,2]),Tensor([3,4])])
+    return [tensors[i][:,colIndex] for i in range(0, len(tensors))]
 
 getBPTTCols(0, allBatches)
+
+# %% codecell
+getBPTTCols(0, allTargets)
 # %% codecell
 getBPTTCols(1, allBatches)
 # %% codecell
+getBPTTCols(2, allBatches)
 
-[allBatches[i][:,2] for i in range(0, len(allBatches))]
+
+# %% markdown
+# ### Train Step 3: Loading the Actual Data
+# Using the Penn Treebank dataset to benchmark our model:
 # %% codecell
-allBatches[0][:,0]
-allBatches[0][:,0]
-allBatches[0][:,0]
-allBatches[0][:,0]
+from pathlib import Path
+DATASET_NAME_STR: str = "penn"
+
+# os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP')
+dataPath: str = os.getcwd() + "/src/ModelStudy/TransformerXL/data/"
+DATA_DIR: Path = Path(dataPath) / DATASET_NAME_STR
+DATA_DIR.absolute()
+
+# %% markdown
+# Using a utility vocabulary class borrowed directly from the Transformer XL repo to numericalize our inputs.
 # %% codecell
-# Getting
-[d for _, _, d in lits]
+sys.path.append(os.getcwd() + "/src/ModelStudy/TransformerXL/utils/")
 
-[b.size() for b, _, _ in lits]
+#sys.path.append("../utils")
+# sys.path.pop()
+sys.path
 
-[t.size() for _, t, _ in lits]
+from vocabulary import Vocab
+
+vocab: Vocab = Vocab(special = ["<eos>"], lower_case = True)
+
+(DATA_DIR / "train.txt").absolute()
+vocab.count_file(DATA_DIR / "train.txt")
+vocab.count_file(DATA_DIR / "valid.txt")
+vocab.count_file(DATA_DIR / "test.txt")
+None
 
 # %% codecell
-t = torch.arange(5*3).reshape(3, 5)
-t
-t[0:2,:]
-
-t[:,0:2]
+from pathlib import Path
+DATASET = "penn"
+DATA_DIR = Path("../data") / DATASET
+sys.path.append("../utils")
+from vocabulary import Vocab
