@@ -1,4 +1,4 @@
-# %% markdown
+# %% markdown [markdown]
 # [Blog Source](https://synergo.atlassian.net/wiki/spaces/DataScience/pages/1511359082/Building+the+Transformer+XL+from+Scratch)
 # $\hspace{1em}$ | $\hspace{1em}$
 # [Code Source](https://github.com/keitakurita/Practical_NLP_in_PyTorch/blob/master/deep_dives/transformer_xl_from_scratch.ipynb)
@@ -38,7 +38,7 @@ print(f"pth = {imagePath}")
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## A Single [Attention Head](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism)
 # Let us start by implementing a [single attention head](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) in a [`MultiHeadAttention` layer](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1446445463/multi-head+attention+mechanism).
 # ### Assumptions:
@@ -66,7 +66,7 @@ assert wordEmbeddings[:,0,:].shape == (S, E) == (7, 32)
 
 # Indexing along the third dimension, to get elements along third dimension
 assert wordEmbeddings[:,:,0].shape == (S, B) == (7, 3)
-# %% markdown
+# %% markdown [markdown]
 # #### Notes about the [Transformer XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml)
 # * [Segment-level recurrence mechanism](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1527480493): we feed the cached outputs of the model for the previous sequence (here this means we are feeding the [word embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/87666969/word+embedding+ml) from the previous sequence as an additional input to our model)
 # * [Transformer XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml) does not add the [positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1470169419) to the input, only in the [multi-head attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1446445463/multi-head+attention+mechanism) module.
@@ -81,7 +81,7 @@ memory: Tensor = torch.rand(prevSeqSize, batchSize, embeddingDim)
 
 assert memory.shape == (P, B, E) == (6, 3, 32)
 
-# %% markdown
+# %% markdown [markdown]
 # Each [self-attention head](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) takes keys, queries, and values as input. The procedure in the single [attention head](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) is as follows:
 #
 # 1. Apply a separate linear transformation to each of the keys, queries, and values.
@@ -101,26 +101,26 @@ linearQ: Linear = Linear(in_features = embeddingDim, out_features = innerDim)
 
 assert linearK.weight.shape == linearV.weight.shape == linearQ.weight.shape == (I, E)
 assert linearK.bias.shape == linearV.bias.shape == linearQ.bias.shape == (I, )
-# %% markdown
+# %% markdown [markdown]
 # #### Analysis of Linear Layer that Will Create Keys Matrix $K$:
 # %% codecell
 printParamInfo(linearK)
 # %% codecell
 getChildInfo(linearK)
 
-# %% markdown
+# %% markdown [markdown]
 # #### Analysis of Linear Layer that Will Create Values Matrix $V$:
 # %% codecell
 printParamInfo(linearV)
 # %% codecell
 getChildInfo(linearV)
-# %% markdown
+# %% markdown [markdown]
 # #### Analysis of Linear Layer that Will Create Query Matrix $Q$:
 # %% codecell
 printParamInfo(linearQ)
 # %% codecell
 getChildInfo(linearQ)
-# %% markdown
+# %% markdown [markdown]
 # The [memory (sequence of hidden states)](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1527480493/segment-level+recurrence+mechanism+ml) is concatenated across the sequence dimension and fed as keys / values.
 #
 # * $\color{orange}{\textbf{WARNING}}$: the memory is not concatenated with the queries, since each query represents one word we want to predict, so it wouldn't make sense to modify the number of queries.
@@ -156,7 +156,7 @@ queries = linearQ(wordEmbeddings)
 assert queries.shape == (S, B, I), "Test Q shape"
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Step 2: Compute [Attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) Scores
 # Now we compute [scaled dot product attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1671856135/scaled+dot+product+attention) as per the usual [Transformer](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1370095641/transformer+model+ml) model. [Scaled dot product attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1671856135/scaled+dot+product+attention) computes the [attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) score as the dot product between the query and key vectors. (To prevent values from exploding as the dimensionality of the vectors increases, we divide the raw attention score by the sqrt of the [embedding](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1474331193/embedding%2Bml) size).
 #
@@ -179,7 +179,7 @@ contentAttn: Tensor = torch.einsum('sbi, jbi -> sjb', [queries, keys]) / (E ** 0
 # QK^T shape must be == (7, 13, 3) == (S, P + S, B)
 assert contentAttn.shape == (S, P+S, B) == (7, 13, 3)
 
-# %% markdown
+# %% markdown [markdown]
 # ### Step 3: Relative Positional Encodings
 # Before applying softmax, we need [**relative positional encodings**](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml). Instead of having a single embedding represent each **absolute** position, the [Transformer XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716) computes an embedding that represents the **relative** distance between any two tokens. This is called the [**relative positional embedding**](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml) and is used to compute the attention between the two word tokens.
 #
@@ -208,7 +208,7 @@ assert contentAttn.shape == (S, P+S, B) == (7, 13, 3)
 # * **Learned global content bias:** is term $(c)$, is a learned vector that accounts for the other tokens in the key matrix $K$.
 # * **Learned global positional bias:** is term $(d)$, is a learned vector that adjusts the importance based only on distance between tokens, using the intuition that recent previous words are more relevant than words from previous paragraphs.
 
-# %% markdown
+# %% markdown [markdown]
 # Implementing term $(c)$:
 #
 # $$
@@ -228,7 +228,7 @@ contentAttn_C: Tensor = contentAttn + c / (E ** 0.5)
 
 assert contentAttn_C.shape == (S, P+S, B), "Test content attention shape after adding term (c)"
 
-# %% markdown
+# %% markdown [markdown]
 # Next: compute [relative positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml) necessary for the positional attention terms. For the the [relative positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml), the [Transformer XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716) uses fixed sinusoidal embeddings.
 # %% codecell
 posIndices: Tensor = torch.arange(S + P - 1, -1, -1.0, dtype = torch.float)
@@ -259,7 +259,7 @@ relPosEmbsTensor: Tensor = torch.cat([sinusoidInp.sin(), sinusoidInp.cos()], dim
 assert relPosEmbsTensor.shape == (P+S, 1, E) == (13, 1, 32), "Test relative positional embeddings shape"
 
 
-# %% markdown
+# %% markdown [markdown]
 # Gathering up all the above information into a class for [relative positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml):
 # %% codecell
 from src.ModelStudy.TransformerXL.RelativePositionalEmbedding import RelativePositionalEmbedding
@@ -273,7 +273,7 @@ relPosEmbsTensor: Tensor = rpe(iPos)
 assert relPosEmbsTensor.shape == (P+S, 1, E) == (13, 1, 32)
 
 
-# %% markdown
+# %% markdown [markdown]
 # Apply transformations to the [relative positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml) separate from the values and keys matrices, $V$ and $K$:
 # %% codecell
 
@@ -288,7 +288,7 @@ posEmbsTensor: Tensor = linearP(input = relPosEmbsTensor)
 assert relPosEmbsTensor.shape == (P+S, 1, E) == (13, 1, 32)
 assert posEmbsTensor.shape == (P+S, 1, I) == (13, 1, 17)
 
-# %% markdown
+# %% markdown [markdown]
 # Adding positional bias during attention computation:
 # %% codecell
 # Positional bias (v)
@@ -308,7 +308,7 @@ posAttn: Tensor = torch.einsum('sbi, ji -> sjb', [queries + v, posEmbsTensor_noM
 
 assert posAttn.shape == (S, P+S, B) == (7, 13, 3)
 
-# %% markdown
+# %% markdown [markdown]
 # Since we compute a [relative positional embedding](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml) for each key-query pair, a naive implementation of [attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) using [relative positional embedding](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml)s would be $O(n^2)$ in terms of computational complexity. Dai et al. (2019) can reduce this to $O(n)$ time by computing the [attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) for one query then shifting the [relative positional embedding](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml) for different query positions.
 # %% codecell
 zeroPad: Tensor = torch.zeros( (S, 1, B), dtype = torch.float)
@@ -329,14 +329,14 @@ posAttnPadded: Tensor = (torch.cat([zeroPad, posAttn], dim = 1)
 
 assert posAttnPadded.shape == posAttn.shape
 
-# %% markdown
+# %% markdown [markdown]
 # The attention is computed as the **sum of the content and positional attention**:
 # %% codecell
 rawAttn: Tensor = contentAttn_C + posAttnPadded
 
 assert rawAttn.shape == contentAttn_C.shape == posAttnPadded.shape == (S, P+S, B) == (7, 13, 3), "Test raw attention shape"
 
-# %% markdown
+# %% markdown [markdown]
 # When doing language modeling, we must prevent the model from 'cheating' (from looking at the word it should be predicting). In the [Transformer's decoder](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1521090937/decoder+self+attention+in+transformer), the [Transformer](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1370095641/transformer+model+ml) hides prediction words by setting the [attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) score to zero, to [mask](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1462730780/mask) out words the model should not see.
 #
 # Adopting the same [attention masking in the `MultiHeadAttention` module](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1521090937/decoder+self+attention+in+transformer) for the [Transformer-XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml):
@@ -372,7 +372,7 @@ rawAttnMasked: Tensor = rawAttn.masked_fill(mask = mask, value = -float('inf'))
 
 assert rawAttn.shape == rawAttnMasked.shape == (S, P+S, B) == (7, 13, 3)
 
-# %% markdown
+# %% markdown [markdown]
 # Compute the outputs as the weighted sum of the value vectors in value matrix $V$, using the attention scores:
 # %% codecell
 # Doing softmax on dim=1, which has size 13
@@ -387,7 +387,7 @@ attnWeightedSum: Tensor = torch.einsum('sjb, jbi -> sbi', [attn, values])
 
 assert attnWeightedSum.shape == (S, B, I) == (7, 3, 17)
 
-# %% markdown
+# %% markdown [markdown]
 # Final step: project the attention weighted sums back to their original dimension and apply a residual connection and layer normalization:
 # %% codecell
 
@@ -409,7 +409,7 @@ assert linearOut(attnWeightedSum).shape == (S, B, E) == (7, 3, 32)
 output: Tensor = layerNorm(input = wordEmbeddings + linearOut(input = attnWeightedSum))
 assert output.shape == (S, B, E) == (7, 3, 32)
 
-# %% markdown
+# %% markdown [markdown]
 # ### Step 4: MultiHeadAttention: The Core Component
 # Aggregating all the above and applying some optimizations by grouping computations and adding dropout, we can create the `MultiHeadAttention` module:
 # %% codecell
@@ -431,7 +431,7 @@ u, v = torch.rand(H, I), torch.rand(H, I)
 output: Tensor = mha(inputWordEmbs, posEmbs, mem, u, v)
 assert output.shape == (S, B, E) == (7, 3, 32)
 
-# %% markdown
+# %% markdown [markdown]
 # ### Step 5: Positionwise Feed Forward Layer
 # After the [`MultiHeadAttention`](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1446445463/multi-head+attention+mechanism) layer is the [`PositionwiseFeedForward`](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/126190352/feed+forward+neural+network+FNN) layer. Both are the key components in the Decoder block.
 
@@ -439,7 +439,7 @@ assert output.shape == (S, B, E) == (7, 3, 32)
 # %% codecell
 from src.ModelStudy.TransformerXL.PositionwiseFeedForward import PositionwiseFeedForward
 
-# %% markdown
+# %% markdown [markdown]
 # ### Step 6: Build the Decoder
 # To construct the decoder block, all we need in addition to the [`MultiHeadAttention`](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1446445463/multi-head+attention+mechanism) layer is the [`PositionwiseFeedForward`](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/126190352/feed+forward+neural+network+FNN) layer.
 #
@@ -454,7 +454,7 @@ Image(filename =imagePath + "transformerEncoder_is_transXLDecoder.png")
 
 # %% codecell
 from src.ModelStudy.TransformerXL.TransXLDecoderBlock import TransXLDecoderBlock
-# %% markdown
+# %% markdown [markdown]
 # ### Step 7: Full [TransformerXL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml)
 # Now will all these components we can build the full [Transformer XL model](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml).
 #
@@ -482,7 +482,7 @@ idx: torch.LongTensor = torch.LongTensor(torch.arange(S*B).reshape(S, B))
 # TODO why does this give error????
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Step 8: Build [Transformer XL Model](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml)
 # Putting everything together:
 
@@ -519,11 +519,11 @@ result: Dict[str, Tensor] = transformerXL(indices, targets)
 result
 
 
-# %% markdown
+# %% markdown [markdown]
 # # Training the Transformer XL
 # %% codecell
 TESTING: bool = True
-# %% markdown
+# %% markdown [markdown]
 # ### Train Step 1: Prepare Configurations
 # The configurations we will be using:
 # %% codecell
@@ -578,23 +578,23 @@ else:
 config
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Train Step 2: Preparing the Data Loader
 # Data loading for the Transformer Xl is similar to data loading for an RNN based language model but is different from standard data loading.
 #
 # **Data Loading for Transformer XL:** Suppose we chunked the input into sequence of `batchSize = 4` words to feed into the model. Remember that Transformer XL is stateful, meaning the computations of each minibatch are carried over to the next minibatch. ($\color{red}{\text{Question: is this referring to how } \texttt{newMemory } \text{is computed in the } \texttt{forward } \text{method of the } \texttt{TransformerXL} \text{class?}}$). For a minibatch of size `batchSize = 1`, handling this is simple. We just chunk the input and feed it into the model like this:
 # %% codecell
 Image(filename =imagePath + "batchsizeone_wrong.png")
-# %% markdown
+# %% markdown [markdown]
 # Now what happens if the `batchSize = 2`? We can't split the sentence like this (below) otherwise we would be breaking the dependencies between segments:
 # %% codecell
 Image(filename =imagePath + "batchsizetwo_wrong.png")
-# %% markdown
+# %% markdown [markdown]
 # The correct way to split the corpus with `batchSize = 2` is to feed the batches like this (below). We should have the sentences split across batches rather than keeping as much of the sentence within the batch, and letting the rest of the sentence split across the rest of the batch.
 # %% codecell
 Image(filename =imagePath + "batchsizetwo_correct.png")
 
-# %% markdown
+# %% markdown [markdown]
 # **General Rule:** Generalizing this, we first divide the corpus into `batchSize` length segments, then feed each segment piece by piece into the model.
 #
 # **Example of Batching and Feeding:** Suppose `batchSize = 4` and our entire corpus looks like this:
@@ -627,7 +627,7 @@ from src.ModelStudy.TransformerXL.LMDataLoader import LMDataLoader
 testCorpus: Tensor = torch.arange(N)
 testCorpus[:BPTT]
 # %% codecell
-loader: LMDataLoader = LMDataLoader(data = testCorpus, batchSize = BS, bptt = BPTT)
+loader: LMDataLoader = LMDataLoader(data = testCorpus, batchSize = B, bptt = BPTT)
 
 loaderIter: List[Tuple[Tensor, Tensor, int]] = list(iter(loader))
 batch_0, target_0, diff_0 = loaderIter[0]
@@ -662,7 +662,7 @@ getBPTTCols(1, allBatches)
 getBPTTCols(2, allBatches)
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Train Step 3: Loading the Actual Data
 # Using the Penn Treebank dataset to benchmark our model:
 # %% codecell
@@ -674,11 +674,10 @@ dataPath: str = os.getcwd() + "/src/ModelStudy/TransformerXL/data/"
 DATA_DIR: Path = Path(dataPath) / DATASET_NAME_STR
 DATA_DIR.absolute()
 
-# %% markdown
+# %% markdown [markdown]
 # Using a utility vocabulary class borrowed directly from the Transformer XL repo to numericalize our inputs.
 # %% codecell
 sys.path.append(os.getcwd() + "/src/ModelStudy/TransformerXL/utils/")
-
 #sys.path.append("../utils")
 # sys.path.pop()
 sys.path
@@ -694,8 +693,3 @@ vocab.count_file(DATA_DIR / "test.txt")
 None
 
 # %% codecell
-from pathlib import Path
-DATASET = "penn"
-DATA_DIR = Path("../data") / DATASET
-sys.path.append("../utils")
-from vocabulary import Vocab
