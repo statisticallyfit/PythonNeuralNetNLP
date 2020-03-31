@@ -235,4 +235,153 @@ assert namedTensor.names == ('N', 'C', 'H', 'W') \
 # ### Name Inference
 # Names are propagated on operations in a two-step process called **name inference:**
 #
-# 1. **Check names:** an operator 
+# 1. **Check names:** an operator may perform automatic checks at runtime that check that certain dimension names must match.
+# 2. **Propagate names:** name inference propagates output names to output tensors.
+#
+# Example of adding two $1$-dim tensors with no broadcasting.
+# %% codecell
+x: Tensor = torch.randn(3, names = ('X', ))
+y: Tensor = torch.randn(3)
+z: Tensor = torch.randn(3, names = ('Z',))
+# %% markdown
+# **Example: Check Names:** First check if the names of these two tensors *match*. Two names match if and only if they are equal (by string equality) or at least one is `None`.
+# %% codecell
+catchError(lambda: x + z)
+# %% markdown
+# **Example: Propagate names:** *unify* the two names by returning the most refined name of the two. With `x + y`, the name `X` is more refined than `None`.
+# %% codecell
+assert (x + y).names == ('X',)
+
+
+# %% markdown
+# #### Name Inference Rules: for Broadcasting
+# Named tensors do not change broadcasting behavior, they still broadcast by position. But when checking two dimensions if they can be broadcasted, PyTorch also checks that the names of those dimensions match. In other words PyTorch does broadcasting by checking for two things:
+#
+# 1. Checks if the two dimensions can be broadcasted (structurally)
+# 2. Checks the names of those dimensions are equal (else it doesn't broadcast)
+#
+# This results in named tensors preventing unintended alignment during operations that broadcast.
+#
+# **Example: Apply a `perBatchScale` to the `tensor`:** Below, without `names` the `perBatchScale` tensor is aligned with the last dimension of `tensor`, which is `W` but an error is thrown since this doesn't match the name of the dimension `N` of the `perBatchScale` tensor. (Later: will talk about explicit broadcasting by names for how to align tensors by name).
+# But what we wanted instead was to perform the operation by aligning `perBatchScale` with the batch dimension `N` of `tensor`.
+# %% codecell
+tensor: Tensor = torch.randn(2,2,2,2, names = ('N', 'C', 'H', 'W'))
+perBatchScale: Tensor = torch.rand(2, names = ('N', ))
+catchError(lambda : tensor * perBatchScale)
+# %% markdown
+# #### Name Inference Rules: for Matrix Multiply
+# The function `torch.mm(A, B)` performs dot (cross?) product between the second dim of `A` and the first dim of `B`, returning a tensor with the first dim of `A` and the second dim of `B`, returning a two-dim tensor with the first dim of `A` and the second dim of `B`. **Key point:** matrix multiplication does NOT check if the contracted dimensions (in this case `D` and `in`) have the same name.
+# %% codecell
+markovStates: Tensor = torch.randn(128, 5, names = ('batch', 'D'))
+transitionMatrix: Tensor = torch.randn(5, 7, names = ('in', 'out'))
+
+# Apply one transition
+newState: Tensor = markovStates @ transitionMatrix
+
+# Asserting multiplication still allowed on `D` and `in` even though they are not the same name.
+assert newState.names == ('batch', 'out')
+assert newState.shape == (128, 7)
+
+# %% markdown
+# ### Feature: Explicit Broadcasting by Names
+# Main complaints about working with multiple dimensions is the need to `unsqueeze` (to introduce / add) dummy dimensions so that operations can occur. For the `perBatchScale` example, to multiply the unnamed versions of the tensors we would `unsqueeze` as follows.
+#
+# **Old Method: `unsqueeze()`**
+# %% codecell
+tensor: Tensor = torch.randn(2,2,2,2) # N, C, H, W
+perBatchScale: Tensor = torch.rand(2) # N
+
+assert tensor.shape == (2,2,2,2)
+assert perBatchScale.view(2,1,1,1).shape == (2,1,1,1)
+
+print(f"perBatchScale = {perBatchScale}\n\n")
+print(f"tensor = {tensor}")
+
+# %% markdown
+# Showing that `view` and `expand_as` are not the same:
+# %% codecell
+perBatchScale.view(2,1,1,1)
+# %% codecell
+perBatchScale.expand_as(tensor)
+# %% codecell
+# Broadcasting so that can multiply along dimension `N`
+# NOTE: view is semantically the right choice
+correctResult: Tensor = tensor * perBatchScale.view(2,1,1,1) # N, C, H, W
+# NOTE: expand_as is semantically incorrect
+incorrectResult: Tensor = tensor * perBatchScale.expand_as(tensor)
+
+assert correctResult.shape == incorrectResult.shape == (2,2,2,2)
+# Even though they have the same shape, they are not the same
+assert not torch.allclose(correctResult, incorrectResult)
+
+# %% markdown
+# **New Method: `align_as` or `align_to`**
+# We can make the multiplication operations safer (and easily agnostic to the number of dimensions) by using names. The new `tensor.align_as(other)` operations permutes the dimensions of `tensor` to match the order specified in `other.names`, adding one-sized dimensions where appropriate (basically doing the work of `permute` and `view`).
+# %% codecell
+tensor: Tensor = tensor.refine_names('N', 'C', 'H', 'W')
+perBatchScale: Tensor = perBatchScale.refine_names('N')
+
+assert tensor.names == ('N', 'C', 'H', 'W')
+assert perBatchScale.names == ('N',)
+
+# Check that view()'s effect on the tensor is the same as align_as()
+assert torch.equal(perBatchScale.align_as(tensor).rename(None), perBatchScale.rename(None).view(2,1,1,1))
+
+# Check that align_as() gives the resulting tensor the entire dimension names of the `tensor` we want to align as.
+assert perBatchScale.align_as(tensor).names == ('N', 'C', 'H', 'W')
+
+perBatchScale.align_as(tensor)
+
+# %% markdown
+# Now do the calculation with `align_as()` instead of `view()`:
+# %% codecell
+scaledResult: Tensor = tensor * perBatchScale.align_as(tensor)
+
+# Check scaled result gets the names:
+assert scaledResult.names == ('N', 'C', 'H', 'W')
+# Check the previous unnamed result is equal to the named one here:
+assert torch.equal(scaledResult.rename(None), correctResult)
+# Another way to check:
+assert torch.equal(scaledResult, correctResult.refine_names('N', 'C', 'H', 'W'))
+
+
+# %% markdown
+# ### Feature: Flattening and Unflattening Dimensions by Names
+#
+# **Old Method: `view()`, `reshape()`, `flatten()`:**
+#
+# One common operation is flattening and unflattening dimensions. Right now, users perform this using either `view, reshape`, or `flatten`. Use cases include flattening batch dimensions to send tensors into operators that are forced to take inputs with a certain number of dimensions (for instancem `Conv2D` takes 4D input)
+# %% codecell
+
+# %% markdown
+# **New Method: `flatten()`:**
+#
+# To make the operations more semantically meaningful  than `view` and `reshape`, we must introduce new `tensor.unflatten(dim, namedshape)` method and update `flatten` to work with names: `tensor.flatten(dims, new_dim)`
+#
+# `flatten()` can only flatten adjacent dimensions but also works on non-contiguous dimensions.
+# %% codecell
+tensor: Tensor = torch.arange(2*3*4*1).reshape(1,3,4,2) # N, C, H, W
+tensor.names = ('N', 'C', 'H', 'W')
+
+tensor
+# %% codecell
+# NOTE: the dimensions to be flattened must be consecutive
+
+# Flattening C, H, W into one dimension titled 'features'
+flatTensor: Tensor = tensor.flatten(dims = ['C', 'H', 'W'], out_dim = 'features')
+assert flatTensor.shape == (1, 24)
+assert flatTensor.names == ('N', 'features')
+
+
+flatTensor2: Tensor = tensor.flatten(dims = ['C', 'H'], out_dim = 'CH')
+assert flatTensor2.shape == (1, 12, 2)
+assert flatTensor2.names == ('N', 'CH', 'W')
+
+# %% codecell
+# **New Method: `unflatten()`**
+#
+#  One must pass into `unflatten` a **named shape**, which is a list of `(dim, size)` tuples, to specify how to unflatten the dim.
+# * NOTE: work in progress for pytorch: It is possible to save the sizes during a `flatten` for `unflatten`
+# %% codecell
+flatTensor.unflatten('features', (('C', 3), ('H', 4), ('W', 2)))
+flatTensor.unflatten()
