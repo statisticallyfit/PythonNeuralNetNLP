@@ -22,7 +22,7 @@ dependencies:
   # ========================
   - pytorch
   - pytorch-pretrained-bert
-  - transformers # note to get newest version of transformers (no errors) need to put this line in pip area, just like in pyhugface_env, and AFTER the tensorflow command (will doing this determine the tensorflow version?)
+  - transformers
   - tensorflow>2.0
 
   # ==============

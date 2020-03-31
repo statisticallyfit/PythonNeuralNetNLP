@@ -51,11 +51,23 @@ Image(filename =imagePath + "transformerXL_extendedContext.gif")
 seqSize, batchSize, embeddingDim = 7, 3, 32
 # short names
 (S, B, E) = (seqSize, batchSize, embeddingDim)
-wordEmbeddings: Tensor = torch.rand(seqSize, batchSize, embeddingDim)
-#wordEmbeddings
-# %% codecell
+wordEmbeddings: Tensor = torch.rand(seqSize, batchSize, embeddingDim, names = ('sequenceSize', 'batchSize', 'embeddingDim'))
+
+assert wordEmbeddings.names == ('sequenceSize', 'batchSize', 'embeddingDim')
+
+# Method 1 for renaming:
+wordEmbeddings.names = ['seqLen', 'batchSize', 'embDim']
+assert wordEmbeddings.names == ('seqLen', 'batchSize', 'embDim')
+
+# Method 2 for renaming:
+wordEmbeddings: Tensor = wordEmbeddings.rename(seqLen = 'S', batchSize = 'B', embDim = 'E')
+assert wordEmbeddings.names == ('S', 'B', 'E')
+
+wordEmbeddings.shape
 assert wordEmbeddings.shape == (S, B, E) == (7, 3, 32)
 assert wordEmbeddings.ndim == 3
+# %% codecell
+torch.tensor([[1,2,3],[4,5,3]],names = ('S', 'B'))
 # %% codecell
 # Gets the first element of wordEmbeddings tensor (first chunk in the seven, along first dimension)
 assert wordEmbeddings[0,:,:].ndim == 2
