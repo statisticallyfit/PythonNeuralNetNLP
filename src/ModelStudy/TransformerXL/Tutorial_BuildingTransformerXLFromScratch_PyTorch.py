@@ -31,9 +31,9 @@ from src.utils.ModelUtil import *
 # Set current working directory
 os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP')
 imagePath = os.getcwd() # now path is the above
-print(f"pth = {imagePath}\n")
+print(f"imagePath = {imagePath}\n")
 imagePath += "/src/ModelStudy/images/"
-print(f"pth = {imagePath}")
+print(f"imagePath = {imagePath}")
 
 
 
@@ -51,6 +51,7 @@ Image(filename =imagePath + "transformerXL_extendedContext.gif")
 seqSize, batchSize, embeddingDim = 7, 3, 32
 # short names
 (S, B, E) = (seqSize, batchSize, embeddingDim)
+
 wordEmbeddings: Tensor = torch.rand(seqSize, batchSize, embeddingDim, names = ('sequenceSize', 'batchSize', 'embeddingDim'))
 
 assert wordEmbeddings.names == ('sequenceSize', 'batchSize', 'embeddingDim')
@@ -63,11 +64,9 @@ assert wordEmbeddings.names == ('seqLen', 'batchSize', 'embDim')
 wordEmbeddings: Tensor = wordEmbeddings.rename(seqLen = 'S', batchSize = 'B', embDim = 'E')
 assert wordEmbeddings.names == ('S', 'B', 'E')
 
-wordEmbeddings.shape
 assert wordEmbeddings.shape == (S, B, E) == (7, 3, 32)
 assert wordEmbeddings.ndim == 3
-# %% codecell
-torch.tensor([[1,2,3],[4,5,3]],names = ('S', 'B'))
+
 # %% codecell
 # Gets the first element of wordEmbeddings tensor (first chunk in the seven, along first dimension)
 assert wordEmbeddings[0,:,:].ndim == 2
@@ -89,9 +88,11 @@ prevSeqSize: int = 6
 # short name
 P: int = prevSeqSize
 # These are the hidden states from the previous sequence, as an example
-memory: Tensor = torch.rand(prevSeqSize, batchSize, embeddingDim)
+memory: Tensor = torch.rand(prevSeqSize, batchSize, embeddingDim, names = ('P', 'B', 'E'))
 
 assert memory.shape == (P, B, E) == (6, 3, 32)
+assert memory.names == ('P', 'B', 'E')
+
 
 # %% markdown [markdown]
 # Each [self-attention head](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) takes keys, queries, and values as input. The procedure in the single [attention head](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) is as follows:
