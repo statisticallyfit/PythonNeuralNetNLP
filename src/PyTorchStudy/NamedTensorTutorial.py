@@ -442,7 +442,7 @@ correctGrad: Tensor = weight.grad.clone()
 correctGrad
 
 weight.grad.zero_() #set to zero
-assert weight.grad == tensor([0., 0., 0.])
+assert torch.equal(weight.grad, Tensor([0,0,0],dtype=torch.float))
 
 # %% codecell
 gradLoss: Tensor = gradLoss.refine_names('C') # set the only dimension as name C
@@ -462,7 +462,8 @@ assert torch.allclose(weight.grad, correctGrad)
 #
 # * (I) **Refining the input tensor dims: ** the `query = query.refine_names(..., 'T', 'D')` serves as enforcable documentation and lifts input dimensions to being named. Checks that the last two dimensions can be refined to `['T', 'D']`, preventing potentially silent or confusing size mismatch errors later down the line.
 # * (II) **Manipulating dimensions in `_prepareHead()`: **CLEARLY state sth einput and output dimensions. The input tensor must end with the `T` and `D` dims and the output tensor ends in `H`, `T`, and `D_head` dims. Secondly, it is clear to see what is going on: `_prepareHead()` takes the key, query and value and splits the embedding dimension `D` into multiple heads, finally rearranging embedding dim `D` order to be `[..., 'H', 'T', 'D_head']`. To contrast, the [original implementation uses the non-semantically clear `view` and `transpose` operations.] (https://github.com/facebookresearch/ParlAI/blob/f7db35cba3f3faf6097b3e6b208442cd564783d9/parlai/agents/transformer/modules.py#L947-L957)
-# * (III) **Explicit Broadcasting by names:** 
+# * (III) **Explicit Broadcasting by names:** To make `mask` broadcast correctly with `dotProd`, we would usually `unsqueeze()` dims 1 (for `H`) and `-1` (for `T_key`) in the case of self attention or `unsqueeze` dim `1` in the case of encoder attention (to stand in for the dimension called `H`). But using named tensors, we simply align the `attnMask` to the shape and names of `dotProd` using `align_as` so no need to worry about where to `unsqueeze` dims.
+# * (IV) **More Dimension manipulation using `align_to()` and `flatten()`:** Here as in (II), the `align_to()` and `flatten()` are more semantically meaningful than `view` and `transpose` despite being more verbose.
 # %% codecell
 import torch.tensor as Tensor
 import torch.nn as nn
@@ -507,14 +508,16 @@ class MultiHeadAttention(nn.Module):
 
         # Renaming the tensor's last two dimensions from None to T and D
         queryNamed: Tensor = queryNamed.refine_names(..., 'T', 'D')
-
-        # TODO what does this flag mean???
-        selfAttnFlag: Tensor = key is None and value is None
-        if selfAttnFlag:
-            mask: Tensor = mask.refine_names(..., 'T') # refine name of lsat dim
-        else:
-            # TODO meaning of this being encoder attention? why does the tutorial say 'enc attention'?
+        # queryNamed shape == (B, T, D)
+        # NOTE: this marks whether the attention to calculate is of the type 1) self attention, or 2) encoder  attention.
+        isSelfAttnType: Tensor = key is None and value is None
+        # It is self attention if both key, value are None
+        if isSelfAttnType: # then last dim has dim T
+            mask: Tensor = mask.refine_names(..., 'T')
+            # mask shape == (B, T)
+        else: # if attention is of type encoder attention, last dims are T, T_key
             mask: Tensor = mask.refine_names(..., 'T', 'T_key')
+            # make shape == (B, T, T_key)
 
 
         dim: int = queryNamed.size('D')
@@ -530,13 +533,14 @@ class MultiHeadAttention(nn.Module):
         # Manipulating dimensions in prepareHead
         def _prepareHead(tensor: Tensor) -> Tensor:
             tensorNamed: Tensor = tensor.refine_names(..., 'T', 'D')
-            return (tensorNamed
+            return (tensorNamed # shape == (B, T, H, D_head)
                     .unflatten(dim = 'D', namedshape = (('H', numHeads), ('D_head', dimPerHead)))
-                    .align_to(..., 'H', 'T', 'D_head'))
+                    .align_to(..., 'H', 'T', 'D_head')) # shape == (B, H, T, D_head)
 
 
-        assert value is None # todo why?
-        if selfAttnFlag:
+        assert value is None # TODO why?
+
+        if isSelfAttnType:
             key = value = queryNamed # this places query's value into both key and value matrices.
         elif value is None:
             # Then key and value are the same, but query differs
@@ -547,60 +551,66 @@ class MultiHeadAttention(nn.Module):
 
 
         # Distinguish between queryLen (T) and keyLen (T_key) dims.
-        K: Tensor = _prepareHead(self.linearK(key)).rename(T = 'T_key')
-        # weightsKey (D,D) * key () ---> TODO
-        # K shape == (..., H, T_key, D_head)
+        K: Tensor = _prepareHead(self.linearK(key)).rename(T = 'T_key') # key shape == (B, T, D)
+        # weightsKey (D (None),D (None)) * key (B, T, D) ---> (B, T, None)
+        # K shape == (B, H, T_key, D_head)
         V: Tensor = _prepareHead(self.linearV(value)).rename(T = 'T_key')
-        # weightsValue (D, D) * value () ---> TODO
-        # V shape == (..., H, T_key, D_head)
+        # weightsValue (D (None),D (None)) * value (B, T, D) ---> (B, T, None)
+        # V shape == (B, H, T_key, D_head)
         Q: Tensor = _prepareHead(self.linearQ(queryNamed)) # the T dim stays the same
-        # weightsQuery (D, D) * query (B, T, D) --> TODO (B, T, D) ???
-        # Q shape == (..., H, T, D_head)
-
+        # weightsQuery (D (None),D (None)) * query (B, T, D) --> (B, T, None)
+        # Q shape == (B, H, T, D_head)
+        # Q (B, H, T, D_head) * Kreshaped (B, H, D_head, T_key) ---> (B, H, T, T_key)
         dotProd: Tensor = Q.div_(scale).matmul(K.align_to(..., 'D_head', 'T_key'))
-        # dotProd shape == TODO
+        # dotProd shape == (B, H, T, T_key)
         dotProd.refine_names(..., 'H', 'T', 'T_key') # just a check
-        # dotProd shape == TODO
+        # dotProd shape == (B, H, T, T_key)
 
         # (III) ------------------------------------------------------------------------------------
+
+        # mask: shape == (B, T) for self attention or (B, T, T_key) for encoder attention
         attnMask: Tensor = (mask == 0).align_as(dotProd)
-        # attnMask shape == TODO
+        # attnMask shape == (B, H, T, T_key)
+
+        # Mask dot product according to the attention mask
         dotProd.masked_fill_(mask = attnMask, value = -float(1e20))
-        # dotProd shape == TODO
+        # dotProd shape == (B, H, T, T_key)
 
         attnWeights: Tensor = self.attnDropout(input = F.softmax(input = dotProd / scale,
                                                                  dim = 'T_key'))
+        # attnWeights shape == (B, H, T, T_key)
 
         # (IV) ------------------------------------------------------------------------------------
+        # Step: multiplying the softmaxed results with the value matrix V, as in the attention formula. Then reshaping the result.
         attentioned: Tensor = (
             attnWeights
-                .matmul(V).refine_names(..., 'H', 'T', 'D_head') # TODO shape ==
+            # attnWeights (B, H, T, T_key) * VALUES V (B, H, T_key, D_head) ---> TODO shape
+                .matmul(V).refine_names(..., 'H', 'T', 'D_head') # TODO shape
                 .align_to(..., 'T', 'H', 'D_head') # TODO shape ==
-                .flatten(dims = ['H', 'D_head'], out_dim = 'D') # TODO shape ==
+                .flatten(dims = ['H', 'D_head'], out_dim = 'D')
         )
+        # attentioned shape == TODO
 
-
-        # Creating output
+        # Creating output by passing attentions through linear layer, then making sure of the result's name shape.
         # weightsOut (D, D) * attentioned () ---> TODO
         output: Tensor = self.linearOut(attentioned).refine_names(..., 'T', 'D')
         # output shape == TODO
 
         return output
 
-
-
-
 # %% codecell
 B, T, D, H = 7, 5, 2*3, 3
 query: Tensor = torch.randn(B, T, D, names = ('B', 'T', 'D'))
 mask: Tensor = torch.ones(B, T, names = ('B', 'T'))
 attn = MultiHeadAttention(numHeads = H, dim = D)
-output = attn(query = query, mask = mask)
-assert output.names == ('N', 'T', 'D')
+attn
+# %% codecell
+output = attn(query, mask = mask)
+assert output.shape == (B, T, D) and output.names == ('B', 'T', 'D')
 
 # %% codecell
 # Showing MultiHeadAttention module is agnostic to the existence of batch dimensions.
-query = torch.randn(t, d, names=('T', 'D'))
-mask = torch.ones(t, names=('T',))
+query = torch.randn(T, D, names=('T', 'D'))
+mask = torch.ones(T, names=('T',))
 output = attn(query, mask=mask)
-assert output.names = ('T', 'D')
+assert output.names == ('T', 'D') and output.shape == (T, D)
