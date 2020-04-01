@@ -4,7 +4,22 @@
 # # (Experimental) Introduction to Named Tensors in PyTorch
 # ### Definition: Named Tensor
 # Named Tensors aim to make tensors easier to use by allowing users to associate explicit names with tensor dimensions. In most cases, operations that take dimension parameters will accept dimension names, avoiding the need to track dimensions by position. In addition, named tensors use names to automatically check that APIs are being used correctly at runtime, providing extra safety. Names can also be used to rearrange dimensions, for example, to support **“broadcasting by name” rather than “broadcasting by position”.**
-
+#
+# ### Name Inference Rules
+# 1. [Keeps Input Names](https://pytorch.org/docs/stable/name_inference.html#keeps-input-names)
+# 2. [Removes Dimensions](https://pytorch.org/docs/stable/name_inference.html#removes-dimensions)
+# 3. [Unifies Names from Inputs](https://pytorch.org/docs/stable/name_inference.html#unifies-names-from-inputs)
+# 4. [Permutes Dimensions](https://pytorch.org/docs/stable/name_inference.html#permutes-dimensions)
+# 5. [Contracts away Dims](https://pytorch.org/docs/stable/name_inference.html#contracts-away-dims)
+# 6. [Factory Functions Take Names](https://pytorch.org/docs/stable/name_inference.html#factory-functions)
+# 7. [Out Function and In-Place Variant Rules](https://pytorch.org/docs/stable/name_inference.html#out-function-and-in-place-variants)
+#
+# #### Workaround for Operations Not Supported by Named Tensors:
+# As a workaround, drop names via `tensor = tensor.rename(None)` before using any function that does not yet support named tensors.
+#
+# ### Currently Supported:
+# * [named tensors operator coverage](https://pytorch.org/docs/stable/name_inference.html#name-inference-reference-doc)
+#
 # ### Goal of Tutorial:
 # This tutorial is intended as a guide to the functionality that will be included with the 1.3 launch. By the end of it, you will be able to:
 #
@@ -283,7 +298,7 @@ assert newState.names == ('batch', 'out')
 assert newState.shape == (128, 7)
 
 # %% markdown
-# ### Feature: Explicit Broadcasting by Names
+# ### Explicit Broadcasting by Names
 # Main complaints about working with multiple dimensions is the need to `unsqueeze` (to introduce / add) dummy dimensions so that operations can occur. For the `perBatchScale` example, to multiply the unnamed versions of the tensors we would `unsqueeze` as follows.
 #
 # **Old Method: `unsqueeze()`**
@@ -315,7 +330,8 @@ assert correctResult.shape == incorrectResult.shape == (2,2,2,2)
 assert not torch.allclose(correctResult, incorrectResult)
 
 # %% markdown
-# **New Method: `align_as` or `align_to`**
+# **New Method: `align_as()` or `align_to()`**
+#
 # We can make the multiplication operations safer (and easily agnostic to the number of dimensions) by using names. The new `tensor.align_as(other)` operations permutes the dimensions of `tensor` to match the order specified in `other.names`, adding one-sized dimensions where appropriate (basically doing the work of `permute` and `view`).
 # %% codecell
 tensor: Tensor = tensor.refine_names('N', 'C', 'H', 'W')
@@ -354,11 +370,11 @@ assert torch.equal(scaledResult, correctResult.refine_names('N', 'C', 'H', 'W'))
 # %% codecell
 
 # %% markdown
-# **New Method: `flatten()`:**
+# [**New Method 1: `flatten()`:**](https://hyp.is/P03oZHQMEeqVWnehE0Axew/pytorch.org/docs/stable/named_tensor.html)
 #
 # To make the operations more semantically meaningful  than `view` and `reshape`, we must introduce new `tensor.unflatten(dim, namedshape)` method and update `flatten` to work with names: `tensor.flatten(dims, new_dim)`
 #
-# `flatten()` can only flatten adjacent dimensions but also works on non-contiguous dimensions.
+# `flatten()` can only flatten adjacent dimensions but also works on non-contiguous dimensions (in memory).
 # %% codecell
 tensor: Tensor = torch.arange(2*3*4*1).reshape(1,3,4,2) # N, C, H, W
 tensor.names = ('N', 'C', 'H', 'W')
@@ -377,11 +393,214 @@ flatTensor2: Tensor = tensor.flatten(dims = ['C', 'H'], out_dim = 'CH')
 assert flatTensor2.shape == (1, 12, 2)
 assert flatTensor2.names == ('N', 'CH', 'W')
 
-# %% codecell
-# **New Method: `unflatten()`**
+# %% markdown
+#[ **New Method 2: `unflatten()`**](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.unflatten)
+# Unflattens the named dimension `dim`, viewing it in the shape specified by `namedshape`.
 #
 #  One must pass into `unflatten` a **named shape**, which is a list of `(dim, size)` tuples, to specify how to unflatten the dim.
-# * NOTE: work in progress for pytorch: It is possible to save the sizes during a `flatten` for `unflatten`
+# * NOTE: work in progress for pytorch to save the sizes during a `flatten` for `unflatten`
 # %% codecell
-flatTensor.unflatten('features', (('C', 3), ('H', 4), ('W', 2)))
-flatTensor.unflatten()
+
+tensorRemade: Tensor = flatTensor.unflatten(dim='features', namedshape=(('C', 3), ('H', 4), ('W', 2)))
+assert torch.equal(tensor, tensorRemade)
+assert tensorRemade.names == ('N', 'C', 'H', 'W')
+
+tensorRemade2: Tensor = flatTensor2.unflatten(dim = 'CH', namedshape=(('C', 3), ('H', 4)))
+assert torch.equal(tensor, tensorRemade2)
+assert tensorRemade2.names == ('N', 'C', 'H', 'W')
+
+
+# %% markdown
+# ### Autograd (Not yet supported)
+# Autograd currently ignores names on all tensors and treats them like regular tensors. Gradient computation is correct but we lose the safety that names give us.
+# * NOTE: this is awork in progress to handle names in autograd
+# %% codecell
+x: Tensor = torch.randn(3, names = ('D',))
+weight: Tensor = torch.randn(3, names = ('D', ), requires_grad = True)
+
+# Checking that weight gradient is empty
+assert str(weight.grad) == 'None'
+
+loss: Tensor = (x - weight).abs()
+assert str(loss.grad) == 'None'
+
+# Create a random value for grad loss as argument to loss backward()
+gradLoss: Tensor = torch.randn(3)
+
+# %% codecell
+loss.backward(gradLoss)
+
+assert str(loss.grad) == 'None' # remains the same
+
+assert str(weight.grad) != 'None' # not empty anymore after backward()
+assert weight.grad.shape == (3,) # see, tensor exists in grad
+assert weight.grad.names == (None,) # note not yet named, will be named in future
+
+# Record the correct gradient
+# NOTE: this is not yet named, will be named in the future
+correctGrad: Tensor = weight.grad.clone()
+correctGrad
+
+weight.grad.zero_() #set to zero
+assert weight.grad == tensor([0., 0., 0.])
+
+# %% codecell
+gradLoss: Tensor = gradLoss.refine_names('C') # set the only dimension as name C
+loss: Tensor = (x - weight).abs()
+loss.backward(gradLoss)
+
+# Stil unnamed even though the gradLoss was named
+assert weight.grad.names == (None, )
+assert torch.allclose(weight.grad, correctGrad)
+
+
+# %% markdown
+# ### Application Example: [Multi-Head Attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1446445463/multi-head+attention+mechanism)
+# Going through a complete example of implementing a common PyTorch `nn.Module`: [multi-head attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1446445463/multi-head+attention+mechanism).
+#
+# Adapting implementation: We adapt the implementation of [multi-head attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1446445463/multi-head+attention+mechanism) in [this code resource at ParlAI. ](https://github.com/facebookresearch/ParlAI/blob/f7db35cba3f3faf6097b3e6b208442cd564783d9/parlai/agents/transformer/modules.py#L907). Note there are four places labeled (I), (II), (III), and (IV) where using named tensors enables more readable code, and we will dive into each of these after the code block.
+#
+# * (I) **Refining the input tensor dims: ** the `query = query.refine_names(..., 'T', 'D')` serves as enforcable documentation and lifts input dimensions to being named. Checks that the last two dimensions can be refined to `['T', 'D']`, preventing potentially silent or confusing size mismatch errors later down the line.
+# * (II) **Manipulating dimensions in `_prepareHead()`: **CLEARLY state sth einput and output dimensions. The input tensor must end with the `T` and `D` dims and the output tensor ends in `H`, `T`, and `D_head` dims. Secondly, it is clear to see what is going on: `_prepareHead()` takes the key, query and value and splits the embedding dimension `D` into multiple heads, finally rearranging embedding dim `D` order to be `[..., 'H', 'T', 'D_head']`. To contrast, the [original implementation uses the non-semantically clear `view` and `transpose` operations.] (https://github.com/facebookresearch/ParlAI/blob/f7db35cba3f3faf6097b3e6b208442cd564783d9/parlai/agents/transformer/modules.py#L947-L957)
+# * (III) **Explicit Broadcasting by names:** 
+# %% codecell
+import torch.tensor as Tensor
+import torch.nn as nn
+from torch.nn import Dropout, Linear, LayerNorm
+import torch.nn.functional as F
+import math
+
+
+class MultiHeadAttention(nn.Module):
+
+    def __init__(self, numHeads: int, dim: int, dropout = 0):
+        super(MultiHeadAttention, self).__init__()
+        self.numHeads: int = numHeads
+        self.dim: int = dim
+
+        self.attnDropout: Dropout = Dropout(p = dropout)
+
+        # The linear layers through which we pass the word embedding matrix in order to create the query (Q),
+        # key (K) and value (V) matrices.
+        self.linearQ: Linear = Linear(in_features=dim, out_features=dim)
+        self.linearK: Linear = Linear(in_features=dim, out_features=dim)
+        self.linearV: Linear = Linear(in_features=dim, out_features=dim)
+
+        # Initializing the weight matrices of these linear layers
+        nn.init.xavier_normal_(self.linearQ.weight)
+        nn.init.xavier_normal_(self.linearK.weight)
+        nn.init.xavier_normal_(self.linearV.weight)
+
+        # The linear layer for the output
+        self.linearOut: Linear = Linear(in_features=dim, out_features=dim)
+
+        # Initializing the weight matrix in the linear output layer
+        nn.init.xavier_normal_(self.linearOut.weight)
+
+
+
+
+    def forward(self, queryNamed: Tensor, key: Tensor = None, value: Tensor = None,
+                mask: Tensor = None) -> Tensor:
+
+        # (I) ------------------------------------------------------------------------------------
+
+        # Renaming the tensor's last two dimensions from None to T and D
+        queryNamed: Tensor = queryNamed.refine_names(..., 'T', 'D')
+
+        # TODO what does this flag mean???
+        selfAttnFlag: Tensor = key is None and value is None
+        if selfAttnFlag:
+            mask: Tensor = mask.refine_names(..., 'T') # refine name of lsat dim
+        else:
+            # TODO meaning of this being encoder attention? why does the tutorial say 'enc attention'?
+            mask: Tensor = mask.refine_names(..., 'T', 'T_key')
+
+
+        dim: int = queryNamed.size('D')
+        assert dim == self.dim, f"Dimensions do not match: {dim} query vs {self.dim} configured"
+        assert mask is not None, "Mask is None, please specify a mask"
+
+        numHeads: int = self.numHeads
+        dimPerHead: int = dim // numHeads
+        scale: float = math.sqrt(dimPerHead)
+
+
+        # (II) ------------------------------------------------------------------------------------
+        # Manipulating dimensions in prepareHead
+        def _prepareHead(tensor: Tensor) -> Tensor:
+            tensorNamed: Tensor = tensor.refine_names(..., 'T', 'D')
+            return (tensorNamed
+                    .unflatten(dim = 'D', namedshape = (('H', numHeads), ('D_head', dimPerHead)))
+                    .align_to(..., 'H', 'T', 'D_head'))
+
+
+        assert value is None # todo why?
+        if selfAttnFlag:
+            key = value = queryNamed # this places query's value into both key and value matrices.
+        elif value is None:
+            # Then key and value are the same, but query differs
+            key: Tensor = key.refine_names(..., 'T', 'D')
+            value: Tensor = key
+
+        dim: int = key.size('D')
+
+
+        # Distinguish between queryLen (T) and keyLen (T_key) dims.
+        K: Tensor = _prepareHead(self.linearK(key)).rename(T = 'T_key')
+        # weightsKey (D,D) * key () ---> TODO
+        # K shape == (..., H, T_key, D_head)
+        V: Tensor = _prepareHead(self.linearV(value)).rename(T = 'T_key')
+        # weightsValue (D, D) * value () ---> TODO
+        # V shape == (..., H, T_key, D_head)
+        Q: Tensor = _prepareHead(self.linearQ(queryNamed)) # the T dim stays the same
+        # weightsQuery (D, D) * query (B, T, D) --> TODO (B, T, D) ???
+        # Q shape == (..., H, T, D_head)
+
+        dotProd: Tensor = Q.div_(scale).matmul(K.align_to(..., 'D_head', 'T_key'))
+        # dotProd shape == TODO
+        dotProd.refine_names(..., 'H', 'T', 'T_key') # just a check
+        # dotProd shape == TODO
+
+        # (III) ------------------------------------------------------------------------------------
+        attnMask: Tensor = (mask == 0).align_as(dotProd)
+        # attnMask shape == TODO
+        dotProd.masked_fill_(mask = attnMask, value = -float(1e20))
+        # dotProd shape == TODO
+
+        attnWeights: Tensor = self.attnDropout(input = F.softmax(input = dotProd / scale,
+                                                                 dim = 'T_key'))
+
+        # (IV) ------------------------------------------------------------------------------------
+        attentioned: Tensor = (
+            attnWeights
+                .matmul(V).refine_names(..., 'H', 'T', 'D_head') # TODO shape ==
+                .align_to(..., 'T', 'H', 'D_head') # TODO shape ==
+                .flatten(dims = ['H', 'D_head'], out_dim = 'D') # TODO shape ==
+        )
+
+
+        # Creating output
+        # weightsOut (D, D) * attentioned () ---> TODO
+        output: Tensor = self.linearOut(attentioned).refine_names(..., 'T', 'D')
+        # output shape == TODO
+
+        return output
+
+
+
+
+# %% codecell
+B, T, D, H = 7, 5, 2*3, 3
+query: Tensor = torch.randn(B, T, D, names = ('B', 'T', 'D'))
+mask: Tensor = torch.ones(B, T, names = ('B', 'T'))
+attn = MultiHeadAttention(numHeads = H, dim = D)
+output = attn(query = query, mask = mask)
+assert output.names == ('N', 'T', 'D')
+
+# %% codecell
+# Showing MultiHeadAttention module is agnostic to the existence of batch dimensions.
+query = torch.randn(t, d, names=('T', 'D'))
+mask = torch.ones(t, names=('T',))
+output = attn(query, mask=mask)
+assert output.names = ('T', 'D')
