@@ -1,7 +1,7 @@
 # %% markdown
 # [Website Source](https://pytorch.org/tutorials/intermediate/named_tensor_tutorial.html#annotations:VOh11nKBEeqlHi8b3rPBxg)
 #
-# # (Experimental) Introduction to Named Tensors in PyTorch
+# # Tutorial: Named Tensors and Named Inference in PyTorch
 # ### Definition: Named Tensor
 # Named Tensors aim to make tensors easier to use by allowing users to associate explicit names with tensor dimensions. In most cases, operations that take dimension parameters will accept dimension names, avoiding the need to track dimensions by position. In addition, named tensors use names to automatically check that APIs are being used correctly at runtime, providing extra safety. Names can also be used to rearrange dimensions, for example, to support **“broadcasting by name” rather than “broadcasting by position”.**
 #
@@ -270,7 +270,7 @@ assert (x + y).names == ('X',)
 
 
 # %% markdown
-# ### Name Inference Rules (broadcasting)
+# ### Name Inference (broadcasting)
 # Named tensors do not change broadcasting behavior, they still broadcast by position. But when checking two dimensions if they can be broadcasted, PyTorch also checks that the names of those dimensions match. In other words PyTorch does broadcasting by checking for two things:
 #
 # 1. Checks if the two dimensions can be broadcasted (structurally)
@@ -285,7 +285,7 @@ tensor: Tensor = torch.randn(2,2,2,2, names = ('N', 'C', 'H', 'W'))
 perBatchScale: Tensor = torch.rand(2, names = ('N', ))
 catchError(lambda : tensor * perBatchScale)
 # %% markdown
-# ### Name Inference Rules (for Matrix Multiply)
+# ### Name Inference (for Matrix Multiply)
 # The function [`torch.mm(A, B)`](https://pytorch.org/docs/stable/torch.html#torch.mm) performs dot (cross?) product between the second dim of `A` and the first dim of `B`, returning a tensor with the first dim of `A` and the second dim of `B`, returning a two-dim tensor with the first dim of `A` and the second dim of `B`. **Key point:** matrix multiplication does NOT check if the contracted dimensions (in this case `D` and `in`) have the same name.
 # %% codecell
 markovStates: Tensor = torch.randn(128, 5, names = ('batch', 'D'))
@@ -454,8 +454,45 @@ assert tensorRemade2.names == ('N', 'C', 'H', 'W')
 # %% markdown
 # ### [Manipulating Dimensions](https://pytorch.org/docs/stable/named_tensor.html#explicit-alignment-by-names)
 # Use [`align_to()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_to) to permute large amounts of dimensions without menionting all of them as in required by [`permute()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.permute).
+# %% codecell
+A, B, C, D, E, F = 0, 1, 2, 3, 4, 5
+tensor: Tensor = torch.randn(A, B, C, D, E, F)
+assert tensor.shape == (A, B, C, D, E, F)
 
+namedTensor: Tensor = tensor.refine_names('A', 'B', 'C', 'D', 'E', 'F')
+assert namedTensor.shape == (A, B, C, D, E, F)
 
+# Move F (5th dim) and dimension E (4th dim) to the front while keeping the rest in the same order.
+# Old way: (non-named)
+assert tensor.permute(5,4,0,1,2,3).shape == (F, E, A, B, C, D)
+# Better way: (named)
+assert namedTensor.align_to('F', 'E', ...).names == ('F', 'E', 'A', 'B', 'C', 'D')
+
+# %% markdown
+# Use [`flatten()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.flatten) and [`unflatten()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.unflatten) to flatten and unflatten dimensions, respectively. These have more semantic meaning than [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view) and [`reshape()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.reshape).
+# %% codecell
+N, C, H, W = 32, 3, 128, 128
+imgs: Tensor = torch.randn(N, C, H, W)
+namedImgs: Tensor = imgs.refine_names('N', 'C', 'H', 'W')
+
+# Flattening C, H, W into one dimension of size C*H*W
+flatImgs: Tensor = imgs.view(N, -1)
+assert flatImgs.shape == (N, C*H*W)
+
+# Flattening via named dimensions
+namedFlatImgs: Tensor = namedImgs.flatten(dims = ['C', 'H', 'W'], out_dim = 'features')
+assert namedFlatImgs.names == ('N', 'features')
+assert namedFlatImgs.shape == (N, C*H*W)
+
+# Unflattening  the non-named tensor
+unflattenedImgs: Tensor = flatImgs.view(N, C, H, W)
+assert unflattenedImgs.shape == imgs.shape
+
+# Unflattening the named tensor
+unflattenedNamedImgs: Tensor = namedFlatImgs.unflatten(dim = 'features',
+                                                       namedshape = [('C', 3), ('H', 128), ('W', 128)])
+assert unflattenedNamedImgs.shape == namedImgs.shape
+assert unflattenedNamedImgs.names == namedImgs.names
 
 # %% markdown
 # ### Autograd (Not yet supported)
