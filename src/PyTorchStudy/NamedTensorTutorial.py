@@ -92,7 +92,7 @@ partiallyNamedTensor
 
 # %% markdown
 # ### Refining Dimensions
-# Because named tensors can co-exist with unnamed tensors, we need a nice way to write named tensor-aware code that **works with both named and unnamed tensors.** The function `tensor.refine_names(*names)` works to refine dimensions and lift unnamed dims to named dims. Refining a dimension is like a "rename" but also with the following additional constraints:
+# Because named tensors can co-exist with unnamed tensors, we need a nice way to write named tensor-aware code that **works with both named and unnamed tensors.** The function [`tensor.refine_names(*names)`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.refine_names) works to refine dimensions and lift unnamed dims to named dims. Refining a dimension is like a "rename" but also with the following additional constraints:
 #
 # * A `None` dimension can be refined to have **any** name.
 # * A named dimension can **only** be refined to have the same name (so a dimension named "apples" cannot be renamed to "oranges")
@@ -124,7 +124,7 @@ def catchError(func):
 # %% codecell
 catchError(lambda: namedTensor.refine_names('N', 'C', 'H', 'width'))
 # %% markdown
-# Seeing how we can refine the unnamed dimensions, which is the purpose of the `tensor.refine_names()` function:
+# Seeing how we can refine the unnamed dimensions, which is the purpose of the [`refine_names()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.refine_names) function:
 # %% codecell
 tensorRefinedTwoDims = partiallyNamedTensor.refine_names('batchSize', 'channelSize', ...)
 
@@ -215,7 +215,7 @@ assert namedTensor.softmax('H').names == ('N', 'C', 'H', 'W')
 assert namedTensor.softmax('W').names == ('N', 'C', 'H', 'W')
 
 
-# Checking what squeeze() does on different dimensions to the names:
+# Checking what `squeeze()` does on different dimensions to the names:
 assert namedTensor.names == ('N', 'C', 'H', 'W')
 
 # Confirm can refer to named dims instead of numbers for squeeze()
@@ -262,6 +262,7 @@ z: Tensor = torch.randn(3, names = ('Z',))
 # **Example: Check Names:** First check if the names of these two tensors *match*. Two names match if and only if they are equal (by string equality) or at least one is `None`.
 # %% codecell
 catchError(lambda: x + z)
+
 # %% markdown
 # **Example: Propagate names:** *unify* the two names by returning the most refined name of the two. With `x + y`, the name `X` is more refined than `None`.
 # %% codecell
@@ -269,7 +270,7 @@ assert (x + y).names == ('X',)
 
 
 # %% markdown
-# #### Name Inference Rules: for Broadcasting
+# ### Name Inference Rules (broadcasting)
 # Named tensors do not change broadcasting behavior, they still broadcast by position. But when checking two dimensions if they can be broadcasted, PyTorch also checks that the names of those dimensions match. In other words PyTorch does broadcasting by checking for two things:
 #
 # 1. Checks if the two dimensions can be broadcasted (structurally)
@@ -284,8 +285,8 @@ tensor: Tensor = torch.randn(2,2,2,2, names = ('N', 'C', 'H', 'W'))
 perBatchScale: Tensor = torch.rand(2, names = ('N', ))
 catchError(lambda : tensor * perBatchScale)
 # %% markdown
-# #### Name Inference Rules: for Matrix Multiply
-# The function `torch.mm(A, B)` performs dot (cross?) product between the second dim of `A` and the first dim of `B`, returning a tensor with the first dim of `A` and the second dim of `B`, returning a two-dim tensor with the first dim of `A` and the second dim of `B`. **Key point:** matrix multiplication does NOT check if the contracted dimensions (in this case `D` and `in`) have the same name.
+# ### Name Inference Rules (for Matrix Multiply)
+# The function [`torch.mm(A, B)`](https://pytorch.org/docs/stable/torch.html#torch.mm) performs dot (cross?) product between the second dim of `A` and the first dim of `B`, returning a tensor with the first dim of `A` and the second dim of `B`, returning a two-dim tensor with the first dim of `A` and the second dim of `B`. **Key point:** matrix multiplication does NOT check if the contracted dimensions (in this case `D` and `in`) have the same name.
 # %% codecell
 markovStates: Tensor = torch.randn(128, 5, names = ('batch', 'D'))
 transitionMatrix: Tensor = torch.randn(5, 7, names = ('in', 'out'))
@@ -299,9 +300,9 @@ assert newState.shape == (128, 7)
 
 # %% markdown
 # ### Explicit Broadcasting by Names
-# Main complaints about working with multiple dimensions is the need to `unsqueeze` (to introduce / add) dummy dimensions so that operations can occur. For the `perBatchScale` example, to multiply the unnamed versions of the tensors we would `unsqueeze` as follows.
+# Main complaints about working with multiple dimensions is the need to [`unsqueeze()`](https://pytorch.org/docs/stable/torch.html#torch.unsqueeze) (to introduce / add) dummy dimensions so that operations can occur. For the `perBatchScale` example, to multiply the unnamed versions of the tensors we would [`unsqueeze()`](https://pytorch.org/docs/stable/torch.html#torch.unsqueeze) as follows.
 #
-# **Old Method: `unsqueeze()`**
+# **Old Method: [`unsqueeze()`](https://pytorch.org/docs/stable/torch.html#torch.unsqueeze)**
 # %% codecell
 tensor: Tensor = torch.randn(2,2,2,2) # N, C, H, W
 perBatchScale: Tensor = torch.rand(2) # N
@@ -313,7 +314,7 @@ print(f"perBatchScale = {perBatchScale}\n\n")
 print(f"tensor = {tensor}")
 
 # %% markdown
-# Showing that `view` and `expand_as` are not the same:
+# Showing that [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view) and [`expand_as()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.expand_as) are not the same:
 # %% codecell
 perBatchScale.view(2,1,1,1)
 # %% codecell
@@ -330,9 +331,9 @@ assert correctResult.shape == incorrectResult.shape == (2,2,2,2)
 assert not torch.allclose(correctResult, incorrectResult)
 
 # %% markdown
-# **New Method: `align_as()` or `align_to()`**
+# **New Method: [`align_as()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_as) or [`align_to()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_to)**
 #
-# We can make the multiplication operations safer (and easily agnostic to the number of dimensions) by using names. The new `tensor.align_as(other)` operations permutes the dimensions of `tensor` to match the order specified in `other.names`, adding one-sized dimensions where appropriate (basically doing the work of `permute` and `view`).
+# We can make the multiplication operations safer (and easily agnostic to the number of dimensions) by using names. The new [`tensor.align_as(other)`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_as) operations permutes the dimensions of `tensor` to match the order specified in `other.names`, adding one-sized dimensions where appropriate (basically doing the work of [`permute()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.permute) and [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view)).
 # %% codecell
 tensor: Tensor = tensor.refine_names('N', 'C', 'H', 'W')
 perBatchScale: Tensor = perBatchScale.refine_names('N')
@@ -349,7 +350,7 @@ assert perBatchScale.align_as(tensor).names == ('N', 'C', 'H', 'W')
 perBatchScale.align_as(tensor)
 
 # %% markdown
-# Now do the calculation with `align_as()` instead of `view()`:
+# Now do the calculation with [`align_as()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_as) instead of [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view):
 # %% codecell
 scaledResult: Tensor = tensor * perBatchScale.align_as(tensor)
 
@@ -362,19 +363,57 @@ assert torch.equal(scaledResult, correctResult.refine_names('N', 'C', 'H', 'W'))
 
 
 # %% markdown
-# ### Feature: Flattening and Unflattening Dimensions by Names
+# ### [Explicit Alignment by Names](https://pytorch.org/docs/stable/named_tensor.html#explicit-alignment-by-names)
+# Use [`align_as()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_as) or [`align_to()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_to) to align tensor dimensions by name to a specified ordering. Useful for doing broadcasting by names.
+# %% codecell
+# This function is agnostic to dimension ordering of input, so long as it has a `C` dimension SOMEWHERE
+def scaleChannels(input: Tensor, scale: Tensor) -> Tensor:
+    scaleNamed: Tensor = scale.refine_names('C')
+    return input * scaleNamed.align_as(input)
+
+# Initializing the variables:
+B, H, C, W, D = 5, 4, 3, 2, 7 # C = num channels
+scale: Tensor = torch.randn(C, names = ('C',))
+imgs: Tensor = torch.rand(B, H, W, C, names = ('B', 'H', 'W', 'C'))
+moreImgs: Tensor = torch.rand(B, C, H, W, names = ('B', 'C', 'H', 'W'))
+videos: Tensor = torch.randn(B, C, H, W, D, names = ('B', 'C', 'H', 'W', 'D'))
+
+assert scale.shape == (C,) and scale.names == ('C',)
+
+assert scale.align_as(imgs).shape == (1,1,1,C)
+assert scale.align_as(imgs).names == imgs.names
+
+assert scale.align_as(moreImgs).shape == (1,C,1,1)
+assert scale.align_as(moreImgs).names == moreImgs.names
+
+assert scale.align_as(videos).shape == (1,C,1,1, 1)
+assert scale.align_as(videos).names == videos.names
+# %% codecell
+resImgs: Tensor = scaleChannels(input = imgs, scale = scale)
+assert resImgs.shape == (B, H, W, C)
+assert resImgs.names == imgs.names
+
+resMore: Tensor = scaleChannels(input = moreImgs, scale = scale)
+assert resMore.shape == (B, C, H, W)
+assert resMore.names == moreImgs.names
+
+resVideos: Tensor = scaleChannels(input = videos, scale = scale)
+assert resVideos.shape == (B, C, H, W, D)
+assert resVideos.names == videos.names
+# %% markdown
+# ### Flattening and Unflattening Dimensions by Names
 #
-# **Old Method: `view()`, `reshape()`, `flatten()`:**
+# **Old Method: [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view), [`reshape()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.reshape), [`flatten()`](https://hyp.is/P03oZHQMEeqVWnehE0Axew/pytorch.org/docs/stable/named_tensor.html):**
 #
-# One common operation is flattening and unflattening dimensions. Right now, users perform this using either `view, reshape`, or `flatten`. Use cases include flattening batch dimensions to send tensors into operators that are forced to take inputs with a certain number of dimensions (for instancem `Conv2D` takes 4D input)
+# One common operation is flattening and unflattening dimensions. Right now, users perform this using either [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view), [`reshape()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.reshape), or [`flatten()`](https://hyp.is/P03oZHQMEeqVWnehE0Axew/pytorch.org/docs/stable/named_tensor.html). Use cases include flattening batch dimensions to send tensors into operators that are forced to take inputs with a certain number of dimensions (for instancem `Conv2D` takes 4D input)
 # %% codecell
 
 # %% markdown
-# [**New Method 1: `flatten()`:**](https://hyp.is/P03oZHQMEeqVWnehE0Axew/pytorch.org/docs/stable/named_tensor.html)
+# **New Method 1: [`flatten()`](https://hyp.is/P03oZHQMEeqVWnehE0Axew/pytorch.org/docs/stable/named_tensor.html):**
 #
-# To make the operations more semantically meaningful  than `view` and `reshape`, we must introduce new `tensor.unflatten(dim, namedshape)` method and update `flatten` to work with names: `tensor.flatten(dims, new_dim)`
+# To make the operations more semantically meaningful  than [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view) and [`reshape()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.reshape), we must introduce new [`tensor.unflatten(dim, namedshape)`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.unflatten) method and update [`flatten()`](https://hyp.is/P03oZHQMEeqVWnehE0Axew/pytorch.org/docs/stable/named_tensor.html) to work with names: [`tensor.flatten(dims, new_dim)`](https://hyp.is/P03oZHQMEeqVWnehE0Axew/pytorch.org/docs/stable/named_tensor.html)
 #
-# `flatten()` can only flatten adjacent dimensions but also works on non-contiguous dimensions (in memory).
+# [`flatten()`](https://hyp.is/P03oZHQMEeqVWnehE0Axew/pytorch.org/docs/stable/named_tensor.html) can only flatten adjacent dimensions but also works on non-contiguous dimensions (in memory).
 # %% codecell
 tensor: Tensor = torch.arange(2*3*4*1).reshape(1,3,4,2) # N, C, H, W
 tensor.names = ('N', 'C', 'H', 'W')
@@ -394,11 +433,12 @@ assert flatTensor2.shape == (1, 12, 2)
 assert flatTensor2.names == ('N', 'CH', 'W')
 
 # %% markdown
-#[ **New Method 2: `unflatten()`**](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.unflatten)
+# **New Method 2: [`unflatten()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.unflatten)**
+#
 # Unflattens the named dimension `dim`, viewing it in the shape specified by `namedshape`.
 #
-#  One must pass into `unflatten` a **named shape**, which is a list of `(dim, size)` tuples, to specify how to unflatten the dim.
-# * NOTE: work in progress for pytorch to save the sizes during a `flatten` for `unflatten`
+#  One must pass into [`unflatten()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.unflatten) a **named shape**, which is a list of `(dim, size)` tuples, to specify how to unflatten the dim.
+# * NOTE: work in progress for pytorch to save the sizes during a [`flatten()`](https://hyp.is/P03oZHQMEeqVWnehE0Axew/pytorch.org/docs/stable/named_tensor.html) for [`unflatten()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.unflatten)
 # %% codecell
 
 tensorRemade: Tensor = flatTensor.unflatten(dim='features', namedshape=(('C', 3), ('H', 4), ('W', 2)))
@@ -410,10 +450,17 @@ assert torch.equal(tensor, tensorRemade2)
 assert tensorRemade2.names == ('N', 'C', 'H', 'W')
 
 
+
+# %% markdown
+# ### [Manipulating Dimensions](https://pytorch.org/docs/stable/named_tensor.html#explicit-alignment-by-names)
+# Use [`align_to()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_to) to permute large amounts of dimensions without menionting all of them as in required by [`permute()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.permute).
+
+
+
 # %% markdown
 # ### Autograd (Not yet supported)
 # Autograd currently ignores names on all tensors and treats them like regular tensors. Gradient computation is correct but we lose the safety that names give us.
-# * NOTE: this is awork in progress to handle names in autograd
+# * NOTE: this is a work in progress to handle names in autograd
 # %% codecell
 x: Tensor = torch.randn(3, names = ('D',))
 weight: Tensor = torch.randn(3, names = ('D', ), requires_grad = True)
@@ -460,10 +507,10 @@ assert torch.allclose(weight.grad, correctGrad)
 #
 # Adapting implementation: We adapt the implementation of [multi-head attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1446445463/multi-head+attention+mechanism) in [this code resource at ParlAI. ](https://github.com/facebookresearch/ParlAI/blob/f7db35cba3f3faf6097b3e6b208442cd564783d9/parlai/agents/transformer/modules.py#L907). Note there are four places labeled (I), (II), (III), and (IV) where using named tensors enables more readable code, and we will dive into each of these after the code block.
 #
-# * (I) **Refining the input tensor dims: ** the `query = query.refine_names(..., 'T', 'D')` serves as enforcable documentation and lifts input dimensions to being named. Checks that the last two dimensions can be refined to `['T', 'D']`, preventing potentially silent or confusing size mismatch errors later down the line.
-# * (II) **Manipulating dimensions in `_prepareHead()`: **CLEARLY state sth einput and output dimensions. The input tensor must end with the `T` and `D` dims and the output tensor ends in `H`, `T`, and `D_head` dims. Secondly, it is clear to see what is going on: `_prepareHead()` takes the key, query and value and splits the embedding dimension `D` into multiple heads, finally rearranging embedding dim `D` order to be `[..., 'H', 'T', 'D_head']`. To contrast, the [original implementation uses the non-semantically clear `view` and `transpose` operations.] (https://github.com/facebookresearch/ParlAI/blob/f7db35cba3f3faf6097b3e6b208442cd564783d9/parlai/agents/transformer/modules.py#L947-L957)
-# * (III) **Explicit Broadcasting by names:** To make `mask` broadcast correctly with `dotProd`, we would usually `unsqueeze()` dims 1 (for `H`) and `-1` (for `T_key`) in the case of self attention or `unsqueeze` dim `1` in the case of encoder attention (to stand in for the dimension called `H`). But using named tensors, we simply align the `attnMask` to the shape and names of `dotProd` using `align_as` so no need to worry about where to `unsqueeze` dims.
-# * (IV) **More Dimension manipulation using `align_to()` and `flatten()`:** Here as in (II), the `align_to()` and `flatten()` are more semantically meaningful than `view` and `transpose` despite being more verbose.
+# * (I) **Refining the input tensor dims: ** the [`query = query.refine_names(..., 'T', 'D')`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.refine_names) serves as enforcable documentation and lifts input dimensions to being named. Checks that the last two dimensions can be refined to `['T', 'D']`, preventing potentially silent or confusing size mismatch errors later down the line.
+# * (II) **Manipulating dimensions in `_prepareHead()`: **CLEARLY state sth einput and output dimensions. The input tensor must end with the `T` and `D` dims and the output tensor ends in `H`, `T`, and `D_head` dims. Secondly, it is clear to see what is going on: `_prepareHead()` takes the key, query and value and splits the embedding dimension `D` into multiple heads, finally rearranging embedding dim `D` order to be `[..., 'H', 'T', 'D_head']`. To contrast, the [original implementation](https://github.com/facebookresearch/ParlAI/blob/f7db35cba3f3faf6097b3e6b208442cd564783d9/parlai/agents/transformer/modules.py#L947-L957) uses the non-semantically clear [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view) and [`transpose()`](https://pytorch.org/docs/stable/torch.html#torch.transpose) operations.
+# * (III) **Explicit Broadcasting by names:** To make `mask` broadcast correctly with `dotProd`, we would usually [`unsqueeze()`](https://pytorch.org/docs/stable/torch.html#torch.unsqueeze) dims 1 (for `H`) and `-1` (for `T_key`) in the case of self attention or [`unsqueeze()`](https://pytorch.org/docs/stable/torch.html#torch.unsqueeze) dim `1` in the case of encoder attention (to stand in for the dimension called `H`). But using named tensors, we simply align the `attnMask` to the shape and names of `dotProd` using [`align_as()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_as) so no need to worry about where to [`unsqueeze()`](https://pytorch.org/docs/stable/torch.html#torch.unsqueeze) dims.
+# * (IV) **More Dimension manipulation using [`align_to()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_to) and [`flatten()`](https://hyp.is/P03oZHQMEeqVWnehE0Axew/pytorch.org/docs/stable/named_tensor.html):** Here as in (II), the [`align_to()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_to) and [`flatten()`](https://hyp.is/P03oZHQMEeqVWnehE0Axew/pytorch.org/docs/stable/named_tensor.html) are more semantically meaningful than [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view) and [`transpose()`](https://pytorch.org/docs/stable/torch.html#torch.transpose) despite being more verbose.
 # %% codecell
 import torch.tensor as Tensor
 import torch.nn as nn
@@ -542,29 +589,44 @@ class MultiHeadAttention(nn.Module):
 
         if isSelfAttnType:
             key = value = queryNamed # this places query's value into both key and value matrices.
+            # key shape == value shape == (B, T, D)
         elif value is None:
             # Then key and value are the same, but query differs
             key: Tensor = key.refine_names(..., 'T', 'D')
+            # key shape == TODO
             value: Tensor = key
+            # value shape == TODO
 
-        dim: int = key.size('D')
+        #dim: int = key.size('D')
 
 
-        # Distinguish between queryLen (T) and keyLen (T_key) dims.
+        ### Distinguish between queryLen (T) and keyLen (T_key) dims.
+
+        # if self attention: weightsKey (D (None),D (None)) * key (B, T, D) ---> (B, T, None)
+        # if encoder attention: TODO weightsKey (D (None),D (None)) * key () ---> ()
         K: Tensor = _prepareHead(self.linearK(key)).rename(T = 'T_key') # key shape == (B, T, D)
-        # weightsKey (D (None),D (None)) * key (B, T, D) ---> (B, T, None)
         # K shape == (B, H, T_key, D_head)
+
+        # if self attention: weightsValue (D (None),D (None)) * value (B, T, D) ---> (B, T, None)
+        # if encoder attention: TODO # weightsValue (D (None),D (None)) * value (B, T, D) ---> (B, T, None)
         V: Tensor = _prepareHead(self.linearV(value)).rename(T = 'T_key')
-        # weightsValue (D (None),D (None)) * value (B, T, D) ---> (B, T, None)
         # V shape == (B, H, T_key, D_head)
+
+        # if self attention: weightsQuery (D (None),D (None)) * query (B, T, D) --> (B, T, None)
+        # if encoder attention: TODO weightsQuery (D (None),D (None)) * query (B, T, D) --> (B, T, None)
         Q: Tensor = _prepareHead(self.linearQ(queryNamed)) # the T dim stays the same
-        # weightsQuery (D (None),D (None)) * query (B, T, D) --> (B, T, None)
         # Q shape == (B, H, T, D_head)
-        # Q (B, H, T, D_head) * Kreshaped (B, H, D_head, T_key) ---> (B, H, T, T_key)
+
+
+        # if self attention: Q matrix (B, H, T, D_head) * K.aligned (B, H, D_head, T_key) ---> (B, H, T, T_key)
+        # TODO if encoder attention: Q matrix (B, H, T, D_head) * K.aligned (B, H, D_head, T_key) ---> (B, H, T, T_key)
         dotProd: Tensor = Q.div_(scale).matmul(K.align_to(..., 'D_head', 'T_key'))
-        # dotProd shape == (B, H, T, T_key)
+        # for self attention: dotProd shape == (B, H, T, T_key)
+        # for encoder attention: TODO dotProd shape == (B, H, T, T_key)
+
         dotProd.refine_names(..., 'H', 'T', 'T_key') # just a check
-        # dotProd shape == (B, H, T, T_key)
+        # for self attention: dotProd shape == (B, H, T, T_key)
+        # for encoder attention: TODO
 
         # (III) ------------------------------------------------------------------------------------
 
@@ -576,27 +638,26 @@ class MultiHeadAttention(nn.Module):
         dotProd.masked_fill_(mask = attnMask, value = -float(1e20))
         # dotProd shape == (B, H, T, T_key)
 
-        attnWeights: Tensor = self.attnDropout(input = F.softmax(input = dotProd / scale,
-                                                                 dim = 'T_key'))
+        attnWeights: Tensor = self.attnDropout(F.softmax(dotProd / scale, dim = 'T_key'))
         # attnWeights shape == (B, H, T, T_key)
 
         # (IV) ------------------------------------------------------------------------------------
         # Step: multiplying the softmaxed results with the value matrix V, as in the attention formula. Then reshaping the result.
         attentioned: Tensor = (
+            # attnWeights (B, H, T, T_key) * VALUES V (B, H, T_key, D_head) ---> (B, H, T, D_head)
             attnWeights
-            # attnWeights (B, H, T, T_key) * VALUES V (B, H, T_key, D_head) ---> TODO shape
-                .matmul(V).refine_names(..., 'H', 'T', 'D_head') # TODO shape
-                .align_to(..., 'T', 'H', 'D_head') # TODO shape ==
-                .flatten(dims = ['H', 'D_head'], out_dim = 'D')
+                .matmul(V).refine_names(..., 'H', 'T', 'D_head') # shape == (B, H, T, D_head)
+                .align_to(..., 'T', 'H', 'D_head') # shape == (B, T, H, D_head)
+                .flatten(dims = ['H', 'D_head'], out_dim = 'D') # shape == (B, T, D)
         )
-        # attentioned shape == TODO
+        # attentioned shape == (B, T, D)
 
         # Creating output by passing attentions through linear layer, then making sure of the result's name shape.
-        # weightsOut (D, D) * attentioned () ---> TODO
+        # weightsOut (D (None), D (None)) * attentioned (B, T, D) ---> (B, T, None)
         output: Tensor = self.linearOut(attentioned).refine_names(..., 'T', 'D')
-        # output shape == TODO
+        # output shape == (B, T, D)
 
-        return output
+        return output # output shape == (B, T, D)
 
 # %% codecell
 B, T, D, H = 7, 5, 2*3, 3
