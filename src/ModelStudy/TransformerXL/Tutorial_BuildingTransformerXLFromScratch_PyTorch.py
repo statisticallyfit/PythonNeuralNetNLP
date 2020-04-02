@@ -63,7 +63,6 @@ assert wordEmbeddings.names == ('seqLen', 'batchSize', 'embDim')
 # Method 2 for renaming:
 wordEmbeddings: Tensor = wordEmbeddings.rename(seqLen = 'S', batchSize = 'B', embDim = 'E')
 assert wordEmbeddings.names == ('S', 'B', 'E')
-
 assert wordEmbeddings.shape == (S, B, E) == (7, 3, 32)
 assert wordEmbeddings.ndim == 3
 
@@ -109,6 +108,9 @@ innerDim: int = 17 # this is the internal dimension size
 I = innerDim # short form
 
 linearK: Linear = Linear(in_features = embeddingDim, out_features = innerDim)
+#linearK.weight: Tensor = linearK.weight.refine_names('I', 'E') # cannot do that
+# linearK.bias: Tensor = linearK.bias.refine_names('I')
+# linearK.weight.set_(linearK.weight.refine_names('I', 'E'))
 linearV: Linear = Linear(in_features = embeddingDim, out_features = innerDim)
 linearQ: Linear = Linear(in_features = embeddingDim, out_features = innerDim)
 
@@ -140,7 +142,15 @@ getChildInfo(linearQ)
 
 # %% codecell
 # Concatenate the memory and embeddings at dimension = 0 (first dimension)
-wordEmbsWordMemory: Tensor = torch.cat([memory, wordEmbeddings], dim = 0)
+assert memory.names == ('P', 'B', 'E')
+assert wordEmbeddings.names == ('S', 'B', 'E')
+
+# WARNING: torch.cat() cannot handle named tensors! Must drop the names here:
+wordEmbsWordMemory: Tensor = torch.cat([memory.rename(None), wordEmbeddings.rename(None)], dim = 0)
+assert wordEmbsWordMemory.names == (None, None, None)
+
+# Temporary fix- why can't concatenate make the name 'P + S' ??
+wordEmbsWordMemory.names = ['P_S', 'B', 'E']
 
 # Testing the tensors have been concatenated along their first dimension
 assert memory.shape == (P, B, E) == (6, 3, 32), "Test memory shape"
@@ -148,26 +158,30 @@ assert wordEmbeddings.shape == (S, B, E) == (7, 3, 32), "Test wordEmbeddings sha
 assert wordEmbsWordMemory.shape == (P + S, B, E) == (13, 3, 32), "Test wordEmbs ++ memory shape"
 
 # %% codecell
-assert (P, S, B, I, E) == (6, 7, 3, 17, 32), "Reminder: Dimension names"
-
+(P, S, B, I, E) = (6, 7, 3, 17, 32) # Reminder: Dimension names
 
 # Passing each word Embedding ++ Memory(hiddenstates) through the layers by multiplication to create the
 # corresponding matrices. Just like transformer calculation: the query, key, value matrices are formed by m
 # ultiplying the word embedding matrix with the weights in the corresponding linear layer.
 
 # Multiplying along dimension E: weightsK x embeddings: (I, E) x (P+S, B, E) ---> (P+S, B, I)
-keys = linearK(wordEmbsWordMemory)
-assert keys.shape == (P + S, B, I), "Test K shape"
+keys: Tensor = linearK(wordEmbsWordMemory) # shape == (P+S, B, None)
+assert keys.names == ('P_S', 'B', None)
+keys: Tensor = keys.refine_names(..., 'I') # last dim is unnamed because of linearK weights matrix
+assert keys.shape == (P + S, B, I) and keys.names == ('P_S', 'B', 'I')
 
 # Multiplying along dimension E: weightsV x embeddings: (I, E) x (P+S, B, E) ---> (P+S, B, I)
-values = linearV(wordEmbsWordMemory)
-assert values.shape == (P + S, B, I), "Test V shape"
+values: Tensor = linearV(wordEmbsWordMemory)
+assert values.names == ('P_S', 'B', None)
+values: Tensor = keys.refine_names(..., 'I') # last dim is unnamed because of linearV weights matrix
+assert values.shape == (P + S, B, I) and  values.names == ('P_S', 'B', 'I')
 
 # NOTE: here is where the warning above applies: there is no memory for the queries
 # Multiplying along dimension E: weightsQ x embeddings: (I, E) x (S, B, E) ---> (S, B, I)
-queries = linearQ(wordEmbeddings)
-assert queries.shape == (S, B, I), "Test Q shape"
-
+queries: Tensor= linearQ(wordEmbeddings)
+assert queries.names == ('S', 'B', None)
+queries: Tensor = queries.refine_names(..., 'I')
+assert queries.shape == (S, B, I) and queries.names == ('S', 'B', 'I')
 
 # %% markdown [markdown]
 # ### Step 2: Compute [Attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) Scores
@@ -188,9 +202,12 @@ Image(filename =imagePath + "ModalNet-19.png")
 # keys shape == (P + S, B, I)
 # (calling J = P + S)
 # This calculation here means multiplication along inner dimension I = 17
-contentAttn: Tensor = torch.einsum('sbi, jbi -> sjb', [queries, keys]) / (E ** 0.5)
+
+# NOTE: einsum not supported with named tensors
+contentAttn: Tensor = torch.einsum('sbi, jbi -> sjb', [queries.rename(None), keys.rename(None)]) / (E ** 0.5)
 # QK^T shape must be == (7, 13, 3) == (S, P + S, B)
 assert contentAttn.shape == (S, P+S, B) == (7, 13, 3)
+contentAttn: Tensor = contentAttn.refine_names('S', 'P_S', 'B')
 
 # %% markdown [markdown]
 # ### Step 3: Relative Positional Encodings
@@ -222,30 +239,36 @@ assert contentAttn.shape == (S, P+S, B) == (7, 13, 3)
 # * **Learned global positional bias:** is term $(d)$, is a learned vector that adjusts the importance based only on distance between tokens, using the intuition that recent previous words are more relevant than words from previous paragraphs.
 
 # %% markdown [markdown]
-# Implementing term $(c)$:
+# Implementing term $\large (c)$:
 #
 # $$
 # \mathbf{A_{ij}}^\textbf{rel} = \underbrace{\mathbf{E_{x_i}}^T \mathbf{W_q}^T \mathbf{W_{k, E}} \mathbf{E_{x_j}}}_{(a)} + \underbrace{\mathbf{E_{x_i}}^T \mathbf{W_q}^T \mathbf{W_{k, R}} \color{cyan}{\mathbf{R_{i-j}}} }_{(b)} + {\Large \underbrace{ {\color{red}{\mathbf{u}^T}} \mathbf{W_{k, E}} \mathbf{E_{x_j}}}_{(c)}} + \underbrace{ {\color{red}{\mathbf{v}^T}} \mathbf{W_{k,R}} \color{cyan}{\mathbf{R_{i-j}}} }_{(d)}
 # $$
 # %% codecell
-u: Tensor = torch.rand(I).expand_as(queries)
+r = torch.rand(I).refine_names('I')
+u: Tensor = r.rename(None).expand_as(queries.rename(None)).refine_names('S', 'B', 'I')
 
 assert u.shape == queries.shape == (S, B, I) == (7, 3, 17), "Test u.shape == queries.shape"
 assert keys.shape == (P + S, B, I), "Test keys.shape"
 assert contentAttn.shape == (S, P+S, B) == (7, 13, 3), "Test content Attn shape before"
+assert keys.names == ('P_S', 'B', 'I')
+assert contentAttn.names == ('S', 'P_S', 'B')
 
 ### Calculate term C, multiply along dimension I:    u x keys :     (S, B, I) x (P+S, B, I) ---> (S, P+S, B)
 ## GOAL: to get result after multiplying to have shape equal to contentAttn.shape which is 'sjb' so set the result shape to 'sjb' instead of other way 'jsb'
-c: Tensor = torch.einsum('sbi, jbi -> sjb', [u, keys])
+c: Tensor = torch.einsum('sbi, jbi -> sjb', [u.rename(None), keys.rename(None)])
+c: Tensor = c.refine_names('S', 'P_S', 'B')
 contentAttn_C: Tensor = contentAttn + c / (E ** 0.5)
 
 assert contentAttn_C.shape == (S, P+S, B), "Test content attention shape after adding term (c)"
+assert contentAttn_C.names == ('S', 'P_S', 'B')
+
 
 # %% markdown [markdown]
 # Next: compute [relative positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml) necessary for the positional attention terms. For the the [relative positional embeddings](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml), the [Transformer XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716) uses fixed sinusoidal embeddings.
 # %% codecell
 posIndices: Tensor = torch.arange(S + P - 1, -1, -1.0, dtype = torch.float)
-posIndices
+posIndices.names = ('P_S',)
 
 assert posIndices.shape == (P+S, ) == (13,)
 
@@ -254,7 +277,7 @@ invFreq: Tensor = 1 / (10000 ** (torch.arange(0.0, E, 2.0) / E))
 assert invFreq.shape == (E/2,) == (16, )
 
 # Outer Product to get sinusoidal tensor: This notation i, j -> ij means to keep both dimensions (cross product or outer product)
-sinusoidInp: Tensor = torch.einsum('i, j -> ij', [posIndices, invFreq])
+sinusoidInp: Tensor = torch.einsum('i, j -> ij', [posIndices.rename(None), invFreq])
 assert sinusoidInp.shape == (P+S, E/2) == (13, 16)
 
 # Plotting the sinusoidals on some dimensions:
@@ -378,8 +401,12 @@ assert mask.shape == (S, P+S, 1) == (7, 13, 1)
 mask
 # %% codecell
 # NOTE: changing mask to use type bool since mask with type byte is deprecated
-mask: Tensor = torch.triu(torch.ones((S, P+S)), diagonal = 1+P, ).bool().unsqueeze(2)
+mask: Tensor = torch.triu(torch.ones((S, P+S)), diagonal = 1+P, ).bool()
+mask.shape
+mask.unsqueeze(2).shape
 assert mask.shape == (S, P+S, 1) == (7, 13, 1)
+
+rawAttn.shape
 
 rawAttnMasked: Tensor = rawAttn.masked_fill(mask = mask, value = -float('inf'))
 
