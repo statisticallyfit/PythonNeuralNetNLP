@@ -189,6 +189,27 @@ queries: Tensor= linearQ(wordEmbeddings)
 assert queries.names == ('S', 'B', 'I')
 assert queries.shape == (S, B, I)
 
+# %% codecell
+# Do the chunking way as it is in the actuall MaskedMultiHeadAttention class
+linearKV: Linear = Linear(in_features= E, out_features= (I *  2),  bias = False)
+linearKV.weight.names = ('I', 'E')
+
+assert linearKV.weight.shape == (I*2, E)
+
+# Pass through layer, prepare to chunk:
+keysAndValues: Tensor = linearKV(wordEmbsWordMemory)
+
+assert keysAndValues.shape == (P+S, B, I*2) == (13, 3, 34)
+assert keysAndValues.names == ('P_plus_S', 'B', 'I')
+
+
+# Chunking along the last dimension:
+lastDim: int = keysAndValues.ndim - 1 # or can write dim = -1
+keys, values = torch.chunk(keysAndValues, chunks = 2, dim = lastDim)
+# k, v = torch.chunk(keysAndValues, chunks = 2, dim = 'I') # gives error, dim must be INT not STR
+assert keys.names == values.names == ('P_plus_S', 'B', 'I')
+assert keys.shape == values.shape == (P+S, B, I)
+
 # %% markdown [markdown]
 # ### Step 2: Compute [Attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) Scores
 # Now we compute [scaled dot product attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1671856135/scaled+dot+product+attention) as per the usual [Transformer](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1370095641/transformer+model+ml) model. [Scaled dot product attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1671856135/scaled+dot+product+attention) computes the [attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) score as the dot product between the query and key vectors. (To prevent values from exploding as the dimensionality of the vectors increases, we divide the raw attention score by the sqrt of the [embedding](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1474331193/embedding%2Bml) size).
@@ -431,7 +452,7 @@ assert shiftCut.names == ('P_plus_S', 'S', 'B') # dims 1, 2 have been switched a
 #                         .align_to('P_plus_S', 'S', 'B')[1:]
 #                         .align_as(posAttn))
 
-
+posAttn.names
 # Constructing the padded attention the unnamed way:
 posAttnPadded_: Tensor = shiftCut_.view_as(posAttn_)
 assert posAttnPadded_.shape == posAttn_.shape == (S, P+S, B) == (7, 13, 3)
@@ -573,10 +594,10 @@ mha
 # %% codecell
 printParamInfo(mha) # so dropout is not a parameter
 # %% codecell
-inputWordEmbs: Tensor = torch.rand(S, B, E)
-posEmbs: Tensor = torch.rand(P+S, E)
-mem: Tensor = torch.rand(P, B, E)
-u, v = torch.rand(H, I), torch.rand(H, I)
+inputWordEmbs: Tensor = torch.rand(S, B, E).refine_names('S', 'B', 'E')
+posEmbs: Tensor = torch.rand(P+S, E).refine_names('P_plus_S', 'E')
+mem: Tensor = torch.rand(P, B, E).refine_names('P', 'B', 'E')
+u, v = torch.rand(H, I).refine_names('H', 'I'), torch.rand(H, I).refine_names('H', 'I')
 output: Tensor = mha(inputWordEmbs, posEmbs, mem, u, v)
 assert output.shape == (S, B, E) == (7, 3, 32)
 

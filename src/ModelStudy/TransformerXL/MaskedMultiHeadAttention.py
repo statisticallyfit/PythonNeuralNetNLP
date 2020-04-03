@@ -112,8 +112,8 @@ class MaskedMultiHeadAttention(nn.Module):
     #   H = number of heads
     # NOTE: pass in positional embeddings separately here so we can handle relative positions
     def forward(self,
-                inputMHA: FloatTensor, # the word embeddings (?)
-                posEmbeddings: FloatTensor,
+                inputMHA: FloatTensor,  # the word embeddings (?)
+                relPosEmbTensor: FloatTensor,
                 memory: FloatTensor,
                 u: FloatTensor,
                 v: FloatTensor,
@@ -125,7 +125,7 @@ class MaskedMultiHeadAttention(nn.Module):
         Arguments:
             inputMHA: the word embeddings
                 ---> shape == (S, B, E)
-            posEmbeddings: positional embeddings
+            relPosEmbTensor: positional embeddings
                 ---> shape == (P+S, B, E)
             memory: cached hidden states from segment-level recurrence mechanism
                 ---> shape == (P, B, E)
@@ -134,7 +134,7 @@ class MaskedMultiHeadAttention(nn.Module):
             v: the global (query-independent) bias towards certain positions
                 ---> shape == (H, I)
             mask: attention mask
-                ---> shape TODO (S, P+S, 1)
+                ---> shape (S, P+S, B)
             memory: TODO rename to memories?? to be consistent with TransXLDecoder arg name?
                 ---> shape TODO
         """
@@ -144,23 +144,25 @@ class MaskedMultiHeadAttention(nn.Module):
         H, I, E = self.numHeads, self.innerDim, self.embeddingDim
 
         ### Concatenate recurrent memory (the sequence of hidden states) to the input, across the sequence dimension (dim = 0, which has size P = previous sequence length)
-        inputWithMemory: Tensor = torch.cat([memory, inputMHA], dim = 0)
+        # WARNING: torch.cat() cannot handle named tensors when concatenating ALONG the dimension which has different names! Must drop the names here:
+        inputWithMemory: Tensor = (torch.cat([memory.rename(None), inputMHA.rename(None)], dim = 0)
+                                   .refine_names('P_plus_S', 'B', 'E'))
         # memory shape == (P, B, E)
         # input shape == (S, B, E)
         # inputWithMemory shape == (P+S, B, E)
 
         ### Passing K, V, Q through the linear layers
         # (I*H*2, E), (P+S, B, E) -> (P+S, B, I*H*2)
-        kvalues: Tensor = self.linearKV(inputWithMemory)
-        # kvalues shape == (P+S, B, I*H*2)
+        keysAndValues: Tensor = self.linearKV(inputWithMemory)
+        # keysAndValues shape == (P+S, B, I*H*2)  | names == (P+S, B, I*H)
         # Chunking along the last dimension:
-        lastDim: int = kvalues.ndim - 1 # or can write dim = -1
-        keys, values = torch.chunk(kvalues, chunks = 2, dim = lastDim)
-        # keys shape == (P+S, B, I*H)
-        # values shape == (P+S, B, I*H)
+        lastDim: int = keysAndValues.ndim - 1 # or can write dim = -1
+        keys, values = torch.chunk(keysAndValues, chunks = 2, dim = lastDim)
+        # keys shape == names == (P+S, B, I*H)
+        # values shape == names == (P+S, B, I*H)
 
         queries: Tensor = self.linearQ(inputMHA)
-        # queries shape == (S, B, I*H)
+        # queries shape == names == (S, B, I*H)
 
 
         ##### Apply scaled dot product attention (look at the following dimensions carefully, since this is the key operation in the Transformer / Transformer XL architecture)
@@ -171,37 +173,67 @@ class MaskedMultiHeadAttention(nn.Module):
         # This is the standard attention term in the original Transformer, except without the positional embeddings, which are handled separately in the Transformer XL (see below)
         # NOTE: 'i' corresponds to number of queries = number of current inputs / targets (seq-wise)
         # NOTE: 'j' corresponds to number of key / values = number of vectors that we can use to compute the vector for each query
-        a: Tensor = queries.view(S, B, H, I) # split queries.shape (S, B, I*H)
-        c: Tensor = u # u represents global (query-independent) bias towards certain keys / values = words. NOTE (by Keita Kurita): maybe this could be a per-attention head parameter?
-        Kview: Tensor = keys.view(P+S, B, H, I) # split size of keys
+        a: Tensor = queries.unflatten(dim = 'IH', namedshape = (('H', H),('I', I)))
+        # a shape == (S, B, H, I)
+        # OLD: a: Tensor = queries.rename(None).view(S, B, H, I) # split queries.shape (S, B, I*H)
+
+        # u represents global (query-independent) bias towards certain keys / values = words. NOTE (by Keita Kurita): maybe this could be a per-attention head parameter?
+        c: Tensor = u
+        # c shape == (H, I)
+
+        keysAligned: Tensor = keys.unflatten(dim = 'IH', namedshape = (('H', H),('I', I)))
+        # keysAligned shape == (P+S, B, H, I)
+        # OLD: keys.rename(None).view(P+S, B, H, I) # split size of keys
+
+        # Renaming for clearer notation and since einsum cannot handle named tensors
+        a_, c_, keys_ = a.rename(None), c.rename(None), keysAligned.rename(None)
+
         # Multiplying along dimension I: (to find contentAttn)
-        # (a + c) * K :   (S, B, H, I) * (P+S, B, H, I) ---->
-        contentAttn: Tensor = torch.einsum('sbhi, jbhi -> sjbh', [a + c, Kview])
-        # contentAttn shape == (S, P+S, B, H)
+        # (a + c) * K :   (S, B, H, I) * (P+S, B, H, I) ----> (S, P+S, B, H)
+        contentAttn: Tensor = (torch.einsum('sbhi, jbhi -> sjbh', [a_ + c_, keys_])
+                               .refine_names('S', 'P_plus_S', 'B', 'H'))
+        # contentAttn shape == names == (S, P+S, B, H)
 
         ### Position-based attention term ((b) + (d) from the paper)
         # This attention is solely based on the position of the key/values (i.e. it does not take the content of the key/values into account)
         # Weights * posEmbs: (I*H, E) * (P+S, B, E) ----> (P+S, B, I*H)
-        p_tfmd: Tensor = self.linearP(posEmbeddings)
-        # p_tfmd shape == (P+S, B, I*H)
+        pos: Tensor = self.linearP(relPosEmbTensor)
+        # pos shape == (P+S, B, I*H)
 
-        # TODO why is term (a) the same as term (b)?
-        b: Tensor = queries.view(S, B, H, I) # split size (S, B, H*I)
-        d: Tensor = v # v is global (indpendent of query) bias towards certain positions
+        # TODO why is term (a) the same as term (b)? why not using pos.unflatten ... ?
+        b: Tensor = queries.unflatten(dim = 'IH', namedshape = (('H', H),('I', I))) # view(S,B,H,I)
+        # b shape == (S, B, H, I)
+        # v is global (independent of query) bias towards certain positions
+        d: Tensor = v
+        # d shape == (H, I)
+
+
+        #keys.unflatten(dim = 'IH', namedshape = (('H', H),('I', I)))
+        # keysAligned shape == (P+S, B, H, I)
+        posAligned: Tensor = pos.unflatten(dim = 'IH', namedshape=(('H', H), ('I', I)))
+        # posAligned shape == (P+S, B, H, I)
+
         # TODO: why has batch dim been left out?
-        Pview: Tensor = p_tfmd.view(P+S, H, I)# NOTE: there is no content information regarding keys and values in here.
+        # NOTE (keita kurita): there is no content information regarding keys and values in here.
+        posNoBatch = posAligned.align_to('P_plus_S', 'H', 'I')
+        # OLD: posAligned.rename(None).view(P+S, H, I)
+
+        # Renaming since einsum doesn't support named tensors
+        b_, d_, pos_ = b.rename(None), d.rename(None), posNoBatch.rename(None)
+
         # Multiplying along dimension I to find positional attention
-        # (b + d) * Pview:   (S, B, H, I) * (P+S, H, I) ----> (S, P+S, B, H)
-        positionAttn: Tensor = torch.einsum('sbhi, jhi -> sjbh', [b+d, Pview])
-        # positionAttn shape == (S, P+S, B, H)
+        # (b + d) * pos:   (S, B, H, I) * (P+S, H, I) ----> (S, P+S, B, H)
+        posAttn: Tensor = (torch.einsum('sbhi, jhi -> sjbh', [b_ + d_, pos_])
+                           .refine_names('S', 'P_plus_S', 'B', 'H'))
+        # posAttn shape == (S, P+S, B, H)
 
 
         ### Relative shift of positional attention (to compute pos attn efficiently for all query positions)
         # TODO TESTING here if these two results are equal, from _relshift
-        positionAttnPadded, posAttnPadded_ = self._relativeShift(positionAttn)
+        posAttnPadded, posAttnPadded_ = self._relativeShift(posAttn)
 
         # The attention is the sum of the content-based and position-based attentions:
-        attn: Tensor = contentAttn + positionAttnPadded
+        attn: Tensor = contentAttn + posAttnPadded
         # attn shape == (S, P+S, B, H)
 
         ### Masking the attention before the softmax layer, exactly the same way as for the Decoder in Transformer model: https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1521090937/decoder+self+attention+in+transformer
