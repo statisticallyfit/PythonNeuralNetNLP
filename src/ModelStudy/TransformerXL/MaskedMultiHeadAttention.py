@@ -119,7 +119,7 @@ class MaskedMultiHeadAttention(nn.Module):
                 ---> shape == (H, I)
             mask: attention mask
                 ---> shape TODO (S, P+S, 1)
-            mems: TODO
+            memory: TODO rename to memories?? to be consistent with TransXLDecoder arg name?
                 ---> shape TODO
         """
 

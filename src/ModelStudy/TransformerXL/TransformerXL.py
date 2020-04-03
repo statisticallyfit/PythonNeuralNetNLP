@@ -142,7 +142,7 @@ class TransformerXL(nn.Module):
             wordEmbeddings.device) # decreasing sequence from P+S-1 ... 0
         # posIndices shape == (P+S)  (just a vector of this length)
         posEmbeddings: Tensor = self.dropoutO(self.posEmbeddingLayer(posIndices))
-        # posEmbeddings shape == (P+S, 1, E)
+        # posEmbeddings shape == (P+S, B, E)
 
         # note: Main part of Forward Pass here below
 
