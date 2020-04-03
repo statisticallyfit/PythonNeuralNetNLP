@@ -29,17 +29,17 @@ class MaskedMultiHeadAttention(nn.Module):
         self.linearKV: Linear = Linear(in_features= embedDim,
                                        out_features= (innerDim * numHeads * 2),  #2 is for keys and values
                                        bias = False) # no bias now, making this a simple matrix multiplication
+        # NOTE: adding names to the weight matrix of linearKV layer
+        self.linearKV.weight.names = ('IH', 'E')
 
         # Linear layer for queries (which will not be concatenated with memorized states so it remains separate)
         # TODO: what remains separate: the linearQ or the result queries = linearQ(input)???
-        self.linearQ: Linear = Linear(in_features= embedDim,
-                                      out_features= innerDim * numHeads,
-                                      bias = False)
+        self.linearQ: Linear = Linear(in_features= embedDim,out_features= innerDim * numHeads,bias = False)
+        self.linearQ.weight.names = ('IH', 'E')
 
         # Linear layer for positional embeddings
-        self.linearP: Linear = Linear(in_features=embedDim,
-                                      out_features= innerDim * numHeads,
-                                      bias = False)
+        self.linearP: Linear = Linear(in_features=embedDim,out_features= innerDim * numHeads,bias = False)
+        self.linearP.weight.names = ('IH', 'E')
 
         # Scaling factor for scaled dot product attention
         self.scale: float = 1 / (innerDim ** 0.5)
@@ -51,7 +51,11 @@ class MaskedMultiHeadAttention(nn.Module):
         self.linearOut: Linear = Linear(in_features= self.innerDim * self.numHeads,
                                            out_features= self.embeddingDim,
                                            bias = False)
+        self.linearOut.weight.names = ('E', 'IH')
+
+        # WARNING: all other Linear objects support named tensors but LayerNorm does NOT
         self.norm: LayerNorm = LayerNorm(normalized_shape = self.embeddingDim)
+
         # Dropout that is applied to the output
         self.dropoutO: Dropout = Dropout(p = dropoutO)
 
@@ -66,23 +70,35 @@ class MaskedMultiHeadAttention(nn.Module):
         firstDim: int = tensorToShift.size(0)
         secondDim: int = 1
         remainingDims: List[int] = tensorToShift.size()[2:]
+        # NOTE: adding names to zeroPad, but don't know the names of the tail of the remainingDims list.
         zeroPad: Tensor = torch.zeros((firstDim, secondDim, *remainingDims),
                                       device = tensorToShift.device,
-                                      dtype = tensorToShift.dtype)
+                                      dtype = tensorToShift.dtype).refine_names('S', 'P_plus_S', 'B',...)
 
         ### Example with positional attention:
-        # posAttnPadded: Tensor = (torch.cat([zeroPad, posAttn], dim = 1)
-        #                          .view(P+S+1, S, B)[1:] # switch dim=0 and dim=1 and cut one from dim=0
-        #                          .view_as(posAttn))
-        firstDim: int = tensorToShift.size(1) + 1
-        secondDim: int = tensorToShift.size(0)
-        remainingDims: List[int] = tensorToShift.size()[2:] # get all dims but the first two dims.
-        shiftedTensor: Tensor = (torch.cat([zeroPad, tensorToShift], dim = 1)
-                                # get tail of elements from dim = 0, so now shape is (firstDim - 1, secondDim, *remainingDims)
-                                .view(firstDim, secondDim, *remainingDims)[1:]
-                                .view_as(tensorToShift))
+        #posAttnPadded_: Tensor = (torch.cat([zeroPad_, posAttn_], dim = 1)
+        #                         .view(P+S+1, S, B)[1:] # switch dims to be P+S+1, S, and cut from dim=0 (P+S,S,B)
+        #                         .view_as(posAttn_)) # switching dims to be S, P+S (shape == (S, P+S, B)
 
-        return shiftedTensor
+
+        #posAttnPadded: Tensor = (torch.cat([zeroPad, posAttn], dim = 'P_plus_S')
+        #                         .align_to('P_plus_S', 'S', 'B')[1:]
+        #                         .align_as(posAttn))
+        firstDim: int = tensorToShift.size(1) + 1 # size == P+S+1
+        secondDim: int = tensorToShift.size(0)    # size == S
+        remainingDims: List[int] = tensorToShift.size()[2:] # get all dims but the first two dims.
+
+        tensorPadded: Tensor = (torch.cat([zeroPad, tensorToShift], dim = 'P_plus_S')
+                                .align_to('P_plus_S', 'S', 'B',...)[2:]
+                                .align_as(tensorToShift))
+
+        tensorPadded_: Tensor = (torch.cat([zeroPad, tensorToShift], dim = 1)
+                                 .view(firstDim, secondDim, *remainingDims)[1:]
+                                 .view_as(tensorToShift))
+
+        assert torch.equal(tensorPadded.rename(None), tensorPadded_)
+
+        return tensorPadded, tensorPadded_
         # TODO understand how this shifts the relative pos embeddings ???
 
 
@@ -181,10 +197,11 @@ class MaskedMultiHeadAttention(nn.Module):
 
 
         ### Relative shift of positional attention (to compute pos attn efficiently for all query positions)
-        positionAttn: Tensor = self._relativeShift(positionAttn)
+        # TODO TESTING here if these two results are equal, from _relshift
+        positionAttnPadded, posAttnPadded_ = self._relativeShift(positionAttn)
 
         # The attention is the sum of the content-based and position-based attentions:
-        attn: Tensor = contentAttn + positionAttn
+        attn: Tensor = contentAttn + positionAttnPadded
         # attn shape == (S, P+S, B, H)
 
         ### Masking the attention before the softmax layer, exactly the same way as for the Decoder in Transformer model: https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1521090937/decoder+self+attention+in+transformer

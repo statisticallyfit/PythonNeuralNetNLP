@@ -358,7 +358,7 @@ assert posEmbsTensor.shape == (P+S, 1, I) == (13, 1, 17)
 # Adding positional bias during attention computation:
 # %% codecell
 # Positional bias (v)
-v: Tensor = torch.randn(I)
+v: Tensor = torch.randn(I).refine_names('I')
 
 # The pos_tfmd just without the middle dimension
 # NOTE: need to use squeeze() still, no replacement for this method like align_to() replaces view()
@@ -372,37 +372,86 @@ assert posEmbsTensor_squeezed.shape == (P+S, I) == (13, 17)
 ### Calculate positional attention, multiplying along dimension I: (queries + v) x posNoMid
 # (S, B, I) x (P+S, I) ---> (S, P+S, B)
 # TODO: why not have: 'sbi, ji -> sbj' ??
-posAttn: Tensor = torch.einsum('sbi, ji -> sjb', [queries + v, posEmbsTensor_squeezed])
+queries_, v_, posEmbsTensor_ = queries.rename(None), v.rename(None), posEmbsTensor_squeezed.rename(None)
+posAttn_: Tensor = torch.einsum('sbi, ji -> sjb', [queries_ + v_, posEmbsTensor_])
+posAttn: Tensor = posAttn_.refine_names('S', 'P_plus_S', 'B')
 
 assert posAttn.shape == (S, P+S, B) == (7, 13, 3)
 
 # %% markdown [markdown]
 # Since we compute a [relative positional embedding](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml) for each key-query pair, a naive implementation of [attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) using [relative positional embedding](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml)s would be $O(n^2)$ in terms of computational complexity. Dai et al. (2019) can reduce this to $O(n)$ time by computing the [attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) for one query then shifting the [relative positional embedding](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1492622435/relative+positional+encoding+ml) for different query positions.
 # %% codecell
-zeroPad: Tensor = torch.zeros( (S, 1, B), dtype = torch.float)
+zeroPad_: Tensor = torch.zeros( (S, 1, B), dtype = torch.float)
+zeroPad: Tensor = zeroPad_.refine_names('S', 'P_plus_S', 'B')
 
-assert posAttn.shape == (S, P+S, B) == (7, 13, 3)
-assert zeroPad.shape == (S, 1, B) == (7, 1, 3)
+assert posAttn.names == ('S', 'P_plus_S', 'B')
 
-# This padding + shifting efficiently computes the attention for all
-# Concatenate the zero pad with posAttn on dimension = 1
-assert torch.cat([zeroPad, posAttn], dim = 1).shape == (S, P+S+1, B) == (7, 14, 3)
-assert torch.cat([zeroPad, posAttn], dim = 1).view(P+S+1, S, B)[1:].shape == (P+S, S, B) == (13, 7, 3)
-assert torch.cat([zeroPad, posAttn], dim = 1).view(P+S+1, S, B)[1:].shape == (P+S, S, B) == (13, 7, 3)
+assert posAttn_.shape == (S, P+S, B) == (7, 13, 3)
+assert zeroPad_.shape == (S, 1, B) == (7, 1, 3)
 
-posAttnPadded: Tensor = (torch.cat([zeroPad, posAttn], dim = 1)
-                         .view(P+S+1, S, B)[1:] # switch dim=1 and dim=2 and cut one from dim=0 so now it is shape (P+S, S, B)
-                         .view_as(posAttn)) # switching dims again to have shape shape as posAttn
-# note (aesthetic): putting braces around torch.cat lets the .view parts be separated neatly on the next line, without the \ symbol.
+assert torch.equal(zeroPad_, zeroPad.rename(None))
+assert torch.equal(posAttn_, posAttn.rename(None))
 
-assert posAttnPadded.shape == posAttn.shape
+# --------------------------------------------------------------------------------------------------------
+# RELATIVE SHIFTING: This padding + shifting efficiently computes the attention for all
+# Concatenate the zero pad with posAttn on dimension = 1 (works here for named tensors since dim = 1 has same name)
+shift_: Tensor = torch.cat([zeroPad_, posAttn_], dim = 1) # unnamed shift
+assert shift_.names == (None, None, None)
+assert shift_.shape == (S, P+S+1, B) == (7, 14, 3)
+
+shift: Tensor = torch.cat([zeroPad, posAttn], dim = 'P_plus_S') # named shift
+assert shift.names == ('S', 'P_plus_S', 'B')
+assert shift.shape == (S, P+S+1, B) == (7, 14, 3)
+
+# Checking both shifts are equal:
+assert torch.equal(shift_, shift.rename(None))
+
+# --------------------------------------------------------------------------------------------------------
+# Reshaping the shift_ with view() and named shift with align_as to remove first element at P+S
+shiftCut_: Tensor = shift_.view(P+S+1, S, B)[1:]
+assert shiftCut_.shape == (P+S, S, B) == (13, 7, 3)
+assert shiftCut_.names == (None, None, None)
+
+
+shiftCut: Tensor = shift.align_to('P_plus_S', 'S', 'B')[1:]
+assert shiftCut.shape == (P+S, S, B) == (13, 7, 3)
+assert shift.names == ('S', 'P_plus_S', 'B')
+assert shiftCut.names == ('P_plus_S', 'S', 'B') # dims 1, 2 have been switched around
+
+
+# --------------------------------------------------------------------------------------------------------
+# Last step: reshaping the SHIFT to be the same as posAttn shape
+
+#posAttnPadded_: Tensor = (torch.cat([zeroPad_, posAttn_], dim = 1)
+#                         .view(P+S+1, S, B)[1:] # switch dims to be P+S+1, S, and cut from dim=0 (P+S,S,B)
+#                         .view_as(posAttn_)) # switching dims to be S, P+S (shape == (S, P+S, B)
+
+
+#posAttnPadded: Tensor = (torch.cat([zeroPad, posAttn], dim = 'P_plus_S')
+#                         .align_to('P_plus_S', 'S', 'B')[1:]
+#                         .align_as(posAttn))
+
+
+# Constructing the padded attention the unnamed way:
+posAttnPadded_: Tensor = shiftCut_.view_as(posAttn_)
+assert posAttnPadded_.shape == posAttn_.shape == (S, P+S, B) == (7, 13, 3)
+assert posAttnPadded_.names == (None, None, None)
+
+# Constructing the padded attention the NAMED way:
+posAttnPadded: Tensor = shiftCut.align_as(posAttn)
+
+assert posAttnPadded.names == posAttn.names == ('S', 'P_plus_S', 'B')
+assert posAttnPadded.shape == posAttn.shape == (S, P+S, B) == (7, 13, 3)
+
 
 # %% markdown [markdown]
 # The attention is computed as the **sum of the content and positional attention**:
 # %% codecell
+
 rawAttn: Tensor = contentAttn_C + posAttnPadded
 
-assert rawAttn.shape == contentAttn_C.shape == posAttnPadded.shape == (S, P+S, B) == (7, 13, 3), "Test raw attention shape"
+assert rawAttn.names == contentAttn_C.names == posAttnPadded.names == ('S', 'P_plus_S', 'B')
+assert rawAttn.shape == contentAttn_C.shape == posAttnPadded.shape == (S, P+S, B) == (7, 13, 3)
 
 # %% markdown [markdown]
 # When doing language modeling, we must prevent the model from 'cheating' (from looking at the word it should be predicting). In the [Transformer's decoder](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1521090937/decoder+self+attention+in+transformer), the [Transformer](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1370095641/transformer+model+ml) hides prediction words by setting the [attention](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1447035008/self+attention+mechanism) score to zero, to [mask](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1462730780/mask) out words the model should not see.
@@ -410,76 +459,104 @@ assert rawAttn.shape == contentAttn_C.shape == posAttnPadded.shape == (S, P+S, B
 # Adopting the same [attention masking in the `MultiHeadAttention` module](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1521090937/decoder+self+attention+in+transformer) for the [Transformer-XL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml):
 # %% codecell
 # NOTE: triu concatenates upper triangular matrix, starting at upper row index = diagonal = 1+P = 8
-torch.triu(torch.ones((S, P+S)), diagonal = 1+P, ).byte()
+torch.triu(torch.ones((S, P+S)), diagonal = 1+P ).byte()
 
 # %% codecell
 vec = torch.ones((S, P+S))
 endDim: int = vec.ndim
 assert endDim == 2
-a = torch.triu(vec, diagonal = 1+P, ).byte().unsqueeze(endDim)
-b = torch.triu(vec, diagonal = 1+P, ).byte()[..., None]
-assert (a == b).all(), "Test alternate way of adding tensor of dim=1 at dimension after the last dimension"
+
+a_ = torch.triu(vec, diagonal = 1+P, ).byte().unsqueeze(endDim)
+b_ = torch.triu(vec, diagonal = 1+P, ).byte()[..., None]
+assert (a_ == b_).all(), "Test alternate way of adding tensor of dim=1 at dimension after the last dimension"
 
 longvec = torch.ones((S, P+S, S, P+S, S))
 endDim: int = longvec.ndim
 assert endDim == 5
-a = torch.triu(longvec, diagonal = 1+P, ).byte().unsqueeze(endDim)
-b = torch.triu(longvec, diagonal = 1+P, ).byte()[...,None]
-assert (a == b).all(), "Test alternate way of adding tensor of dim=1 at ending dim, for longer vec"
+a_ = torch.triu(longvec, diagonal = 1+P, ).byte().unsqueeze(endDim)
+b_ = torch.triu(longvec, diagonal = 1+P, ).byte()[...,None]
 
-mask: Tensor = torch.triu(torch.ones((S, P+S)), diagonal = 1+P, ).byte().unsqueeze(2)
+a = torch.triu(longvec, diagonal = 1+P, ).byte().align_to(..., 'END_DIM') # insert size 1 tensor at last dim
+assert a.shape == (S, P+S, S, P+S, S, 1) == (7, 13, 7, 13, 7, 1)
+assert a.names == (None, None, None, None, None, 'END_DIM')
+
+assert torch.equal(a_, b_), "Test alternate way of adding tensor of dim=1 at ending dim, for longer vec"
+assert torch.equal(a.rename(None), a_)
+
+# Now applying the same strategy to the mask
+mask_: Tensor = torch.triu(torch.ones((S, P+S)), diagonal = 1+P, ).byte().align_to(..., 'B')
+# mask: Tensor = torch.triu(torch.ones((S, P+S)), diagonal = 1+P, ).byte().unsqueeze(2)
+assert mask_.names == (None, None, 'B')
+
+mask: Tensor = mask_.refine_names('S', 'P_plus_S', ...)
+assert mask.names == ('S', 'P_plus_S', 'B')
 assert mask.shape == (S, P+S, 1) == (7, 13, 1)
 
 mask
 # %% codecell
 # NOTE: changing mask to use type bool since mask with type byte is deprecated
-mask: Tensor = torch.triu(torch.ones((S, P+S)), diagonal = 1+P, ).bool()
-mask.shape
-mask.unsqueeze(2).shape
-assert mask.shape == (S, P+S, 1) == (7, 13, 1)
+maskBool = mask.bool()
+rawAttnMasked: Tensor = rawAttn.masked_fill(mask = maskBool, value = -float('inf'))
 
-rawAttn.shape
-
-rawAttnMasked: Tensor = rawAttn.masked_fill(mask = mask, value = -float('inf'))
-
+assert maskBool.names == rawAttn.names == rawAttnMasked.names == ('S', 'P_plus_S', 'B')
 assert rawAttn.shape == rawAttnMasked.shape == (S, P+S, B) == (7, 13, 3)
+assert maskBool.shape == (S, P+S, 1)
 
 # %% markdown [markdown]
 # Compute the outputs as the weighted sum of the value vectors in value matrix $V$, using the attention scores:
 # %% codecell
 # Doing softmax on dim=1, which has size 13
-attn: Tensor = torch.softmax(rawAttnMasked, dim = 1)
+attn: Tensor = torch.softmax(rawAttnMasked, dim = 'P_plus_S')
 
+assert attn.names == rawAttnMasked.names == ('S', 'P_plus_S', 'B')
 assert attn.shape == (S, P+S, B) == (7, 13, 3)
+
+assert values.names == ('P_plus_S', 'B', 'I')
 assert values.shape == (P + S, B, I) == (13, 3, 17)
 
 # TODO: how to know which dimensions on which to do the calculations? Why is the shape 'sji' the one that is required?
 # NOTE: doing calculation on dimension j = P+S so that result has shape SBI
-attnWeightedSum: Tensor = torch.einsum('sjb, jbi -> sbi', [attn, values])
+attn_, values_ = attn.rename(None), values.rename(None)
+attnWeightedSum: Tensor = torch.einsum('sjb, jbi -> sbi', [attn_, values_]).refine_names('S', 'B', 'I')
 
 assert attnWeightedSum.shape == (S, B, I) == (7, 3, 17)
+assert attnWeightedSum.names == ('S', 'B', 'I')
 
 # %% markdown [markdown]
 # Final step: project the attention weighted sums back to their original dimension and apply a residual connection and layer normalization:
 # %% codecell
 
-linearOut: Linear = Linear(in_features= innerDim, out_features=embeddingDim)
+linearOut: Linear = Linear(in_features= I, out_features=E) # I = innerDim, E = embeddingDim
+linearOut.weight.names = ('E', 'I')
+linearOut.bias.names = ('E',)
 print(linearOut)
 printParamInfo(linearOut)
 # %% codecell
-layerNorm: LayerNorm = LayerNorm(normalized_shape= embeddingDim)
+layerNorm: LayerNorm = LayerNorm(normalized_shape= E) # E = embeddingDim
+# WARNING: LayerNorm object  not supported with named tensors
+# layerNorm.weight.names = ('E',)
+# layerNorm.bias.names = ('E',)
 print(layerNorm)
 printParamInfo(layerNorm)
 # %% codecell
+assert wordEmbeddings.names == ('S', 'B', 'E')
+assert attnWeightedSum.names == ('S', 'B', 'I')
+
 assert wordEmbeddings.shape == (S, B, E) == (7, 3, 32)
 assert attnWeightedSum.shape == (S, B, I) == (7, 3, 17)
 
 # Weights x attnWeightedSum ----> linearOut   (multiplying along dimension I)
 # (E, I) x (S, B, I) ----> (S, B, E)
 assert linearOut(attnWeightedSum).shape == (S, B, E) == (7, 3, 32)
+assert linearOut(attnWeightedSum).names == ('S', 'B', 'E')
 
-output: Tensor = layerNorm(input = wordEmbeddings + linearOut(input = attnWeightedSum))
+# WARNING: LayerNorm object  not supported with named tensors
+# weightsLayerNorm (E) * layerNormInput (S, B, E) ---> (S, B, E)
+output_: Tensor = layerNorm(input = (wordEmbeddings + linearOut(input = attnWeightedSum)).rename(None))
+output: Tensor = output_.refine_names('S', 'B', 'E')
+
 assert output.shape == (S, B, E) == (7, 3, 32)
+
 
 # %% markdown [markdown]
 # ### Step 4: MultiHeadAttention: The Core Component
