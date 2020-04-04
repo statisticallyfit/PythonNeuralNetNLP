@@ -428,8 +428,8 @@ assert shift.shape == (S, P+S+1, B) == (7, 14, 3)
 assert torch.equal(shift_, shift.rename(None))
 
 # --------------------------------------------------------------------------------------------------------
-# Reshaping the shift_ with view() and named shift with align_as to remove first element at P+S
-shiftCut_: Tensor = shift_.view(P+S+1, S, B)[1:]
+# Reshaping the shift_ with view() and named shift with align_as() to remove first element at P+S
+shiftCut_: Tensor = shift_.view(P+S+1, S, B)[1:] # in relativeShift function : view(firstDim, secondDim, remainDims)[1:]
 assert shiftCut_.shape == (P+S, S, B) == (13, 7, 3)
 assert shiftCut_.names == (None, None, None)
 
@@ -439,6 +439,8 @@ assert shiftCut.shape == (P+S, S, B) == (13, 7, 3)
 assert shift.names == ('S', 'P_plus_S', 'B')
 assert shiftCut.names == ('P_plus_S', 'S', 'B') # dims 1, 2 have been switched around
 
+### TODO LEFT OFF HERE TROUBLE
+torch.equal(shiftCut_, shiftCut.rename(None))
 
 # --------------------------------------------------------------------------------------------------------
 # Last step: reshaping the SHIFT to be the same as posAttn shape

@@ -68,12 +68,13 @@ class MaskedMultiHeadAttention(nn.Module):
         ### zeroPad: Tensor = torch.zeros( (S, 1, B), dtype = torch.float)
         # note: take first dimension size, put 1, then take rest of the sizes in the .shape tuple
         firstDim: int = tensorToShift.size(0)
-        secondDim: int = 1
-        remainingDims: List[int] = tensorToShift.size()[2:]
+        #secondDim: int = 1 # second dimension has size 1
+        remainDims: List[int] = tensorToShift.size()[2:]
         # NOTE: adding names to zeroPad, but don't know the names of the tail of the remainingDims list.
-        zeroPad: Tensor = torch.zeros((firstDim, secondDim, *remainingDims),
+        zeroPad: Tensor = torch.zeros((firstDim, 1, *remainDims),
                                       device = tensorToShift.device,
-                                      dtype = tensorToShift.dtype).refine_names('S', 'P_plus_S', 'B',...)
+                                      dtype = tensorToShift.dtype,
+                                      names = tensorToShift.names)
 
         ### Example with positional attention:
         #posAttnPadded_: Tensor = (torch.cat([zeroPad_, posAttn_], dim = 1)
@@ -84,17 +85,26 @@ class MaskedMultiHeadAttention(nn.Module):
         #posAttnPadded: Tensor = (torch.cat([zeroPad, posAttn], dim = 'P_plus_S')
         #                         .align_to('P_plus_S', 'S', 'B')[1:]
         #                         .align_as(posAttn))
-        firstDim: int = tensorToShift.size(1) + 1 # size == P+S+1
-        secondDim: int = tensorToShift.size(0)    # size == S
-        remainingDims: List[int] = tensorToShift.size()[2:] # get all dims but the first two dims.
+        firstDim, secondDim, remainDims = tensorToShift.size(1) + 1, tensorToShift.size(0), tensorToShift.size()[2:]
+        # P+S+1, S, (B, H)
+        firstName, secondName, remainNames = (tensorToShift.names[1], tensorToShift.names[0], tensorToShift.names[2:])
+        # P_plus_S, S, (B, H)
 
-        tensorPadded: Tensor = (torch.cat([zeroPad, tensorToShift], dim = 'P_plus_S')
-                                .align_to('P_plus_S', 'S', 'B',...)[2:]
-                                .align_as(tensorToShift))
+        # KEY NOTE: align_as is view, and align_to is permute
+        temp: Tensor = torch.zeros(firstDim , secondDim, *remainDims, names = (firstName, secondName, *remainNames))
+        # now switch the two dimensions:
+        temp = temp.refine_names('P_plus_S', 'S',...) # shape == (P+S+1, S, B, H)
+        #tempname = temp.names[1] # P+S
+        #temp.names[1] = temp.names[0] # S
+        #temp.names[0] = tempname # P+S
+        tensorPadded: Tensor = (torch.cat([zeroPad, tensorToShift], dim = 'P_plus_S') # shape == (S, P+S+1, B, H)
+                                .align_as(temp)[1:]
+                                #.align_to('P_plus_S', 'S', ...)[1:]               # shape == (P+S, S, B, H)
+                                .align_as(tensorToShift))                             # shape == (S, P+S, B, H)
 
-        tensorPadded_: Tensor = (torch.cat([zeroPad, tensorToShift], dim = 1)
-                                 .view(firstDim, secondDim, *remainingDims)[1:]
-                                 .view_as(tensorToShift))
+        tensorPadded_: Tensor = (torch.cat([zeroPad.rename(None), tensorToShift.rename(None)], dim = 1)
+                                 .view(firstDim, secondDim, *remainDims)[1:]
+                                 .view_as(tensorToShift.rename(None)))
 
         assert torch.equal(tensorPadded.rename(None), tensorPadded_)
 
@@ -181,12 +191,12 @@ class MaskedMultiHeadAttention(nn.Module):
         c: Tensor = u
         # c shape == (H, I)
 
-        keysAligned: Tensor = keys.unflatten(dim = 'IH', namedshape = (('H', H),('I', I)))
-        # keysAligned shape == (P+S, B, H, I)
-        # OLD: keys.rename(None).view(P+S, B, H, I) # split size of keys
+        keysReshaped: Tensor = keys.unflatten(dim = 'IH', namedshape = (('H', H),('I', I)))
+        # keysReshaped shape == (P+S, B, H, I)
+        # OLD: keysReshaped.rename(None).view(P+S, B, H, I) # split size of keys
 
         # Renaming for clearer notation and since einsum cannot handle named tensors
-        a_, c_, keys_ = a.rename(None), c.rename(None), keysAligned.rename(None)
+        a_, c_, keys_ = a.rename(None), c.rename(None), keysReshaped.rename(None)
 
         # Multiplying along dimension I: (to find contentAttn)
         # (a + c) * K :   (S, B, H, I) * (P+S, B, H, I) ----> (S, P+S, B, H)
@@ -207,16 +217,12 @@ class MaskedMultiHeadAttention(nn.Module):
         d: Tensor = v
         # d shape == (H, I)
 
-
-        #keys.unflatten(dim = 'IH', namedshape = (('H', H),('I', I)))
-        # keysAligned shape == (P+S, B, H, I)
-        posAligned: Tensor = pos.unflatten(dim = 'IH', namedshape=(('H', H), ('I', I)))
-        # posAligned shape == (P+S, B, H, I)
+        posReshaped: Tensor = pos.unflatten(dim = 'IH', namedshape=(('H', H), ('I', I)))
+        # posReshaped shape == (P+S, B, H, I)
 
         # TODO: why has batch dim been left out?
         # NOTE (keita kurita): there is no content information regarding keys and values in here.
-        posNoBatch = posAligned.align_to('P_plus_S', 'H', 'I')
-        # OLD: posAligned.rename(None).view(P+S, H, I)
+        posNoBatch: Tensor = posReshaped.align_to('P_plus_S', 'H', 'I') # OLD: posReshaped.rename(None).view(P+S, H, I)
 
         # Renaming since einsum doesn't support named tensors
         b_, d_, pos_ = b.rename(None), d.rename(None), posNoBatch.rename(None)
