@@ -433,6 +433,48 @@ shiftCut_: Tensor = shift_.view(P+S+1, S, B)[1:] # in relativeShift function : v
 assert shiftCut_.shape == (P+S, S, B) == (13, 7, 3)
 assert shiftCut_.names == (None, None, None)
 
+# ?????????????????????????????????????????
+s, p, b = 2, 3, 4
+x_ = torch.arange(s*(p+s+1)*b).reshape(s, p+s+1, b)
+x = x_.refine_names('S', 'P_plus_S', 'B')
+
+### Viewing t1
+x_
+assert torch.equal(x_.view(s, p+s+1, b), x_) # sanity check
+x.transpose('S', 'P_plus_S')
+
+t1 = x_.view(p+s+1, s, b) # 6, 2, 4
+t1
+### Viewing t2
+x_
+t2 = x.align_to('P_plus_S', 'S', 'B') # 6,2,4
+t2
+# tranpose == t2
+assert torch.equal(x.transpose('S', 'P_plus_S') , x.align_to('P_plus_S', 'S', 'B'))
+
+x.transpose('S', 'P_plus_S')
+### Viewing t3
+x_
+t3 = x_.permute(1,0,2)
+t3
+assert torch.equal(x.transpose('S', 'P_plus_S').rename(None) , x_.permute(1,0,2))
+# tranpose == permute
+
+
+assert t1.shape == t2.shape == t3.shape == (p+s+1, s, b) == (6,2,4)
+
+
+
+# ?????????????????????????????????????????
+a = shift_.view(P+S+1, S, B)
+b = shift.align_to('P_plus_S', 'S', 'B')
+c = shift_.permute(1,0,2)
+
+
+torch.equal(a, c)
+torch.equal(a, b.rename(None))
+torch.equal(b.rename(None), c)
+# ?????????????????????????????????????????
 
 shiftCut: Tensor = shift.align_to('P_plus_S', 'S', 'B')[1:]
 assert shiftCut.shape == (P+S, S, B) == (13, 7, 3)
