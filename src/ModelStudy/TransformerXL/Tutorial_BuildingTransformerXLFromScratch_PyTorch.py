@@ -413,6 +413,8 @@ assert zeroPad_.shape == (S, 1, B) == (7, 1, 3)
 assert torch.equal(zeroPad_, zeroPad.rename(None))
 assert torch.equal(posAttn_, posAttn.rename(None))
 
+
+
 # --------------------------------------------------------------------------------------------------------
 # RELATIVE SHIFTING: This padding + shifting efficiently computes the attention for all
 # Concatenate the zero pad with posAttn on dimension = 1 (works here for named tensors since dim = 1 has same name)
@@ -427,56 +429,15 @@ assert shift.shape == (S, P+S+1, B) == (7, 14, 3)
 # Checking both shifts are equal:
 assert torch.equal(shift_, shift.rename(None))
 
+
 # --------------------------------------------------------------------------------------------------------
 # Reshaping the shift_ with view() and named shift with align_as() to remove first element at P+S
 shiftCut_: Tensor = shift_.view(P+S+1, S, B)[1:] # in relativeShift function : view(firstDim, secondDim, remainDims)[1:]
 assert shiftCut_.shape == (P+S, S, B) == (13, 7, 3)
 assert shiftCut_.names == (None, None, None)
 
-# ?????????????????????????????????????????
-s, p, b = 2, 3, 4
-x_ = torch.arange(s*(p+s+1)*b).reshape(s, p+s+1, b)
-x = x_.refine_names('S', 'P_plus_S', 'B')
 
-### Viewing t1
-x_
-assert torch.equal(x_.view(s, p+s+1, b), x_) # sanity check
-x.transpose('S', 'P_plus_S')
-
-t1 = x_.view(p+s+1, s, b) # 6, 2, 4
-t1
-### Viewing t2
-x_
-t2 = x.align_to('P_plus_S', 'S', 'B') # 6,2,4
-t2
-# tranpose == t2
-assert torch.equal(x.transpose('S', 'P_plus_S') , x.align_to('P_plus_S', 'S', 'B'))
-
-x.transpose('S', 'P_plus_S')
-### Viewing t3
-x_
-t3 = x_.permute(1,0,2)
-t3
-assert torch.equal(x.transpose('S', 'P_plus_S').rename(None) , x_.permute(1,0,2))
-# tranpose == permute
-
-
-assert t1.shape == t2.shape == t3.shape == (p+s+1, s, b) == (6,2,4)
-
-
-
-# ?????????????????????????????????????????
-a = shift_.view(P+S+1, S, B)
-b = shift.align_to('P_plus_S', 'S', 'B')
-c = shift_.permute(1,0,2)
-
-
-torch.equal(a, c)
-torch.equal(a, b.rename(None))
-torch.equal(b.rename(None), c)
-# ?????????????????????????????????????????
-
-shiftCut: Tensor = shift.align_to('P_plus_S', 'S', 'B')[1:]
+shiftCut: Tensor = shift.align_to('P_plus_S', 'S', 'B')[1:] # align_to() is same as permute(), transpose()
 assert shiftCut.shape == (P+S, S, B) == (13, 7, 3)
 assert shift.names == ('S', 'P_plus_S', 'B')
 assert shiftCut.names == ('P_plus_S', 'S', 'B') # dims 1, 2 have been switched around
@@ -527,27 +488,33 @@ assert rawAttn.shape == contentAttn_C.shape == posAttnPadded.shape == (S, P+S, B
 torch.triu(torch.ones((S, P+S)), diagonal = 1+P ).byte()
 
 # %% codecell
-vec = torch.ones((S, P+S))
-endDim: int = vec.ndim
-assert endDim == 2
-
-a_ = torch.triu(vec, diagonal = 1+P, ).byte().unsqueeze(endDim)
-b_ = torch.triu(vec, diagonal = 1+P, ).byte()[..., None]
-assert (a_ == b_).all(), "Test alternate way of adding tensor of dim=1 at dimension after the last dimension"
-
 longvec = torch.ones((S, P+S, S, P+S, S))
 endDim: int = longvec.ndim
 assert endDim == 5
-a_ = torch.triu(longvec, diagonal = 1+P, ).byte().unsqueeze(endDim)
-b_ = torch.triu(longvec, diagonal = 1+P, ).byte()[...,None]
 
-a = torch.triu(longvec, diagonal = 1+P, ).byte().align_to(..., 'END_DIM') # insert size 1 tensor at last dim
-assert a.shape == (S, P+S, S, P+S, S, 1) == (7, 13, 7, 13, 7, 1)
-assert a.names == (None, None, None, None, None, 'END_DIM')
+resultUnsqueeze_ = torch.triu(longvec, diagonal = 1+P, ).byte().unsqueeze(endDim)
+resultNone_ = torch.triu(longvec, diagonal = 1+P, ).byte()[...,None]
+resultAlign = torch.triu(longvec, diagonal = 1+P, ).byte().align_to(..., 'END_DIM') # insert size 1 tensor at last dim
+resultView_ = torch.triu(longvec, diagonal = 1+P, ).byte().view(*longvec.shape, 1)
 
-assert torch.equal(a_, b_), "Test alternate way of adding tensor of dim=1 at ending dim, for longer vec"
-assert torch.equal(a.rename(None), a_)
 
+assert resultUnsqueeze_.shape == resultNone_.shape == resultAlign.shape == resultView_.shape == (S, P+S, S, P+S, S, 1) == (7, 13, 7, 13, 7, 1)
+assert resultUnsqueeze_.names == resultNone_.names == resultView_.names == (None, None, None, None, None, None)
+assert resultAlign.names == (None, None, None, None, None, 'END_DIM')
+
+# Checking: all combinations are equal: unsqueeze() == None method == align_to() == view() when inserting 1-dim tensors
+resultAlign_ = resultAlign.rename(None)
+
+assert (resultUnsqueeze_ == resultNone_).all()
+assert (resultUnsqueeze_ == resultAlign_).all()
+assert (resultUnsqueeze_ == resultView_).all()
+assert (resultNone_ == resultAlign_).all()
+assert (resultNone_ == resultView_).all()
+# NOTE align_to() == view() because we added a dimension here, and were not permuting
+assert (resultAlign_ == resultView_).all()
+
+
+# %% codecell
 # Now applying the same strategy to the mask
 mask_: Tensor = torch.triu(torch.ones((S, P+S)), diagonal = 1+P, ).byte().align_to(..., 'B')
 # mask: Tensor = torch.triu(torch.ones((S, P+S)), diagonal = 1+P, ).byte().unsqueeze(2)
@@ -617,7 +584,7 @@ assert linearOut(attnWeightedSum).names == ('S', 'B', 'E')
 
 # WARNING: LayerNorm object  not supported with named tensors
 # weightsLayerNorm (E) * layerNormInput (S, B, E) ---> (S, B, E)
-output_: Tensor = layerNorm(input = (wordEmbeddings + linearOut(input = attnWeightedSum)).rename(None))
+output_: Tensor = layerNorm((wordEmbeddings + linearOut(attnWeightedSum)).rename(None))
 output: Tensor = output_.refine_names('S', 'B', 'E')
 
 assert output.shape == (S, B, E) == (7, 3, 32)
@@ -638,12 +605,18 @@ mha
 # %% codecell
 printParamInfo(mha) # so dropout is not a parameter
 # %% codecell
+#torch.manual_seed(123)
+
+# TODO LEFT OFF HERE TROUBLE (use these arguments with same seed in the testing of DecoderBlock below)
 inputWordEmbs: Tensor = torch.rand(S, B, E).refine_names('S', 'B', 'E')
-posEmbs: Tensor = torch.rand(P+S, E).refine_names('P_plus_S', 'E')
-mem: Tensor = torch.rand(P, B, E).refine_names('P', 'B', 'E')
+posEmbs: Tensor = torch.rand(P+S, B, E).refine_names('P_plus_S', 'B', 'E')
+memory: Tensor = torch.rand(P, B, E).refine_names('P', 'B', 'E')
 u, v = torch.rand(H, I).refine_names('H', 'I'), torch.rand(H, I).refine_names('H', 'I')
-output: Tensor = mha(inputWordEmbs, posEmbs, mem, u, v)
-assert output.shape == (S, B, E) == (7, 3, 32)
+
+outputMHA: Tensor = mha(inputWordEmbs, posEmbs, memory, u, v)
+
+assert outputMHA.shape == (S, B, E) == (7, 3, 32)
+assert outputMHA.names == ('S', 'B', 'E')
 
 # %% markdown [markdown]
 # ### Step 5: Positionwise Feed Forward Layer
@@ -652,6 +625,28 @@ assert output.shape == (S, B, E) == (7, 3, 32)
 
 # %% codecell
 from src.ModelStudy.TransformerXL.PositionwiseFeedForward import PositionwiseFeedForward
+
+# Testing the module:
+posFF: PositionwiseFeedForward = PositionwiseFeedForward(embedDim = E, innerDim = I, dropoutO = 0.3)
+posFF
+# %% codecell
+printParamInfo(posFF)
+# %% codecell
+printChildInfo(posFF.feedForward) # all the items in Sequential() object
+# %% codecell
+seqFF = posFF.feedForward
+
+assert seqFF[0].weight.names == ('I', 'E')
+assert seqFF[0].bias.names == ('I',)
+assert seqFF[3].weight.names == ('E', 'I')
+assert seqFF[3].bias.names == ('E',)
+# %% codecell
+inputFF: Tensor = torch.rand(S, B, E).refine_names('S', 'B', 'E')
+
+output: Tensor = posFF(inputFF)
+
+assert output.shape == (S, B, E) == (7, 3, 32)
+assert output.names == ('S', 'B', 'E')
 
 # %% markdown [markdown]
 # ### Step 6: Build the Decoder

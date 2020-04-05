@@ -1,5 +1,13 @@
 # %% markdown
-# [Website Source](https://pytorch.org/tutorials/intermediate/named_tensor_tutorial.html#annotations:VOh11nKBEeqlHi8b3rPBxg)
+# #### SOURCES:
+# [(experimental) Named Tensors Introduction)](https://pytorch.org/tutorials/intermediate/named_tensor_tutorial.html#annotations:VOh11nKBEeqlHi8b3rPBxg)
+# $\hspace{1em}$ | $\hspace{1em}$
+# [Named Tensors (API doc)](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_to)
+# $\hspace{1em}$ | $\hspace{1em}$
+# [Named Tensor Operator Coverage](https://pytorch.org/docs/stable/name_inference.html)
+# $\hspace{1em}$ | $\hspace{1em}$
+# [PyTorch Tensors (API Doc)](https://pytorch.org/docs/stable/tensors.html)
+#
 #
 # # Tutorial: Named Tensors and Named Inference in PyTorch
 # ### Definition: Named Tensor
@@ -304,45 +312,47 @@ assert newState.shape == (128, 7)
 #
 # **Old Method: [`unsqueeze()`](https://pytorch.org/docs/stable/torch.html#torch.unsqueeze)**
 # %% codecell
-tensor: Tensor = torch.randn(2,2,2,2) # N, C, H, W
-perBatchScale: Tensor = torch.rand(2) # N
+tensor_: Tensor = torch.randn(2,2,2,2) # N, C, H, W
+perBatchScale_: Tensor = torch.rand(2) # N
 
-assert tensor.shape == (2,2,2,2)
-assert perBatchScale.view(2,1,1,1).shape == (2,1,1,1)
+assert tensor_.shape == (2,2,2,2)
+assert perBatchScale_.view(2,1,1,1).shape == (2,1,1,1)
 
-print(f"perBatchScale = {perBatchScale}\n\n")
-print(f"tensor = {tensor}")
+print(f"perBatchScale = {perBatchScale_}\n\n")
+print(f"tensor = {tensor_}")
 
 # %% markdown
 # Showing that [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view) and [`expand_as()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.expand_as) are not the same:
 # %% codecell
-perBatchScale.view(2,1,1,1)
+perBatchScale_.view(2,1,1,1)
 # %% codecell
-perBatchScale.expand_as(tensor)
+perBatchScale_.expand_as(tensor_)
 # %% codecell
 # Broadcasting so that can multiply along dimension `N`
 # NOTE: view is semantically the right choice
-correctResult: Tensor = tensor * perBatchScale.view(2,1,1,1) # N, C, H, W
+correctResult_: Tensor = tensor_ * perBatchScale_.view(2,1,1,1) # N, C, H, W
 # NOTE: expand_as is semantically incorrect
-incorrectResult: Tensor = tensor * perBatchScale.expand_as(tensor)
+incorrectResult_: Tensor = tensor_ * perBatchScale_.expand_as(tensor_)
 
-assert correctResult.shape == incorrectResult.shape == (2,2,2,2)
+assert correctResult_.shape == incorrectResult_.shape == (2,2,2,2)
 # Even though they have the same shape, they are not the same
-assert not torch.allclose(correctResult, incorrectResult)
+assert not torch.allclose(correctResult_, incorrectResult_)
 
 # %% markdown
 # **New Method: [`align_as()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_as) or [`align_to()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_to)**
 #
 # We can make the multiplication operations safer (and easily agnostic to the number of dimensions) by using names. The new [`tensor.align_as(other)`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_as) operations permutes the dimensions of `tensor` to match the order specified in `other.names`, adding one-sized dimensions where appropriate (basically doing the work of [`permute()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.permute) and [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view)).
+#
+# * $\color{orange}{\text{WARNING:}}$ [`align_to()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_to) and [`align_as()`]((https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_as)) are not necessarily doing the same work as [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view). In the below example when some dimensions are missing and we need to fill them in with 1-dim tensors, then using [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view) to fill them in results in the same tensor as using [`align_to()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_to) or [`align_as()`]((https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_as)). But see below in `Manipulation Dimensions` that when permuting (not adding more) dimensions, [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view) does not give the same result tensor as [`align_to()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_to).
 # %% codecell
-tensor: Tensor = tensor.refine_names('N', 'C', 'H', 'W')
-perBatchScale: Tensor = perBatchScale.refine_names('N')
+tensor: Tensor = tensor_.refine_names('N', 'C', 'H', 'W')
+perBatchScale: Tensor = perBatchScale_.refine_names('N')
 
 assert tensor.names == ('N', 'C', 'H', 'W')
 assert perBatchScale.names == ('N',)
 
 # Check that view()'s effect on the tensor is the same as align_as()
-assert torch.equal(perBatchScale.align_as(tensor).rename(None), perBatchScale.rename(None).view(2,1,1,1))
+assert torch.equal(perBatchScale.align_as(tensor).rename(None), perBatchScale_.view(2,1,1,1))
 
 # Check that align_as() gives the resulting tensor the entire dimension names of the `tensor` we want to align as.
 assert perBatchScale.align_as(tensor).names == ('N', 'C', 'H', 'W')
@@ -357,9 +367,9 @@ scaledResult: Tensor = tensor * perBatchScale.align_as(tensor)
 # Check scaled result gets the names:
 assert scaledResult.names == ('N', 'C', 'H', 'W')
 # Check the previous unnamed result is equal to the named one here:
-assert torch.equal(scaledResult.rename(None), correctResult)
+assert torch.equal(scaledResult.rename(None), correctResult_)
 # Another way to check:
-assert torch.equal(scaledResult, correctResult.refine_names('N', 'C', 'H', 'W'))
+assert torch.equal(scaledResult, correctResult_.refine_names('N', 'C', 'H', 'W'))
 
 
 # %% markdown
@@ -371,23 +381,33 @@ def scaleChannels(input: Tensor, scale: Tensor) -> Tensor:
     scaleNamed: Tensor = scale.refine_names('C')
     return input * scaleNamed.align_as(input)
 
+# %% codecell
 # Initializing the variables:
 B, H, C, W, D = 5, 4, 3, 2, 7 # C = num channels
 scale: Tensor = torch.randn(C, names = ('C',))
+scale_: Tensor = scale.rename(None)
 imgs: Tensor = torch.rand(B, H, W, C, names = ('B', 'H', 'W', 'C'))
+imgs_: Tensor = imgs.rename(None)
 moreImgs: Tensor = torch.rand(B, C, H, W, names = ('B', 'C', 'H', 'W'))
+moreImgs_: Tensor = moreImgs.rename(None)
 videos: Tensor = torch.randn(B, C, H, W, D, names = ('B', 'C', 'H', 'W', 'D'))
+videos_: Tensor = videos.rename(None)
 
 assert scale.shape == (C,) and scale.names == ('C',)
 
-assert scale.align_as(imgs).shape == (1,1,1,C)
+# NOTE: when writing view_as result is not same as align_as when the tensors added are not each 1-dim
 assert scale.align_as(imgs).names == imgs.names
+assert scale.align_as(imgs).shape == (1,1,1,C)
+# scale_.view(imgs.shape) # assertion error
+# scale_.view_as(imgs).shape == (1,1,1,C) #RuntimeError: shape '[5, 4, 2, 3]' is invalid for input of size 3
 
 assert scale.align_as(moreImgs).shape == (1,C,1,1)
 assert scale.align_as(moreImgs).names == moreImgs.names
 
 assert scale.align_as(videos).shape == (1,C,1,1, 1)
 assert scale.align_as(videos).names == videos.names
+
+
 # %% codecell
 resImgs: Tensor = scaleChannels(input = imgs, scale = scale)
 assert resImgs.shape == (B, H, W, C)
@@ -405,7 +425,7 @@ assert resVideos.names == videos.names
 #
 # **Old Method: [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view), [`reshape()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.reshape), [`flatten()`](https://hyp.is/P03oZHQMEeqVWnehE0Axew/pytorch.org/docs/stable/named_tensor.html):**
 #
-# One common operation is flattening and unflattening dimensions. Right now, users perform this using either [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view), [`reshape()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.reshape), or [`flatten()`](https://hyp.is/P03oZHQMEeqVWnehE0Axew/pytorch.org/docs/stable/named_tensor.html). Use cases include flattening batch dimensions to send tensors into operators that are forced to take inputs with a certain number of dimensions (for instancem `Conv2D` takes 4D input)
+# One common operation is flattening and unflattening dimensions. Right now, users perform this using either [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view), [`reshape()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.reshape), or [`flatten()`](https://hyp.is/P03oZHQMEeqVWnehE0Axew/pytorch.org/docs/stable/named_tensor.html). Use cases include flattening batch dimensions to send tensors into operators that are forced to take inputs with a certain number of dimensions (for instance `Conv2D` takes 4D input)
 # %% codecell
 
 # %% markdown
@@ -453,46 +473,106 @@ assert tensorRemade2.names == ('N', 'C', 'H', 'W')
 
 # %% markdown
 # ### [Manipulating Dimensions](https://pytorch.org/docs/stable/named_tensor.html#explicit-alignment-by-names)
+#
+# **CASE: Permuting (unnamed) vs. Aligning (named)**
+#
 # Use [`align_to()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_to) to permute large amounts of dimensions without menionting all of them as in required by [`permute()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.permute).
 # %% codecell
 A, B, C, D, E, F = 0, 1, 2, 3, 4, 5
-tensor: Tensor = torch.randn(A, B, C, D, E, F)
-assert tensor.shape == (A, B, C, D, E, F)
+tensor_: Tensor = torch.randn(A, B, C, D, E, F)
+tensor: Tensor = tensor_.refine_names('A', 'B', 'C', 'D', 'E', 'F')
 
-namedTensor: Tensor = tensor.refine_names('A', 'B', 'C', 'D', 'E', 'F')
-assert namedTensor.shape == (A, B, C, D, E, F)
+assert tensor.shape == tensor_.shape == (A, B, C, D, E, F)
 
 # Move F (5th dim) and dimension E (4th dim) to the front while keeping the rest in the same order.
 # Old way: (non-named)
-assert tensor.permute(5,4,0,1,2,3).shape == (F, E, A, B, C, D)
+assert tensor_.permute(5,4,0,1,2,3).shape == (F, E, A, B, C, D)
 # Better way: (named)
-assert namedTensor.align_to('F', 'E', ...).names == ('F', 'E', 'A', 'B', 'C', 'D')
+assert tensor.align_to('F', 'E', ...).names == ('F', 'E', 'A', 'B', 'C', 'D')
+# Sanity check: permute == align results:
+assert (tensor_.permute(5,4,0,1,2,3) == tensor.align_to('F', 'E', ...)).all()
 
 # %% markdown
+# **CASE: Flattening (named) vs. View (unnamed)**
+#
 # Use [`flatten()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.flatten) and [`unflatten()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.unflatten) to flatten and unflatten dimensions, respectively. These have more semantic meaning than [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view) and [`reshape()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.reshape).
 # %% codecell
 N, C, H, W = 32, 3, 128, 128
-imgs: Tensor = torch.randn(N, C, H, W)
-namedImgs: Tensor = imgs.refine_names('N', 'C', 'H', 'W')
+imgs_: Tensor = torch.randn(N, C, H, W)
+imgs: Tensor = imgs_.refine_names('N', 'C', 'H', 'W')
 
 # Flattening C, H, W into one dimension of size C*H*W
-flatImgs: Tensor = imgs.view(N, -1)
-assert flatImgs.shape == (N, C*H*W)
+flatImgs_: Tensor = imgs_.view(N, -1)
+assert flatImgs_.shape == (N, C*H*W)
 
 # Flattening via named dimensions
-namedFlatImgs: Tensor = namedImgs.flatten(dims = ['C', 'H', 'W'], out_dim = 'features')
-assert namedFlatImgs.names == ('N', 'features')
-assert namedFlatImgs.shape == (N, C*H*W)
+flatImgs: Tensor = imgs.flatten(dims = ['C', 'H', 'W'], out_dim = 'features')
+assert flatImgs.names == ('N', 'features')
+assert flatImgs.shape == (N, C*H*W)
 
 # Unflattening  the non-named tensor
-unflattenedImgs: Tensor = flatImgs.view(N, C, H, W)
-assert unflattenedImgs.shape == imgs.shape
+unflattenedImgs_: Tensor = flatImgs_.view(N, C, H, W)
+assert unflattenedImgs_.shape == imgs.shape
 
 # Unflattening the named tensor
-unflattenedNamedImgs: Tensor = namedFlatImgs.unflatten(dim = 'features',
-                                                       namedshape = [('C', 3), ('H', 128), ('W', 128)])
-assert unflattenedNamedImgs.shape == namedImgs.shape
-assert unflattenedNamedImgs.names == namedImgs.names
+unflattenedImgs: Tensor = flatImgs.unflatten(dim = 'features', namedshape = [('C', 3), ('H', 128), ('W', 128)])
+assert unflattenedImgs.shape == imgs.shape
+assert unflattenedImgs.names == imgs.names
+
+
+# %% markdown
+# **COMPARISON: Permute, Align, Reshape, Transpose, View:**
+# %% codecell
+s, p, b = 2, 3, 4
+x = torch.arange(s*(p+s+1)*b).reshape(s, p+s+1, b).refine_names('S', 'P_plus_S', 'B')
+x_ = x.rename(None)
+
+# Sanity basic check:
+assert (x_.view(s, p+s+1, b) == x_).all() # sanity check
+assert (x.align_as(x) == x).all() # sanity check
+
+x
+# %% codecell
+### View
+tensorView_ = x_.view(p+s+1,s,b)
+tensorView_
+# %% codecell
+### Reshape
+tensorReshape_ = x_.reshape(p+s+1, s, b)
+tensorReshape_
+
+assert (tensorReshape_ == tensorView_).all()
+# %% codecell
+### Transpose
+tensorTranspose = x.transpose('S', 'P_plus_S')
+tensorTranspose
+assert not (tensorTranspose == tensorView_).all()
+assert not (tensorTranspose == tensorReshape_).all()
+# NOTE: confirms that view() and transpose() are not necessarily the same, as in the below link:
+# https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view
+
+# %% codecell
+### Align To:
+tensorAlign = x.align_to('P_plus_S', 'S', ...) # 6,2,4
+tensorAlign
+
+assert (tensorAlign == tensorTranspose).all()
+
+# %% codecell
+### Permute
+tensorPermute_ = x_.permute(1,0,2)
+tensorPermute_
+assert (tensorPermute_ == tensorAlign).all()
+
+# %% codecell
+# Checking relations between align_to(), permute(), and transpose()
+assert (tensorAlign == tensorTranspose).all()
+assert (tensorAlign == tensorPermute_).all()
+assert (tensorPermute_ == tensorTranspose).all()
+
+assert not (tensorAlign == tensorReshape_).all()
+# THEREFORE: align_to() == permute() == transpose()
+
 
 # %% markdown
 # ### Autograd (Not yet supported)

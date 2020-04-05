@@ -19,7 +19,7 @@ class PositionwiseFeedForward(nn.Module):
 
         self.embeddingDim: int = embedDim
         self.innerDim: int = innerDim
-        self.dropoutO: float = dropoutO
+        self.dropoutO: float = dropoutO # dropout for output tensor
 
         # Components of the feed forward layer:
         self.feedForward: Sequential = Sequential(
@@ -29,7 +29,15 @@ class PositionwiseFeedForward(nn.Module):
             Linear(in_features=innerDim, out_features=embedDim), # weights shape == (E, I)
             Dropout(p=dropoutO)
         )
+        # Assigning names to the weight and bias matrices:
+        self.feedForward[0].weight.names = ('I', 'E') # linear weight
+        self.feedForward[0].bias.names = ('I',) # linear bias
+        self.feedForward[3].weight.names = ('E', 'I') # linear weight
+        self.feedForward[3].bias.names = ('E',) # linear bias
 
+
+        # WARNING: even though you can asssign names to LayerNorm params, LayerNorm still cannot handle named tensor
+        # inputs
         self.layerNorm: LayerNorm = LayerNorm(normalized_shape = embedDim)
 
 
@@ -46,9 +54,12 @@ class PositionwiseFeedForward(nn.Module):
         """
         # first linear * inputFF: (S, B, E) * (I, E) ---> (S, B, I)
         # second linear * aboveresult: (E, I) * (S, B, I) ---> (S, B, E)
-        resultFF = self.feedForward(input = inputFF)
+        resultFF: Tensor = self.feedForward(inputFF)
         # resultFF shape == (S, B, E)
-        output = self.layerNorm(input = inputFF + resultFF)
+
+        # Renaming:
+        inputFF_, resultFF_ = inputFF.rename(None), resultFF.rename(None)
+        output: Tensor = self.layerNorm(inputFF_ + resultFF_).refine_names('S', 'B', 'E')
         # output shape == (S, B, E)
 
         return output # output shape == (S, B, E)

@@ -53,8 +53,10 @@ class MaskedMultiHeadAttention(nn.Module):
                                            bias = False)
         self.linearOut.weight.names = ('E', 'IH')
 
-        # WARNING: all other Linear objects support named tensors but LayerNorm does NOT
+        # WARNING: layernorm is not supported with named tensors so even though its weight names gets successfully
+        # assigned as below, the multiplication with input results in an error, saying named tensors aren't supported
         self.norm: LayerNorm = LayerNorm(normalized_shape = self.embeddingDim)
+        # self.norm.weight.names = ('E',)
 
         # Dropout that is applied to the output
         self.dropoutO: Dropout = Dropout(p = dropoutO)
@@ -91,25 +93,25 @@ class MaskedMultiHeadAttention(nn.Module):
         # P_plus_S, S, (B, H)
 
         # KEY NOTE: align_as is view, and align_to is permute
-        temp: Tensor = torch.zeros(firstDim , secondDim, *remainDims, names = (firstName, secondName, *remainNames))
-        # now switch the two dimensions:
-        temp = temp.refine_names('P_plus_S', 'S',...) # shape == (P+S+1, S, B, H)
-        #tempname = temp.names[1] # P+S
-        #temp.names[1] = temp.names[0] # S
-        #temp.names[0] = tempname # P+S
-        tensorPadded: Tensor = (torch.cat([zeroPad, tensorToShift], dim = 'P_plus_S') # shape == (S, P+S+1, B, H)
-                                .align_as(temp)[1:]
-                                #.align_to('P_plus_S', 'S', ...)[1:]               # shape == (P+S, S, B, H)
-                                .align_as(tensorToShift))                             # shape == (S, P+S, B, H)
+        #temp: Tensor = torch.zeros(firstDim , secondDim, *remainDims, names = (firstName, secondName, *remainNames))
+        # temp shape == (P+S+1, S, B, H)
+        #tensorPadded: Tensor = (torch.cat([zeroPad, tensorToShift], dim = 'P_plus_S') # shape == (S, P+S+1, B, H)
+        #                        .align_as(temp)[1:]
+        #                        #.align_to('P_plus_S', 'S', ...)[1:]               # shape == (P+S, S, B, H)
+        #                        .align_as(tensorToShift))                             # shape == (S, P+S, B, H)
+        tensorToShift_ = tensorToShift.rename(None)
 
-        tensorPadded_: Tensor = (torch.cat([zeroPad.rename(None), tensorToShift.rename(None)], dim = 1)
-                                 .view(firstDim, secondDim, *remainDims)[1:]
-                                 .view_as(tensorToShift.rename(None)))
+        tensorPadded_: Tensor = (torch.cat([zeroPad, tensorToShift], dim = 'P_plus_S') # shape == (S, P+S+1, B, H)
+                                 .rename(None) # todo align() is not same as view() in this case
+                                 .view(firstDim, secondDim, *remainDims)[1:]           # shape == (P+S, S, B, H)
+                                 .view_as(tensorToShift_))                             # shape == (S, P+S, B, H)
 
-        assert torch.equal(tensorPadded.rename(None), tensorPadded_)
+        tensorPadded: Tensor = tensorPadded_.refine_names(*tensorToShift.names)
 
-        return tensorPadded, tensorPadded_
-        # TODO understand how this shifts the relative pos embeddings ???
+        return tensorPadded
+        # shape == (S, P+S, B, H)
+
+        # TODO understand intuitively: how this shifts the relative pos embeddings ???
 
 
 
@@ -144,7 +146,7 @@ class MaskedMultiHeadAttention(nn.Module):
             v: the global (query-independent) bias towards certain positions
                 ---> shape == (H, I)
             mask: attention mask
-                ---> shape (S, P+S, B)
+                ---> shape (S, P+S, B, H)
             memory: TODO rename to memories?? to be consistent with TransXLDecoder arg name?
                 ---> shape TODO
         """
@@ -229,14 +231,13 @@ class MaskedMultiHeadAttention(nn.Module):
 
         # Multiplying along dimension I to find positional attention
         # (b + d) * pos:   (S, B, H, I) * (P+S, H, I) ----> (S, P+S, B, H)
-        posAttn: Tensor = (torch.einsum('sbhi, jhi -> sjbh', [b_ + d_, pos_])
-                           .refine_names('S', 'P_plus_S', 'B', 'H'))
+        posAttn: Tensor = (torch.einsum('sbhi, jhi -> sjbh', [b_ + d_, pos_]).refine_names('S', 'P_plus_S', 'B', 'H'))
         # posAttn shape == (S, P+S, B, H)
 
 
         ### Relative shift of positional attention (to compute pos attn efficiently for all query positions)
-        # TODO TESTING here if these two results are equal, from _relshift
-        posAttnPadded, posAttnPadded_ = self._relativeShift(posAttn)
+        posAttnPadded: Tensor = self._relativeShift(posAttn)
+        # posAttnPadded shape == (S, P+S, B, H)
 
         # The attention is the sum of the content-based and position-based attentions:
         attn: Tensor = contentAttn + posAttnPadded
@@ -244,15 +245,16 @@ class MaskedMultiHeadAttention(nn.Module):
 
         ### Masking the attention before the softmax layer, exactly the same way as for the Decoder in Transformer model: https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1521090937/decoder+self+attention+in+transformer
         if mask is not None and mask.any().item():
-            # NOTE: mask.unsqueeze(mask.ndim) == mask[..., None] means adding tensor of dim 1 at the ending dimension
-            # mask[..., None].shape == TODO
-            attn: Tensor = attn.masked_fill(mask = mask.unsqueeze(mask.ndim),
-                                            value = -float('inf'))
+            # mask shape == (S, P+S, B, H)
+            # TODO find way to do this with aling_to (using named tensors)
+            # note: cannot do this yet because the example passes mask = None so I can't see its shape yet
+            # note: mask.align_to(..., 'B') works when just ndim = 3 but how to do when ndim = 4 and last dim isn't B?
+            attn: Tensor = attn.masked_fill(mask = mask.unsqueeze(mask.ndim), value = -float('inf'))
             # attn (masked) shape == (S, P+S, B, H)
 
         ### Softmax with rescale to prevent values from exploding.
         # Also softmaxing across dim = 1 (which has size P+S)
-        attn: Tensor = torch.softmax(attn * self.scale, dim = 1)
+        attn: Tensor = torch.softmax(attn * self.scale, dim = 'P_plus_S')
         # attn (softmaxed) shape == (S, P+S, B, H)
 
         ### Apply dropout on the attention
@@ -260,14 +262,22 @@ class MaskedMultiHeadAttention(nn.Module):
         # attn (dropout-ed) shape == (S, P+S, B, H)
 
         ### Calculated weighted sum of attention with the value matrix V
-        Vview: Tensor = values.view(P+S, B, H, I) # split from (P+S, B, H*I)
+        valuesReshaped: Tensor = values.unflatten(dim = 'IH', namedshape=(('H', H), ('I', I)))
+            # OLD WAY values.view(P+S, B, H, I) # split from (P+S, B, H*I)
+        # valuesReshaped shape == (P+S, B, H, I)
+
+        # Renaming for ease of reading:
+        attn_, values_ = attn.rename(None), valuesReshaped.rename(None)
+
         # Multiply along dimension with size (P+S) (the same dimension we softmaxed along)
         # (S, P+S, B, H) * (P+S, B, H, I) ---> (S, B, H, I)
-        attnWeightedValues: Tensor = (torch.einsum('sjbh, jbhi -> sbhi', [attn, Vview]))
+        attnWeightedValues: Tensor = (torch.einsum('sjbh, jbhi -> sbhi', [attn_, values_])).refine_names('S', 'B',
+                                                                                                         'H', 'I')
         # attnWeightedValues shape == (S, B, H, I)
 
         # NOTE: using contiguous since need to change the memory layout to make the `view` work (to combine the last two dimensions)
-        attnWeightedValues: Tensor = attnWeightedValues.contiguous().view(S, B, H*I)
+        attnWeightedValues: Tensor = attnWeightedValues.contiguous().flatten(dims = ['H', 'I'], out_dim = 'IH')
+            # OLD WAY attnWeightedValues.contiguous().view(S, B, H*I)
         # attnWeightedValues shape == (S, B, H*I)
 
 
@@ -280,7 +290,7 @@ class MaskedMultiHeadAttention(nn.Module):
         ## Doing residual connection and layer normalization.
         # Multiplying along dimension E: Weights_norm x output
         # (E,) x (S, B, E) ----> (S, B, E)
-        outputResidConn: Tensor = self.norm(output)
+        outputResidConn: Tensor = self.norm(output.rename(None)).refine_names('S', 'B', 'E')
         # outputResiduConn shape == (S, B, E)
 
         return outputResidConn
