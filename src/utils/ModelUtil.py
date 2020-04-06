@@ -186,10 +186,11 @@ def getParamInfo(model: nn.Module) -> ParameterInfo:
     """
     # Getting names of all model's parameters
     names: List[ParameterName] = [name for (name, paramTensor) in model.named_parameters()]
-    sizes: List[Size] = [paramTensor.size() for (name, paramTensor) in model.named_parameters()]
+    sizes: List[Size] = [list(zip(paramTensor.names, paramTensor.size())) for (name, paramTensor) in model.named_parameters()]
     tensors: List[Parameter] = [paramTensor for (name, paramTensor) in model.named_parameters()]
 
     return ParameterInfo(Names = names, Sizes = sizes, Tensors = tensors)
+
 
 
 def printParamInfo(model: nn.Module):
@@ -202,6 +203,20 @@ def printParamInfo(model: nn.Module):
 
     for i in range(NUM_PARAMS):
         print(f"Parameter {i} | Name = {names[i]} | Size = {sizes[i]}")
+
+
+
+
+
+
+def briefParams(model: nn.Module) -> List[Tuple[Name, Size, Dict[Name, int]]]:
+    """
+    Gets the (name, paramsize, param tensor name) as tuple and returns list of these for all parameters in the model.
+    Purpose: to get brief view into sizes, named dimensions, and names of parameters.
+    """
+    return [(name, list(zip(paramTensor.names, paramTensor.size()))) for (name, paramTensor) in
+            model.named_parameters()]
+    # return [(name, tuple(paramTensor.size()), paramTensor.names) for (name, paramTensor) in model.named_parameters()]
 
 
 # Modules --------------------------------------------------------------------------
@@ -241,3 +256,36 @@ def printModuleInfo(model: nn.Module):
 
     for i in range(NUM_MODULES):
         print(f"Module {i} | Name = {names[i]} | Type = {cleanerTypes[i]} ")
+
+
+#
+#
+#
+# -------------------------------------------------------------------------------------------------------------------------
+
+def isEqualStructure(module1: nn.Module, module2: nn.Module) -> bool:
+    """
+    Tests that the modules are equal in terms of types and names of objects and param sizes and names.
+    (So the actual numbers in the parameter weights / biases can be different)
+    """
+    def paramNames(model: nn.Module) -> List[Name]:
+        return [paramName for (paramName, paramTensor) in model.named_parameters()]
+
+    def dimNames(model: nn.Module) -> List[Tuple[Name, Name]]:
+        return [paramTensor.names for (paramName, paramTensor) in model.named_parameters()]
+
+    def paramSizes(model: nn.Module) -> List[Tuple[int, int]]:
+        return [tuple(paramTensor.size()) for (paramName, paramTensor) in model.named_parameters()]
+
+    def moduleNames(model: nn.Module) -> List[Name]:
+        return [modName for (modName, modObj) in model.named_modules()]
+
+    def moduleTypes(model: nn.Module) -> List[Type]:
+        return [type(modObj) for (modName, modObj) in model.named_modules()]
+
+
+    return paramNames(module1) == paramNames(module2) \
+           and dimNames(module1) == dimNames(module2) \
+           and paramSizes(module1) == paramSizes(module2) \
+           and moduleNames(module1) == moduleNames(module2) \
+           and moduleTypes(module1) == moduleTypes(module2)

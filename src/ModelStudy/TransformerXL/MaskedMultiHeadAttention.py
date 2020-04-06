@@ -126,9 +126,9 @@ class MaskedMultiHeadAttention(nn.Module):
     def forward(self,
                 inputMHA: FloatTensor,  # the word embeddings (?)
                 relPosEmbTensor: FloatTensor,
-                memory: FloatTensor,
                 u: FloatTensor,
                 v: FloatTensor,
+                memory: FloatTensor,
                 mask: Optional[FloatTensor] = None) -> Tensor:
         """
         Applies masked multi-head attention to the word embedding input: does content and positional attention,
@@ -138,7 +138,7 @@ class MaskedMultiHeadAttention(nn.Module):
             inputMHA: the word embeddings
                 ---> shape == (S, B, E)
             relPosEmbTensor: positional embeddings
-                ---> shape == (P+S, B, E)
+                ---> shape == (P+S, E) # note no batch dimension - TODO why?
             memory: cached hidden states from segment-level recurrence mechanism
                 ---> shape == (P, B, E)
             u: the global (query-independent) bias towards certain keys / values = words
@@ -146,9 +146,9 @@ class MaskedMultiHeadAttention(nn.Module):
             v: the global (query-independent) bias towards certain positions
                 ---> shape == (H, I)
             mask: attention mask
-                ---> shape (S, P+S, B, H)
+                ---> TODO shape == (S, P+S, B)
             memory: TODO rename to memories?? to be consistent with TransXLDecoder arg name?
-                ---> shape TODO
+                ---> shape == (P, B, E)
         """
 
         S: int = inputMHA.shape[0] # sequence length of current segment
@@ -157,7 +157,8 @@ class MaskedMultiHeadAttention(nn.Module):
 
         ### Concatenate recurrent memory (the sequence of hidden states) to the input, across the sequence dimension (dim = 0, which has size P = previous sequence length)
         # WARNING: torch.cat() cannot handle named tensors when concatenating ALONG the dimension which has different names! Must drop the names here:
-        inputWithMemory: Tensor = (torch.cat([memory.rename(None), inputMHA.rename(None)], dim = 0)
+        memory_, inputMHA_ = memory.rename(None), inputMHA.rename(None)
+        inputWithMemory: Tensor = (torch.cat([memory_, inputMHA_], dim = 0)
                                    .refine_names('P_plus_S', 'B', 'E'))
         # memory shape == (P, B, E)
         # input shape == (S, B, E)
@@ -208,26 +209,25 @@ class MaskedMultiHeadAttention(nn.Module):
 
         ### Position-based attention term ((b) + (d) from the paper)
         # This attention is solely based on the position of the key/values (i.e. it does not take the content of the key/values into account)
-        # Weights * posEmbs: (I*H, E) * (P+S, B, E) ----> (P+S, B, I*H)
+        # Weights * posEmbs: (I*H, E) * (P+S, E) ----> (P+S, B, I*H)
         pos: Tensor = self.linearP(relPosEmbTensor)
-        # pos shape == (P+S, B, I*H)
+        # pos shape == (P+S, I*H)
 
         # TODO why is term (a) the same as term (b)? why not using pos.unflatten ... ?
-        b: Tensor = queries.unflatten(dim = 'IH', namedshape = (('H', H),('I', I))) # view(S,B,H,I)
+        b: Tensor = queries.unflatten(dim = 'IH', namedshape = (('H', H),('I', I)))
+        # OLD WAY: queries.rename(None).view(S,B,H,I)
         # b shape == (S, B, H, I)
+
         # v is global (independent of query) bias towards certain positions
         d: Tensor = v
         # d shape == (H, I)
 
         posReshaped: Tensor = pos.unflatten(dim = 'IH', namedshape=(('H', H), ('I', I)))
-        # posReshaped shape == (P+S, B, H, I)
-
-        # TODO: why has batch dim been left out?
-        # NOTE (keita kurita): there is no content information regarding keys and values in here.
-        posNoBatch: Tensor = posReshaped.align_to('P_plus_S', 'H', 'I') # OLD: posReshaped.rename(None).view(P+S, H, I)
+        # OLD WAY: pos.rename(None).view(P+S, H, I)
+        # posReshaped shape == (P+S, H, I) # TODO why no batch dim in pos embeddings?
 
         # Renaming since einsum doesn't support named tensors
-        b_, d_, pos_ = b.rename(None), d.rename(None), posNoBatch.rename(None)
+        b_, d_, pos_ = b.rename(None), d.rename(None), posReshaped.rename(None)
 
         # Multiplying along dimension I to find positional attention
         # (b + d) * pos:   (S, B, H, I) * (P+S, H, I) ----> (S, P+S, B, H)
@@ -245,10 +245,12 @@ class MaskedMultiHeadAttention(nn.Module):
 
         ### Masking the attention before the softmax layer, exactly the same way as for the Decoder in Transformer model: https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1521090937/decoder+self+attention+in+transformer
         if mask is not None and mask.any().item():
-            # mask shape == (S, P+S, B, H)
-            # TODO find way to do this with aling_to (using named tensors)
+            # mask shape == (S, P+S, B)
+            # TODO find way to do this with align_to() (using named tensors)
             # note: cannot do this yet because the example passes mask = None so I can't see its shape yet
             # note: mask.align_to(..., 'B') works when just ndim = 3 but how to do when ndim = 4 and last dim isn't B?
+
+            # TODO search here: https://hyp.is/qOPLtHNIEequKx_ju-n8kw/pytorch.org/tutorials/intermediate/named_tensor_tutorial.html
             attn: Tensor = attn.masked_fill(mask = mask.unsqueeze(mask.ndim), value = -float('inf'))
             # attn (masked) shape == (S, P+S, B, H)
 
@@ -263,7 +265,7 @@ class MaskedMultiHeadAttention(nn.Module):
 
         ### Calculated weighted sum of attention with the value matrix V
         valuesReshaped: Tensor = values.unflatten(dim = 'IH', namedshape=(('H', H), ('I', I)))
-            # OLD WAY values.view(P+S, B, H, I) # split from (P+S, B, H*I)
+            # OLD WAY values.rename(None).view(P+S, B, H, I)
         # valuesReshaped shape == (P+S, B, H, I)
 
         # Renaming for ease of reading:

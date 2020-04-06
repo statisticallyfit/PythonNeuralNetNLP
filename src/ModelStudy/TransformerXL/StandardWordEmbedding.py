@@ -21,8 +21,11 @@ class StandardWordEmbedding(nn.Module):
         super().__init__()
         self.numEmbeddings: int = numEmbeddings
         self.embeddingDim: int = embeddingDim
-        self.embedding: Embedding = Embedding(num_embeddings= numEmbeddings,
-                                              embedding_dim = embeddingDim)
+
+        # WARNING: embedding not supported with named tensors, so no need to put names in here for the embedding's
+        # weight matrix.
+        self.embedding: Embedding = Embedding(num_embeddings= numEmbeddings, embedding_dim = embeddingDim)
+
         self.scale: float = embeddingDim ** 0.5
 
 

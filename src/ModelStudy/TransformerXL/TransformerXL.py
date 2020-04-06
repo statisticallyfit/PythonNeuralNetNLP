@@ -20,13 +20,14 @@ from src.ModelStudy.TransformerXL.TransXLDecoderBlock import TransXLDecoderBlock
 
 class TransformerXL(nn.Module):
 
-    def __init__(self, numEmbeddings: int,
+    def __init__(self, numEmbeddings: int, # N
                  numLayers: int,
-                 numHeads: int,
-                 modelDim: int,
-                 mhaInnerDim: int, ffInnerDim,
+                 numHeads: int, # H
+                 modelDim: int, # E
+                 mhaInnerDim: int, ffInnerDim, # I
                  dropoutO: float = 0.1, dropoutA: float = 0.,
-                 seqLen: int = 0, memoryLen: int = 0):
+                 seqLen: int = 0,  # S
+                 memoryLen: int = 0): # P
 
         super().__init__()
 
@@ -34,11 +35,17 @@ class TransformerXL(nn.Module):
             numLayers, numHeads, modelDim, mhaInnerDim, ffInnerDim
 
         # Embedding layers
-        self.wordEmbeddingLayer: StandardWordEmbedding = StandardWordEmbedding(numEmbeddings = numEmbeddings, embeddingDim = modelDim)
-        self.posEmbeddingLayer: RelativePositionalEmbedding = RelativePositionalEmbedding(embedDim = modelDim)
 
-        # Core transformer
+        # WARNING Embedding does not support named tensors
+        self.wordEmbeddingLayer: StandardWordEmbedding = StandardWordEmbedding(numEmbeddings = numEmbeddings,
+                                                                               embeddingDim = modelDim)
+        # self.wordEmbeddingLayer.embedding.weight.shape == (N, E)
+
+        self.relPosEmbeddingLayer: RelativePositionalEmbedding = RelativePositionalEmbedding(embedDim = modelDim)
+
+
         self.dropoutO: Dropout = Dropout(p = dropoutO)
+
         # Constructing numLayers many Decoder blocks in the transformer xl model
         self.layers = ModuleList(
             [TransXLDecoderBlock(numHeads = numHeads,
@@ -50,16 +57,30 @@ class TransformerXL(nn.Module):
         )
 
         # Tying the weights
-        self.outputProjectionLayer: Linear = Linear(in_features = modelDim,
-                                                    out_features = numEmbeddings)
+        self.outputProjectionLayer: Linear = Linear(in_features = modelDim,  out_features = numEmbeddings)
+
+        # Weight tying here
         self.outputProjectionLayer.weight: Tensor = self.wordEmbeddingLayer.embedding.weight
+
+        # Updating names after weight tying:
+        # NOTE: the projection layer will stay unnamed because updating its names also updates the Embedding weight's
+        # names, and torch cannot handle named tensors in Embedding module.
+        # self.outputProjectionLayer.weight.names = ('N', 'E') # numEmbedds, modelDim (E)
+        self.outputProjectionLayer.bias.names = ('N', )
+
+
+
         self.lossFunction: CrossEntropyLoss = CrossEntropyLoss()
 
-        self.seqLen, self.memoryLen = seqLen, memoryLen
+        self.seqLen, self.memoryLen = seqLen, memoryLen # S, P
 
-        # NOTE (Keita Kurita): u, v are global parameters: maybe changing these to per-head parameters might help performance?
+        # NOTE (Keita Kurita): u, v are global parameters: maybe changing these to per-head parameters might aid
+        # performance?
         self.u: Parameter = Parameter(data = torch.Tensor(self.numHeads, self.mhaInnerDim))
+        self.u.names = ('H', 'I')
         self.v: Parameter = Parameter(data = torch.Tensor(self.numHeads, self.mhaInnerDim))
+        self.v.names = ('H', 'I')
+
 
 
     def initMemory(self, device = torch.device('cpu')) -> List[FloatTensor]:
@@ -71,14 +92,16 @@ class TransformerXL(nn.Module):
                      hiddenStates: List[FloatTensor]) -> List[FloatTensor]:
         """
         Arguments:
-            previousMemory: each tensor element has shape == (memoryLen, B, I)
-            hiddenStates: each tensor element has shape == (seqLen, B, I)
+            previousMemory: TODO each tensor element has shape == (memoryLen, B, I)
+            hiddenStates: TODO each tensor element has shape == (seqLen, B, I)
         """
         assert len(hiddenStates) == len(previousMemory)
 
         memoryLen, seqLen = previousMemory[0].size(0), hiddenStates[0].size(0)
 
-        # For the updated memory, we use the most recent `self.memoryLen` states, including the previous memory. So in other words, if `seqLen` < `self.memoryLen`, some of the previous memory will carry over to the next memory.
+
+        # For the updated memory, we use the most recent `self.memoryLen` states, including the previous memory. So
+        # in other words, if `seqLen` < `self.memoryLen`, some of the previous memory will carry over to the next memory.
         with torch.no_grad(): # note: use no_grad() to avoid back propagating TODO why??
             newMemory: List[FloatTensor] = []
             iEnd: int = memoryLen + seqLen
@@ -86,12 +109,13 @@ class TransformerXL(nn.Module):
 
             for prevMem, hid in zip(previousMemory, hiddenStates):
                 # Concatenating previous memory and hidden state on dimension 0
-                memAndHidden: FloatTensor = torch.cat([prevMem, hid], dim = 0)
-                # memCatHidden shape == (memoryLen + seqLen, B, I)
+                prevMemHid: FloatTensor = torch.cat([prevMem, hid], dim = 0).refine_names('P_plus_S', 'B', 'I')
+                # memCatHidden shape == (memoryLen + seqLen, B, I) == (P+S, B, I)
 
                 # TODO understand here how some of the previous memory carries over to the next memory
-                newMemory.append(memAndHidden[iBegin : iEnd].detach())
-                # newMemory elements shape == (self.memoryLen, B, I)
+                newMemory.append(prevMemHid[iBegin : iEnd].detach())
+                # TODO newMemory elements shape == (self.memoryLen, B, I) == (P, B, I)
+                # newMemory elements shape == (P, B, E)
 
         return newMemory
 
@@ -113,11 +137,12 @@ class TransformerXL(nn.Module):
             target: TODO meaning?
                 ---> shape == (S, B)
             memory: TODO meaning?
-                ---> each element has shape == (memoryLen, B, I))
+                ---> TODO wrong: each element has shape == (memoryLen, B, I))
+                ---> each element of memory has shape == (P, B, E)
         """
 
         if memory is None:
-            memory: List[FloatTensor] = self.initMemory(device = indices.device)
+            memory: List[FloatTensor] = self.initMemory(device = indices.device) # [tensor([]), ....]
 
         assert len(memory) == len(self.layers) + 1
 
@@ -125,43 +150,54 @@ class TransformerXL(nn.Module):
         P = memory[0].size(0) # prevSeqSize
 
         ### Step 1: Construct attention mask to use in the decoder
-        ones: Tensor = torch.ones((S, P+S))
-        endDim: int = ones.ndim
+        ones: Tensor = torch.ones((S, P+S)).refine_names('S', 'P_plus_S')
+        ones_: Tensor = ones.rename(None)
+        # endDim: int = ones.ndim
 
-        decoderAttnMask: Tensor = torch.triu(ones, diagonal = 1+P).bool().unsqueeze(endDim).to(indices.device)
+        decoderAttnMask: Tensor = (torch.triu(ones_, diagonal = 1+P)
+                                   .refine_names('S', 'P_plus_S')
+                                   .align_to(..., 'B')) # align_to() == unsqueeze()
+        # OLD WAY: torch.triu(ones.rename(None), diagonal = 1+P).bool().unsqueeze(endDim).to(indices.device)
+        # decoderAttnMask shape ==  (S, P+S, B)
 
         ### Step 2: create word embeddings by passing indices through word embedding layer
-        # TODO Multiplying along no visible dimension : wordEmbsWeights x indices
+        indices_: Tensor = indices.rename(None)
+        # Multiplying along no visible dimension : wordEmbsWeights x indices
         # (N, E) * (S, B) ----> (S, B, E)
-        wordEmbeddings: Tensor = self.dropoutO(input = self.wordEmbeddingLayer(indices))
+        wordEmbeddings: Tensor = self.dropoutO(self.wordEmbeddingLayer(indices_)).refine_names('S','B','E')
         # wordEmbeddings shape == (S, B, E)
 
         ### Step 3: create pos embeddings by passind pos indices through pos embedding layer
         # Making decreasing sequence of pos indices, ending at index 0, starting from P+S-1
-        posIndices: Tensor = torch.arange(P+S - 1, -1, -1, dtype=torch.float).to(
-            wordEmbeddings.device) # decreasing sequence from P+S-1 ... 0
-        # posIndices shape == (P+S)  (just a vector of this length)
-        posEmbeddings: Tensor = self.dropoutO(self.posEmbeddingLayer(posIndices))
+        posIndices: Tensor = (torch.arange(P+S - 1, -1, -1, dtype=torch.float)
+                              .to(wordEmbeddings.device) # decreasing sequence from P+S-1 ... 0
+                              .refine_names('P_plus_S'))
+        # posIndices shape == (P+S, )  (just a vector of this length)
+
+        relPosEmbeddings: Tensor = self.dropoutO(self.relPosEmbeddingLayer(posIndices))
         # posEmbeddings shape == (P+S, B, E)
 
         # note: Main part of Forward Pass here below
 
         ### Step 4: Create Hidden States using memory and the decoder layers in transformer XL
         hiddenStates: List[FloatTensor] = [wordEmbeddings]
-        layerOut: FloatTensor = wordEmbeddings
+        layerOut: FloatTensor = wordEmbeddings # shape == (S, B, E)
 
         for mem, layer in zip(memory, self.layers):
             # Each layer is a decoder block
             # inputDec = layerOut, posEmbeddings = posEmbeddings, u = self.u, v = self.v, mask = decoderAttnMask,
             # memories = mem
-            layerOut: FloatTensor = layer(layerOut, posEmbeddings, self.u, self.v, mask = decoderAttnMask, memories = mem)
+            layerOut: FloatTensor = layer(layerOut, relPosEmbeddings, self.u, self.v,
+                                          mask = decoderAttnMask, memory = mem)
             # layerOut shape == (S, B, E) from decoder block
+
             hiddenStates.append(layerOut)
 
+
         ### Step 5: Calculate Logits
-        # Multiplying along dimension E (TODO check)
+        # Multiplying along dimension E
         # weightsOutputProj (N, E) * layerOut (S, B, E) ---> (S, B, N)
-        logits: Tensor = self.outputProjectionLayer(input = self.dropoutO(input = layerOut))
+        logits: Tensor = self.outputProjectionLayer(self.dropoutO(layerOut)) # layerOut is LAST output of decoder block
         # logits.shape == (S, B, N)
 
         ### Step 6: Calculate Loss

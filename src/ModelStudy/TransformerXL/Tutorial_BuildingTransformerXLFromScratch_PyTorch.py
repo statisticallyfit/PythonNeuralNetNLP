@@ -600,20 +600,22 @@ from src.ModelStudy.TransformerXL.MaskedMultiHeadAttention import MaskedMultiHea
 H = 4
 mha: MaskedMultiHeadAttention = MaskedMultiHeadAttention(embedDim= E,  # 32
                                                          innerDim = I,  # 17
-                                                         numHeads = H) # 4
+                                                         numHeads = H,  # 4
+                                                         dropoutO = 0.3)
 mha
 # %% codecell
 printParamInfo(mha) # so dropout is not a parameter
-# %% codecell
-#torch.manual_seed(123)
 
-# TODO LEFT OFF HERE TROUBLE (use these arguments with same seed in the testing of DecoderBlock below)
+
+# %% codecell
+torch.manual_seed(123)
+
 inputWordEmbs: Tensor = torch.rand(S, B, E).refine_names('S', 'B', 'E')
-posEmbs: Tensor = torch.rand(P+S, B, E).refine_names('P_plus_S', 'B', 'E')
+relPosEmbs: Tensor = torch.rand(P+S, E).refine_names('P_plus_S', 'E')
 memory: Tensor = torch.rand(P, B, E).refine_names('P', 'B', 'E')
 u, v = torch.rand(H, I).refine_names('H', 'I'), torch.rand(H, I).refine_names('H', 'I')
 
-outputMHA: Tensor = mha(inputWordEmbs, posEmbs, memory, u, v)
+outputMHA: Tensor = mha(inputWordEmbs, relPosEmbs, u, v, memory)
 
 assert outputMHA.shape == (S, B, E) == (7, 3, 32)
 assert outputMHA.names == ('S', 'B', 'E')
@@ -643,10 +645,10 @@ assert seqFF[3].bias.names == ('E',)
 # %% codecell
 inputFF: Tensor = torch.rand(S, B, E).refine_names('S', 'B', 'E')
 
-output: Tensor = posFF(inputFF)
+outputFF: Tensor = posFF(inputFF)
 
-assert output.shape == (S, B, E) == (7, 3, 32)
-assert output.names == ('S', 'B', 'E')
+assert outputFF.shape == (S, B, E) == (7, 3, 32)
+assert outputFF.names == ('S', 'B', 'E')
 
 # %% markdown [markdown]
 # ### Step 6: Build the Decoder
@@ -659,10 +661,42 @@ assert output.names == ('S', 'B', 'E')
 #
 # These components are connected using [residual connection](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1511358877/residual+connection+layer+ml)s and [layer normalization](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1450213381/layer+normalization)
 # %% codecell
-Image(filename =imagePath + "transformerEncoder_is_transXLDecoder.png")
+Image(filename = imagePath + "transformerEncoder_is_transXLDecoder.png")
 
 # %% codecell
 from src.ModelStudy.TransformerXL.TransXLDecoderBlock import TransXLDecoderBlock
+
+
+decoder: TransXLDecoderBlock = TransXLDecoderBlock(numHeads = H, embedDim = E, mhaInnerDim= I, ffInnerDim=I,
+                                                   dropoutO = 0.3)
+# %% codecell
+decoder
+# %% codecell
+mha
+# %% markdown
+# Testing that `mha` and `decoder.maskedMultiHeadAttention` are made of the same layers which have same parameter sizes and named dimensions.
+# %% codecell
+assert isEqualStructure(mha, decoder.maskedMultiHeadAttention)
+
+briefParams(decoder)
+
+# %% codecell
+# Setting seed to be same as for MHA example
+torch.manual_seed(123)
+
+inputWordEmbs: Tensor = torch.rand(S, B, E).refine_names('S', 'B', 'E')
+relPosEmbs: Tensor = torch.rand(P+S, E).refine_names('P_plus_S', 'E')
+memory: Tensor = torch.rand(P, B, E).refine_names('P', 'B', 'E')
+u, v = torch.rand(H, I).refine_names('H', 'I'), torch.rand(H, I).refine_names('H', 'I')
+
+outputDecoder: Tensor = decoder(inputWordEmbs, relPosEmbs, u, v, memory = memory)
+
+assert outputDecoder.shape == (S, B, E) == (7, 3, 32)
+assert outputDecoder.names == ('S', 'B', 'E')
+
+# WARNING: this won't be true because the layers of each object have different initialization weights.
+# assert (outputDecoder == posFF(mha(inputWordEmbs, relPosEmbs, u, v, memory))).all()
+
 # %% markdown [markdown]
 # ### Step 7: Full [TransformerXL](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml)
 # Now will all these components we can build the full [Transformer XL model](https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1513586716/transformer-XL+model+ml).
@@ -678,16 +712,22 @@ from src.ModelStudy.TransformerXL.TransXLDecoderBlock import TransXLDecoderBlock
 # %% codecell
 from src.ModelStudy.TransformerXL.StandardWordEmbedding import StandardWordEmbedding
 
-
 # Testing here how Embedding layer looks like and how it changes the dimension of the embedding matrix in order to accomplish weight-tying
-swe: StandardWordEmbedding = StandardWordEmbedding(numEmbeddings=10, # N
+N, E = 10, 32
+swe: StandardWordEmbedding = StandardWordEmbedding(numEmbeddings=N, # N
                                                    embeddingDim = E)  # E
-swe
+# WARNING: named tensors not supported in Embedding!
+# swe.embedding.weight.names = ('N', 'E')
+
+assert swe.embedding.weight.shape == (N, E)
+# %% codecell
+briefParams(swe)
 # %% codecell
 printParamInfo(swe)
 # %% codecell
-idx: torch.LongTensor = torch.LongTensor(torch.arange(S*B).reshape(S, B))
-#swe(idx)
+# idx: torch.LongTensor = torch.LongTensor(torch.arange(S*B).reshape(S, B))
+# swe(idx)
+
 # TODO why does this give error????
 
 
@@ -714,14 +754,18 @@ transformerXL
 # %% codecell
 getUniqueModules(transformerXL) # show all modules at a glance, referred once, can even see which are hand-made classes by the __main__ prefix versus which moduels are from pytorch
 # %% codecell
+# Getting some technicalities tested first:
 a = torch.arange(start = P+S - 1, end = -1, step = -1, out = Tensor([-1.0]), dtype=torch.float)
 b = torch.arange(start = P+S - 1, end = -1, step = -1, dtype=torch.float)
 
 assert (a == b).all(), "Test that 'out' argument in 'torch.arange' makes no difference (note: it is also optional)."
+
+
 # %% codecell
 # Feeding random inputs to confirm model is working
-indices: torch.LongTensor = torch.randint(N, (5, 9))
-targets: torch.LongTensor = torch.randint(N, (5, 9))
+indices: torch.LongTensor = torch.randint(N, (S, B))
+targets: torch.LongTensor = torch.randint(N, (S, B))
+# memory:
 
 result: Dict[str, Tensor] = transformerXL(indices, targets)
 

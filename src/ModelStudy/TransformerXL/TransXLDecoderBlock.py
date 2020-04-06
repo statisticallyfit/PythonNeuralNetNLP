@@ -37,10 +37,11 @@ class TransXLDecoderBlock(nn.Module):
 
     def forward(self,
                 inputDec: FloatTensor,
-                posEmbeddings: FloatTensor,
+                relPosEmbTensor: FloatTensor,
                 u: FloatTensor,
                 v: FloatTensor,
-                mask = None, memories = None) -> Tensor:
+                memory = None,
+                mask = None) -> Tensor:
         """
         Decoder block is made of masked multi-head attention and positionwise feed forward layer. The forward function applies the layers to the embedding input and positional embeddings.
 
@@ -54,19 +55,29 @@ class TransXLDecoderBlock(nn.Module):
             v: the global (query-independent) bias towards certain positions
                 ---> shape == (H, I)
             mask: attention mask
-                ---> shape TODO
-            memories: TODO
-                ---> shape TODO
+                ---> shape == (S, P+S, B)
+            memory:
+                ---> shape == (P, B, E)
 
         Returns:
               output after masked multi-head attention is passed through pos-wise feed forward layer
                 ---> shape == (S, B, E)
         """
+        #outputMHA = self.maskedMultiHeadAttention(inputMHA = inputDec,
+        #                                          relPosEmbTensor = relPosEmbTensor,
+        #                                          u = u, v = v,
+        #                                          memory = memory,
+        #                                          mask = mask
+        #                                          )
+        #outputFF = self.poswiseFeedForward(inputFF = outputMHA)
+
+        #return outputFF
+
         return self.poswiseFeedForward(
             inputFF = self.maskedMultiHeadAttention(inputMHA = inputDec,
-                                                    posEmbeddings = posEmbeddings,
-                                                    memory = memories,
+                                                    relPosEmbTensor = relPosEmbTensor,
                                                     u = u, v = v,
+                                                    memory = memory,
                                                     mask = mask
                                                     )
         )
