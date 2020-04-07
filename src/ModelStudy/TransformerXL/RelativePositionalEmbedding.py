@@ -24,9 +24,9 @@ class RelativePositionalEmbedding(nn.Module):
     # positions shape == (P+S, )    (vector)
     def forward(self, posIndices: torch.LongTensor) -> Tensor:
         # Dropping names
-        posIndices_, invFreq_ = posIndices.rename(None), self.invFreq.rename(None)
+        posIndices_, invFreq_ = posIndices.rename(None).float(), self.invFreq.rename(None)
         # Outer product
-        sinusoidInp: Tensor = (torch.einsum('i, j -> ij', [posIndices_.float(), invFreq_])
+        sinusoidInp: Tensor = (torch.einsum('i, j -> ij', [posIndices_, invFreq_])
                                .refine_names('P_plus_S', 'E'))
         # sinusoidInp.shape == (P+S, E/2)
 

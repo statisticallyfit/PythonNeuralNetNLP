@@ -155,8 +155,9 @@ class TransformerXL(nn.Module):
         # endDim: int = ones.ndim
 
         decoderAttnMask: Tensor = (torch.triu(ones_, diagonal = 1+P)
+                                   .bool()
                                    .refine_names('S', 'P_plus_S')
-                                   .align_to(..., 'B')) # align_to() == unsqueeze()
+                                   .align_to(..., 'B')) # align_to() == unsqueeze() (CASE: adding dims)
         # OLD WAY: torch.triu(ones.rename(None), diagonal = 1+P).bool().unsqueeze(endDim).to(indices.device)
         # decoderAttnMask shape ==  (S, P+S, B)
 

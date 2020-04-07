@@ -214,9 +214,21 @@ def briefParams(model: nn.Module) -> List[Tuple[Name, Size, Dict[Name, int]]]:
     Gets the (name, paramsize, param tensor name) as tuple and returns list of these for all parameters in the model.
     Purpose: to get brief view into sizes, named dimensions, and names of parameters.
     """
-    return [(name, list(zip(paramTensor.names, paramTensor.size()))) for (name, paramTensor) in
-            model.named_parameters()]
+    tupleList: List[(Name, List[(Name, int)])] = [(name, tuple(zip(paramTensor.names, paramTensor.size())))
+                                                  for (name, paramTensor) in model.named_parameters()]
     # return [(name, tuple(paramTensor.size()), paramTensor.names) for (name, paramTensor) in model.named_parameters()]
+
+    d = dict()
+    for name, dimTuple in tupleList:
+        d[name] = dimTuple
+
+    return d
+    # Converting tuple list into dict list with NAME and DIM as keys
+    #dictList = []
+    #for name, dimTuple in tupleList:
+    #     dictList.append({'PARAM': name, 'DIM': dimTuple})
+
+    #return dictList
 
 
 # Modules --------------------------------------------------------------------------

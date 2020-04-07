@@ -384,11 +384,15 @@ v: Tensor = torch.randn(I).refine_names('I')
 # The pos_tfmd just without the middle dimension
 # NOTE: need to use squeeze() still, no replacement for this method like align_to() replaces view()
 posEmbsTensor_squeezed: Tensor = posEmbsTensor.squeeze('B')
+posEmbsTensor_view: Tensor = posEmbsTensor.rename(None).view(P+S, I)
 
-assert (posEmbsTensor[:, 0, :] == posEmbsTensor.squeeze('B')).all(), "Test alternate way of squeezing out a dimension from a tensor"
+assert (posEmbsTensor_view == posEmbsTensor_squeezed).all()
+
+# WARNING!!! this is only true when the batch dimension B == 1
+assert (posEmbsTensor[:, 0, :] == posEmbsTensor.squeeze('B')).all(), "Test alternate way of choosing first element of a dimension in a tensor"
 
 assert posEmbsTensor_squeezed.names == ('P_plus_S', 'I')
-assert posEmbsTensor_squeezed.shape == (P+S, I) == (13, 17)
+assert posEmbsTensor_squeezed.shape == posEmbsTensor_view.shape == (P+S, I) == (13, 17)
 
 ### Calculate positional attention, multiplying along dimension I: (queries + v) x posNoMid
 # (S, B, I) x (P+S, I) ---> (S, P+S, B)
@@ -611,7 +615,11 @@ printParamInfo(mha) # so dropout is not a parameter
 torch.manual_seed(123)
 
 inputWordEmbs: Tensor = torch.rand(S, B, E).refine_names('S', 'B', 'E')
-relPosEmbs: Tensor = torch.rand(P+S, E).refine_names('P_plus_S', 'E')
+# NOTE: putting in a batch dimension here even though the source tutorial doesn't, since otherwise error is thrown in
+# the named tensor operation in MHA class at pos reshaping:
+#     .flatten(dims = ['B', 'H'], out_dim = 'HB'))
+# RuntimeError: Name 'B' not found in Tensor['P_plus_S', 'H', 'I'].
+relPosEmbs: Tensor = torch.rand(P+S, B, E).refine_names('P_plus_S', 'B' , 'E')
 memory: Tensor = torch.rand(P, B, E).refine_names('P', 'B', 'E')
 u, v = torch.rand(H, I).refine_names('H', 'I'), torch.rand(H, I).refine_names('H', 'I')
 
@@ -635,6 +643,8 @@ posFF
 printParamInfo(posFF)
 # %% codecell
 printChildInfo(posFF.feedForward) # all the items in Sequential() object
+# %% codecell
+briefParams(posFF)
 # %% codecell
 seqFF = posFF.feedForward
 
@@ -685,7 +695,8 @@ briefParams(decoder)
 torch.manual_seed(123)
 
 inputWordEmbs: Tensor = torch.rand(S, B, E).refine_names('S', 'B', 'E')
-relPosEmbs: Tensor = torch.rand(P+S, E).refine_names('P_plus_S', 'E')
+# NOTE: like in above, putting here a batch dimension even though none in the original notebook test
+relPosEmbs: Tensor = torch.rand(P+S, B, E).refine_names('P_plus_S', 'B','E')
 memory: Tensor = torch.rand(P, B, E).refine_names('P', 'B', 'E')
 u, v = torch.rand(H, I).refine_names('H', 'I'), torch.rand(H, I).refine_names('H', 'I')
 
@@ -743,7 +754,7 @@ from src.ModelStudy.TransformerXL.TransformerXL import TransformerXL
 N = 1000
 L = 4
 M = 5
-H = 3
+H = 4
 
 assert (S, P, B, E, I) == (7, 6, 3, 32, 17)
 
@@ -751,6 +762,9 @@ transformerXL: TransformerXL = TransformerXL(numEmbeddings= N, numLayers=L, numH
                                              modelDim = E, mhaInnerDim= I, ffInnerDim= 71,
                                              memoryLen = M)
 transformerXL
+# %% codecell
+
+briefParams(transformerXL)
 # %% codecell
 getUniqueModules(transformerXL) # show all modules at a glance, referred once, can even see which are hand-made classes by the __main__ prefix versus which moduels are from pytorch
 # %% codecell

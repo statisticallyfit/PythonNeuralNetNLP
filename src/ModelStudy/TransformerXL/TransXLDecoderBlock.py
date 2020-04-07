@@ -48,7 +48,7 @@ class TransXLDecoderBlock(nn.Module):
         Arguments:
             inputDec: the input for the decoder block
                 ---> shape == (S, B, E)
-            posEmbeddings: the positional embeddings
+            relPosEmbTensor: the positional embeddings
                 ---> shape == (P+S, B, E)
             u: the global (query-independent) bias towards certain keys / values = words
                 ---> shape == (H, I)

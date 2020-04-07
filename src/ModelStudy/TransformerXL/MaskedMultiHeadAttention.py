@@ -30,16 +30,16 @@ class MaskedMultiHeadAttention(nn.Module):
                                        out_features= (innerDim * numHeads * 2),  #2 is for keys and values
                                        bias = False) # no bias now, making this a simple matrix multiplication
         # NOTE: adding names to the weight matrix of linearKV layer
-        self.linearKV.weight.names = ('IH', 'E')
+        self.linearKV.weight.names = ('HI', 'E')
 
         # Linear layer for queries (which will not be concatenated with memorized states so it remains separate)
         # TODO: what remains separate: the linearQ or the result queries = linearQ(input)???
         self.linearQ: Linear = Linear(in_features= embedDim,out_features= innerDim * numHeads,bias = False)
-        self.linearQ.weight.names = ('IH', 'E')
+        self.linearQ.weight.names = ('HI', 'E')
 
         # Linear layer for positional embeddings
         self.linearP: Linear = Linear(in_features=embedDim,out_features= innerDim * numHeads,bias = False)
-        self.linearP.weight.names = ('IH', 'E')
+        self.linearP.weight.names = ('HI', 'E')
 
         # Scaling factor for scaled dot product attention
         self.scale: float = 1 / (innerDim ** 0.5)
@@ -51,7 +51,7 @@ class MaskedMultiHeadAttention(nn.Module):
         self.linearOut: Linear = Linear(in_features= self.innerDim * self.numHeads,
                                            out_features= self.embeddingDim,
                                            bias = False)
-        self.linearOut.weight.names = ('E', 'IH')
+        self.linearOut.weight.names = ('E', 'HI')
 
         # WARNING: layernorm is not supported with named tensors so even though its weight names gets successfully
         # assigned as below, the multiplication with input results in an error, saying named tensors aren't supported
@@ -138,7 +138,7 @@ class MaskedMultiHeadAttention(nn.Module):
             inputMHA: the word embeddings
                 ---> shape == (S, B, E)
             relPosEmbTensor: positional embeddings
-                ---> shape == (P+S, E) # note no batch dimension - TODO why?
+                ---> shape == (P+S, B, E)
             memory: cached hidden states from segment-level recurrence mechanism
                 ---> shape == (P, B, E)
             u: the global (query-independent) bias towards certain keys / values = words
@@ -186,7 +186,7 @@ class MaskedMultiHeadAttention(nn.Module):
         # This is the standard attention term in the original Transformer, except without the positional embeddings, which are handled separately in the Transformer XL (see below)
         # NOTE: 'i' corresponds to number of queries = number of current inputs / targets (seq-wise)
         # NOTE: 'j' corresponds to number of key / values = number of vectors that we can use to compute the vector for each query
-        a: Tensor = queries.unflatten(dim = 'IH', namedshape = (('H', H),('I', I)))
+        a: Tensor = queries.unflatten(dim = 'HI', namedshape = (('H', H),('I', I)))
         # a shape == (S, B, H, I)
         # OLD: a: Tensor = queries.rename(None).view(S, B, H, I) # split queries.shape (S, B, I*H)
 
@@ -194,7 +194,7 @@ class MaskedMultiHeadAttention(nn.Module):
         c: Tensor = u
         # c shape == (H, I)
 
-        keysReshaped: Tensor = keys.unflatten(dim = 'IH', namedshape = (('H', H),('I', I)))
+        keysReshaped: Tensor = keys.unflatten(dim = 'HI', namedshape = (('H', H),('I', I)))
         # keysReshaped shape == (P+S, B, H, I)
         # OLD: keysReshaped.rename(None).view(P+S, B, H, I) # split size of keys
 
@@ -209,12 +209,12 @@ class MaskedMultiHeadAttention(nn.Module):
 
         ### Position-based attention term ((b) + (d) from the paper)
         # This attention is solely based on the position of the key/values (i.e. it does not take the content of the key/values into account)
-        # Weights * posEmbs: (I*H, E) * (P+S, E) ----> (P+S, B, I*H)
+        # Weights * posEmbs: (I*H, E) * (P+S, E) ----> (P+S, B, I*H) # TODO why now relposemb is (P+S, B, E)?????
         pos: Tensor = self.linearP(relPosEmbTensor)
-        # pos shape == (P+S, I*H)
+        # pos shape == (P+S, B, H*I) is shape in TXL test || WRONG: (P+S, H*I)
 
-        # TODO why is term (a) the same as term (b)? why not using pos.unflatten ... ?
-        b: Tensor = queries.unflatten(dim = 'IH', namedshape = (('H', H),('I', I)))
+        # todo why is term (a) the same as term (b)? why not using pos.unflatten ... ?
+        b: Tensor = queries.unflatten(dim = 'HI', namedshape = (('H', H),('I', I)))
         # OLD WAY: queries.rename(None).view(S,B,H,I)
         # b shape == (S, B, H, I)
 
@@ -222,9 +222,13 @@ class MaskedMultiHeadAttention(nn.Module):
         d: Tensor = v
         # d shape == (H, I)
 
-        posReshaped: Tensor = pos.unflatten(dim = 'IH', namedshape=(('H', H), ('I', I)))
-        # OLD WAY: pos.rename(None).view(P+S, H, I)
-        # posReshaped shape == (P+S, H, I) # TODO why no batch dim in pos embeddings?
+        # NOTE: Like in Tutorial notebook, taking out the first element along BATCH dimension (only same as pos.squeeze('B') when the batch dim == 1)
+        posTakeBatch: Tensor = pos[:,0,:]
+        posReshaped: Tensor = posTakeBatch.unflatten(dim = 'HI', namedshape=(('H', H), ('I', I)))
+                              # .flatten(dims = ['B', 'H'], out_dim = 'HB'))
+        # OLD WAY: pos[:,0,:].rename(None).view(P+S, H, I) , like in tutorial since there seems to be an error in the
+        # actual original notebook!
+        # posReshaped shape == (P+S, B, H, I)
 
         # Renaming since einsum doesn't support named tensors
         b_, d_, pos_ = b.rename(None), d.rename(None), posReshaped.rename(None)
@@ -244,14 +248,15 @@ class MaskedMultiHeadAttention(nn.Module):
         # attn shape == (S, P+S, B, H)
 
         ### Masking the attention before the softmax layer, exactly the same way as for the Decoder in Transformer model: https://synergo.atlassian.net/wiki/spaces/KnowRes/pages/1521090937/decoder+self+attention+in+transformer
-        if mask is not None and mask.any().item():
+        if mask is not None and mask.any().item(): # IF mask not empty and if there are some maskings in the mask...
             # mask shape == (S, P+S, B)
             # TODO find way to do this with align_to() (using named tensors)
             # note: cannot do this yet because the example passes mask = None so I can't see its shape yet
             # note: mask.align_to(..., 'B') works when just ndim = 3 but how to do when ndim = 4 and last dim isn't B?
 
             # TODO search here: https://hyp.is/qOPLtHNIEequKx_ju-n8kw/pytorch.org/tutorials/intermediate/named_tensor_tutorial.html
-            attn: Tensor = attn.masked_fill(mask = mask.unsqueeze(mask.ndim), value = -float('inf'))
+            attn: Tensor = attn.masked_fill(mask = mask.align_to(..., 'H'), value = -float('inf'))
+            # OLD WAY: mask.unsqueeze(mask.ndim)
             # attn (masked) shape == (S, P+S, B, H)
 
         ### Softmax with rescale to prevent values from exploding.
@@ -264,7 +269,7 @@ class MaskedMultiHeadAttention(nn.Module):
         # attn (dropout-ed) shape == (S, P+S, B, H)
 
         ### Calculated weighted sum of attention with the value matrix V
-        valuesReshaped: Tensor = values.unflatten(dim = 'IH', namedshape=(('H', H), ('I', I)))
+        valuesReshaped: Tensor = values.unflatten(dim = 'HI', namedshape=(('H', H), ('I', I)))
             # OLD WAY values.rename(None).view(P+S, B, H, I)
         # valuesReshaped shape == (P+S, B, H, I)
 
@@ -273,13 +278,13 @@ class MaskedMultiHeadAttention(nn.Module):
 
         # Multiply along dimension with size (P+S) (the same dimension we softmaxed along)
         # (S, P+S, B, H) * (P+S, B, H, I) ---> (S, B, H, I)
-        attnWeightedValues: Tensor = (torch.einsum('sjbh, jbhi -> sbhi', [attn_, values_])).refine_names('S', 'B',
-                                                                                                         'H', 'I')
+        attnWeightedValues: Tensor = (torch.einsum('sjbh, jbhi -> sbhi', [attn_, values_])
+                                              .refine_names('S', 'B','H', 'I'))
         # attnWeightedValues shape == (S, B, H, I)
 
         # NOTE: using contiguous since need to change the memory layout to make the `view` work (to combine the last two dimensions)
-        attnWeightedValues: Tensor = attnWeightedValues.contiguous().flatten(dims = ['H', 'I'], out_dim = 'IH')
-            # OLD WAY attnWeightedValues.contiguous().view(S, B, H*I)
+        attnWeightedValuesReshaped: Tensor = attnWeightedValues.contiguous().flatten(dims = ['H', 'I'], out_dim = 'HI')
+            # OLD WAY attnWeightedValues.contiguous().rename(None).view(S, B, H*I)
         # attnWeightedValues shape == (S, B, H*I)
 
 
@@ -287,12 +292,12 @@ class MaskedMultiHeadAttention(nn.Module):
         # Project back to input dimension and do residual connection
         # Multiplying along dimensions H*I: Weights_linearOut x attnWeightedValues
         # (E, H*I) x (S, B, H*I) ---> (S, B, E)
-        output: Tensor = inputMHA + self.dropoutO(self.linearOut(attnWeightedValues))
+        output: Tensor = inputMHA + self.dropoutO(self.linearOut(attnWeightedValuesReshaped))
         # output shape == (S, B, E)
         ## Doing residual connection and layer normalization.
         # Multiplying along dimension E: Weights_norm x output
         # (E,) x (S, B, E) ----> (S, B, E)
-        outputResidConn: Tensor = self.norm(output.rename(None)).refine_names('S', 'B', 'E')
+        outputResidualConn: Tensor = self.norm(output.rename(None)).refine_names('S', 'B', 'E')
         # outputResiduConn shape == (S, B, E)
 
-        return outputResidConn
+        return outputResidualConn
