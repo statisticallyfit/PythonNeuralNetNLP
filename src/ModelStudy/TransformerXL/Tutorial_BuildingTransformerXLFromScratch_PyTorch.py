@@ -753,7 +753,7 @@ from src.ModelStudy.TransformerXL.TransformerXL import TransformerXL
 
 N = 1000
 L = 4
-M = 5
+M = 5 # memory length
 H = 4
 
 assert (S, P, B, E, I) == (7, 6, 3, 32, 17)
@@ -777,14 +777,19 @@ assert (a == b).all(), "Test that 'out' argument in 'torch.arange' makes no diff
 
 # %% codecell
 # Feeding random inputs to confirm model is working
-indices: torch.LongTensor = torch.randint(N, (S, B))
-targets: torch.LongTensor = torch.randint(N, (S, B))
+indices: torch.LongTensor = torch.randint(N, (S, B)).refine_names('S', 'B')
+targets: torch.LongTensor = torch.randint(N, (S, B)).refine_names('S', 'B')
 # memory:
 
 result: Dict[str, Tensor] = transformerXL(indices, targets)
+resultLoss = list(result.values())[0]
+resultLogits = list(result.values())[1]
+resultMemoryList = list(result.values())[2]
 
-result
+assert resultLogits.shape == (S, B, N) and resultLogits.names == ('S', 'B', 'N')
+assert [mem.shape == (M, B, E) and mem.names == ('M', 'B', 'E') for mem in resultMemoryList]
 
+resultLoss
 
 # %% markdown [markdown]
 # # Training the Transformer XL

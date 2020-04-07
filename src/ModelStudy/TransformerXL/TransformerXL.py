@@ -91,9 +91,15 @@ class TransformerXL(nn.Module):
                      previousMemory: List[FloatTensor],
                      hiddenStates: List[FloatTensor]) -> List[FloatTensor]:
         """
+        P = memoryLen
+        S = seqLen TODO == self.seqLen?? at least in theory?
+        M = self.memoryLen
+
         Arguments:
-            previousMemory: TODO each tensor element has shape == (memoryLen, B, I)
-            hiddenStates: TODO each tensor element has shape == (seqLen, B, I)
+            previousMemory: each tensor element has shape == (memoryLen, B, E) == (P, B, E)
+            hiddenStates: each tensor element has shape == (seqLen, B, E) == (S, B, E)
+        Returns:
+            newMemory: each tensor element has shape == (self.memoryLen, B, E) == (M, B, E)
         """
         assert len(hiddenStates) == len(previousMemory)
 
@@ -104,18 +110,21 @@ class TransformerXL(nn.Module):
         # in other words, if `seqLen` < `self.memoryLen`, some of the previous memory will carry over to the next memory.
         with torch.no_grad(): # note: use no_grad() to avoid back propagating TODO why??
             newMemory: List[FloatTensor] = []
-            iEnd: int = memoryLen + seqLen
-            iBegin = max(0, iEnd - self.memoryLen)
+            iEnd: int = memoryLen + seqLen # P + S
+            iBegin = max(0, iEnd - self.memoryLen) # max(0, P+S - M)
 
             for prevMem, hid in zip(previousMemory, hiddenStates):
                 # Concatenating previous memory and hidden state on dimension 0
-                prevMemHid: FloatTensor = torch.cat([prevMem, hid], dim = 0).refine_names('P_plus_S', 'B', 'I')
-                # memCatHidden shape == (memoryLen + seqLen, B, I) == (P+S, B, I)
+                hid_: Tensor = hid.rename(None) # safest solution for concatenating since prevMem can have empty
+                # tensors and cannot coerce those to have a shape
+                prevMemHid: FloatTensor = torch.cat([prevMem, hid_], dim = 0)
+                # hid shape == (S, B, E)
+                # prevMem shape == (P, B, E)
+                # prevMemHid shape == (memoryLen + seqLen, B, E) == (P+S, B, E)
 
-                # TODO understand here how some of the previous memory carries over to the next memory
-                newMemory.append(prevMemHid[iBegin : iEnd].detach())
-                # TODO newMemory elements shape == (self.memoryLen, B, I) == (P, B, I)
-                # newMemory elements shape == (P, B, E)
+                # todo understand here how some of the previous memory carries over to the next memory
+                newMemory.append(prevMemHid[iBegin : iEnd].refine_names('M', 'B', 'E').detach())
+                # newMemory elements shape == (self.memoryLen, B, E) == (M, B, E)
 
         return newMemory
 
@@ -181,7 +190,7 @@ class TransformerXL(nn.Module):
         # note: Main part of Forward Pass here below
 
         ### Step 4: Create Hidden States using memory and the decoder layers in transformer XL
-        hiddenStates: List[FloatTensor] = [wordEmbeddings]
+        hiddenStates: List[FloatTensor] = [wordEmbeddings] # each shape == (S, B, E)
         layerOut: FloatTensor = wordEmbeddings # shape == (S, B, E)
 
         for mem, layer in zip(memory, self.layers):
@@ -192,21 +201,31 @@ class TransformerXL(nn.Module):
                                           mask = decoderAttnMask, memory = mem)
             # layerOut shape == (S, B, E) from decoder block
 
-            hiddenStates.append(layerOut)
+            hiddenStates.append(layerOut) # each layerOut shape == (S, B, E)
 
 
         ### Step 5: Calculate Logits
+        # layerOut is LAST output of decoder block
+        layerOut_: Tensor = layerOut.rename(None)
         # Multiplying along dimension E
         # weightsOutputProj (N, E) * layerOut (S, B, E) ---> (S, B, N)
-        logits: Tensor = self.outputProjectionLayer(self.dropoutO(layerOut)) # layerOut is LAST output of decoder block
+        logits: Tensor = (self.outputProjectionLayer(self.dropoutO(layerOut_)) # names == (None, None, 'N')
+                          .refine_names('S', 'B', 'N'))
         # logits.shape == (S, B, N)
 
         ### Step 6: Calculate Loss
-        # target.view(-1) shape === (target sizes all multiplied together) === (S * B,)
-        # logits.size(-1) == N
-        # logits.view(-1, N).shape == (S*B, N)
-        loss = self.lossFunction(input = logits.view(-1, logits.size(-1)), target = target.view(-1))
+        logitsReshaped: Tensor = logits.flatten(dims = ['S', 'B'], out_dim = 'SB')
+        # logitsReshaped shape == (S*B, N)
+        targetsReshaped: Tensor = target.flatten(dims = target.names, out_dim = 'SB')
+        # targetsReshaped shape == (S*B, )
+
+        logits_, targets_ = logitsReshaped.rename(None), targetsReshaped.rename(None)
+
+        loss = self.lossFunction(input = logits_, target = targets_)
         # loss.shape == [] (since loss is just one number, has dimension zero, is a zero-dim tensor)
+        #
+        # OLD WAY: logits.view(-1, logits.size(-1))
+        # OLD WAY: target.view(-1)
 
         ### Step 7: Update memory:
         # Ensure memory is treated as a constant and that we do not back propagate through them
