@@ -811,7 +811,7 @@ config: Config = Config(seed = 101, debug = False, warmupStep = 0,
 config
 # %% codecell
 if TESTING:
-    config.update(fromDict = dict(
+    config.update(fromDict = dict( 
         debug = True,
         learningRate = 0.00025,
         batchSize = 8, # batch size
