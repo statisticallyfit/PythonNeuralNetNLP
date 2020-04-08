@@ -12,8 +12,6 @@ from typing import *
 
 from src.ModelStudy.TransformerXL.StandardWordEmbedding import StandardWordEmbedding
 from src.ModelStudy.TransformerXL.RelativePositionalEmbedding import RelativePositionalEmbedding
-from src.ModelStudy.TransformerXL.PositionwiseFeedForward import PositionwiseFeedForward
-from src.ModelStudy.TransformerXL.MaskedMultiHeadAttention import MaskedMultiHeadAttention
 from src.ModelStudy.TransformerXL.TransXLDecoderBlock import TransXLDecoderBlock
 
 

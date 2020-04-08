@@ -461,7 +461,7 @@ torch.equal(shiftCut_, shiftCut.rename(None))
 #                         .align_to('P_plus_S', 'S', 'B')[1:]
 #                         .align_as(posAttn))
 
-posAttn.names
+
 # Constructing the padded attention the unnamed way:
 posAttnPadded_: Tensor = shiftCut_.view_as(posAttn_)
 assert posAttnPadded_.shape == posAttn_.shape == (S, P+S, B) == (7, 13, 3)
@@ -636,9 +636,12 @@ assert outputMHA.names == ('S', 'B', 'E')
 # %% codecell
 from src.ModelStudy.TransformerXL.PositionwiseFeedForward import PositionwiseFeedForward
 
+
+F = 71
 # Testing the module:
-posFF: PositionwiseFeedForward = PositionwiseFeedForward(embedDim = E, innerDim = I, dropoutO = 0.3)
+posFF: PositionwiseFeedForward = PositionwiseFeedForward(embedDim = E, innerDim = F, dropoutO = 0.3)
 posFF
+
 # %% codecell
 printParamInfo(posFF)
 # %% codecell
@@ -648,10 +651,12 @@ briefParams(posFF)
 # %% codecell
 seqFF = posFF.feedForward
 
-assert seqFF[0].weight.names == ('I', 'E')
-assert seqFF[0].bias.names == ('I',)
-assert seqFF[3].weight.names == ('E', 'I')
+assert seqFF[0].weight.names == ('F', 'E')
+assert seqFF[0].bias.names == ('F',)
+assert seqFF[3].weight.names == ('E', 'F')
 assert seqFF[3].bias.names == ('E',)
+
+
 # %% codecell
 inputFF: Tensor = torch.rand(S, B, E).refine_names('S', 'B', 'E')
 
@@ -677,19 +682,21 @@ Image(filename = imagePath + "transformerEncoder_is_transXLDecoder.png")
 from src.ModelStudy.TransformerXL.TransXLDecoderBlock import TransXLDecoderBlock
 
 
-decoder: TransXLDecoderBlock = TransXLDecoderBlock(numHeads = H, embedDim = E, mhaInnerDim= I, ffInnerDim=I,
+decoder: TransXLDecoderBlock = TransXLDecoderBlock(numHeads = H, embedDim = E, mhaInnerDim= I, ffInnerDim=F,
                                                    dropoutO = 0.3)
 # %% codecell
 decoder
-# %% codecell
-mha
 # %% markdown
 # Testing that `mha` and `decoder.maskedMultiHeadAttention` are made of the same layers which have same parameter sizes and named dimensions.
 # %% codecell
 assert isEqualStructure(mha, decoder.maskedMultiHeadAttention)
+assert isEqualStructure(posFF, decoder.poswiseFeedForward)
 
 briefParams(decoder)
-
+# %% codecell
+briefParams(mha)
+# %% codecell
+briefParams(posFF)
 # %% codecell
 # Setting seed to be same as for MHA example
 torch.manual_seed(123)
@@ -734,9 +741,7 @@ assert swe.embedding.weight.shape == (N, E)
 # %% codecell
 briefParams(swe)
 # %% codecell
-printParamInfo(swe)
-# %% codecell
-# idx: torch.LongTensor = torch.LongTensor(torch.arange(S*B).reshape(S, B))
+idx: torch.LongTensor = torch.LongTensor(torch.arange(S*B).reshape(S, B))
 # swe(idx)
 
 # TODO why does this give error????
@@ -756,10 +761,10 @@ L = 4
 M = 5 # memory length
 H = 4
 
-assert (S, P, B, E, I) == (7, 6, 3, 32, 17)
+assert (S, P, B, E, I, F) == (7, 6, 3, 32, 17, 71)
 
 transformerXL: TransformerXL = TransformerXL(numEmbeddings= N, numLayers=L, numHeads = H,
-                                             modelDim = E, mhaInnerDim= I, ffInnerDim= 71,
+                                             modelDim = E, mhaInnerDim= I, ffInnerDim= F,
                                              memoryLen = M)
 transformerXL
 # %% codecell
@@ -811,7 +816,7 @@ config: Config = Config(seed = 101, debug = False, warmupStep = 0,
 config
 # %% codecell
 if TESTING:
-    config.update(fromDict = dict( 
+    config.update(fromDict = dict(
         debug = True,
         learningRate = 0.00025,
         batchSize = 8, # batch size
@@ -949,19 +954,48 @@ DATA_DIR.absolute()
 # %% markdown [markdown]
 # Using a utility vocabulary class borrowed directly from the Transformer XL repo to numericalize our inputs.
 # %% codecell
-sys.path.append(os.getcwd() + "/src/ModelStudy/TransformerXL/utils/")
-#sys.path.append("../utils")
+# sys.path.append(os.getcwd() + "/src/ModelStudy/TransformerXL/utils/")
+sys.path.append(os.getcwd() + "/src/ModelStudy/TransformerXL/")
 # sys.path.pop()
 sys.path
 
-from vocabulary import Vocab
+# %% codecell
+from src.ModelStudy.TransformerXL.vocabulary import Vocab
 
 vocab: Vocab = Vocab(special = ["<eos>"], lower_case = True)
 
+assert (DATA_DIR / "train.txt").absolute() == (DATA_DIR / "train.txt")
+
 (DATA_DIR / "train.txt").absolute()
-vocab.count_file(DATA_DIR / "train.txt")
-vocab.count_file(DATA_DIR / "valid.txt")
-vocab.count_file(DATA_DIR / "test.txt")
-None
 
 # %% codecell
+trainVocab: List[List[str]] = vocab.count_file(DATA_DIR / "train.txt")
+validVocab: List[List[str]] = vocab.count_file(DATA_DIR / "valid.txt")
+testVocab: List[List[str]] = vocab.count_file(DATA_DIR / "test.txt")
+
+print(f"trainVocab length = {len(trainVocab)}")
+print(f"validVocab length = {len(validVocab)}")
+print(f"testVocab length = {len(testVocab)}")
+
+
+
+print(trainVocab[3000:3100])
+print(validVocab[3000:3100])
+print(testVocab[3000:3100])
+# %% codecell
+lengthsTrain: List[int] = [len(lst) for lst in trainVocab]
+print(lengthsTrain[100:300])
+print(lengthsTrain[4000:4200])
+
+lengthsValid: List[int] = [len(lst) for lst in validVocab]
+print(lengthsValid[2000:2200])
+
+lengthsTest: List[int] = [len(lst) for lst in testVocab]
+print(lengthsTest[2000:2200])
+
+
+# %% markdown
+# ### Train Step 4: Build the Vocabulary
+# Encoding the vocabulary text `List[List[str]]` into tensors of numbers:
+# %% codecell
+trainData = vocab.encode_file(path = DATA_DIR / "train.txt", ordered = True, add_eos = True, add_double_eos = False)

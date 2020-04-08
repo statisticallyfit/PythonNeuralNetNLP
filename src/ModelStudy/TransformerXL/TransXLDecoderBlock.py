@@ -10,7 +10,7 @@ from torch.nn import Dropout, LayerNorm, Linear, Sequential, ReLU, Embedding, Mo
 
 from typing import *
 
-from src.ModelStudy.TransformerXL.PositionwiseFeedForward import PositionwiseFeedForward
+from src.ModelStudy.TransformerXL.PositionwiseFeedForward import PositionwiseFeedForward, PositionwiseFeedForward
 from src.ModelStudy.TransformerXL.MaskedMultiHeadAttention import MaskedMultiHeadAttention
 
 
@@ -79,5 +79,5 @@ class TransXLDecoderBlock(nn.Module):
                                                     u = u, v = v,
                                                     memory = memory,
                                                     mask = mask
-                                                    )
-        )
+                                                    ) # shape == (S, B, E)
+        ) # shape == (S, B, E)

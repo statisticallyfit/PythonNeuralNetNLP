@@ -11,6 +11,7 @@ from torch.nn import Dropout, LayerNorm, Linear, Sequential, ReLU, Embedding, Mo
 from typing import *
 
 
+
 class PositionwiseFeedForward(nn.Module):
 
     # embeddingDim (also called inputDim)
@@ -23,16 +24,16 @@ class PositionwiseFeedForward(nn.Module):
 
         # Components of the feed forward layer:
         self.feedForward: Sequential = Sequential(
-            Linear(in_features=embedDim, out_features=innerDim), # weights shape == (I, E)
+            Linear(in_features=embedDim, out_features=innerDim), # weights shape == (F, E)
             ReLU(inplace = True),
             Dropout(p = dropoutO),
-            Linear(in_features=innerDim, out_features=embedDim), # weights shape == (E, I)
+            Linear(in_features=innerDim, out_features=embedDim), # weights shape == (E, F)
             Dropout(p=dropoutO)
         )
         # Assigning names to the weight and bias matrices:
-        self.feedForward[0].weight.names = ('I', 'E') # linear weight
-        self.feedForward[0].bias.names = ('I',) # linear bias
-        self.feedForward[3].weight.names = ('E', 'I') # linear weight
+        self.feedForward[0].weight.names = ('F', 'E') # linear weight
+        self.feedForward[0].bias.names = ('F',) # linear bias
+        self.feedForward[3].weight.names = ('E', 'F') # linear weight
         self.feedForward[3].bias.names = ('E',) # linear bias
 
 
@@ -52,8 +53,8 @@ class PositionwiseFeedForward(nn.Module):
             output
                 ---> shape == (S, B, E)
         """
-        # first linear * inputFF: (S, B, E) * (I, E) ---> (S, B, I)
-        # second linear * aboveresult: (E, I) * (S, B, I) ---> (S, B, E)
+        # first linear * inputFF: (S, B, E) * (F E) ---> (S, B, F)
+        # second linear * aboveresult: (E, F) * (S, B, F) ---> (S, B, E)
         resultFF: Tensor = self.feedForward(inputFF)
         # resultFF shape == (S, B, E)
 
@@ -63,3 +64,5 @@ class PositionwiseFeedForward(nn.Module):
         # output shape == (S, B, E)
 
         return output # output shape == (S, B, E)
+
+
