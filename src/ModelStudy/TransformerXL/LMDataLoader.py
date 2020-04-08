@@ -31,7 +31,7 @@ class LMDataLoader(data.DataLoader):
         iClean: int = self.numSteps * batchSize
         self.data: torch.LongTensor = (data[0 : iClean]
                                        .view(batchSize, self.numSteps) # to shape (B, N)
-                                       .transpose(0, 1)
+                                       .transpose(0, 1) # shape == (N, B)
                                        .contiguous().to(device) # put on device as contiguous tensor
                                      )
         # self.data shape == (N, B), where N = numsteps, B = batchsize
@@ -50,11 +50,11 @@ class LMDataLoader(data.DataLoader):
             # Meaning: # indexing along first dimension (means taking along the rows the rows that are between
             # iBatchStart and iBatchEnd, leaving the columns as they are
             batchData: Tensor = self.data[iBatchStart : iBatchEnd, :]
-            # batchData shape == (iE-iS+1, B)
+            # batchData shape == (iE-iS+1, B) == (BPTT, B)
 
             # Meaning: taking along the rows, indexed a row further than for batchData
             target: Tensor = self.data[iBatchStart + 1 : iBatchEnd + 1, :]
-            # target shape == (iE+1 - iS + 1 + 1, B) == (iE-iS+1, B)
+            # target shape == (iE+1 - iS + 1 + 1, B) == (iE-iS+1, B) == (BPTT, B)
 
             # Generate the sequence length as well for loss calculation later
             yield batchData, target, iBatchEnd - iBatchStart

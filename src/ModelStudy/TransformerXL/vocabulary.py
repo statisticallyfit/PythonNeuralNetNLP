@@ -43,7 +43,8 @@ class Vocab(object):
                 if verbose and idx > 0 and idx % 500000 == 0:
                     print('    line {}'.format(idx))
                 symbols = self.tokenize(line, add_eos=add_eos)
-                self.counter.update(symbols)
+                self.counter.update(symbols) # Counts cumulatively how many times the word has occurred in this
+                # sentence and so far
                 sents.append(symbols)
 
         return sents
@@ -86,6 +87,7 @@ class Vocab(object):
                 if cnt < self.min_freq: break
                 self.add_symbol(sym)
 
+            # assert list(self.idx2sym.values()) == list(range(0,10000))
             print('final vocab size {} from {} unique tokens'.format(
                 len(self), len(self.counter)))
 
@@ -98,7 +100,7 @@ class Vocab(object):
             for idx, line in enumerate(f):
                 if verbose and idx > 0 and idx % 500000 == 0:
                     print('    line {}'.format(idx))
-                symbols = self.tokenize(line, add_eos=add_eos,
+                symbols = self.tokenize(line, add_eos=add_eos, # Just splits line (sentence) into words and adds EOS
                     add_double_eos=add_double_eos)
                 encoded.append(self.convert_to_tensor(symbols))
 
@@ -129,7 +131,7 @@ class Vocab(object):
     def add_symbol(self, sym):
         if sym not in self.sym2idx:
             self.idx2sym.append(sym)
-            self.sym2idx[sym] = len(self.idx2sym) - 1
+            self.sym2idx[sym] = len(self.idx2sym) - 1 # num syms added already - 1 (result is like list indices)
 
     def get_sym(self, idx):
         assert 0 <= idx < len(self), 'Index {} out of range'.format(idx)

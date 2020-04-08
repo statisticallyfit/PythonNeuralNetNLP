@@ -970,32 +970,171 @@ assert (DATA_DIR / "train.txt").absolute() == (DATA_DIR / "train.txt")
 
 # %% codecell
 trainVocab: List[List[str]] = vocab.count_file(DATA_DIR / "train.txt")
+# The `Counter` object in `vocab` counts how many times the token / word has appeared (cumulatively for all the text)
+print(list(vocab.counter.items())[:20]) # some token counts
+# %% codecell
 validVocab: List[List[str]] = vocab.count_file(DATA_DIR / "valid.txt")
+print(list(vocab.counter.items())[:20]) # validation text has added 10 'aer' tokens, for instance
+# %% codecell
 testVocab: List[List[str]] = vocab.count_file(DATA_DIR / "test.txt")
-
+print(list(vocab.counter.items())[:20]) # some token counts
+# %% codecell
 print(f"trainVocab length = {len(trainVocab)}")
 print(f"validVocab length = {len(validVocab)}")
 print(f"testVocab length = {len(testVocab)}")
 
-
-
-print(trainVocab[3000:3100])
-print(validVocab[3000:3100])
-print(testVocab[3000:3100])
 # %% codecell
-lengthsTrain: List[int] = [len(lst) for lst in trainVocab]
+print(trainVocab[3000:3010])
+# %% codecell
+print(validVocab[3000:3010])
+# %% codecell
+print(testVocab[3000:3010])
+# %% codecell
+lengthsTrain: List[int] = [len(tokenList) for tokenList in trainVocab]
 print(lengthsTrain[100:300])
 print(lengthsTrain[4000:4200])
 
-lengthsValid: List[int] = [len(lst) for lst in validVocab]
+lengthsValid: List[int] = [len(tokenList) for tokenList in validVocab]
 print(lengthsValid[2000:2200])
 
-lengthsTest: List[int] = [len(lst) for lst in testVocab]
+lengthsTest: List[int] = [len(tokenList) for tokenList in testVocab]
 print(lengthsTest[2000:2200])
 
 
 # %% markdown
 # ### Train Step 4: Build the Vocabulary
-# Encoding the vocabulary text `List[List[str]]` into tensors of numbers:
+# Encoding the vocabulary text `List[List[str]]` into Tensor of numbers.
 # %% codecell
-trainData = vocab.encode_file(path = DATA_DIR / "train.txt", ordered = True, add_eos = True, add_double_eos = False)
+vocab.build_vocab()
+# %% markdown
+# Encoding the text into tensors:
+# %% codecell
+ADD_EOS, ADD_DOUBLE_EOS = True, False
+trainData: Tensor = vocab.encode_file(path = DATA_DIR / "train.txt", ordered = True, add_eos = ADD_EOS, add_double_eos = ADD_DOUBLE_EOS, verbose = True)
+trainData
+# %% codecell
+# Illustrating for the first line  how tokenization and encoding occur:
+print(trainVocab[0])
+# %% codecell
+line_0: str = ' '.join(trainVocab[0])
+line_0
+# %% codecell
+symbols_0: List[str] = vocab.tokenize(line = line_0, add_eos = ADD_EOS, add_double_eos = ADD_DOUBLE_EOS)
+print(symbols_0)
+# %% codecell
+tensor_0: Tensor = vocab.convert_to_tensor(symbols = symbols_0)
+tensor_0
+
+assert (tensor_0 == trainData[0:25]).all()
+
+
+# %% codecell
+validData: Tensor = vocab.encode_file(path = DATA_DIR / "valid.txt", ordered = True, add_eos = True, add_double_eos = False, verbose = True)
+validData
+# %% codecell
+testData: Tensor = vocab.encode_file(path = DATA_DIR / "test.txt", ordered = True, add_eos = True, add_double_eos = False, verbose = True)
+testData
+
+# %% markdown
+# ### Train Step 5: Prepare the Data Loaders
+# %% codecell
+device = torch.device("cpu") if not torch.cuda.is_available() else torch.device("cuda:0")
+
+
+trainIter: LMDataLoader = LMDataLoader(data = trainData,
+                                       batchSize = config.batchSize,
+                                       bptt = config.trainBPTT,
+                                       device = device)
+
+validIter: LMDataLoader = LMDataLoader(data = validData,
+                                       batchSize = config.batchSize,
+                                       bptt = config.trainBPTT,
+                                       device = device)
+
+testIter: LMDataLoader = LMDataLoader(data = testData,
+                                      batchSize = config.batchSize,
+                                      bptt = config.trainBPTT,
+                                      device = device)
+
+# %% markdown
+# Checking the sizes and shapes of the `batch`, `target`, and `diff` in the `trainLoaderIter`.
+# %% codecell
+# Studying the shapes for trainIter loader:
+
+# This is the output of the __iter__() method in LMDataLoader
+trainLoaderIter: List[Tuple[Tensor, Tensor, int]] = list(iter(trainIter))
+
+
+for batch, target, diff in trainLoaderIter[: len(trainLoaderIter) - 1]:
+    assert (batch.shape == target.shape == (config.trainBPTT, config.batchSize))
+    assert (batch == batch[0 : config.trainBPTT, :]).all()
+    assert diff == config.trainBPTT
+
+batchTargShapes = [(batch.shape, target.shape , diff) for batch, target, diff in trainLoaderIter]
+
+# Last one is the remainder sizes:
+print(batchTargShapes[:5], "\n...\n", batchTargShapes[3518:3522])
+
+# %% codecell
+allBatches: List[Tensor] = [b for b,_,_ in trainLoaderIter]
+allTargets: List[Tensor] = [t for _,t,_ in trainLoaderIter]
+allDiffs: List[Tensor] = [d for _,_,d in trainLoaderIter]
+
+# %% markdown
+# Checking for some batches that there is equality between the first column of that batch
+# %% codecell
+ITER: int = 0
+COL_ID: int = 0
+BATCH_TUPLE_POS: int = 0
+TARG_TUPLE_POS: int = 1
+
+print("First column of first batch in allBatches: \n\n", getBPTTCols(COL_ID, allBatches)[ITER])
+
+assert (allBatches[ITER] == trainLoaderIter[ITER][COL_ID]).all()
+
+trainLoaderIter[ITER][COL_ID]
+
+# %% codecell
+ITER: int = 1
+COL_ID: int = 0
+
+print("First column of SECOND batch in allBatches: \n\n",   getBPTTCols(COL_ID, allBatches)[ITER])
+
+assert (allBatches[ITER] == trainLoaderIter[ITER][COL_ID]).all()
+
+trainLoaderIter[ITER][COL_ID]
+
+# %% codecell
+ITER: int = 2
+COL_ID: int = 0
+
+print("First column of THIRD batch in allBatches: \n\n", getBPTTCols(COL_ID, allBatches)[ITER])
+
+assert (allBatches[ITER] == trainLoaderIter[ITER][COL_ID]).all()
+
+trainLoaderIter[ITER][COL_ID]
+# %% codecell
+ITER: int = 3
+COL_ID: int = 0
+
+print("First column of FOURTH batch in allBatches: \n\n", getBPTTCols(COL_ID, allBatches)[ITER])
+
+
+assert (allBatches[ITER] == trainLoaderIter[ITER][COL_ID]).all()
+
+trainLoaderIter[ITER][COL_ID]
+
+# %% codecell
+ITER: int = 8 # there are only 8 batches since config.batchSize == 8
+COL_ID: int = 0
+
+print("First column of SECOND batch in allBatches: \n\n", getBPTTCols(COL_ID, allBatches)[ITER])
+len(getBPTTCols(COL_ID, allBatches))
+
+assert (allBatches[ITER] == trainLoaderIter[ITER][COL_ID]).all()
+
+trainLoaderIter[ITER][COL_ID]
+
+# %% codecell
+print("Second column of second batch in allBatches: \n", batchBpttCols_1[1])
+trainLoaderIter[1][1]
