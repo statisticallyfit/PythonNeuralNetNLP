@@ -49,12 +49,14 @@ class LMDataLoader(data.DataLoader):
 
             # Meaning: # indexing along first dimension (means taking along the rows the rows that are between
             # iBatchStart and iBatchEnd, leaving the columns as they are
-            batchData: Tensor = self.data[iBatchStart : iBatchEnd, :]
-            # batchData shape == (iE-iS+1, B) == (BPTT, B)
+            batchData: Tensor = (self.data[iBatchStart : iBatchEnd, :]
+                                 .refine_names('S', 'B'))
+            # batchData shape == (iE-iS+1, B) == (BPTT, B) == (S, B), since S = seqLen = BPTT
 
             # Meaning: taking along the rows, indexed a row further than for batchData
-            target: Tensor = self.data[iBatchStart + 1 : iBatchEnd + 1, :]
-            # target shape == (iE+1 - iS + 1 + 1, B) == (iE-iS+1, B) == (BPTT, B)
+            target: Tensor = (self.data[iBatchStart + 1 : iBatchEnd + 1, :]
+                              .refine_names('S', 'B'))
+            # target shape == (iE+1 - iS + 1 + 1, B) == (iE-iS+1, B) == (BPTT, B) == (S, B) since S = seqLen = BPTT
 
             # Generate the sequence length as well for loss calculation later
             yield batchData, target, iBatchEnd - iBatchStart

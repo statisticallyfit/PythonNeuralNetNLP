@@ -227,7 +227,7 @@ class TransformerXL(nn.Module):
 
         ### Step 7: Update memory:
         # Ensure memory is treated as a constant and that we do not back propagate through them
-        newMemory: List[FloatTensor] = self.updateMemory(previousMemory = memory,
-                                                         hiddenStates = hiddenStates)
+        newMemory: List[FloatTensor] = self.updateMemory(previousMemory = memory, # elems shape == (M, B, E)
+                                                         hiddenStates = hiddenStates) # elems shape == (S, B, E)
 
         return {"loss": loss, "logits": logits, "memory": newMemory}

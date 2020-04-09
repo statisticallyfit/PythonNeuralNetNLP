@@ -263,6 +263,8 @@ vocab.build_vocab()
 # %% codecell
 ADD_EOS, ADD_DOUBLE_EOS = True, False
 trainData: Tensor = vocab.encode_file(path = DATA_DIR / "train.txt", ordered = True, add_eos = ADD_EOS, add_double_eos = ADD_DOUBLE_EOS, verbose = True)
+trainData.shape
+# %% codecell
 trainData
 # %% markdown
 # Illustrating for the first line  how tokenization and encoding occur:
@@ -319,7 +321,8 @@ trainLoaderIter: List[Tuple[Tensor, Tensor, int]] = list(iter(trainIter))
 
 
 for batch, target, diff in trainLoaderIter[: len(trainLoaderIter) - 1]:
-    assert (batch.shape == target.shape == (config.trainBPTT, config.batchSize))
+    assert batch.names == target.names == ('S', 'B')
+    assert batch.shape == target.shape == (config.trainBPTT, config.batchSize)
     assert (batch == batch[0 : config.trainBPTT, :]).all()
     assert diff == config.trainBPTT
 
@@ -517,7 +520,7 @@ def evaluate(model: TransformerXL, validLoader: DataLoader) -> float:
 
 # %% codecell
 
-lossChange: List[Tensor] = []
+trainLossChange: List[Tensor] = []
 validLossChange = [] # TODO type
 
 
@@ -552,7 +555,7 @@ def trainEpoch(numEpoch: int,
 
         resultLoss.backward()
         trainLoss += resultLoss.item()
-        lossChange.append(resultLoss.item())
+        trainLossChange.append(resultLoss.item())
 
         torch.nn.utils.clip_grad_norm_(parameters = model.parameters(),
                                        max_norm = config.clip)
@@ -656,7 +659,7 @@ def evaluateFinal(model: TransformerXL,
             resultLoss: Tensor = outDict["loss"] # tensor of single number
             resultMemories: List[Tensor] = outDict["memory"] # list of tensor memories
 
-            totaLoss += seqLen * resultLoss.item() # item inside tensor
+            totalLoss += seqLen * resultLoss.item() # item inside tensor
             totalLen += seqLen
 
         elapsedTime = time.time() - evalStartTime
@@ -708,3 +711,13 @@ train(model = transformerXLToTrain,
 # %% codecell
 resultDict: Dict[str, float] = evaluateFinal(model = transformerXLToTrain, validLoader = validIter)
 resultDict
+# %% markdown
+# ### Visualizing: Loss Change
+# Overall the loss is decreasing - both the `lossChange` and `validLossChange`
+# %% codecell
+import matplotlib.pyplot as plot
+# %matplotlib inline
+
+plt.plot(trainLossChange)
+# %% codecell
+plt.plot(validLossChange)
