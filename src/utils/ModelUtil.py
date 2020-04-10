@@ -1,9 +1,4 @@
 # All Imports
-from transformers import AutoModelForTokenClassification, AutoTokenizer
-from transformers import PreTrainedModel
-#from transformers import XLNetTokenizer, XLNetForTokenClassification
-#from transformers import BertTokenizer, BertForTokenClassification
-
 import torch
 import torch.nn as nn
 from torch import Size
@@ -166,7 +161,7 @@ def printChildInfo(model: nn.Module):
 
 # Parameters ------------------------------------------------------------------------
 
-def printLengthInfo(model: PreTrainedModel):
+def printLengthInfo(model: nn.Module):
     print(f"Number of parameters = {model.num_parameters()}")
     print(f"Length of parameter list = {len(list(model.parameters()))}")
     print(f"Number of modules = {len(list(model.named_modules()))}")
