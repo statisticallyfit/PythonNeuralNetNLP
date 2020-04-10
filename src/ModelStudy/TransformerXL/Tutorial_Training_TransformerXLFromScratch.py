@@ -1,4 +1,4 @@
-# %% markdown [markdown] [markdown]
+# %% markdown [markdown]
 # [Blog Source](https://synergo.atlassian.net/wiki/spaces/DataScience/pages/1511359082/Building+the+Transformer+XL+from+Scratch)
 # $\hspace{1em}$ | $\hspace{1em}$
 # [Code Source](https://github.com/keitakurita/Practical_NLP_in_PyTorch/blob/master/deep_dives/transformer_xl_from_scratch.ipynb)
@@ -20,23 +20,34 @@ from IPython.display import Image
 
 from typing import *
 
+
+
+# %% codecell
+import sys
+
 # Making files in utils folder visible here: to import my local print functions for nn.Module objects
 sys.path.append(os.getcwd() + "/src/utils/")
+
 from src.utils.ModelUtil import *
 
-# Preparing to show images:
-# import ImageResizer
+# For being able to import files within TransformerXL folder
+sys.path.append(os.getcwd() + '/src/ModelStudy/TransformerXL/')
 
-# Building pathname for images
+
+# %% codecell
+# Building pathname for images (from Colab)
+
 # Set current working directory
-os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP')
+
 imagePath = os.getcwd() # now path is the above
 print(f"imagePath = {imagePath}\n")
 imagePath += "/src/ModelStudy/images/"
 print(f"imagePath = {imagePath}")
 
 
-# %% markdown [markdown] [markdown]
+
+
+# %% markdown [markdown]
 # # Training the Transformer XL
 # %% codecell
 TESTING: bool = True
@@ -52,7 +63,7 @@ B = 3 # batch size
 E = 32 # embedding dimension
 I, F = 17, 71 # mhaInnerDim, ffInnerDim
 
-# %% markdown [markdown] [markdown]
+# %% markdown [markdown]
 # ### Train Step 1: Prepare Configurations
 # The configurations we will be using:
 # %% codecell
@@ -108,23 +119,23 @@ else:
 config
 
 
-# %% markdown [markdown] [markdown]
+# %% markdown [markdown]
 # ### Train Step 2: Preparing the Data Loader
 # Data loading for the Transformer Xl is similar to data loading for an RNN based language model but is different from standard data loading.
 #
 # **Data Loading for Transformer XL:** Suppose we chunked the input into sequence of `batchSize = 4` words to feed into the model. Remember that Transformer XL is stateful, meaning the computations of each minibatch are carried over to the next minibatch. ($\color{red}{\text{Question: is this referring to how } \texttt{newMemory } \text{is computed in the } \texttt{forward } \text{method of the } \texttt{TransformerXL} \text{class?}}$). For a minibatch of size `batchSize = 1`, handling this is simple. We just chunk the input and feed it into the model like this:
 # %% codecell
 Image(filename =imagePath + "batchsizeone_wrong.png")
-# %% markdown [markdown] [markdown]
+# %% markdown [markdown]
 # Now what happens if the `batchSize = 2`? We can't split the sentence like this (below) otherwise we would be breaking the dependencies between segments:
 # %% codecell
 Image(filename =imagePath + "batchsizetwo_wrong.png")
-# %% markdown [markdown] [markdown]
+# %% markdown [markdown]
 # The correct way to split the corpus with `batchSize = 2` is to feed the batches like this (below). We should have the sentences split across batches rather than keeping as much of the sentence within the batch, and letting the rest of the sentence split across the rest of the batch.
 # %% codecell
 Image(filename =imagePath + "batchsizetwo_correct.png")
 
-# %% markdown [markdown] [markdown]
+# %% markdown [markdown]
 # **General Rule:** Generalizing this, we first divide the corpus into `batchSize` length segments, then feed each segment piece by piece into the model.
 #
 # **Example of Batching and Feeding:** Suppose `batchSize = 4` and our entire corpus looks like this:
@@ -192,7 +203,7 @@ getBPTTCols(1, allBatches)
 getBPTTCols(2, allBatches)
 
 
-# %% markdown [markdown] [markdown]
+# %% markdown [markdown]
 # ### Train Step 3: Loading the Actual Data
 # Using the Penn Treebank dataset to benchmark our model:
 # %% codecell
@@ -204,7 +215,7 @@ dataPath: str = os.getcwd() + "/src/ModelStudy/TransformerXL/data/"
 DATA_DIR: Path = Path(dataPath) / DATASET_NAME_STR
 DATA_DIR.absolute()
 
-# %% markdown [markdown] [markdown]
+# %% markdown [markdown]
 # Using a utility vocabulary class borrowed directly from the Transformer XL repo to numericalize our inputs.
 # %% codecell
 # sys.path.append(os.getcwd() + "/src/ModelStudy/TransformerXL/utils/")
