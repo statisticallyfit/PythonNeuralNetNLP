@@ -452,7 +452,7 @@ def moduleWeightsInit(module: nn.Module) -> Tensor:
 
     elif classname.find('LayerNorm') != -1:
         if hasattr(module, 'weight'):
-        # Fill the argument tensor with normal random values with mu = 1, sigma = 0.02
+            # Fill the argument tensor with normal random values with mu = 1, sigma = 0.02
             nn.init.normal_(tensor = module.weight, mean = 1.0, std = 0.02)
         if hasattr(module, 'bias') and module.bias is not None:
             initBias(module.bias)
@@ -712,26 +712,3 @@ if torch.cuda.is_available():
     transformerXLToTrain.cuda()
 
 transformerXLToTrain.apply(fn = moduleWeightsInit)
-
-
-# %% codecell
-train(model = transformerXLToTrain,
-      trainLoader = trainIter,
-      validLoader = validIter
-      )
-
-# %% markdown [markdown]
-# Now evaluating:
-# %% codecell
-resultDict: Dict[str, float] = evaluateFinal(model = transformerXLToTrain, validLoader = validIter)
-resultDict
-# %% markdown [markdown]
-# ### Visualizing: Loss Change
-# Overall the loss is decreasing - both the `lossChange` and `validLossChange`
-# %% codecell
-import matplotlib.pyplot as plot
-# %matplotlib inline
-
-plt.plot(trainLossChange)
-# %% codecell
-plt.plot(validLossChange)
