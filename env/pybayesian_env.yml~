@@ -63,6 +63,7 @@ dependencies:
   - matplotlib
   - seaborn
   - plotly
+  - pygraphviz>=1.5
 
 
   # ==============
@@ -80,7 +81,7 @@ dependencies:
       - causalnex>=0.5.0 # put here in pip to get version 0.5.0 as opposed to 0.4.3
       - pydot
       - svgwrite
-      - pygraphviz>=1.5
+      ###- pygraphviz>=1.5
       - daft
 
 prefix: /development/bin/python/conda3_ana/envs/pybayesian_env

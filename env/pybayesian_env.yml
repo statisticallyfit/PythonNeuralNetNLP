@@ -30,7 +30,7 @@ dependencies:
   - scikit-learn
   - pytorch
   - pytorch-pretrained-bert
-  - tensorflow>=1.14.0
+  - tensorflow>=1.14.0 #### TOFIX: say == so it doesn't install tflow 2.0
   - tensorboard
   - tensorflow-probability
 
