@@ -22,7 +22,7 @@ from src.utils.Clock import *
 
 
 # %% markdown
-# # 1. Structure Learning
+# # 1/ Structure Learning
 # ## Structure from Domain Knowledge
 # We can manually define a structure model by specifying the relationships between different features.
 # First we must create an empty structure model.
@@ -477,6 +477,7 @@ discrData: DataFrame = data.copy()
 dataVals = {var: data[var].unique() for var in data.columns}
 dataVals
 
+
 # %% codecell
 failuresMap = {v: 'no_failure' if v == [0] else 'yes_failure'
                for v in dataVals['failures']} # 0, 1, 2, 3 (number of failures)
@@ -543,6 +544,14 @@ discrData['G3'] = discrData['G3'].map(G3Map)
 discrData['G3']
 
 
+
+
+# %% codecell
+# Now for reference later get the discrete data values also:
+discrDataVals = {var: discrData[var].unique() for var in discrData.columns}
+discrDataVals
+
+
 # %% markdown
 # ## 5. Train / Test Split
 # Must train and test split data to help validate findings.
@@ -556,23 +565,36 @@ train, test = train_test_split(discrData,
 
 
 # %% markdown
-# # Model Probability
+# # 3/ Model Probability
 # With the learnt structure model and discretised data, we can now fit the probability distribution of the Bayesian Network.
 #
 # **First Step:** The first step is to specify all the states that each node can take. Can be done from data or can provide dictionary of node values. Here, we use the full dataset to avoid cases where states in our test set do not exist in the training set. In the real world, those states would need to be provided using the dictionary method.
 # %% codecell
-bayesNetNodeStates: BayesianNetwork = bayesNet.fit_node_states(df = discrData)
+import copy
+
+
+# First 'copying' the object so previous state is preserved:
+# SOURCE: https://www.geeksforgeeks.org/copy-python-deep-copy-shallow-copy/
+bayesNetNodeStates = copy.deepcopy(bayesNet)
+assert not bayesNetNodeStates == bayesNet, "Deepcopy bayesnet object must work"
+# bayesNetNodeStates = BayesianNetwork(bayesNet.structure)
+
+bayesNetNodeStates: BayesianNetwork = bayesNetNodeStates.fit_node_states(df = discrData)
 bayesNetNodeStates.node_states
-
-
 # %% markdown
-# ## 1. Fit Conditional Probability Distributions
+# ## Fit Conditional Probability Distributions
 # The `fit_cpds` method of `BayesianNetwork` accepts a dataset to learn the conditional probability distributions (CPDs) of **each node** along with a method of how to do this fit.
 # %% codecell
-bayesNetCPD: BayesianNetwork = bayesNetNodeStates.fit_cpds(data = train,
-                                                           method = "BayesianEstimator",
-                                                           bayes_prior = "K2")
-bayesNetNodeStates.cpds
+# Copying the object information
+bayesNetCPD: BayesianNetwork = copy.deepcopy(bayesNetNodeStates)
+
+# Fitting the CPDs
+bayesNetCPD: BayesianNetwork = bayesNetCPD.fit_cpds(data = train,
+                                                    method = "BayesianEstimator",
+                                                    bayes_prior = "K2")
+
+# %% codecell
+bayesNetCPD.cpds
 
 # %% codecell
 # The size of the tables depends on how many connections a node has
@@ -597,11 +619,228 @@ bayesNetCPD.cpds['G2']
 bayesNetCPD.cpds['G3']
 
 # %% markdown
-# TODO [`loc` function multi-indexed CPD dictionarieis ... ?](https://hyp.is/_95epIOuEeq_HdeYjzCPXQ/causalnex.readthedocs.io/en/latest/03_tutorial/03_tutorial.html)
+# The CPD dictionaries are multiindexed so the `loc` functino can be a useful way to interact with them:
+# %% codecell
+# TODO: https://hyp.is/_95epIOuEeq_HdeYjzCPXQ/causalnex.readthedocs.io/en/latest/03_tutorial/03_tutorial.html
+discrData.loc[1:5,['address', 'G1', 'paid', 'higher']]
+
 
 
 # %% markdown
-# ## 2. Predict the State given the Input Data
+# ## Predict the State given the Input Data
 # The `predict` method of `BayesianNetwork` allos us to make predictions based on the data using the learnt network. For example we want to predict if a student passes of failes the exam based on the input data. Consider an incoming student data like this:
 # %% codecell
-discrData.loc
+# Row number 18
+discrData.loc[18, discrData.columns != 'G1']
+# %% markdown
+# Based on this data, want to predict if this particular student (in row 18) will succeed on their exam. Intuitively expect this student not to succeed because they spend shorter amount of study time and have failed in the past.
+#
+# There are two kinds of prediction methods:
+# * [`predict_probability(data, node)`](https://causalnex.readthedocs.io/en/latest/source/api_docs/causalnex.network.BayesianNetwork.html#causalnex.network.BayesianNetwork.predict_probability): Predict the **probability of each possible state of a node**, based on some input data.
+# * [`predict(data, node)`](https://causalnex.readthedocs.io/en/latest/source/api_docs/causalnex.network.BayesianNetwork.html#causalnex.network.BayesianNetwork.predict): Predict the **state of a node ** based on some input data, using the Bayesian Network.
+# %% codecell
+predictionProbs = bayesNetCPD.predict_probability(data = discrData, node = 'G1')
+predictionProbs
+# %% codecell
+# Student 18 passes with probability 0.358, and fails with prob 0.64
+predictionProbs.loc[18, :]
+# %% codecell
+# This function does predictions for ALL observations (all students)
+predictions = bayesNetCPD.predict(data = discrData, node = 'G1')
+predictions
+# %% codecell
+predictions.loc[18, :]
+# %% markdown
+# Compare this prediction to the ground truth:
+# %% codecell
+print(f"Student 18 is predicted to {predictions.loc[18, 'G1_prediction']}")
+print(f"Ground truth for student 18 is {discrData.loc[18, 'G1']}")
+
+
+# %% markdown
+# # 4/ Model Quality
+# To evaluate the quality of the model that has been learned, CausalNex supports two main approaches: Classification Report and Reciever Operating Characteristics (ROC) / Area Under the ROC Curve (AUC).
+# ## Measure 1: Classification Report
+# To obtain a classification report using a BN, we need to provide a test set and the node we are trying to classify. The classification report predicts the target node for all rows (observations) in the test set and evaluate how well those predictions are made, via the model.
+# %% codecell
+from causalnex.evaluation import classification_report
+
+classification_report(bn = bayesNetCPD, data = test, node = 'G1')
+# %% markdown
+# **Interpret Results of classification report:** this report shows that the model can classify reasonably well whether a student passs the exam. For predictions where the student fails, the precision is adequate but recall is bad. This implies that we can rely on predictions for `G1_Fail` but we are likely to miss some of the predictions we should have made. Perhaps these missing predictions are a result of something missing in our structure
+# * ALERT - explore graph structure when the recall is bad
+#
+#
+# ## ROC / AUC
+# The ROC and AUC can be obtained with `roc_auc` method within CausalNex metrics module.
+# ROC curve is computed by micro-averaging predictions made across all states (classes) of the target node.
+# %% codecell
+from causalnex.evaluation import roc_auc
+
+roc, auc = roc_auc(bn = bayesNetCPD, data = test, node = 'G1')
+
+print(f"ROC = \n{roc}\n")
+print(f"AUC = {auc}")
+# %% markdown
+# High value of AUC gives confidence in model performance
+#
+#
+#
+# # 5/ Querying Marginals
+# After iterating over our model structure, CPDs, and validating our model quality, we can **query our model under different observations** to gain insights.
+#
+# ## Baseline Marginals
+# To query the model for baseline marginals that reflect the population as a whole, a `query` method can be used.
+#
+# **First:** update the model using the complete dataset since the one we currently have is built only from training data.
+# %% codecell
+# Copy object:
+bayesNetFull = copy.deepcopy(bayesNetCPD)
+
+# Fitting CPDs with full data
+bayesNetFull: BayesianNetwork = bayesNetFull.fit_cpds(data = discrData,
+                                                     method = "BayesianEstimator",
+                                                     bayes_prior = "K2")
+# %% markdown
+# Get warnings, showing we are replacing the previously existing CPDs
+#
+# **Second**: For inference, must create a new `InferenceEngine` from our `BayesianNetwork`, which lets us query the model. The query method will compute the marginal likelihood of all states for all nodes. Query lets us get the marginal distributions, marginalizing to get rid of the conditioning variable(s) for each node variable.
+
+# %% codecell
+from causalnex.inference import InferenceEngine
+
+
+eng = InferenceEngine(bn = bayesNetFull)
+eng
+# %% markdown
+# Query the baseline marginal distributions, which means querying marginals **as learned from data**:
+# %% codecell
+marginalDistLearned: Dict[str, Dict[str, float]] = eng.query()
+marginalDistLearned
+# %% codecell
+marginalDistLearned['address']
+# %% codecell
+marginalDistLearned['G1']
+
+# %% markdown
+# Output tells us that `P(G1=Fail) ~ 0.25` and `P(G1 = Pass) ~ 0.75`. As a quick sanity check can compute what proportion of our data are `Fail` and `Pass`, should give nearly the same result:
+# %% codecell
+import numpy as np
+
+labels, counts = np.unique(discrData['G1'], return_counts = True)
+
+print(list(zip(labels, counts)))
+print('\nProportion failures = {}'.format(counts[0] / sum(counts)))
+print('\nProportion passes = {}'.format(counts[1] / sum(counts)))
+
+# %% codecell
+
+
+
+# %% markdown
+# ## Marginals After Observations
+# Can query the marginal likelihood of states in our network, **given observations**.
+#
+# $\color{red}{\text{TODO}}$ is this using the Bayesian update rule?
+#
+# These observations can be made anywhere in the network and their impact will be propagated through to the node of interest.
+# %% codecell
+# Reminding of the data types for each variable:
+discrDataVals
+# %% codecell
+# Reminder of nodes you CAN query (for instance putting 'health' in the dictionary argument of 'query' will give us an error)
+bayesNetFull.nodes
+# %% codecell
+marginalDistObs_biasPass: Dict[str, Dict[str, float]] = eng.query({'studytime': 'long_studytime', 'paid':'yes', 'higher':'yes', 'absences':'No-absence', 'failures':'no_failure'})
+
+# Seeing if biasing in favor of failing will influence the observed marginals:
+marginalDistObs_biasFail: Dict[str, Dict[str, float]] = eng.query({'studytime': 'short_studytime', 'paid':'no', 'higher':'no', 'absences':'High-absence', 'failures': 'yes_failure'})
+
+# %% codecell
+# Higher probability of passing when have the above observations, since they are another set of observations in favor of passing.
+marginalDistLearned['G1']
+# %% codecell
+marginalDistObs_biasPass['G1']
+# %% codecell
+marginalDistObs_biasFail['G1']
+
+# %% codecell
+marginalDistLearned['G2']
+# %% codecell
+# G2 and G3 nodes don't show bias probability because they are not many conditionals on them.
+marginalDistObs_biasPass['G2']
+# %% codecell
+marginalDistObs_biasFail['G2']
+
+# %% codecell
+marginalDistLearned['G3']
+# %% codecell
+marginalDistObs_biasPass['G3']
+# %% codecell
+marginalDistObs_biasFail['G3']
+
+# %% markdown
+# Looking at difference in likelihood of `G1` based on just `studytime`. See that students who study longer are more likely to pass on their exam:
+# %% codecell
+marginalDist_short = eng.query({'studytime':'short_studytime'})
+marginalDist_long = eng.query({'studytime': 'long_studytime'})
+
+print('Marginal G1 | Short Studytime', marginalDist_short['G1'])
+print('Marginal G1 | Long Studytime', marginalDist_long['G1'])
+
+# %% markdown
+# ## Interventions with Do Calculus
+# Do-Calculus, allows us to specify interventions.
+#
+# ### Updating a Node Distribution
+# Can apply an intervention to any node in our data, updating its distribution using a `do` operator, which means asking our mdoel "what if" something were different.
+#
+# For example, can ask what would happen if 100% of students wanted to go on to do higher education.
+# %% codecell
+print("'higher' marginal distribution before DO: ", eng.query()['higher'])
+
+# Make the intervention on the network
+eng.do_intervention(node = 'higher', state = {'yes': 1.0, 'no': 0.0}) # all students yes
+
+print("'higher' marginal distribution after DO: ", eng.query()['higher'])
+# %% markdown
+# ### Resetting a Node Distribution
+# We can reset any interventions that we make using `reset_intervention` method and providing the node we want to reset:
+# %% codecell
+eng.reset_do('higher')
+
+eng.query()['higher'] # same as before
+
+
+# %% markdown
+# ### Effect of DO on Marginals
+# We can use `query` to find the effect that an intervention has on our marginal likelihoods of OTHER variables, not just on the INTERVENED variable.
+#
+# **Example 1:** change 'higher' and check grade 'G1' (how the likelihood of achieving a pass changes if 100% of students wanted to do higher education)
+#
+# Answer: if 100% of students wanted to do higher education (as opposed to 90% in our data population) , then we estimate the pass rate would increase from 74.7% to 79.3%.
+# %% codecell
+print('marginal G1', eng.query()['G1'])
+
+eng.do_intervention(node = 'higher', state = {'yes':1.0, 'no': 0.0})
+print('updated marginal G1', eng.query()['G1'])
+# %% codecell
+# This is how we know it is 90% of the population that does higher education:
+eng.reset_do('higher')
+
+eng.query()['higher']
+# %% codecell
+# OR:
+labels, counts = np.unique(discrData['higher'], return_counts = True)
+counts / sum(counts)
+
+
+# %% markdown
+# **Example 2:** change 'higher' and check grade 'G1' (how the likelihood of achieving a pass changes if 80% of students wanted to do higher education)
+# %% codecell
+eng.reset_do('higher')
+
+print('marginal G1', eng.query()['G1'])
+
+eng.do_intervention(node = 'higher', state = {'yes':0.8, 'no': 0.2})
+print('updated marginal G1', eng.query()['G1']) # fail is actually higher!!!!
