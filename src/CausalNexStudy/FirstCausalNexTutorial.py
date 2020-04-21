@@ -4,24 +4,26 @@ from typing import *
 
 # %% codecell
 os.getcwd()
+# Setting the baseline:
+os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP')
+
 
 curPath: str = os.getcwd() + "/src/CausalNexStudy/"
-curPath
-dataPath: str = curPath + "data/student/"
-dataPath
 
+dataPath: str = curPath + "data/student/"
+
+
+print("curPath = ", curPath, "\n")
+print("dataPath = ", dataPath, "\n")
 # %% codecell
 import sys
-
 # Making files in utils folder visible here: to import my local print functions for nn.Module objects
 sys.path.append(os.getcwd() + "/src/utils/")
 # For being able to import files within CausalNex folder
 sys.path.append(curPath)
 
-from src.utils.Clock import *
-
-
-# %% markdown
+sys.path
+# %% markdown [markdown]
 # # 1/ Structure Learning
 # ## Structure from Domain Knowledge
 # We can manually define a structure model by specifying the relationships between different features.
@@ -31,7 +33,7 @@ from causalnex.structure import StructureModel
 
 structureModel: StructureModel = StructureModel()
 structureModel
-# %% markdown
+# %% markdown [markdown]
 # Next we can specify the relationships between features. Let us assume that experts tell us the following causal relationships are known (where G1 is grade in semester 1):
 #
 # * `health` $\longrightarrow$ `absences`
@@ -42,7 +44,7 @@ structureModel.add_edges_from([
     ('health', 'G1')
 ])
 
-# %% markdown
+# %% markdown [markdown]
 # ## Visualizing the Structure
 # %% codecell
 structureModel.edges
@@ -57,13 +59,13 @@ viz = plot_structure(
     graph_attributes={"scale": "0.5"},
     all_node_attributes=NODE_STYLE.WEAK,
     all_edge_attributes=EDGE_STYLE.WEAK)
-filename_first = curPath + "structure_model.png"
+filename_first = curPath + "structure_model_first.png"
 
 viz.draw(filename_first)
 Image(filename_first)
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## Learning the Structure
 # Can use CausalNex to learn structure model from data, when number of variables grows or domain knowledge does not exist. (Algorithm used is the [NOTEARS algorithm](https://arxiv.org/abs/1803.01422)).
 # * NOTE: not always necessary to train / test split because structure learning should be a joint effort between machine learning and domain experts.
@@ -79,7 +81,7 @@ fileName: str = dataPath + 'student-por.csv'
 data: DataFrame = pd.read_csv(fileName, delimiter = ';')
 
 data.head(10)
-# %% markdown
+# %% markdown [markdown]
 # Can see the features are numeric and non-numeric. Can drop sensitive features like gender that we do not want to include in our model.
 # %% codecell
 iDropCol: List[int] = ['school','sex','age','Mjob', 'Fjob','reason','guardian']
@@ -87,7 +89,7 @@ iDropCol: List[int] = ['school','sex','age','Mjob', 'Fjob','reason','guardian']
 data = data.drop(columns = iDropCol)
 data.head(5)
 
-# %% markdown
+# %% markdown [markdown]
 # Next we want tomake our data numeric since this is what the NOTEARS algorithm expects. We can do this by label-encoding the non-numeric variables (to make them also numeric, like the current numeric variables).
 # %% codecell
 import numpy as np
@@ -158,11 +160,23 @@ testMultivals: List[str] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 
 assert list(labelEncoder.fit_transform(y = testMultivals)) == [0, 1, 2, 3, 4, 5, 6, 7]
 
-# %% markdown
+# %% markdown [markdown]
 # Now apply the NOTEARS algo to learn the structure:
 
+
+
+# %% codecell
+
+#from src.utils.Clock import *
+
+def clock(startTime, endTime):
+    elapsedTime = endTime - startTime
+    elapsedMins = int(elapsedTime / 60)
+    elapsedSecs = int(elapsedTime - (elapsedMins * 60))
+    return elapsedMins, elapsedSecs
 # %% codecell
 from causalnex.structure.notears import from_pandas
+import time
 
 startTime: float = time.time()
 
@@ -186,7 +200,7 @@ Image(filename_learned)
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # Can apply thresholding here to prune the algorithm's resulting fully connected graph. Thresholding can be applied either by specifying the value for the parameter `w_threshold` in `from_pandas` or we can remove the edges by calling the structure model function `remove_edges_below_threshold`.
 # %% codecell
 structureModelPruned = structureModelLearned.copy()
@@ -203,7 +217,7 @@ filename_pruned = curPath + "structure_model_pruned.png"
 viz.draw(filename_pruned)
 Image(filename_pruned)
 
-# %% markdown
+# %% markdown [markdown]
 # Comparing the freshly learned model with the pruned model:
 # %% codecell
 structureModelLearned.adj
@@ -324,7 +338,7 @@ list(structureModelPruned.get_target_subgraph(node = 'absences').adjacency())
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # In the above structure some relations appear intuitively correct:
 # * `Pstatus` affects `famrel` - if parents live apart, the quality of family relationship may be poor as a result
 # * `internet` affects `absences` - the presence of internet at home may cause stduents to skip class.
@@ -340,7 +354,7 @@ list(structureModelPruned.get_target_subgraph(node = 'absences').adjacency())
 # NOT modifying the previous `structureModel`.
 structureModel: StructureModel = from_pandas(structData, tabu_edges=[("higher", "Medu")], w_threshold=0.8)
 
-# %% markdown
+# %% markdown [markdown]
 # Now the `higher --> Medu` relationship is **no longer** in the graph.
 # %% codecell
 # Now visualize it:
@@ -354,7 +368,7 @@ viz.draw(filename_noHigherMedu)
 Image(filename_noHigherMedu)
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## Modifying the Structure (after structure learning)
 # To correct erroneous relationships, we can incorporate domain knowledge into the model after structure learning. We can modify the structure model through adding and deleting the edges. For example we can add and remove edges with the function `add_edge(u_of_edges, v_of_edges)` that adds a causal relationship from `u` to `v`, where
 # * `u_of_edge` = causal node
@@ -395,7 +409,7 @@ structModeTestEdges.remove_edge(u ='higher', v ='famrel')
 assert not structModeTestEdges.has_edge(u ='higher', v ='famrel')
 
 
-# %% markdown
+# %% markdown [markdown]
 # Can now visualize the updated structure:
 # %% codecell
 viz = plot_structure(
@@ -421,10 +435,10 @@ viz = plot_structure(
     graph_attributes={"scale": "0.5"},
     all_node_attributes=NODE_STYLE.WEAK,
     all_edge_attributes=EDGE_STYLE.WEAK)
-filename_updatEdge = curPath + "structureModel_updated.png"
+filename_updateEdge = curPath + "structureModel_updated.png"
 viz.draw(filename_updateEdge)
 Image(filename_updateEdge)
-# %% markdown
+# %% markdown [markdown]
 # Can see there are two separate subgraphs in the above plot: `Dalc -> Walc` and the other big subgraph. We can retrieve the largest subgraph easily by calling `get_largest_subgraph()`:
 # %% codecell
 newStructModel: StructureModel = structureModel.get_largest_subgraph()
@@ -446,7 +460,7 @@ assert newStructModel.get_target_subgraph(node = 'G1').adj == newStructModel.get
 # NOTE key way how to find all unique subgraphs: going by nodes, for each node, if the current subgraph adjacency equals any other adjacency in the list, scrap that subgraph.
 # %% codecell
 
-# %% markdown
+# %% markdown [markdown]
 # After deciding on how the final structure model should look, we can instantiate a `BayesianNetwork`:
 # %% codecell
 from causalnex.network import BayesianNetwork
@@ -460,7 +474,7 @@ bayesNet.edges
 assert set(bayesNet.nodes) == set(list(iter(newStructModel.node)))
 bayesNet.nodes
 
-# %% markdown
+# %% markdown [markdown]
 # Can now learn the conditional probability distribution of different features in this `BayesianNetwork`
 #
 # # 2/ Fitting the Conditional Distribution of the Bayesian Network
@@ -486,7 +500,7 @@ failuresMap
 studytimeMap = {v: 'short_studytime' if v in [1,2] else 'long_studytime'
                 for v in dataVals['studytime']}
 studytimeMap
-# %% markdown
+# %% markdown [markdown]
 # Once we have defined the maps `{oldValue: newValue}` we can update each feature, applying the map transformation. The `map` function applies the given dictionary as a rule to the called dictionary.
 # %% codecell
 discrData['failures'] = discrData['failures'].map(failuresMap)
@@ -495,7 +509,7 @@ discrData['failures']
 discrData['studytime'] = discrData['studytime'].map(studytimeMap)
 discrData['studytime']
 
-# %% markdown
+# %% markdown [markdown]
 # ## 3. Discretising Numeric Features
 # To make numeric features categorical, they must first by discretised. The `causalnex.discretiser.Discretiser` helper class supports several discretisation methods.
 # Here, the `fixed` method will be applied, providing static values that define the bucket boundaries. For instance, `absences` will be discretised into buckets `< 1`, `1 to 9`, and `>= 10`. Each bucket will be labelled as an integer, starting from zero.
@@ -520,7 +534,7 @@ assert (np.unique(discrData['G2']) == np.array([0,1])).all()
 discrData['G3'] = Discretiser(method = 'fixed', numeric_split_points = [10]).transform(data = data['G3'].values)
 assert (np.unique(discrData['G3']) == np.array([0,1])).all()
 
-# %% markdown
+# %% markdown [markdown]
 # ## 4. Create Labels for Numeric Features
 # To make the discretised categories more readable, we can map the category labels onto something more meaningful in the same way we mapped category feature values.
 # %% codecell
@@ -552,7 +566,7 @@ discrDataVals = {var: discrData[var].unique() for var in discrData.columns}
 discrDataVals
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## 5. Train / Test Split
 # Must train and test split data to help validate findings.
 # Split 90% train and 10% test.
@@ -564,7 +578,7 @@ train, test = train_test_split(discrData,
                                random_state = 7)
 
 
-# %% markdown
+# %% markdown [markdown]
 # # 3/ Model Probability
 # With the learnt structure model and discretised data, we can now fit the probability distribution of the Bayesian Network.
 #
@@ -581,7 +595,7 @@ assert not bayesNetNodeStates == bayesNet, "Deepcopy bayesnet object must work"
 
 bayesNetNodeStates: BayesianNetwork = bayesNetNodeStates.fit_node_states(df = discrData)
 bayesNetNodeStates.node_states
-# %% markdown
+# %% markdown [markdown]
 # ## Fit Conditional Probability Distributions
 # The `fit_cpds` method of `BayesianNetwork` accepts a dataset to learn the conditional probability distributions (CPDs) of **each node** along with a method of how to do this fit.
 # %% codecell
@@ -618,7 +632,7 @@ bayesNetCPD.cpds['G2']
 # %% codecell
 bayesNetCPD.cpds['G3']
 
-# %% markdown
+# %% markdown [markdown]
 # The CPD dictionaries are multiindexed so the `loc` functino can be a useful way to interact with them:
 # %% codecell
 # TODO: https://hyp.is/_95epIOuEeq_HdeYjzCPXQ/causalnex.readthedocs.io/en/latest/03_tutorial/03_tutorial.html
@@ -626,13 +640,13 @@ discrData.loc[1:5,['address', 'G1', 'paid', 'higher']]
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## Predict the State given the Input Data
 # The `predict` method of `BayesianNetwork` allos us to make predictions based on the data using the learnt network. For example we want to predict if a student passes of failes the exam based on the input data. Consider an incoming student data like this:
 # %% codecell
 # Row number 18
 discrData.loc[18, discrData.columns != 'G1']
-# %% markdown
+# %% markdown [markdown]
 # Based on this data, want to predict if this particular student (in row 18) will succeed on their exam. Intuitively expect this student not to succeed because they spend shorter amount of study time and have failed in the past.
 #
 # There are two kinds of prediction methods:
@@ -650,14 +664,14 @@ predictions = bayesNetCPD.predict(data = discrData, node = 'G1')
 predictions
 # %% codecell
 predictions.loc[18, :]
-# %% markdown
+# %% markdown [markdown]
 # Compare this prediction to the ground truth:
 # %% codecell
 print(f"Student 18 is predicted to {predictions.loc[18, 'G1_prediction']}")
 print(f"Ground truth for student 18 is {discrData.loc[18, 'G1']}")
 
 
-# %% markdown
+# %% markdown [markdown]
 # # 4/ Model Quality
 # To evaluate the quality of the model that has been learned, CausalNex supports two main approaches: Classification Report and Reciever Operating Characteristics (ROC) / Area Under the ROC Curve (AUC).
 # ## Measure 1: Classification Report
@@ -666,7 +680,7 @@ print(f"Ground truth for student 18 is {discrData.loc[18, 'G1']}")
 from causalnex.evaluation import classification_report
 
 classification_report(bn = bayesNetCPD, data = test, node = 'G1')
-# %% markdown
+# %% markdown [markdown]
 # **Interpret Results of classification report:** this report shows that the model can classify reasonably well whether a student passs the exam. For predictions where the student fails, the precision is adequate but recall is bad. This implies that we can rely on predictions for `G1_Fail` but we are likely to miss some of the predictions we should have made. Perhaps these missing predictions are a result of something missing in our structure
 # * ALERT - explore graph structure when the recall is bad
 #
@@ -681,7 +695,7 @@ roc, auc = roc_auc(bn = bayesNetCPD, data = test, node = 'G1')
 
 print(f"ROC = \n{roc}\n")
 print(f"AUC = {auc}")
-# %% markdown
+# %% markdown [markdown]
 # High value of AUC gives confidence in model performance
 #
 #
@@ -701,7 +715,7 @@ bayesNetFull = copy.deepcopy(bayesNetCPD)
 bayesNetFull: BayesianNetwork = bayesNetFull.fit_cpds(data = discrData,
                                                      method = "BayesianEstimator",
                                                      bayes_prior = "K2")
-# %% markdown
+# %% markdown [markdown]
 # Get warnings, showing we are replacing the previously existing CPDs
 #
 # **Second**: For inference, must create a new `InferenceEngine` from our `BayesianNetwork`, which lets us query the model. The query method will compute the marginal likelihood of all states for all nodes. Query lets us get the marginal distributions, marginalizing to get rid of the conditioning variable(s) for each node variable.
@@ -712,7 +726,7 @@ from causalnex.inference import InferenceEngine
 
 eng = InferenceEngine(bn = bayesNetFull)
 eng
-# %% markdown
+# %% markdown [markdown]
 # Query the baseline marginal distributions, which means querying marginals **as learned from data**:
 # %% codecell
 marginalDistLearned: Dict[str, Dict[str, float]] = eng.query()
@@ -722,7 +736,7 @@ marginalDistLearned['address']
 # %% codecell
 marginalDistLearned['G1']
 
-# %% markdown
+# %% markdown [markdown]
 # Output tells us that `P(G1=Fail) ~ 0.25` and `P(G1 = Pass) ~ 0.75`. As a quick sanity check can compute what proportion of our data are `Fail` and `Pass`, should give nearly the same result:
 # %% codecell
 import numpy as np
@@ -737,7 +751,7 @@ print('\nProportion passes = {}'.format(counts[1] / sum(counts)))
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## Marginals After Observations
 # Can query the marginal likelihood of states in our network, **given observations**.
 #
@@ -779,7 +793,7 @@ marginalDistObs_biasPass['G3']
 # %% codecell
 marginalDistObs_biasFail['G3']
 
-# %% markdown
+# %% markdown [markdown]
 # Looking at difference in likelihood of `G1` based on just `studytime`. See that students who study longer are more likely to pass on their exam:
 # %% codecell
 marginalDist_short = eng.query({'studytime':'short_studytime'})
@@ -788,7 +802,7 @@ marginalDist_long = eng.query({'studytime': 'long_studytime'})
 print('Marginal G1 | Short Studytime', marginalDist_short['G1'])
 print('Marginal G1 | Long Studytime', marginalDist_long['G1'])
 
-# %% markdown
+# %% markdown [markdown]
 # ## Interventions with Do Calculus
 # Do-Calculus, allows us to specify interventions.
 #
@@ -803,7 +817,7 @@ print("'higher' marginal distribution before DO: ", eng.query()['higher'])
 eng.do_intervention(node = 'higher', state = {'yes': 1.0, 'no': 0.0}) # all students yes
 
 print("'higher' marginal distribution after DO: ", eng.query()['higher'])
-# %% markdown
+# %% markdown [markdown]
 # ### Resetting a Node Distribution
 # We can reset any interventions that we make using `reset_intervention` method and providing the node we want to reset:
 # %% codecell
@@ -812,7 +826,7 @@ eng.reset_do('higher')
 eng.query()['higher'] # same as before
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Effect of DO on Marginals
 # We can use `query` to find the effect that an intervention has on our marginal likelihoods of OTHER variables, not just on the INTERVENED variable.
 #
@@ -835,7 +849,7 @@ labels, counts = np.unique(discrData['higher'], return_counts = True)
 counts / sum(counts)
 
 
-# %% markdown
+# %% markdown [markdown]
 # **Example 2:** change 'higher' and check grade 'G1' (how the likelihood of achieving a pass changes if 80% of students wanted to do higher education)
 # %% codecell
 eng.reset_do('higher')
