@@ -1,3 +1,12 @@
+# %% markdown
+# [Tutorial source](https://causalnex.readthedocs.io/en/latest/03_tutorial/03_tutorial.html)
+#
+# # [A First CausalNex Tutorial](https://causalnex.readthedocs.io/en/latest/03_tutorial/03_tutorial.html)
+# Using data from [here](https://archive.ics.uci.edu/ml/datasets/Student+Performance), to study at various influences
+# on whether a student will pass or fail an exam.
+#
+
+
 # %% codecell
 import os
 from typing import *
@@ -167,14 +176,8 @@ assert list(labelEncoder.fit_transform(y = testMultivals)) == [0, 1, 2, 3, 4, 5,
 
 # %% codecell
 
-#from src.utils.Clock import *
+from src.utils.Clock import *
 
-def clock(startTime, endTime):
-    elapsedTime = endTime - startTime
-    elapsedMins = int(elapsedTime / 60)
-    elapsedSecs = int(elapsedTime - (elapsedMins * 60))
-    return elapsedMins, elapsedSecs
-# %% codecell
 from causalnex.structure.notears import from_pandas
 import time
 
