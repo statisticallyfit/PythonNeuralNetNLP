@@ -55,7 +55,8 @@ from pandas.core.frame import DataFrame
 
 
 fileName: str = dataPath + 'usecase#1.csv'
-data: DataFrame = pd.read_csv(fileName, delimiter = ',')
+#data: DataFrame = pd.read_csv(fileName, delimiter = ',')
+data: DataFrame = pd.read_csv(dataPath + 'usecase12.csv', delimiter=',')
 
 data
 # %% codecell
