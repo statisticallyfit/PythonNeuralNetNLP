@@ -1,17 +1,13 @@
 # %% markdown
-# [Tutorial source](https://causalnex.readthedocs.io/en/latest/03_tutorial/03_tutorial.html)
+# [Data source](https://github.com/KnowSciEng/tmmc/blob/master/data/usecase%231.csv)
 #
-# # [A First CausalNex Tutorial](https://causalnex.readthedocs.io/en/latest/03_tutorial/03_tutorial.html)
-# Using data from [here](https://archive.ics.uci.edu/ml/datasets/Student+Performance), to study at various influences
-# on whether a student will pass or fail an exam.
-#
-
+# # Using CausalNex for Use Cases in Car Procedure Project
 
 # %% codecell
 import os
 from typing import *
 
-# %% codecell
+
 os.getcwd()
 # Setting the baseline:
 os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP')
@@ -19,7 +15,7 @@ os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonN
 
 curPath: str = os.getcwd() + "/src/CausalNexStudy/"
 
-dataPath: str = curPath + "data/student/"
+dataPath: str = curPath + "data/"
 
 
 print("curPath = ", curPath, "\n")
@@ -40,39 +36,7 @@ sys.path
 # %% codecell
 from causalnex.structure import StructureModel
 
-structureModel: StructureModel = StructureModel()
-structureModel
-# %% markdown [markdown]
-# Next we can specify the relationships between features. Let us assume that experts tell us the following causal relationships are known (where G1 is grade in semester 1):
-#
-# * `health` $\longrightarrow$ `absences`
-# * `health` $\longrightarrow$ `G1`
-# %% codecell
-structureModel.add_edges_from([
-    ('health', 'absences'),
-    ('health', 'G1')
-])
-
-# %% markdown [markdown]
-# ## Visualizing the Structure
-# %% codecell
-structureModel.edges
-# %% codecell
-structureModel.nodes
-# %% codecell
-from IPython.display import Image
-from causalnex.plots import plot_structure, NODE_STYLE, EDGE_STYLE
-
-viz = plot_structure(
-    structureModel,
-    graph_attributes={"scale": "0.5"},
-    all_node_attributes=NODE_STYLE.WEAK,
-    all_edge_attributes=EDGE_STYLE.WEAK)
-filename_first = curPath + "structure_model_first.png"
-
-viz.draw(filename_first)
-Image(filename_first)
-
+carStructModel: StructureModel = StructureModel()
 
 # %% markdown [markdown]
 # ## Learning the Structure
@@ -86,34 +50,45 @@ Image(filename_first)
 import pandas as pd
 from pandas.core.frame import DataFrame
 
-fileName: str = dataPath + 'student-por.csv'
-data: DataFrame = pd.read_csv(fileName, delimiter = ';')
+fileName: str = dataPath + 'usecase#1.csv'
+data: DataFrame = pd.read_csv(fileName, delimiter = ',')
 
-data.head(10)
-# %% markdown [markdown]
-# Can see the features are numeric and non-numeric. Can drop sensitive features like gender that we do not want to include in our model.
+data
 # %% codecell
-iDropCol: List[int] = ['school','sex','age','Mjob', 'Fjob','reason','guardian']
+data.columns
+# %% codecell
+# Removing whitespace from the column NAMES
+assert data.columns[1] == 'process-type    ' and not data.columns[1] == 'process-type'
 
-data = data.drop(columns = iDropCol)
-data.head(5)
+data = data.rename(columns=lambda x: x.strip()) # inplace = False
+assert data.columns[1] == 'process-type'
 
+
+# Removing whitespace from the column VALUES
+assert data['process-type'][1] == 'Engine-Mount    ' and not data['process-type'][1] == 'Engine-Mount'
+data = data.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+assert data['process-type'][1] == 'Engine-Mount'
+
+# %% markdown
+# Dropping the useless 'ndx' column since that is not a variable:
+# %% codecell
+data: DataFrame = data.drop(columns = ['ndx'])
+data
 # %% markdown [markdown]
-# Next we want to make our data numeric since this is what the NOTEARS algorithm expects. We can do this by
-# label-encoding the non-numeric variables (to make them also numeric, like the current numeric variables).
+# Next we want to make our data numeric since this is what the NOTEARS algorithm expects. We can do this by label-encoding the non-numeric variables (to make them also numeric, like the current numeric variables).
 # %% codecell
 import numpy as np
-
 
 labelEncData: DataFrame = data.copy()
 
 # This operation below excludes all column variables that are number variables (so keeping only categorical variables)
-labelEncData.select_dtypes(exclude=[np.number]).head(5)
+labelEncData.select_dtypes(exclude=[np.number])
 # %% codecell
 # Getting the names of the categorical variables (columns)
 labelEncData.select_dtypes(exclude=[np.number]).columns
 # %% codecell
 namesOfCategoricalVars: List[str] = list(labelEncData.select_dtypes(exclude=[np.number]).columns)
+
 namesOfCategoricalVars
 # %% codecell
 from sklearn.preprocessing import LabelEncoder
@@ -124,44 +99,16 @@ labelEncoder: LabelEncoder = LabelEncoder()
 for varName in namesOfCategoricalVars:
     labelEncData[varName] = labelEncoder.fit_transform(y = labelEncData[varName])
 
+# %% markdown
+# Comparing the converted numericalized `labelEncData` with the previous `data`:
 # %% codecell
-labelEncData.head(5)
-
+labelEncData
 # %% codecell
-# Going to compare the converted numeric values to their previous categorical values:
-namesOfCategoricalVars
+data
 # %% codecell
-categData: DataFrame = data.select_dtypes(exclude=[np.number])
-
-# %% codecell
-# The different values of Address variable (R and U)
-np.unique(categData['address'])
-# %% codecell
-np.unique(categData['famsize'])
-# %% codecell
-np.unique(categData['Pstatus'])
-# %% codecell
-np.unique(categData['schoolsup'])
-# %% codecell
-np.unique(categData['famsup'])
-# %% codecell
-np.unique(categData['paid'])
-# %% codecell
-np.unique(categData['activities'])
-# %% codecell
-np.unique(categData['nursery'])
-# %% codecell
-np.unique(categData['higher'])
-# %% codecell
-np.unique(categData['internet'])
-# %% codecell
-np.unique(categData['romantic'])
-
-
-# %% codecell
-# A numeric column:
-np.unique(data['Medu'])
-
+# The different unique values of each column variable:
+dataVals = {var: data[var].unique() for var in data.columns}
+dataVals
 
 
 # %% codecell
@@ -173,8 +120,6 @@ assert list(labelEncoder.fit_transform(y = testMultivals)) == [0, 1, 2, 3, 4, 5,
 # %% markdown [markdown]
 # Now apply the NOTEARS algo to learn the structure:
 
-
-
 # %% codecell
 
 from src.utils.Clock import *
@@ -184,298 +129,166 @@ import time
 
 startTime: float = time.time()
 
-structureModelLearned = from_pandas(X = labelEncData)
+carStructLearned = from_pandas(X = labelEncData)
 
 print(f"Time taken = {clock(startTime = startTime, endTime = time.time())}")
 
 # %% codecell
+from IPython.display import Image
+from causalnex.plots import plot_structure, NODE_STYLE, EDGE_STYLE
+
 # Now visualize it:
 viz = plot_structure(
-    structureModelLearned,
+    carStructLearned,
     graph_attributes={"scale": "0.5"},
     all_node_attributes=NODE_STYLE.WEAK,
     all_edge_attributes=EDGE_STYLE.WEAK)
-filename_learned = curPath + "structure_model_learnedStructure.png"
+filename_carLearned = curPath + "car_learnedStructure.png"
 
-viz.draw(filename_learned)
-Image(filename_learned)
-
-
+viz.draw(filename_carLearned)
+Image(filename_carLearned)
 
 
 
 # %% markdown [markdown]
-# Can apply thresholding here to prune the algorithm's resulting fully connected graph. Thresholding can be applied either by specifying the value for the parameter `w_threshold` in `from_pandas` or we can remove the edges by calling the structure model function `remove_edges_below_threshold`.
+# Getting detailed view into the learned model:
 # %% codecell
-structureModelPruned = structureModelLearned.copy()
-structureModelPruned.remove_edges_below_threshold(threshold = 0.8)
+carStructLearned.adj
 
 # %% codecell
-# Now visualize it:
-viz = plot_structure(
-    structureModelPruned,
-    graph_attributes={"scale": "0.5"},
-    all_node_attributes=NODE_STYLE.WEAK,
-    all_edge_attributes=EDGE_STYLE.WEAK)
-filename_pruned = curPath + "structure_model_pruned.png"
-viz.draw(filename_pruned)
-Image(filename_pruned)
-
-# %% markdown [markdown]
-# Comparing the freshly learned model with the pruned model:
-# %% codecell
-structureModelLearned.adj
-# %% codecell
-structureModelPruned.adj
+carStructLearned.degree
 
 # %% codecell
-structureModelLearned.degree
+carStructLearned.edges
 # %% codecell
-structureModelPruned.degree
+carStructLearned.in_degree
+# %% codecell
+carStructLearned.in_edges
+# %% codecell
+carStructLearned.number_of_nodes()
 
 # %% codecell
-structureModelLearned.edges
-# %% codecell
-structureModelPruned.edges
+assert carStructLearned.node == carStructLearned.nodes
+
+carStructLearned.node
 
 # %% codecell
-structureModelLearned.in_degree
+carStructLearned.out_degree
 # %% codecell
-structureModelPruned.in_degree
-
-# %% codecell
-structureModelLearned.in_edges
-# %% codecell
-structureModelPruned.in_edges
-
-# %% codecell
-structureModelLearned.number_of_nodes()
-# %% codecell
-structureModelPruned.number_of_nodes()
-
-# %% codecell
-structureModelLearned.node
-# %% codecell
-structureModelPruned.node
-
-# %% codecell
-assert structureModelLearned.node == structureModelLearned.nodes
-
-structureModelLearned.nodes
-# %% codecell
-assert structureModelPruned.node == structureModelPruned.nodes
-
-structureModelPruned.nodes
-
-
-# %% codecell
-structureModelLearned.out_degree
-# %% codecell
-structureModelPruned.out_degree
-
-# %% codecell
-structureModelLearned.out_edges
-# %% codecell
-structureModelPruned.out_edges
+carStructLearned.out_edges
 
 # %% codecell
 # Adjacency object holding predecessors of each node
-structureModelLearned.pred
-# %% codecell
-# Adjacency object holding predecessors of each node
-structureModelPruned.pred
-
+carStructLearned.pred
 
 # %% codecell
 # Adjacency object holding the successors of each node
-structureModelLearned.succ
+carStructLearned.succ
+
 # %% codecell
-# Adjacency object holding the successors of each node
-structureModelPruned.succ
+Image(filename_carLearned)
+# %% codecell
+carStructLearned.has_edge(u = 'process-type', v= 'injury-type')
 
 
 # %% codecell
-structureModelLearned.has_edge(u = 'Fedu', v= 'famsup')
+assert carStructLearned.adj['process-type']['injury-type'] == carStructLearned.get_edge_data(u = 'process-type', v= 'injury-type')
+
+carStructLearned.get_edge_data(u = 'process-type', v= 'injury-type')
 # %% codecell
-structureModelPruned.has_edge(u = 'Fedu', v= 'famsup')
+# Checking these relations are visible in the adjacency graph:
+carStructLearned.adj
+
+
+# %% markdown
+# NOTE: sometimes the edge weights are NOT the same, going from opposite directions. For instance there is a greater edge weight from `absenteeism-level` --> `injury-type` but a very small edge weight the other way around, from `injury-type` --> `absenteeism-level`, because it is more likely for injury type to influence absenteeism
+# * $\color{red}{\text{TODO: check if this is verified by the data}}$
+# %% codecell
+carStructLearned.get_edge_data(u = 'absenteeism-level', v = 'injury-type')
+# %% codecell
+carStructLearned.get_edge_data(u = 'injury-type', v = 'absenteeism-level')
 
 # %% codecell
-structureModelLearned.has_edge(u = 'address', v= 'absences')
-# %% codecell
-structureModelPruned.has_edge(u = 'address', v= 'absences')
+carStructLearned.nodes
 
 # %% codecell
-structureModelLearned.get_edge_data(u = 'address', v= 'absences')
-# %% codecell
-# NOTE: after pruning the weight doesn't change
-structureModelPruned.get_edge_data(u = 'address', v= 'absences')
+# Checking that currently, there is only one subgraph and it is the entire subgraph
+assert carStructLearned.adj ==  carStructLearned.get_largest_subgraph().adj  == carStructLearned.get_target_subgraph(node = 'injury-type').adj == carStructLearned.get_target_subgraph(node = 'process-type').adj == carStructLearned.get_target_subgraph(node = 'tool-type').adj == carStructLearned.get_target_subgraph(node = 'absenteeism-level').adj
 
-# %% codecell
-list(structureModelLearned.neighbors(n = 'address'))
-# %% codecell
-list(structureModelPruned.neighbors(n = 'address'))
-
-# %% codecell
 # TODO: what does negative weight mean?
 # TODO: why are weights not probabilities?
-list(structureModelLearned.adjacency())[:2]
+list(carStructLearned.adjacency())
+
+
+
+# %% markdown
+# Must prune the model in effort to make the structure acyclic (prerequisite for the bayesian network)
 # %% codecell
-# TODO: what does negative weight mean?
-# TODO: why are weights not probabilities?
-list(structureModelPruned.adjacency())
+carStructPruned = carStructLearned.copy()
+carStructPruned.remove_edges_below_threshold(threshold = 0.1)
 
-# %% codecell
-structureModelLearned.get_edge_data(u = 'address', v = 'G1') # something!
-# %% codecell
-structureModelPruned.get_edge_data(u = 'address', v = 'G1') # something!
-
-# %% codecell
-structureModelLearned.get_edge_data(u = 'Feduromantic', v = 'absences') # nothing!
-# %% codecell
-structureModelPruned.get_edge_data(u = 'Feduromantic', v = 'absences') # nothing!
-
-# %% codecell
-list(structureModelLearned.get_target_subgraph(node = 'absences').adjacency())[:2]
-# %% codecell
-list(structureModelPruned.get_target_subgraph(node = 'absences').adjacency())
-
-
-
-
-# %% markdown [markdown]
-# In the above structure some relations appear intuitively correct:
-# * `Pstatus` affects `famrel` - if parents live apart, the quality of family relationship may be poor as a result
-# * `internet` affects `absences` - the presence of internet at home may cause stduents to skip class.
-# * `studytime` affects `G1` - longer studytime should have a positive effect on a student's grade in semester 1 (`G1`).
-#
-# However there are some relations that are certainly incorrect:
-# * `higher` affects `Medu` (Mother's education) - this relationship does not make sense as students who want to pursue higher education does not affect mother's education. It could be the OTHER WAY AROUND.
-#
-# To avoid these erroneous relationships we can re-run the structure learning with some added constraints. Using the method `from_pandas` from `causalnex.structure.notears` to set the argument `tabu_edges`, with the edge (from --> to) which we do not want to include in the graph.
-# %% codecell
-
-# Reruns the analysis from the structure data, just not including this edge.
-# NOT modifying the previous `structureModel`.
-structureModel: StructureModel = from_pandas(labelEncData, tabu_edges=[("higher", "Medu")], w_threshold=0.8)
-
-# %% markdown [markdown]
-# Now the `higher --> Medu` relationship is **no longer** in the graph.
-# %% codecell
-# Now visualize it:
-viz = plot_structure(
-    structureModel,
-    graph_attributes={"scale": "0.5"},
-    all_node_attributes=NODE_STYLE.WEAK,
-    all_edge_attributes=EDGE_STYLE.WEAK)
-filename_noHigherMedu = curPath + "structure_model_learnedStructure_noHigherMedu.png"
-viz.draw(filename_noHigherMedu)
-Image(filename_noHigherMedu)
-
-
-# %% markdown [markdown]
-# ## Modifying the Structure (after structure learning)
-# To correct erroneous relationships, we can incorporate domain knowledge into the model after structure learning. We can modify the structure model through adding and deleting the edges. For example we can add and remove edges with the function `add_edge(u_of_edges, v_of_edges)` that adds a causal relationship from `u` to `v`, where
-# * `u_of_edge` = causal node
-# * `v_of_edge` = effect node
-#
-# and if the relation doesn't exist it will be created.
-# %% codecell
-# NOTE the learning of the graph is different each time so these assertions may not be true all the time!
-assert not structureModel.has_edge(u = 'higher', v = 'Medu')
-
-# Adding causal relationship from health to paid (used to failures -> G1 ??)
-structModeTestEdges = structureModel.copy()
-
-# No edge, showing creation effect
-assert not structModeTestEdges.has_edge(u ='health', v ='paid')
-structModeTestEdges.add_edge(u_of_edge ='health', v_of_edge ='paid')
-assert structModeTestEdges.has_edge(u ='health', v ='paid')
-assert {'origin': 'unknown'} == structModeTestEdges.get_edge_data(u ='health', v ='paid')
-
-# %% codecell
-# Has edge, showing replacement effect
-assert structModeTestEdges.has_edge(u ='higher', v ='G1')
-prevEdge = structModeTestEdges.get_edge_data(u ='higher', v ='G1')
-prevEdge
-# %% codecell
-structModeTestEdges.add_edge(u_of_edge ='higher', v_of_edge ='G1')
-assert structModeTestEdges.has_edge(u ='higher', v ='G1')
-curEdge = structModeTestEdges.get_edge_data(u ='higher', v ='G1')
-curEdge
-assert prevEdge == curEdge
-
-# %% codecell
-# Has edge, showing removal effect
-assert structModeTestEdges.has_edge(u ='higher', v ='famrel')
-structModeTestEdges.get_edge_data(u ='higher', v ='famrel')
-# %% codecell
-structModeTestEdges.remove_edge(u ='higher', v ='famrel')
-assert not structModeTestEdges.has_edge(u ='higher', v ='famrel')
-
-
-# %% markdown [markdown]
-# Can now visualize the updated structure:
-# %% codecell
-viz = plot_structure(
-    structModeTestEdges,
-    graph_attributes={"scale": "0.5"},
-    all_node_attributes=NODE_STYLE.WEAK,
-    all_edge_attributes=EDGE_STYLE.WEAK)
-filename_testEdges = curPath + "structureModel_testedges.png"
-viz.draw(filename_testEdges)
-Image(filename_testEdges)
-# %% codecell
-# Previous one:
-Image(curPath + "structure_model_learnedStructure_noHigherMedu.png")
-
-# %% codecell
-# Just doing same operations on the current graph, after tutorial:
-structureModel.add_edge(u_of_edge = 'failures', v_of_edge = 'G1')
-# structureModel.remove_edge(u = 'Pstatus', v = 'G1')
-# structureModel.remove_edge(u = 'address', v='G1')
-
-viz = plot_structure(
-    structureModel,
-    graph_attributes={"scale": "0.5"},
-    all_node_attributes=NODE_STYLE.WEAK,
-    all_edge_attributes=EDGE_STYLE.WEAK)
-filename_updateEdge = curPath + "structureModel_updated.png"
-viz.draw(filename_updateEdge)
-Image(filename_updateEdge)
-# %% markdown [markdown]
-# Can see there are two separate subgraphs in the above plot: `Dalc -> Walc` and the other big subgraph. We can retrieve the largest subgraph easily by calling `get_largest_subgraph()`:
-# %% codecell
-newStructModel: StructureModel = structureModel.get_largest_subgraph()
-
-# %% codecell
 # Now visualize:
+
+# Now visualize it:
 viz = plot_structure(
-    newStructModel,
+    carStructPruned,
     graph_attributes={"scale": "0.5"},
     all_node_attributes=NODE_STYLE.WEAK,
     all_edge_attributes=EDGE_STYLE.WEAK)
-filename_finalStruct = curPath + "finalStruct.png"
-viz.draw(filename_finalStruct)
-Image(filename_finalStruct)
-# %% codecell
-# Showing that within the same subgraph, we can query by two different nodes and get the same subgraph:
-assert newStructModel.get_target_subgraph(node = 'G1').adj == newStructModel.get_target_subgraph(node = 'absences').adj
+filename_carPruned = curPath + "car_prunedstructure.png"
 
-# NOTE key way how to find all unique subgraphs: going by nodes, for each node, if the current subgraph adjacency equals any other adjacency in the list, scrap that subgraph.
+viz.draw(filename_carPruned)
+Image(filename_carPruned)
+
+
 # %% codecell
+# Quick view into the result
+list(carStructPruned.adjacency())
+# %% codecell
+list(carStructLearned.adjacency())
+# %% codecell
+carStructPruned.degree
+
+# %% codecell
+carStructPruned.edges
+# %% codecell
+carStructPruned.in_degree
+# %% codecell
+carStructPruned.in_edges
+# %% codecell
+carStructPruned.number_of_nodes()
+
+# %% codecell
+carStructPruned.out_degree
+# %% codecell
+carStructPruned.out_edges
+
+# %% codecell
+# Adjacency object holding predecessors of each node
+carStructPruned.pred
+
+# %% codecell
+# Adjacency object holding the successors of each node
+carStructPruned.succ
+
+# %% codecell
+# Checking that currently, there is only one subgraph and it is the entire subgraph, even in the pruned version:
+assert carStructPruned.adj ==  carStructPruned.get_largest_subgraph().adj  == carStructPruned.get_target_subgraph(node = 'injury-type').adj == carStructPruned.get_target_subgraph(node = 'process-type').adj == carStructPruned.get_target_subgraph(node = 'tool-type').adj == carStructPruned.get_target_subgraph(node = 'absenteeism-level').adj
+
 
 # %% markdown [markdown]
 # After deciding on how the final structure model should look, we can instantiate a `BayesianNetwork`:
 # %% codecell
 from causalnex.network import BayesianNetwork
 
-bayesNet: BayesianNetwork = BayesianNetwork(structure = newStructModel)
+bayesNet: BayesianNetwork = BayesianNetwork(structure = carStructPruned)
 bayesNet.cpds
 # %% codecell
 bayesNet.edges
-#bayesNet.node_states
+#bayesNet.node_states # error
 # %% codecell
-assert set(bayesNet.nodes) == set(list(iter(newStructModel.node)))
+assert set(bayesNet.nodes) == set(list(iter(carStructPruned.nodes)))
+
 bayesNet.nodes
 
 # %% markdown [markdown]
@@ -488,98 +301,89 @@ bayesNet.nodes
 # Should make numerical features categorical by discretisation then give the buckets meaningful labels.
 # ## 1. Reducing Cardinality of Categorical Features
 # To reduce cardinality of categorical features (reduce number of values they take on), can define a map `{oldValue: newValue}` and use this to update the feature we will discretise. Example: for the `studytime` feature, if the studytime is more than $2$ then categorize it as `long-studytime` and the rest of the values are binned under `short_studytime`.
+#
+# * $\color{orange}{\text{NOTE: not needed here}}$
 # %% codecell
-discrData: DataFrame = data.copy()
+#discrData: DataFrame = data.copy()
 
 # Getting unique values per variable
-dataVals = {var: data[var].unique() for var in data.columns}
-dataVals
+#dataVals = {var: data[var].unique() for var in data.columns}
+#dataVals
 
 
 # %% codecell
-failuresMap = {v: 'no_failure' if v == [0] else 'yes_failure'
-               for v in dataVals['failures']} # 0, 1, 2, 3 (number of failures)
-failuresMap
-# %% codecell
-studytimeMap = {v: 'short_studytime' if v in [1,2] else 'long_studytime'
-                for v in dataVals['studytime']}
-studytimeMap
-# %% markdown [markdown]
+#failuresMap = {v: 'no_failure' if v == [0] else 'yes_failure'
+#               for v in dataVals['failures']} # 0, 1, 2, 3 (number of failures)
+#studytimeMap = {v: 'short_studytime' if v in [1,2] else 'long_studytime'
+#                for v in dataVals['studytime']}
+
 # Once we have defined the maps `{oldValue: newValue}` we can update each feature, applying the map transformation. The `map` function applies the given dictionary as a rule to the called dictionary.
-# %% codecell
-discrData['failures'] = discrData['failures'].map(failuresMap)
-discrData['failures']
-# %% codecell
-discrData['studytime'] = discrData['studytime'].map(studytimeMap)
-discrData['studytime']
+#discrData['failures'] = discrData['failures'].map(failuresMap)
+#discrData['studytime'] = discrData['studytime'].map(studytimeMap)
+
 
 # %% markdown [markdown]
 # ## 2. Discretising Numeric Features
 # To make numeric features categorical, they must first by discretised. The `causalnex.discretiser.Discretiser` helper class supports several discretisation methods.
 # Here, the `fixed` method will be applied, providing static values that define the bucket boundaries. For instance, `absences` will be discretised into buckets `< 1`, `1 to 9`, and `>= 10`. Each bucket will be labelled as an integer, starting from zero.
+#
+# * $\color{orange}{\text{NOTE: not needed here}}$
 # %% codecell
 from causalnex.discretiser import Discretiser
 
 # Many values in absences, G1, G2, G3
-dataVals
-# %% codecell
-discrData['absences'] = Discretiser(method = 'fixed', numeric_split_points = [1,10]).transform(data = data['absences'].values)
 
-assert (np.unique(discrData['absences']) == np.array([0,1,2])).all()
+#discrData['absences'] = Discretiser(method = 'fixed', numeric_split_points = [1,10]).transform(data = data['absences'].values)
+#assert (np.unique(discrData['absences']) == np.array([0,1,2])).all()
 
 
-discrData['G1'] = Discretiser(method = 'fixed', numeric_split_points = [10]).transform(data = data['G1'].values)
-assert (np.unique(discrData['G1']) == np.array([0,1])).all()
+#discrData['G1'] = Discretiser(method = 'fixed', numeric_split_points = [10]).transform(data = data['G1'].values)
+#assert (np.unique(discrData['G1']) == np.array([0,1])).all()
 
 
-discrData['G2'] = Discretiser(method = 'fixed', numeric_split_points = [10]).transform(data = data['G2'].values)
-assert (np.unique(discrData['G2']) == np.array([0,1])).all()
+#discrData['G2'] = Discretiser(method = 'fixed', numeric_split_points = [10]).transform(data = data['G2'].values)
+#assert (np.unique(discrData['G2']) == np.array([0,1])).all()
 
-discrData['G3'] = Discretiser(method = 'fixed', numeric_split_points = [10]).transform(data = data['G3'].values)
-assert (np.unique(discrData['G3']) == np.array([0,1])).all()
+#discrData['G3'] = Discretiser(method = 'fixed', numeric_split_points = [10]).transform(data = data['G3'].values)
+#assert (np.unique(discrData['G3']) == np.array([0,1])).all()
 
 # %% markdown [markdown]
 # ## 3. Create Labels for Numeric Features
 # To make the discretised categories more readable, we can map the category labels onto something more meaningful in the same way we mapped category feature values.
+#
+# * $\color{orange}{\text{NOTE: not needed here}}$
 # %% codecell
 
-absencesMap = {0: "No-absence", 1:"Low-absence", 2:"High-absence"}
+#absencesMap = {0: "No-absence", 1:"Low-absence", 2:"High-absence"}
 
-G1Map = {0: "Fail", 1: "Pass"}
-G2Map = {0: "Fail", 1: "Pass"}
-G3Map = {0: "Fail", 1: "Pass"}
+#G1Map = {0: "Fail", 1: "Pass"}
+#G2Map = {0: "Fail", 1: "Pass"}
+#G3Map = {0: "Fail", 1: "Pass"}
 
-discrData['absences'] = discrData['absences'].map(absencesMap)
-discrData['absences']
-# %% codecell
-discrData['G1'] = discrData['G1'].map(G1Map)
-discrData['G1']
-# %% codecell
-discrData['G2'] = discrData['G2'].map(G2Map)
-discrData['G2']
-# %% codecell
-discrData['G3'] = discrData['G3'].map(G3Map)
-discrData['G3']
+#discrData['absences'] = discrData['absences'].map(absencesMap)
+
+#discrData['G1'] = discrData['G1'].map(G1Map)
+#discrData['G2'] = discrData['G2'].map(G2Map)
+#discrData['G3'] = discrData['G3'].map(G3Map)
 
 
-
-
-# %% codecell
 # Now for reference later get the discrete data values also:
-discrDataVals = {var: discrData[var].unique() for var in discrData.columns}
-discrDataVals
+#discrDataVals = {var: discrData[var].unique() for var in discrData.columns}
+
 
 
 # %% markdown [markdown]
 # ## 4. Train / Test Split
 # Must train and test split data to help validate findings.
 # Split 90% train and 10% test.
+#
+# * $\color{orange}{\text{NOTE: not needed here}}$
 # %% codecell
-from sklearn.model_selection import train_test_split
+#from sklearn.model_selection import train_test_split
 
-train, test = train_test_split(discrData,
-                               train_size = 0.9, test_size = 0.10,
-                               random_state = 7)
+#train, test = train_test_split(discrData,
+#                               train_size = 0.9, test_size = 0.10,
+#                               random_state = 7)
 
 
 # %% markdown [markdown]
@@ -597,7 +401,7 @@ bayesNetNodeStates = copy.deepcopy(bayesNet)
 assert not bayesNetNodeStates == bayesNet, "Deepcopy bayesnet object must work"
 # bayesNetNodeStates = BayesianNetwork(bayesNet.structure)
 
-bayesNetNodeStates: BayesianNetwork = bayesNetNodeStates.fit_node_states(df = discrData)
+bayesNetNodeStates: BayesianNetwork = bayesNetNodeStates.fit_node_states(df = data)
 bayesNetNodeStates.node_states
 # %% markdown [markdown]
 # ## Fit Conditional Probability Distributions
