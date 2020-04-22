@@ -56,6 +56,10 @@ from pandas.core.frame import DataFrame
 
 fileName: str = dataPath + 'usecase#1.csv'
 #data: DataFrame = pd.read_csv(fileName, delimiter = ',')
+# TODO start here tomorrow:
+# 1) play around with switching columns to understand what the graph does
+# 2) encapsulate graph exploration methods
+# 3) create more test cases (rename burn and contusion dicts)
 data: DataFrame = pd.read_csv(dataPath + 'usecase12.csv', delimiter=',')
 
 data
@@ -166,6 +170,8 @@ Image(filename_carLearned)
 # %% codecell
 carStructLearned.adj
 
+# %% codecell
+carStructLearned.get_edge_data(u = 'tool_type', v = 'absenteeism_level')
 # %% codecell
 carStructLearned.degree
 
