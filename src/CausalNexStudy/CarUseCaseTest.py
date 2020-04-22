@@ -58,16 +58,16 @@ data
 data.columns
 # %% codecell
 # Removing whitespace from the column NAMES
-assert data.columns[1] == 'process-type    ' and not data.columns[1] == 'process-type'
+assert data.columns[1] == 'process_type    ' and not data.columns[1] == 'process_type'
 
 data = data.rename(columns=lambda x: x.strip()) # inplace = False
-assert data.columns[1] == 'process-type'
+assert data.columns[1] == 'process_type'
 
 
 # Removing whitespace from the column VALUES
-assert data['process-type'][1] == 'Engine-Mount    ' and not data['process-type'][1] == 'Engine-Mount'
+assert data['process_type'][1] == 'Engine-Mount    ' and not data['process_type'][1] == 'Engine-Mount'
 data = data.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
-assert data['process-type'][1] == 'Engine-Mount'
+assert data['process_type'][1] == 'Engine-Mount'
 
 # %% markdown
 # Dropping the useless 'ndx' column since that is not a variable:
@@ -188,13 +188,13 @@ carStructLearned.succ
 # %% codecell
 Image(filename_carLearned)
 # %% codecell
-carStructLearned.has_edge(u = 'process-type', v= 'injury-type')
+carStructLearned.has_edge(u = 'process_type', v= 'injury_type')
 
 
 # %% codecell
-assert carStructLearned.adj['process-type']['injury-type'] == carStructLearned.get_edge_data(u = 'process-type', v= 'injury-type')
+assert carStructLearned.adj['process_type']['injury_type'] == carStructLearned.get_edge_data(u = 'process_type', v= 'injury_type')
 
-carStructLearned.get_edge_data(u = 'process-type', v= 'injury-type')
+carStructLearned.get_edge_data(u = 'process-_type', v= 'injury_type')
 # %% codecell
 # Checking these relations are visible in the adjacency graph:
 carStructLearned.adj
@@ -204,16 +204,16 @@ carStructLearned.adj
 # NOTE: sometimes the edge weights are NOT the same, going from opposite directions. For instance there is a greater edge weight from `absenteeism-level` --> `injury-type` but a very small edge weight the other way around, from `injury-type` --> `absenteeism-level`, because it is more likely for injury type to influence absenteeism
 # * $\color{red}{\text{TODO: check if this is verified by the data}}$
 # %% codecell
-carStructLearned.get_edge_data(u = 'absenteeism-level', v = 'injury-type')
+carStructLearned.get_edge_data(u = 'absenteeism_level', v = 'injury_type')
 # %% codecell
-carStructLearned.get_edge_data(u = 'injury-type', v = 'absenteeism-level')
+carStructLearned.get_edge_data(u = 'injury_type', v = 'absenteeism_level')
 
 # %% codecell
 carStructLearned.nodes
 
 # %% codecell
 # Checking that currently, there is only one subgraph and it is the entire subgraph
-assert carStructLearned.adj ==  carStructLearned.get_largest_subgraph().adj  == carStructLearned.get_target_subgraph(node = 'injury-type').adj == carStructLearned.get_target_subgraph(node = 'process-type').adj == carStructLearned.get_target_subgraph(node = 'tool-type').adj == carStructLearned.get_target_subgraph(node = 'absenteeism-level').adj
+assert carStructLearned.adj ==  carStructLearned.get_largest_subgraph().adj  == carStructLearned.get_target_subgraph(node = 'injury_type').adj == carStructLearned.get_target_subgraph(node = 'process_type').adj == carStructLearned.get_target_subgraph(node = 'tool_type').adj == carStructLearned.get_target_subgraph(node = 'absenteeism_level').adj
 
 # TODO: what does negative weight mean?
 # TODO: why are weights not probabilities?
@@ -273,7 +273,7 @@ carStructPruned.succ
 
 # %% codecell
 # Checking that currently, there is only one subgraph and it is the entire subgraph, even in the pruned version:
-assert carStructPruned.adj ==  carStructPruned.get_largest_subgraph().adj  == carStructPruned.get_target_subgraph(node = 'injury-type').adj == carStructPruned.get_target_subgraph(node = 'process-type').adj == carStructPruned.get_target_subgraph(node = 'tool-type').adj == carStructPruned.get_target_subgraph(node = 'absenteeism-level').adj
+assert carStructPruned.adj ==  carStructPruned.get_largest_subgraph().adj  == carStructPruned.get_target_subgraph(node = 'injury_type').adj == carStructPruned.get_target_subgraph(node = 'process_type').adj == carStructPruned.get_target_subgraph(node = 'tool_type').adj == carStructPruned.get_target_subgraph(node = 'absenteeism_level').adj
 
 
 # %% markdown [markdown]
@@ -411,7 +411,7 @@ bayesNetNodeStates.node_states
 bayesNetCPD: BayesianNetwork = copy.deepcopy(bayesNetNodeStates)
 
 # Fitting the CPDs
-bayesNetCPD: BayesianNetwork = bayesNetCPD.fit_cpds(data = train,
+bayesNetCPD: BayesianNetwork = bayesNetCPD.fit_cpds(data = data,
                                                     method = "BayesianEstimator",
                                                     bayes_prior = "K2")
 
@@ -420,31 +420,22 @@ bayesNetCPD.cpds
 
 # %% codecell
 # The size of the tables depends on how many connections a node has
-Image(filename_finalStruct)
+Image(filename_carPruned)
 # %% codecell
 # G1 has many connections so its table holds all the combinations of conditional probabilities.
-bayesNetCPD.cpds['G1']
+bayesNetCPD.cpds['absenteeism_level']
 # %% codecell
-bayesNetCPD.cpds['absences']
+bayesNetCPD.cpds['process_type']
 # %% codecell
-# Studytime variable is a singular ndoe so its table is small, no conditional probabilities here.
-bayesNetCPD.cpds['studytime']
+bayesNetCPD.cpds['tool_type']
 # %% codecell
-# Pstatus has only outgoing nodes, no incoming nodes so has no conditional probabilities.
-bayesNetCPD.cpds['Pstatus']
-# %% codecell
-# Famrel has two incoming nodes (PStatus and higher) so models their conditional probabilities.
-bayesNetCPD.cpds['famrel']
-# %% codecell
-bayesNetCPD.cpds['G2']
-# %% codecell
-bayesNetCPD.cpds['G3']
+bayesNetCPD.cpds['injury_type']
 
 # %% markdown [markdown]
-# The CPD dictionaries are multiindexed so the `loc` functino can be a useful way to interact with them:
+# The CPD dictionaries are multiindexed so the `loc` function can be a useful way to interact with them:
 # %% codecell
 # TODO: https://hyp.is/_95epIOuEeq_HdeYjzCPXQ/causalnex.readthedocs.io/en/latest/03_tutorial/03_tutorial.html
-discrData.loc[1:5,['address', 'G1', 'paid', 'higher']]
+data.loc[1:5,data.columns]
 
 
 
@@ -452,31 +443,34 @@ discrData.loc[1:5,['address', 'G1', 'paid', 'higher']]
 # ## Predict the State given the Input Data
 # The `predict` method of `BayesianNetwork` allos us to make predictions based on the data using the learnt network. For example we want to predict if a student passes of failes the exam based on the input data. Consider an incoming student data like this:
 # %% codecell
-# Row number 18
-discrData.loc[18, discrData.columns != 'G1']
+# Row number 2
+data.loc[2, data.columns != 'absenteeism_level']
+# %% markdown
+# Here is the data again for reference. We see the absentee level is mid-range for this injury time `Electrical-Shock` and tool-type `Power-Gun` and process-type `Engine-Mount`
+# %% codecell
+data
 # %% markdown [markdown]
-# Based on this data, want to predict if this particular student (in row 18) will succeed on their exam. Intuitively expect this student not to succeed because they spend shorter amount of study time and have failed in the past.
+# Based on this data, want to predict if this particular observation (worker) will have a high absence level.
 #
 # There are two kinds of prediction methods:
 # * [`predict_probability(data, node)`](https://causalnex.readthedocs.io/en/latest/source/api_docs/causalnex.network.BayesianNetwork.html#causalnex.network.BayesianNetwork.predict_probability): Predict the **probability of each possible state of a node**, based on some input data.
 # * [`predict(data, node)`](https://causalnex.readthedocs.io/en/latest/source/api_docs/causalnex.network.BayesianNetwork.html#causalnex.network.BayesianNetwork.predict): Predict the **state of a node ** based on some input data, using the Bayesian Network.
 # %% codecell
-predictionProbs = bayesNetCPD.predict_probability(data = discrData, node = 'G1')
+
+predictionProbs = bayesNetCPD.predict_probability(data = data, node = 'absenteeism_level')
 predictionProbs
 # %% codecell
-# Student 18 passes with probability 0.358, and fails with prob 0.64
-predictionProbs.loc[18, :]
+# More likely to have no absentee level for those variables than to have absentee level 2
+predictionProbs.loc[2, :]
 # %% codecell
-# This function does predictions for ALL observations (all students)
-predictions = bayesNetCPD.predict(data = discrData, node = 'G1')
+# This function does predictions for ALL observations (all workers)
+predictions = bayesNetCPD.predict(data = data, node = 'absenteeism_level')
 predictions
-# %% codecell
-predictions.loc[18, :]
+
 # %% markdown [markdown]
 # Compare this prediction to the ground truth:
 # %% codecell
-print(f"Student 18 is predicted to {predictions.loc[18, 'G1_prediction']}")
-print(f"Ground truth for student 18 is {discrData.loc[18, 'G1']}")
+data
 
 
 # %% markdown [markdown]
@@ -487,24 +481,24 @@ print(f"Ground truth for student 18 is {discrData.loc[18, 'G1']}")
 # %% codecell
 from causalnex.evaluation import classification_report
 
-classification_report(bn = bayesNetCPD, data = test, node = 'G1')
+classification_report(bn = bayesNetCPD, data = data, node = 'absenteeism_level')
 # %% markdown [markdown]
-# **Interpret Results of classification report:** this report shows that the model can classify reasonably well whether a student passs the exam. For predictions where the student fails, the precision is adequate but recall is bad. This implies that we can rely on predictions for `G1_Fail` but we are likely to miss some of the predictions we should have made. Perhaps these missing predictions are a result of something missing in our structure
-# * ALERT - explore graph structure when the recall is bad
+# **Interpret Results of classification report:** Precisions are very low for the no absentee level, and both precions and recall are very low for other absentee levels, implying we are likely to miss some of the predictions we should have made. Perhaps these missing predictions are a result of something missing in our structure
+# * $\color{red}{\text{ALERT:}}$  explore graph structure when the recall is bad
 #
 #
-# ## ROC / AUC
+# ## Measure 2: ROC / AUC
 # The ROC and AUC can be obtained with `roc_auc` method within CausalNex metrics module.
 # ROC curve is computed by micro-averaging predictions made across all states (classes) of the target node.
 # %% codecell
 from causalnex.evaluation import roc_auc
 
-roc, auc = roc_auc(bn = bayesNetCPD, data = test, node = 'G1')
+roc, auc = roc_auc(bn = bayesNetCPD, data = data, node = 'absenteeism_level')
 
 print(f"ROC = \n{roc}\n")
 print(f"AUC = {auc}")
 # %% markdown [markdown]
-# High value of AUC gives confidence in model performance
+# High value of AUC gives confidence in model performance, low value of AUC implies poor model performance.
 #
 #
 #
@@ -520,7 +514,7 @@ print(f"AUC = {auc}")
 bayesNetFull = copy.deepcopy(bayesNetCPD)
 
 # Fitting CPDs with full data
-bayesNetFull: BayesianNetwork = bayesNetFull.fit_cpds(data = discrData,
+bayesNetFull: BayesianNetwork = bayesNetFull.fit_cpds(data = data,
                                                      method = "BayesianEstimator",
                                                      bayes_prior = "K2")
 # %% markdown [markdown]
@@ -531,7 +525,6 @@ bayesNetFull: BayesianNetwork = bayesNetFull.fit_cpds(data = discrData,
 # %% codecell
 from causalnex.inference import InferenceEngine
 
-
 eng = InferenceEngine(bn = bayesNetFull)
 eng
 # %% markdown [markdown]
@@ -540,22 +533,22 @@ eng
 marginalDistLearned: Dict[str, Dict[str, float]] = eng.query()
 marginalDistLearned
 # %% codecell
-marginalDistLearned['address']
+marginalDistLearned['injury_type']
 # %% codecell
-marginalDistLearned['G1']
+marginalDistLearned['absenteeism_level']
+
 
 # %% markdown [markdown]
-# Output tells us that `P(G1=Fail) ~ 0.25` and `P(G1 = Pass) ~ 0.75`. As a quick sanity check can compute what proportion of our data are `Fail` and `Pass`, should give nearly the same result:
+# As a quick sanity check can compute the corresponding proportion of our data , which should give nearly the same result:
 # %% codecell
 import numpy as np
 
-labels, counts = np.unique(discrData['G1'], return_counts = True)
+labels, counts = np.unique(data['absenteeism_level'], return_counts = True)
 
 print(list(zip(labels, counts)))
-print('\nProportion failures = {}'.format(counts[0] / sum(counts)))
-print('\nProportion passes = {}'.format(counts[1] / sum(counts)))
 
-# %% codecell
+print('\nProportions for each label: \n') # The no-absentee level has highest probability, similar to the learned bayesian result.
+list(zip(labels, counts / sum(counts)))
 
 
 
@@ -568,101 +561,54 @@ print('\nProportion passes = {}'.format(counts[1] / sum(counts)))
 # These observations can be made anywhere in the network and their impact will be propagated through to the node of interest.
 # %% codecell
 # Reminding of the data types for each variable:
-discrDataVals
+dataVals
 # %% codecell
-# Reminder of nodes you CAN query (for instance putting 'health' in the dictionary argument of 'query' will give us an error)
+# Reminder of nodes you CAN query (for instance putting a node name that doesn't exist would give an error)
 bayesNetFull.nodes
 # %% codecell
-marginalDistObs_biasPass: Dict[str, Dict[str, float]] = eng.query({'studytime': 'long_studytime', 'paid':'yes', 'higher':'yes', 'absences':'No-absence', 'failures':'no_failure'})
+# Trying to influence the injurytype variable and also later see how absentee is affected:
+#marginalDistObs_biasContusion: Dict[str, Dict[str, float]] = eng.query({'injury_type': 'Contact-Contusion' })
 
 # Seeing if biasing in favor of failing will influence the observed marginals:
-marginalDistObs_biasFail: Dict[str, Dict[str, float]] = eng.query({'studytime': 'short_studytime', 'paid':'no', 'higher':'no', 'absences':'High-absence', 'failures': 'yes_failure'})
+#marginalDistObs_biasShock: Dict[str, Dict[str, float]] = eng.query({'injury_type': 'Electrical-Shock'})
 
 # %% codecell
 # Higher probability of passing when have the above observations, since they are another set of observations in favor of passing.
-marginalDistLearned['G1']
+marginalDistLearned['injury_type']
 # %% codecell
-marginalDistObs_biasPass['G1']
+# Biasing towards contusion type injury
+eng.query({'injury_type': 'Contact-Contusion' })['injury_type']
 # %% codecell
-marginalDistObs_biasFail['G1']
-
+eng.query({'injury_type': 'Contact-Contusion',
+           'tool_type': 'Forklift',
+           'process_type' : 'Sun-Roof-Housing' })['injury_type']
 # %% codecell
-marginalDistLearned['G2']
-# %% codecell
-# G2 and G3 nodes don't show bias probability because they are not many conditionals on them.
-marginalDistObs_biasPass['G2']
-# %% codecell
-marginalDistObs_biasFail['G2']
-
-# %% codecell
-marginalDistLearned['G3']
-# %% codecell
-marginalDistObs_biasPass['G3']
-# %% codecell
-marginalDistObs_biasFail['G3']
-
-# %% markdown [markdown]
-# Looking at difference in likelihood of `G1` based on just `studytime`. See that students who study longer are more likely to pass on their exam:
-# %% codecell
-marginalDist_short = eng.query({'studytime':'short_studytime'})
-marginalDist_long = eng.query({'studytime': 'long_studytime'})
-
-print('Marginal G1 | Short Studytime', marginalDist_short['G1'])
-print('Marginal G1 | Long Studytime', marginalDist_long['G1'])
-
-# %% markdown [markdown]
-# ## Interventions with Do Calculus
-# Do-Calculus, allows us to specify interventions.
+# Biasing towards burn type injury
+# NOTE: so far, querying the biased variable results in too obvious an answer. Below we start querying the response variable, other than the one we bias on.
+eng.query({'injury_type': 'Electrical-Burn' })['injury_type']
+# %% markdown
+# Interesting test cases: querying the response `absenteeism_level` after biasing, say, the `injury_type` and other variables.
 #
-# ### Updating a Node Distribution
-# Can apply an intervention to any node in our data, updating its distribution using a `do` operator, which means asking our mdoel "what if" something were different.
-#
-# For example, can ask what would happen if 100% of students wanted to go on to do higher education.
+# * **Biasing variable:** `injury_type`
+# * **Querying variable:** `absenteeism_level`
 # %% codecell
-print("'higher' marginal distribution before DO: ", eng.query()['higher'])
+bias: Dict[str, str] = {'injury_type' : 'Contact-Contusion'}
+query: str = 'absenteeism_level'
 
-# Make the intervention on the network
-eng.do_intervention(node = 'higher', state = {'yes': 1.0, 'no': 0.0}) # all students yes
-
-print("'higher' marginal distribution after DO: ", eng.query()['higher'])
-# %% markdown [markdown]
-# ### Resetting a Node Distribution
-# We can reset any interventions that we make using `reset_intervention` method and providing the node we want to reset:
+marginalDistLearned[query]
 # %% codecell
-eng.reset_do('higher')
-
-eng.query()['higher'] # same as before
-
-
-# %% markdown [markdown]
-# ### Effect of DO on Marginals
-# We can use `query` to find the effect that an intervention has on our marginal likelihoods of OTHER variables, not just on the INTERVENED variable.
-#
-# **Example 1:** change 'higher' and check grade 'G1' (how the likelihood of achieving a pass changes if 100% of students wanted to do higher education)
-#
-# Answer: if 100% of students wanted to do higher education (as opposed to 90% in our data population) , then we estimate the pass rate would increase from 74.7% to 79.3%.
+# See absentee == 0 probability is lower than the learned version, given Contact Contusion injury, which is a serious injury
+higherProbAbsent: Dict[str, float] = eng.query(bias)[query]
+higherProbAbsent
 # %% codecell
-print('marginal G1', eng.query()['G1'])
+# Testing less serious injury
+bias['injury_type'] = 'Electrical-Burn'
 
-eng.do_intervention(node = 'higher', state = {'yes':1.0, 'no': 0.0})
-print('updated marginal G1', eng.query()['G1'])
+# Got higher probability of no absenteeism for less serious burn!
+lessProbAbsent: Dict[str, float] = eng.query(bias)[query]
+lessProbAbsent
 # %% codecell
-# This is how we know it is 90% of the population that does higher education:
-eng.reset_do('higher')
+assert lessProbAbsent['Absenteeism-00'] > higherProbAbsent['Absenteeism-00'], "Should have higher probability of Absenteeism-00 for Electrical-Burn than for Contusion (burn is less serious than contusion)"
 
-eng.query()['higher']
+assert lessProbAbsent['Absenteeism-03'] < higherProbAbsent['Absenteeism-03'], "Should have higher probability of Absenteeism-03 for Contusion than for Electrical-Burn (Contusion is more serious than burn)"
 # %% codecell
-# OR:
-labels, counts = np.unique(discrData['higher'], return_counts = True)
-counts / sum(counts)
-
-
-# %% markdown [markdown]
-# **Example 2:** change 'higher' and check grade 'G1' (how the likelihood of achieving a pass changes if 80% of students wanted to do higher education)
-# %% codecell
-eng.reset_do('higher')
-
-print('marginal G1', eng.query()['G1'])
-
-eng.do_intervention(node = 'higher', state = {'yes':0.8, 'no': 0.2})
-print('updated marginal G1', eng.query()['G1']) # fail is actually higher!!!!
