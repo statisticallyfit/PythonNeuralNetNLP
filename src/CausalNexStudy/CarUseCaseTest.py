@@ -1,4 +1,4 @@
-# %% markdown
+# %% markdown [markdown]
 # [Data source](https://github.com/KnowSciEng/tmmc/blob/master/data/usecase%231.csv)
 #
 # # Using CausalNex for Use Cases in Car Procedure Project
@@ -46,9 +46,13 @@ carStructModel: StructureModel = StructureModel()
 # First must pre-process the data so the [NOTEARS algorithm](https://arxiv.org/abs/1803.01422) can be used.
 #
 # ## Preparing the Data for Structure Learning
+# * $\color{red}{\text{ALERT: }}$ very important, MUST have the column names have nonoe of these characters: ?! - ; else will get error from the `InferenceEngine.__init__` function as: `"Variable names must match ^[0-9a-zA-Z_]+$ - please fix the following nodes: {0}".format(bad_nodes)`
+#
+# * $\color{red}{\text{ALERT: }}$ key point, alawys use the '_' (underscore) instead of '-' (dash) character if you want to space out the column header names. Otherwise `InferenceEngine` won't work!
 # %% codecell
 import pandas as pd
 from pandas.core.frame import DataFrame
+
 
 fileName: str = dataPath + 'usecase#1.csv'
 data: DataFrame = pd.read_csv(fileName, delimiter = ',')
@@ -69,7 +73,7 @@ assert data['process_type'][1] == 'Engine-Mount    ' and not data['process_type'
 data = data.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
 assert data['process_type'][1] == 'Engine-Mount'
 
-# %% markdown
+# %% markdown [markdown]
 # Dropping the useless 'ndx' column since that is not a variable:
 # %% codecell
 data: DataFrame = data.drop(columns = ['ndx'])
@@ -99,7 +103,7 @@ labelEncoder: LabelEncoder = LabelEncoder()
 for varName in namesOfCategoricalVars:
     labelEncData[varName] = labelEncoder.fit_transform(y = labelEncData[varName])
 
-# %% markdown
+# %% markdown [markdown]
 # Comparing the converted numericalized `labelEncData` with the previous `data`:
 # %% codecell
 labelEncData
@@ -122,8 +126,14 @@ assert list(labelEncoder.fit_transform(y = testMultivals)) == [0, 1, 2, 3, 4, 5,
 
 # %% codecell
 
-from src.utils.Clock import *
+# from src.utils.Clock import *
+def clock(startTime, endTime):
+    elapsedTime = endTime - startTime
+    elapsedMins = int(elapsedTime / 60)
+    elapsedSecs = int(elapsedTime - (elapsedMins * 60))
+    return elapsedMins, elapsedSecs
 
+# %% codecell
 from causalnex.structure.notears import from_pandas
 import time
 
@@ -200,7 +210,7 @@ carStructLearned.get_edge_data(u = 'process-_type', v= 'injury_type')
 carStructLearned.adj
 
 
-# %% markdown
+# %% markdown [markdown]
 # NOTE: sometimes the edge weights are NOT the same, going from opposite directions. For instance there is a greater edge weight from `absenteeism-level` --> `injury-type` but a very small edge weight the other way around, from `injury-type` --> `absenteeism-level`, because it is more likely for injury type to influence absenteeism
 # * $\color{red}{\text{TODO: check if this is verified by the data}}$
 # %% codecell
@@ -221,7 +231,7 @@ list(carStructLearned.adjacency())
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # Must prune the model in effort to make the structure acyclic (prerequisite for the bayesian network)
 # %% codecell
 carStructPruned = carStructLearned.copy()
@@ -445,7 +455,7 @@ data.loc[1:5,data.columns]
 # %% codecell
 # Row number 2
 data.loc[2, data.columns != 'absenteeism_level']
-# %% markdown
+# %% markdown [markdown]
 # Here is the data again for reference. We see the absentee level is mid-range for this injury time `Electrical-Shock` and tool-type `Power-Gun` and process-type `Engine-Mount`
 # %% codecell
 data
@@ -586,7 +596,7 @@ eng.query({'injury_type': 'Contact-Contusion',
 # Biasing towards burn type injury
 # NOTE: so far, querying the biased variable results in too obvious an answer. Below we start querying the response variable, other than the one we bias on.
 eng.query({'injury_type': 'Electrical-Burn' })['injury_type']
-# %% markdown
+# %% markdown [markdown]
 # Interesting test cases: querying the response `absenteeism_level` after biasing, say, the `injury_type` and other variables.
 #
 # * **Biasing variable:** `injury_type`
