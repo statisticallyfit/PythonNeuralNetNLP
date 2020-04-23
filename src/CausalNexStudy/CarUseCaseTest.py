@@ -54,10 +54,12 @@ import pandas as pd
 from pandas.core.frame import DataFrame
 
 
-fileName: str = dataPath + 'usecase#1.csv'
-inputData: DataFrame = pd.read_csv(fileName, delimiter = ',')
+fileName: str = dataPath + 'combData_tweak1.csv'
+inputData: DataFrame = pd.read_csv(fileName, delimiter = ',') #, keep_default_na=False)
 
 #data: DataFrame = pd.read_csv(dataPath + 'usecase12.csv', delimiter=',')
+
+inputData = inputData.dropna() # remove the NA rows (which are the empty ones)
 
 inputData
 # %% codecell
@@ -66,42 +68,27 @@ inputData.columns
 from src.utils.DataUtil import *
 
 
-assert not inputData.columns[2] == 'process_type'
-assert inputData[inputData.columns[2]][1] == 'Engine-Mount    ' and not inputData[inputData.columns[2]][1] == 'Engine-Mount'
+#assert not inputData.columns[2].strip() == inputData.columns[2]
+#assert inputData[inputData.columns[2]][1].strip() != inputData[inputData.columns[2]][1]
 
 data = cleanData(inputData)
 
 # Check: Removing whitespace from the column NAMES
-assert data.columns[2] == 'process_type'
+assert data.columns[2].strip() == data.columns[2]
 # Check:  Removing whitespace from the column VALUES
 assert data['process_type'][1] == 'Engine-Mount'
 
 # %% markdown [markdown]
 # Dropping the useless 'ndx' column since that is not a variable:
 # %% codecell
-data: DataFrame = data.drop(columns = ['ndx', 'time'])
-data
+#data: DataFrame = data.drop(columns = ['ndx', 'time'])
+
 # %% codecell
 # The different unique values of each column variable:
 dataVals = {var: data[var].unique() for var in data.columns}
 dataVals
 
-# %% codecell
-# Going to pass this so that combinations of each of its values can be created
-list(dataVals.values())
-# %% codcell
-# Creating the combinations:
-import itertools
 
-combinations = list(itertools.product(*list(dataVals.values())))
-combinations[:30]
-# %% codecell
-# Transferring temporarily to pandas data frame so can write to comma separated csv easily:
-rawCombData: DataFrame = pd.DataFrame(data = combinations, columns = data.columns)
-rawCombData # 420 combinations!
-# %% codecell
-# Now send to csv and tweak it:
-rawCombData.to_csv(path_or_buf = dataPath + 'rawCombData_totweak.csv', sep = ',')
 # %% markdown [markdown]
 # Next we want to make our data numeric since this is what the NOTEARS algorithm expects. We can do this by label-encoding the non-numeric variables (to make them also numeric, like the current numeric variables).
 # %% codecell
@@ -188,7 +175,7 @@ Image(filename_carLearned)
 carStructLearned.adj
 
 # %% codecell
-carStructLearned.get_edge_data(u = 'tool_type', v = 'absenteeism_level')
+carStructLearned.get_edge_data(u = 'uses_op', v = 'absenteeism_level')
 # %% codecell
 carStructLearned.degree
 
@@ -228,7 +215,7 @@ carStructLearned.has_edge(u = 'process_type', v= 'injury_type')
 # %% codecell
 assert carStructLearned.adj['process_type']['injury_type'] == carStructLearned.get_edge_data(u = 'process_type', v= 'injury_type')
 
-carStructLearned.get_edge_data(u = 'process-_type', v= 'injury_type')
+carStructLearned.get_edge_data(u = 'process_type', v= 'injury_type')
 # %% codecell
 # Checking these relations are visible in the adjacency graph:
 carStructLearned.adj
@@ -247,7 +234,7 @@ carStructLearned.nodes
 
 # %% codecell
 # Checking that currently, there is only one subgraph and it is the entire subgraph
-assert carStructLearned.adj ==  carStructLearned.get_largest_subgraph().adj  == carStructLearned.get_target_subgraph(node = 'injury_type').adj == carStructLearned.get_target_subgraph(node = 'process_type').adj == carStructLearned.get_target_subgraph(node = 'tool_type').adj == carStructLearned.get_target_subgraph(node = 'absenteeism_level').adj
+assert carStructLearned.adj ==  carStructLearned.get_largest_subgraph().adj  == carStructLearned.get_target_subgraph(node = 'injury_type').adj == carStructLearned.get_target_subgraph(node = 'process_type').adj == carStructLearned.get_target_subgraph(node = 'uses_op').adj == carStructLearned.get_target_subgraph(node = 'absenteeism_level').adj
 
 # TODO: what does negative weight mean?
 # TODO: why are weights not probabilities?
@@ -307,7 +294,7 @@ carStructPruned.succ
 
 # %% codecell
 # Checking that currently, there is only one subgraph and it is the entire subgraph, even in the pruned version:
-assert carStructPruned.adj ==  carStructPruned.get_largest_subgraph().adj  == carStructPruned.get_target_subgraph(node = 'injury_type').adj == carStructPruned.get_target_subgraph(node = 'process_type').adj == carStructPruned.get_target_subgraph(node = 'tool_type').adj == carStructPruned.get_target_subgraph(node = 'absenteeism_level').adj
+assert carStructPruned.adj ==  carStructPruned.get_largest_subgraph().adj  == carStructPruned.get_target_subgraph(node = 'injury_type').adj == carStructPruned.get_target_subgraph(node = 'process_type').adj == carStructPruned.get_target_subgraph(node = 'uses_op').adj == carStructPruned.get_target_subgraph(node = 'absenteeism_level').adj
 
 
 # %% markdown [markdown]
@@ -461,7 +448,7 @@ bayesNetCPD.cpds['absenteeism_level']
 # %% codecell
 bayesNetCPD.cpds['process_type']
 # %% codecell
-bayesNetCPD.cpds['tool_type']
+bayesNetCPD.cpds['uses_op']
 # %% codecell
 bayesNetCPD.cpds['injury_type']
 
@@ -614,7 +601,7 @@ marginalDistLearned['injury_type']
 eng.query({'injury_type': 'Contact-Contusion' })['injury_type']
 # %% codecell
 eng.query({'injury_type': 'Contact-Contusion',
-           'tool_type': 'Forklift',
+           'uses_op': 'Forklift',
            'process_type' : 'Sun-Roof-Housing' })['injury_type']
 # %% codecell
 # Biasing towards burn type injury
@@ -646,3 +633,7 @@ assert lessProbAbsent['Absenteeism-00'] > higherProbAbsent['Absenteeism-00'], "S
 
 assert lessProbAbsent['Absenteeism-03'] < higherProbAbsent['Absenteeism-03'], "Should have higher probability of Absenteeism-03 for Contusion than for Electrical-Burn (Contusion is more serious than burn)"
 # %% codecell
+
+type(carStructPruned)
+# TODO: want to pass these edge weights to the visualizer function
+carStructPruned.adj

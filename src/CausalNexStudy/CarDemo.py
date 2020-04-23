@@ -53,6 +53,7 @@ viz = plot_structure(
     all_edge_attributes=EDGE_STYLE.WEAK)
 filename_demo = curPath + "demo.png"
 
+viz.node_attr('node', shape='oval', color='gray')
 viz.draw(filename_demo)
 Image(filename_demo)
 # %% markdown
