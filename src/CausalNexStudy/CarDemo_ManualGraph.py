@@ -144,3 +144,8 @@ bayesNet.cpds['injury_type']
 # `absenteeism_level` is only **directly** conditional on two variables, the `injury_type` and `process_type`, which is visible in its conditional probability distribution table below:
 # %% codecell
 bayesNet.cpds['absenteeism_level']
+
+# %% markdown
+# Showing the final rendered graph with the conditional probability distributions alongside the nodes:
+# %% codecell
+Image(filename = curPath + 'modelWithCPDs.png')
