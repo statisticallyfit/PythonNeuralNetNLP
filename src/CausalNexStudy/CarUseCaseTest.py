@@ -55,34 +55,53 @@ from pandas.core.frame import DataFrame
 
 
 fileName: str = dataPath + 'usecase#1.csv'
-#data: DataFrame = pd.read_csv(fileName, delimiter = ',')
-# TODO start here tomorrow:
-# 1) play around with switching columns to understand what the graph does
-# 2) encapsulate graph exploration methods
-# 3) create more test cases (rename burn and contusion dicts)
-data: DataFrame = pd.read_csv(dataPath + 'usecase12.csv', delimiter=',')
+inputData: DataFrame = pd.read_csv(fileName, delimiter = ',')
 
-data
+#data: DataFrame = pd.read_csv(dataPath + 'usecase12.csv', delimiter=',')
+
+inputData
 # %% codecell
-data.columns
+inputData.columns
 # %% codecell
-# Removing whitespace from the column NAMES
-assert data.columns[1] == 'process_type    ' and not data.columns[1] == 'process_type'
-
-data = data.rename(columns=lambda x: x.strip()) # inplace = False
-assert data.columns[1] == 'process_type'
+from src.utils.DataUtil import *
 
 
-# Removing whitespace from the column VALUES
-assert data['process_type'][1] == 'Engine-Mount    ' and not data['process_type'][1] == 'Engine-Mount'
-data = data.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+assert not inputData.columns[2] == 'process_type'
+assert inputData[inputData.columns[2]][1] == 'Engine-Mount    ' and not inputData[inputData.columns[2]][1] == 'Engine-Mount'
+
+data = cleanData(inputData)
+
+# Check: Removing whitespace from the column NAMES
+assert data.columns[2] == 'process_type'
+# Check:  Removing whitespace from the column VALUES
 assert data['process_type'][1] == 'Engine-Mount'
 
 # %% markdown [markdown]
 # Dropping the useless 'ndx' column since that is not a variable:
 # %% codecell
-data: DataFrame = data.drop(columns = ['ndx'])
+data: DataFrame = data.drop(columns = ['ndx', 'time'])
 data
+# %% codecell
+# The different unique values of each column variable:
+dataVals = {var: data[var].unique() for var in data.columns}
+dataVals
+
+# %% codecell
+# Going to pass this so that combinations of each of its values can be created
+list(dataVals.values())
+# %% codcell
+# Creating the combinations:
+import itertools
+
+combinations = list(itertools.product(*list(dataVals.values())))
+combinations[:30]
+# %% codecell
+# Transferring temporarily to pandas data frame so can write to comma separated csv easily:
+rawCombData: DataFrame = pd.DataFrame(data = combinations, columns = data.columns)
+rawCombData # 420 combinations!
+# %% codecell
+# Now send to csv and tweak it:
+rawCombData.to_csv(path_or_buf = dataPath + 'rawCombData_totweak.csv', sep = ',')
 # %% markdown [markdown]
 # Next we want to make our data numeric since this is what the NOTEARS algorithm expects. We can do this by label-encoding the non-numeric variables (to make them also numeric, like the current numeric variables).
 # %% codecell
@@ -115,8 +134,6 @@ labelEncData
 # %% codecell
 data
 # %% codecell
-# The different unique values of each column variable:
-dataVals = {var: data[var].unique() for var in data.columns}
 dataVals
 
 
