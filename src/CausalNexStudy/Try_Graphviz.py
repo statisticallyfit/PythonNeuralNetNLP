@@ -70,7 +70,12 @@ variables: Dict[Variable, Dict] = {
         }
     }
 }
+h0, t0 = structures[0]
+print(h0, t0)
+variables[h0]
+variables[t0]
 
+variables['G']['cpd'][0]
 # %% codecell
 graph = renderGraph(structures = structures, variables = variables)
 graph
@@ -78,6 +83,8 @@ graph
 graphWeight = graph.copy()
 graphWeight.edge(tail_name = 'D', head_name = 'G', label = '9.234')
 graphWeight
+# %% codecell
+variables
 # %% codecell
 graphProbs = renderGraphProbabilities(givenGraph= graph, variables = variables)
 graphProbs

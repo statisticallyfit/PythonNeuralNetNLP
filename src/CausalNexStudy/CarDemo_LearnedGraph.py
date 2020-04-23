@@ -446,7 +446,19 @@ Image(filename_carPruned)
 # G1 has many connections so its table holds all the combinations of conditional probabilities.
 bayesNetCPD.cpds['absenteeism_level']
 # %% codecell
-bayesNetCPD.cpds['process_type']
+df: DataFrame = bayesNetCPD.cpds['injury_type']
+df.to_dict()
+# %% codecell
+df
+# %% codecell
+df.to_dict('series')
+
+# %% codecell
+
+df.set_index('process_type').stack()
+
+
+
 # %% codecell
 bayesNetCPD.cpds['uses_op']
 # %% codecell
@@ -636,4 +648,14 @@ assert lessProbAbsent['Absenteeism-03'] < higherProbAbsent['Absenteeism-03'], "S
 
 type(carStructPruned)
 # TODO: want to pass these edge weights to the visualizer function
-carStructPruned.adj
+adjs = list(carStructPruned.adjacency())
+adjs
+
+list(adjs.items())
+h0, t0 = list(adjs.items())[0]
+print(h0, "-----", t0)
+list(t0.items())
+wh0, wi0 = list(t0.items())[0]
+wh0
+wi0['weight']
+adjs['process_type']

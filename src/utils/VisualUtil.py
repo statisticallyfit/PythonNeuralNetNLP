@@ -19,6 +19,7 @@ Desc = str
 
 Key = int
 Legend = Dict[Key , Value]
+WeightInfo = Dict
 
 CondProbDist = Dict
 
@@ -100,25 +101,33 @@ def renderGraph(structures: List[Tuple[Variable, Variable]],
     g = gz.Digraph('G')
 
     # print(structures)
-    for pairs in structures:
+    for head, tail in structures:
         g.attr('node', shape='oval', color='gray')
-        g.node(pairs[0], variables[pairs[0]]['desc'])
-        g.node(pairs[1], variables[pairs[1]]['desc'])
-        g.edge(pairs[0], pairs[1])
+        g.node(head, variables[head]['desc'])
+        g.node(tail, variables[tail]['desc'])
+        g.edge(head, tail)
 
     return g
 
-from causalnex.structure.structuremodel.StructureModel import StructureModel
+
+from causalnex.structure.structuremodel import StructureModel
+
 def renderGraph(weightedGraph: StructureModel) -> gz.Digraph:
     g = gz.Digraph('G')
 
-# TODO update structures here
-    # print(structures)
-    for pairs in structures:
-        g.attr('node', shape='oval', color='gray')
-        g.node(pairs[0], variables[pairs[0]]['desc'])
-        g.node(pairs[1], variables[pairs[1]]['desc'])
-        g.edge(pairs[0], pairs[1])
+    adjacencies: List[Tuple[Variable, Dict[Variable, WeightInfo]]] = list(weightedGraph.adjacency())
+
+    for headNode, edgeDict in adjacencies:
+        edgeList: List[Variable, WeightInfo] = list(edgeDict.items())
+
+        for tailNode, weightInfoDict in edgeList:
+            g.attr('node', shape='oval', color='gray')
+
+            g.node(headNode, headNode) # name, label   # variables[head]['desc'])
+            g.node(tailNode, tailNode) # name, label
+
+            # Setting weighted edge here
+            g.edge(tail_name = headNode, head_name = tailNode,label = str(weightInfoDict['weight']))
 
     return g
 
