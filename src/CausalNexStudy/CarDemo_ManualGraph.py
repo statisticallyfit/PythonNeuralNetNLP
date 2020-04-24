@@ -80,7 +80,7 @@ model.adj
 # %% markdown [markdown]
 # Must remove one edge from the nodes `process_type` --> `uses_op` because the `BayesianNetwork` class must take an a directed **acyclic** graph:
 # %% codecell
-from src.utils.VisualUtil import *
+#from src.utils.VisualUtil import *
 
 
 modelAcyclic: StructureModel = model.copy()
