@@ -80,42 +80,8 @@ model.adj
 # %% markdown [markdown]
 # Must remove one edge from the nodes `process_type` --> `uses_op` because the `BayesianNetwork` class must take an a directed **acyclic** graph:
 # %% codecell
-#from src.utils.VisualUtil import *
+from src.utils.VisualUtil import *
 
-PLAY_FONT_NAME: str = 'Play-Regular.ttf'
-PLAY_FONT_PATH = curPath + 'fonts/' + PLAY_FONT_NAME
-
-INRIA_FONT_NAME: str = 'InriaSans-Regular'
-INRIA_FONT_PATH = curPath + 'fonts/' #+ INRIA_FONT_NAME
-
-ACME_FONT_NAME: str = 'Acme-Regular.ttf'
-ACME_FONT_PATH: str = curPath + 'fonts/acme' #+ ACME_FONT_NAME
-ACME_FONT_PATH
-
-
-def renderGraph(weightedGraph: StructureModel) -> gz.Digraph:
-    g = gz.Digraph('G')
-
-    adjacencies: List[Tuple[Variable, Dict[Variable, WeightInfo]]] = list(weightedGraph.adjacency())
-
-    for headNode, edgeDict in adjacencies:
-        edgeList: List[Variable, WeightInfo] = list(edgeDict.items())
-
-        for tailNode, weightInfoDict in edgeList:
-            g.attr('node', shape='oval', color='red')
-
-            g.node(headNode, headNode) # name, label   # variables[head]['desc'])
-            g.node(tailNode, tailNode) # name, label
-            g.node_attr.update(style = 'filled', fillcolor = 'pink',
-                               fontsize = '12',
-                               fontpath = ACME_FONT_PATH,
-                               fontname = ACME_FONT_NAME) # + '.otf')
-
-            # Setting weighted edge here
-            g.edge(tail_name = headNode, head_name = tailNode,label = str(weightInfoDict['weight']))
-            g.edge_attr.update(color = 'red', fontsize = '10', fontpath = PLAY_FONT_NAME, fontname = PLAY_FONT_NAME)
-
-    return g
 
 modelAcyclic: StructureModel = model.copy()
 modelAcyclic.remove_edge(u = 'uses_op', v = 'process_type')

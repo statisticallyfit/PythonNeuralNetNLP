@@ -95,20 +95,6 @@ def renderGrid(variable: Variable, values: Dict):
     return grids
 
 
-# Renders graph from given structure (with no edge weights currently, but can include these)
-def renderGraph(structures: List[Tuple[Variable, Variable]],
-                variables: Dict[Variable, Dict]) -> gz.Digraph:
-    g = gz.Digraph('G')
-
-    # print(structures)
-    for head, tail in structures:
-        g.attr('node', shape='oval', color='gray')
-        g.node(head, variables[head]['desc'])
-        g.node(tail, variables[tail]['desc'])
-        g.edge(head, tail)
-
-    return g
-
 
 # UNDER DEVELOPMENT:
 # ---------------------------------------------------------------------------------------------------------
@@ -121,10 +107,36 @@ from typing import *
 os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP')
 curPath: str = os.getcwd() + "/src/CausalNexStudy/"
 
+PLAY_FONT_NAME: str = 'Play-Regular.ttf'
+PLAY_FONT_PATH = curPath + 'fonts/' + PLAY_FONT_NAME
+
+INRIA_FONT_NAME: str = 'InriaSans-Regular'
+INRIA_FONT_PATH = curPath + 'fonts/' #+ INRIA_FONT_NAME
+
 ACME_FONT_NAME: str = 'Acme-Regular.ttf'
 ACME_FONT_PATH: str = curPath + 'fonts/acme' #+ ACME_FONT_NAME
 
-def renderGraph(weightedGraph: StructureModel) -> gz.Digraph:
+
+Color = str
+
+PINK = '#ff63e2'
+CHERRY = '#ff638d'
+LIGHT_PINK = '#ffe6fa'
+LIGHT_PURPLE = '#e6d4ff'
+PURPLE = '#8a49e6'
+LIGHT_TEAL = '#c7f8ff'
+TEAL = '#49d0e2'
+DARK_TEAL = '#0098ad'
+LIGHT_CORNF = '#ceccff'# '#bfcaff'
+DARK_CORNF = '#4564ff'
+CORNFLOWER = '#8fa2ff'
+BLUE = '#63ceff'
+LIGHT_BLUE = '#a3daff'
+DARK_BLUE = '#0098ff'
+LIGHT_GREEN = '#d4ffde'
+
+def renderGraph(weightedGraph: StructureModel,
+                nodeColor: Color = LIGHT_CORNF, edgeColor: Color = CHERRY) -> gz.Digraph:
     g = gz.Digraph('G')
 
     adjacencies: List[Tuple[Variable, Dict[Variable, WeightInfo]]] = list(weightedGraph.adjacency())
@@ -133,24 +145,51 @@ def renderGraph(weightedGraph: StructureModel) -> gz.Digraph:
         edgeList: List[Variable, WeightInfo] = list(edgeDict.items())
 
         for tailNode, weightInfoDict in edgeList:
-            g.attr('node', shape='oval', color='red')
+            g.attr('node', shape='oval') #, color='red')
 
             g.node(headNode, headNode) # name, label   # variables[head]['desc'])
             g.node(tailNode, tailNode) # name, label
-            g.node_attr.update(style = 'filled', fillcolor = 'pink',
-                               fontsize = '12',
-                               fontpath = ACME_FONT_PATH,
-                               fontname = ACME_FONT_NAME) # + '.otf')
+            g.node_attr.update(style = 'filled', gradientangle = '90', penwidth='1',
+                               fillcolor= nodeColor + ":white" , color = edgeColor,
+                               fontsize = '12',  fontpath = ACME_FONT_PATH, fontname = ACME_FONT_NAME) # + '.otf')
 
             # Setting weighted edge here
             g.edge(tail_name = headNode, head_name = tailNode,label = str(weightInfoDict['weight']))
-            g.edge_attr.update(color = 'red', fontsize = '10', fontpath = ACME_FONT_PATH, fontname = ACME_FONT_NAME)
+            g.edge_attr.update(color = edgeColor, penwidth='1',
+                               fontsize = '10', fontpath = PLAY_FONT_NAME, fontname = PLAY_FONT_NAME)
+
+    return g
+
+# UNDER DEVELOPMENT:
+# ---------------------------------------------------------------------------------------------------------
+
+
+# Renders graph from given structure (with no edge weights currently, but can include these)
+def renderGraph(structures: List[Tuple[Variable, Variable]],
+                variables: Dict[Variable, Dict],
+                nodeColor: Color = LIGHT_CORNF, edgeColor: Color = CHERRY) -> gz.Digraph:
+    g = gz.Digraph('G')
+
+    # print(structures)
+    for headNode, tailNode in structures:
+        g.attr('node', shape='oval') #, color='red')
+
+        g.node(headNode, headNode) # name, label   # variables[head]['desc'])
+        g.node(tailNode, tailNode) # name, label
+        g.node_attr.update(style = 'filled', gradientangle = '90', penwidth='1',
+                           fillcolor= nodeColor + ":white" , color = edgeColor,
+                           fontsize = '12',  fontpath = ACME_FONT_PATH, fontname = ACME_FONT_NAME) # + '.otf')
+
+        # Setting weighted edge here
+        g.edge(tail_name = headNode, head_name = tailNode) #,label = str(weightInfoDict['weight']))
+        g.edge_attr.update(color = edgeColor, penwidth='1',
+                           fontsize = '10', fontpath = PLAY_FONT_NAME, fontname = PLAY_FONT_NAME)
 
     return g
 
 
-# UNDER DEVELOPMENT:
-# ---------------------------------------------------------------------------------------------------------
+
+
 
 def renderGraphProbabilities(givenGraph: gz.Digraph,
                              variables: Dict[Variable, Dict]) -> gz.Digraph:
@@ -159,18 +198,18 @@ def renderGraphProbabilities(givenGraph: gz.Digraph,
     g = givenGraph.copy() # make this just a getter, not a setter also!
 
     for var, values in variables.items():
-        givenGraph.attr('node', shape ='plaintext')
+        g.attr('node', shape ='plaintext')
         grids = renderGrid(var, values)
 
         table = renderTable(var, values, grids)
         random.seed(hash(table))
-        givenGraph.node('cpd_' + var, label=table, color='gray')
+        g.node('cpd_' + var, label=table, color='gray')
         if random.randint(0,1):
-            givenGraph.edge('cpd_' + var, var, style='invis')
+            g.edge('cpd_' + var, var, style='invis')
         else:
-            givenGraph.edge(var, 'cpd_' + var, style='invis')
+            g.edge(var, 'cpd_' + var, style='invis')
 
-    return givenGraph
+    return g
 
 
 
