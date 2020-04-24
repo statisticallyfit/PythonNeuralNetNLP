@@ -60,7 +60,8 @@ Image(filename_demo)
 # %% markdown [markdown]
 # Showing with graphviz (my function)
 # %% codecell
-from src.utils.VisualUtil import *
+#from src.utils.VisualUtil import *
+
 
 renderGraph(weightedGraph = model)
 
@@ -152,4 +153,6 @@ bayesNet.cpds['absenteeism_level']
 # %% markdown
 # Showing the final rendered graph with the conditional probability distributions alongside the nodes:
 # %% codecell
-Image(filename = curPath + 'modelWithCPDs.png')
+#Image(filename = curPath + 'modelWithCPDs.png')
+graph = renderGraph(weightedGraph = model)
+#graphProbs = renderGraphProbabilities(givenGraph = graph, variables = ???)
