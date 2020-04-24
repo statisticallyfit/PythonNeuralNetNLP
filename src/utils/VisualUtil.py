@@ -110,7 +110,19 @@ def renderGraph(structures: List[Tuple[Variable, Variable]],
     return g
 
 
+# UNDER DEVELOPMENT:
+# ---------------------------------------------------------------------------------------------------------
+
 from causalnex.structure.structuremodel import StructureModel
+
+import os
+from typing import *
+# Setting the baseline:
+os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP')
+curPath: str = os.getcwd() + "/src/CausalNexStudy/"
+
+ACME_FONT_NAME: str = 'Acme-Regular.ttf'
+ACME_FONT_PATH: str = curPath + 'fonts/acme' #+ ACME_FONT_NAME
 
 def renderGraph(weightedGraph: StructureModel) -> gz.Digraph:
     g = gz.Digraph('G')
@@ -121,16 +133,24 @@ def renderGraph(weightedGraph: StructureModel) -> gz.Digraph:
         edgeList: List[Variable, WeightInfo] = list(edgeDict.items())
 
         for tailNode, weightInfoDict in edgeList:
-            g.attr('node', shape='oval', color='gray')
+            g.attr('node', shape='oval', color='red')
 
             g.node(headNode, headNode) # name, label   # variables[head]['desc'])
             g.node(tailNode, tailNode) # name, label
+            g.node_attr.update(style = 'filled', fillcolor = 'pink',
+                               fontsize = '12',
+                               fontpath = ACME_FONT_PATH,
+                               fontname = ACME_FONT_NAME) # + '.otf')
 
             # Setting weighted edge here
             g.edge(tail_name = headNode, head_name = tailNode,label = str(weightInfoDict['weight']))
+            g.edge_attr.update(color = 'red', fontsize = '10', fontpath = ACME_FONT_PATH, fontname = ACME_FONT_NAME)
 
     return g
 
+
+# UNDER DEVELOPMENT:
+# ---------------------------------------------------------------------------------------------------------
 
 def renderGraphProbabilities(givenGraph: gz.Digraph,
                              variables: Dict[Variable, Dict]) -> gz.Digraph:

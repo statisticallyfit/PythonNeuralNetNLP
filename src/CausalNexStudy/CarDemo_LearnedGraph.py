@@ -644,18 +644,3 @@ lessProbAbsent
 assert lessProbAbsent['Absenteeism-00'] > higherProbAbsent['Absenteeism-00'], "Should have higher probability of Absenteeism-00 for Electrical-Burn than for Contusion (burn is less serious than contusion)"
 
 assert lessProbAbsent['Absenteeism-03'] < higherProbAbsent['Absenteeism-03'], "Should have higher probability of Absenteeism-03 for Contusion than for Electrical-Burn (Contusion is more serious than burn)"
-# %% codecell
-
-type(carStructPruned)
-# TODO: want to pass these edge weights to the visualizer function
-adjs = list(carStructPruned.adjacency())
-adjs
-
-list(adjs.items())
-h0, t0 = list(adjs.items())[0]
-print(h0, "-----", t0)
-list(t0.items())
-wh0, wi0 = list(t0.items())[0]
-wh0
-wi0['weight']
-adjs['process_type']
