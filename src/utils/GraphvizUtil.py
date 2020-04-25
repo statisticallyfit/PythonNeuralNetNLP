@@ -116,7 +116,7 @@ INRIA_FONT_NAME: str = 'InriaSans-Regular'
 INRIA_FONT_PATH = curPath + 'fonts/' #+ INRIA_FONT_NAME
 
 ACME_FONT_NAME: str = 'Acme-Regular.ttf'
-ACME_FONT_PATH: str = curPath + 'fonts/acme' #+ ACME_FONT_NAME
+ACME_FONT_PATH: str = curPath + 'fonts/acme/' #+ ACME_FONT_NAME
 
 
 Color = str
@@ -137,8 +137,8 @@ LIGHT_BLUE = '#a3daff'
 DARK_BLUE = '#0098ff'
 LIGHT_GREEN = '#d4ffde'
 
-def renderGraph(weightedGraph: StructureModel,
-                nodeColor: Color = LIGHT_CORNF, edgeColor: Color = CHERRY) -> gz.Digraph:
+def renderStructure(weightedGraph: StructureModel,
+                    nodeColor: Color = LIGHT_CORNF, edgeColor: Color = CHERRY) -> gz.Digraph:
     g = gz.Digraph('G')
 
     adjacencies: List[Tuple[Variable, Dict[Variable, WeightInfo]]] = list(weightedGraph.adjacency())
@@ -162,51 +162,15 @@ def renderGraph(weightedGraph: StructureModel,
 
     return g
 
-# UNDER DEVELOPMENT:
-# ---------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-def renderGraphProbabilities(givenGraph: gz.Digraph,
-                             variables: Dict[Variable, Dict]) -> gz.Digraph:
-    # import random
-
-    g = givenGraph.copy() # make this just a getter, not a setter also!
-
-    for var, values in variables.items():
-        g.attr('node', shape ='plaintext')
-
-        grids = renderGrid(var, values)
-
-        table = renderTable(var, values, grids)
-
-        random.seed(hash(table))
-
-        #g.node('cpd_' + var, label=table, color='gray')
-        g.node('cpd_' + var, label=table, color='gray', fillcolor='white') #, color='gray')
-
-        if random.randint(0,1):
-            g.edge('cpd_' + var, var, style='invis')
-        else:
-            g.edge(var, 'cpd_' + var, style='invis')
-
-    return g
-
-
-
-
 
 
 # NOTE: need to keep the second arg 'variables` or else python confuses this function with the previous one,
 # that takes in the causalnex structure model.
 
 # Renders graph from given structure (with no edge weights currently, but can include these)
-def renderGraph(structures: List[Tuple[Variable, Variable]],
-                variables: Dict[Variable, Dict],
-                nodeColor: Color = LIGHT_CORNF, edgeColor: Color = CHERRY) -> gz.Digraph:
+def renderGraphFromDict(structures: List[Tuple[Variable, Variable]],
+                        variables: Dict[Variable, Dict],
+                        nodeColor: Color = LIGHT_CORNF, edgeColor: Color = CHERRY) -> gz.Digraph:
     g = gz.Digraph('G')
 
     # print(structures)
@@ -232,6 +196,86 @@ def renderGraph(structures: List[Tuple[Variable, Variable]],
 
     return g
 
+
+
+# -------------------------------------------------------------
+from pgmpy.models.BayesianModel import BayesianModel
+from networkx.classes.reportviews import OutEdgeView
+
+# Just render graph from edge tuples
+def renderGraphFromBayes(bayesModel: BayesianModel,
+                         #structures: List[Tuple[Variable, Variable]],
+                         nodeColor: Color = LIGHT_CORNF, edgeColor: Color = CHERRY) -> gz.Digraph:
+
+    # Getting the edges (the .edges() results in NetworkX OutEdgeView object)
+    structures: List[Tuple[Variable, Variable]] = list(iter(bayesModel.edges()))
+
+    return renderGraphFromEdges(structures = structures,
+                                nodeColor = nodeColor, edgeColor = edgeColor)
+
+
+
+
+def renderGraphFromEdges(structures: List[Tuple[Variable, Variable]],
+                         #structures: List[Tuple[Variable, Variable]],
+                         nodeColor: Color = LIGHT_CORNF, edgeColor: Color = CHERRY) -> gz.Digraph:
+
+    # Getting the edges (the .edges() results in NetworkX OutEdgeView object)
+    #structures: List[Tuple[Variable, Variable]] = list(iter(bayesModel.edges()))
+
+    g = gz.Digraph('G')
+
+    # print(structures)
+    #for headNode, tailNode in structures:
+    for pair in structures:
+        headNode, tailNode = pair
+
+        g.attr('node', shape='oval') #, color='red')
+
+        g.node(name = headNode, label = headNode)
+        g.node(name = tailNode, label = tailNode)
+
+
+        g.node_attr.update(style = 'filled', gradientangle = '90', penwidth='1',
+                           fillcolor= nodeColor + ":white" , color = edgeColor,
+                           fontsize = '12',  fontpath = ACME_FONT_PATH, fontname = ACME_FONT_NAME) # + '.otf')
+
+        # Setting weighted edge here
+        g.edge(tail_name = headNode, head_name = tailNode)
+        # g.edge(tail_name = headNode, head_name = tailNode) #,label = str(weightInfoDict['weight']))
+        g.edge_attr.update(color = edgeColor, penwidth='1',
+                           fontsize = '10', fontpath = PLAY_FONT_NAME, fontname = PLAY_FONT_NAME)
+
+    return g
+
+
+
+
+
+def renderGraphCPDTables(graphNoTable: gz.Digraph,
+                         variables: Dict[Variable, Dict]) -> gz.Digraph:
+    # import random
+
+    g = graphNoTable.copy() # make this just a getter, not a setter also!
+
+    for var, values in variables.items():
+        g.attr('node', shape ='plaintext')
+
+        grids = renderGrid(var, values)
+
+        table = renderTable(var, values, grids)
+
+        random.seed(hash(table))
+
+        #g.node('cpd_' + var, label=table, color='gray')
+        g.node('cpd_' + var, label=table, color='gray', fillcolor='white') #, color='gray')
+
+        if random.randint(0,1):
+            g.edge('cpd_' + var, var, style='invis')
+        else:
+            g.edge(var, 'cpd_' + var, style='invis')
+
+    return g
 
 
 

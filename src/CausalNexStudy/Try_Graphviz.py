@@ -25,7 +25,7 @@ sys.path
 
 
 # %% codecell
-from src.utils.VisualUtil import *
+from src.utils.GraphvizUtil import *
 
 
 structures: List[Tuple[Variable, Variable]] = [('D', 'G'), ('I', 'G'), ('G', 'L'), ('I', 'S')]
@@ -72,7 +72,7 @@ variables: Dict[Variable, Dict] = {
 }
 
 # %% codecell
-graph = renderGraph(structures = structures, variables = variables)
+graph = renderGraphFromDict(structures = structures, variables = variables)
 graph
 # %% codecell
 graphWeight = graph.copy()
@@ -81,5 +81,5 @@ graphWeight
 # %% codecell
 variables
 # %% codecell
-graphProbs = renderGraphProbabilities(givenGraph= graph, variables = variables)
+graphProbs = renderGraphCPDTables(graphNoTable= graph, variables = variables)
 graphProbs
