@@ -170,17 +170,28 @@ cpdState_S = TabularCPD(variable = 'S', variable_card = 2, values = [[0.95, 0.2]
 # Associating the CPDs with the network:
 model.add_cpds(cpdState_D, cpdState_I, cpdState_G, cpdState_L, cpdState_S)
 assert model.check_model()
+
+
+
 # %% codecell
+# DEVELOPMENT ------------------------------------------------------------------------------------------
 # TODO: to visually generate from this values format into variables format of TryGraphviz file, must put in dictionary (nested) then 2) tweak
 cpdState_G.variables
+# %% codecell
 cpdState_G.values
+# %% codecell
 cpdState_G.get_values()
+# %% codecell
 cpdState_G.get_evidence()
+# %% codecell
 
 cpdState_G.__dict__
-
-
+# %% codecell
 model.__dict__
+# DEVELOPMENT ------------------------------------------------------------------------------------------
+
+
+
 # %% codecell
 from src.utils.GraphvizUtil import *
 
@@ -264,15 +275,110 @@ from src.utils.GraphvizUtil import *
 
 causal: List[Tuple[Variable, Variable]] = [('A', 'B'), ('B', 'C')]
 evidential: List[Tuple[Variable, Variable]] = [('C', 'B'), ('B', 'A')]
+commonEvidence : List[Tuple[Variable, Variable]] = [('A', 'B'), ('C', 'B')]
+commonCause: List[Tuple[Variable, Variable]] = [('B', 'A'), ('B', 'C')]
 
-g1 = renderGraphFromEdges(structures = causal)
-g2 = renderGraphFromEdges(structures = evidential)
-[g1, g2]
+causalGraph = renderGraphFromEdges(structures = causal)
+evidentialGraph = renderGraphFromEdges(structures = evidential)
+commonEvidenceGraph = renderGraphFromEdges(structures = commonEvidence)
+commonCauseGraph = renderGraphFromEdges(structures = commonCause)
 
+# %% codecell
+causalGraph
+# %% codecell
+evidentialGraph
+# %% codecell
+commonEvidenceGraph
+# %% codecell
+commonCauseGraph
+
+# %% codecell
+# TODO Showing above graphs from image form (more accurate)
+Image(filename = imagePath + 'fourConnections.png')
 # %% markdown
 # Now in the above cases we will see the flow of influence from $A$ to $C$ under various cases:
 #
 # 1. **Causal:**
 #       * **General Case:** in the general case when we make changes to variable $A$, this will have an effect on variable $B$, and this change in $B$ will change the values in $C$.
 #       * **Other Case:** One other possible case is when $B$ is *observed* (means we know the value of $B$, so it is fixed). In this case, any change in $A$ won't affect $B$ since $B$'s value is already known. Then, there won't be any change in $C$ since it depends only on $B$. Mathematically, we can say that: $( A \; \bot \; C \; | \; B)$.
-# 2. **Evidential:**
+# 2. **Evidential:** Like in the **Causal** case, also observing $B$ renders $C$ independent of $A$. Otherwise when $B$ is not observed the influences flows from $A$ to $C$. Hence again $( A \; \bot \; C \; | \; B)$.
+# 3. **Common Evidence:** This case is different from above. When $B$ is not observed (so when $B$ is not fixed in value)  any change in $A$ reflects some change in $B$ but not in $C$.
+#       * **Example 1:** Take the example of `Difficulty` $\rightarrow$ `Grade` $\leftarrow$ `Intelligence`. If we increase the `Difficulty` of the course, then the probability of getting a higher `Grade` falls but this has no effect on the `Intelligence` of the student.
+#       * **Example 2:** But when the node $B$ is observed (here `Grade` is observed, such as the student got a good grade, so the variable `Grade` is fixed), then if we increase the `Difficulty` of the course this will increase the probability of the student being `Intelligent` since we already know that he got a good `Grade`. Hence in thise case $(A \; \bot \; C)$ (so `Difficulty` and `Intelligence` are independent) and also $(A \; \bot \; C \; | \; B)$ (which means `Difficulty` and `Intelligence` are independent when conditional on `Grade`). This is known as the $V$ structure.
+# 4. **Common Cause:** the influence flows from $A$ to $C$ when $B$ is not observed. ($\color{red}{\text{TODO: but by this structure's definition, influence can never flow from A to C}}$)
+#
+#   $\color{red}{\text{TODO: not clear here}}$ But when $B$ is observed and ($\color{red}{\text{THEN??}}$) change in $A$ doesn't affect $C$ since it is only dependent on $B$. So here also $(A \; \bot \; C \; | \; B)$.
+#
+# See a few examples for finding independencies in a network using pgmpy:
+# %% codecell
+causalModel = BayesianModel(causal)
+
+causalGraph
+
+assert str(causalModel.local_independencies('A')) == '(A _|_ B, C)', "Should: A is independent of B and C, at the same time"
+
+assert str(causalModel.local_independencies('B')) == '(B _|_ C | A)', 'Should: B is independent of C, given A (given B is conditional on A)'
+
+# TODO is this 'should' statement true?
+assert str(causalModel.local_independencies('C')) == '(C _|_ A | B)', 'Should: C is independent of A once conditional on B'
+
+# %% codecell
+evidentialModel = BayesianModel(evidential)
+
+evidentialGraph
+
+assert str(evidentialModel.local_independencies('A')) == '(A _|_ C | B)', 'Should: A is independent of C once conditional on B'
+
+assert str(evidentialModel.local_independencies('B')) == '(B _|_ A | C)', "Should: B is independent of A once conditional on C"
+
+# TODO this doesn't seem correct - how can C and B be independent?
+assert str(evidentialModel.local_independencies('C')) == '(C _|_ B, A)', 'Should: C is independent of both B and A'
+
+# %% codecell
+commonEvidenceModel = BayesianModel(commonEvidence)
+commonEvidenceGraph
+assert str(commonEvidenceModel.local_independencies('A')) == '(A _|_ B, C)', 'Should: A is independent of both B and C'
+
+# TODO why not say that B is independent of A and C once conditional on them both??
+assert str(commonEvidenceModel.local_independencies('B')) == ''
+
+assert str(commonEvidenceModel.local_independencies('C')) == '(C _|_ B, A)', 'Should: C is independent of both B and A'
+
+
+from pgmpy.independencies import Independencies
+independencies = Independencies(['X', 'Y', 'Z'])
+independencies.get_assertions()
+
+Independencies(['A', 'B']).get_assertions()
+
+Independencies(['X', 'Y', 'Z'],
+              ['a', ['b', 'c'], 'd'],
+              ['l', ['m', 'n'], 'o']).get_assertions()
+
+# -------------------------------
+assert list(map(lambda x : str(x),
+                causalModel.get_independencies().get_assertions())) == ['(A _|_ C | B)', '(C _|_ A | B)']
+
+assert list(map(lambda x : str(x),
+                evidentialModel.get_independencies().get_assertions())) == ['(C _|_ A | B)', '(A _|_ C | B)']
+
+assert list(
+    map(lambda x : str(x),
+        commonEvidenceModel.get_independencies().get_assertions())) == ['(A _|_ C)', '(C _|_ A)'], \
+    'Should: A and C are independent of each other!'
+
+list(map(lambda x : str(x),
+                commonCauseModel.get_independencies().get_assertions()))
+
+
+# %% codecell
+commonCauseModel = BayesianModel(commonCause)
+
+commonCauseGraph
+commonCauseModel.local_independencies('B')
+assert str(commonCauseModel.local_independencies('A')) == '(A _|_ C | B)', 'Should: A and C are independent once conditional on B'
+
+assert str(commonCauseModel.local_independencies('B')) == '(B _|_ C, A)', "Should: B is independent of C AND A at the same time"
+
+# TODO this doesn't seem correct - how can C and B be independent?
+assert str(commonCauseModel.local_independencies('C')) == '(C _|_ B, A)', 'Should: C and B are independent, regardless of A'
