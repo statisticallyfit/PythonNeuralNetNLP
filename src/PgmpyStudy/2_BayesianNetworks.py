@@ -414,27 +414,60 @@ otherNodes: Set[str] = set(iter(model.nodes())) - set(queryNode)
 
 #Independencies([queryNode, otherNodes])
 assert model.local_independencies('D') == Independencies(['D', ['G', 'S', 'I', 'L']]), 'Check: D is independent of all G, S, I, and L'
- model.local_independencies('D') in [Independencies(['D', ['G', 'S', 'I', 'L']])]
+model.local_independencies('D') in [Independencies(['D', ['G', 'S', 'I', 'L']])]
 #assert str(model.local_independencies('D')) == '(D _|_ S, I, G, L)', 'Check: D is independent of all L, S, I, and G'
 
-#strCombos: List[str] = list(map(lambda tupleCombo : ', '.join(tupleCombo),
-                                itertools.permutations(otherNodes)))
+#strCombos: List[str] = list(map(lambda tupleCombo : ', '.join(tupleCombo),itertools.permutations(otherNodes)))
 #allIndependenciesOfD: List[str] = list(map(lambda strCombo : f"(D _|_ {strCombo})", strCombos))
 
 
-queryNode: str = 'G'
-otherNodes1: Set[str] = set(['S', 'L'])
-otherNodes2 = set(['I', 'D'])
+
 assert model.local_independencies('G') == Independencies(['G', ['S', 'L'], ['I','D']]), 'Check: G is independent of (L, and S) given (I, and D)'
 assert str(Independencies(['G', ['L', 'S'], ['I','D']])) == '(G _|_ S, L | I, D)'
 
+################
+queryNode: str = 'D'
+otherNodes: Set[str] = set(iter(model.nodes())) - set(queryNode)
 
-strCombos1: List[str] = list(map(lambda tupleCombo : ', '.join(tupleCombo),
-                                itertools.permutations(otherNodes1))); strCombos1
-strCombos2: List[str] = list(map(lambda tupleCombo : ', '.join(tupleCombo),
-                                itertools.permutations(otherNodes2))); strCombos2
-allIndependenciesOfD: List[str] = list(map(lambda strCombo : f"(D _|_ {strCombo})", strCombos))
+#beforeCondNodes: Set[str] = set(['S', 'L'])
+#afterCondNodes = set(['I', 'D'])
+others = [beforeCondNodes, afterCondNodes]; others
+otherStrList = []
+for letterGroup in others:
+    strCombos: List[str] = list(map(lambda tupleCombo : ', '.join(tupleCombo),itertools.permutations(letterGroup)))
+    otherStrList.append(strCombos)
+otherStrList
 
+condCombos = list(itertools.product(*otherStrList)); condCombos
+condCombos: List[str] = list(map(lambda condPair : ' | '.join(condPair), condCombos)); condCombos
+#beforeCondStrCombos: List[str] = list(map(lambda tupleCombo : ', '.join(tupleCombo),
+#                                          itertools.permutations(beforeCondNodes))); beforeCondStrCombos
+#afterCondStrCombos: List[str] = list(map(lambda tupleCombo : ', '.join(tupleCombo),
+#                                         itertools.permutations(afterCondNodes))); afterCondStrCombos
+#strCombos: List[str] = list(map(lambda tupleCombo : ', '.join(tupleCombo),itertools.permutations(otherNodes))); strCombos
+# create combinations using the conditional sign: (mix up)
+
+
+independencyCombos = list(map(lambda condComboStr : f"{queryNode} _|_ {condComboStr}", condCombos)); independencyCombos
+
+#allIndependenciesOfD: List[str] = list(map(lambda strCombo : f"(D _|_ {strCombo})", strCombos))
+
+
+
+# %% codecell
+renderGraphFromBayes(model)
+# %% codecell
+model3: BayesianModel = model.copy()
+model3.add_edge(u = 'L', v = 'H')
+model3.add_edge(u = 'H', v = 'W')
+model3.add_edge(u = 'S', v = 'L')
+model3.add_edge(u = 'S', v = 'W')
+model3.add_edge(u = 'I', v = 'W')
+model3.add_edge(u = 'D', v = 'W')
+renderGraphFromBayes(model3)
+
+model3.local_independencies('W')
+# %% codecell
 #otherCombos: List[Tuple[Variable]] = list(itertools.permutations(otherNodes))
 #list(map(lambda otherNodesCombo : Independencies([queryNode, otherNodesCombo]), otherCombos))
 
