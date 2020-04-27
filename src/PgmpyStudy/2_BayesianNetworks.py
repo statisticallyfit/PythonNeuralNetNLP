@@ -318,14 +318,15 @@ causalGraph
 # %% codecell
 causalModel = BayesianModel(causal)
 
+indepA: Independencies = causalModel.local_independencies('A')
 
-assert causalModel.local_independencies('A') == Independencies(['A', ['B', 'C']]), "Check: A is independent of B and C, at the same time"
-# assert str(Independencies(['A', ['B', 'C']])) == '(A _|_ C, B)'
-# SANITY LOGGER:
-# was (A _|_ B, C) before
+assert indepA == Independencies(['A', ['B', 'C']]), "Check: A is independent of B and C, at the same time"
+assert str(indepA) in allIndependencies(model = causalModel, queryNode='A')
 
+independenciesTable(model = causalModel, queryNode='A')
 
-
+# %% codecell
+# Study of causalModel continued ...
 assert str(causalModel.local_independencies('B')) == '(B _|_ C | A)', 'Check: B is independent of C, given A (so event "B is independent of C" is conditional on A)'
 
 
@@ -350,7 +351,21 @@ assert str(evidentialModel.local_independencies('B')) == '(B _|_ A | C)', "Check
 # TODO this doesn't seem correct - how can C and B be independent?
 assert evidentialModel.local_independencies('C') == Independencies(['C', ['B','A']]), 'Check: C is independent of both B and A'
 # assert str(Independencies(['C', ['B','A']])) == '(C _|_ B, A)'
-# SANITY logger (not C _|_ A,B)
+# SANITY logger (not C _|_ A,B) ------------------
+
+
+# TODO NEXT
+indepG: Independencies = model.local_independencies('G')
+
+assert indepG == Independencies(['G', ['S', 'L'], ['I','D']]), 'Check: G is independent of (L, and S) given (I, and D)'
+
+assert str(indepG) in allIndependencies(model=model, queryNode='G', otherNodes=[['L', 'S'], ['I','D']])
+
+
+independenciesTable(model = model, queryNode = 'G', otherNodes = [['L', 'S'], ['I','D']])
+#-------------------------------------------------
+
+
 
 indeps = list(map(lambda x : str(x), evidentialModel.get_independencies().get_assertions()))
 assert indeps == ['(C _|_ A | B)', '(A _|_ C | B)'], 'Check: overall independencies of evidential model'
