@@ -235,16 +235,17 @@ def renderGraphFromEdges(structures: List[Tuple[Variable, Variable]],
         g.node(name = headNode, label = headNode)
         g.node(name = tailNode, label = tailNode)
 
-
-        g.node_attr.update(style = 'filled', gradientangle = '90', penwidth='1',
-                           fillcolor= nodeColor + ":white" , color = edgeColor,
-                           fontsize = '12',  fontpath = ACME_FONT_PATH, fontname = ACME_FONT_NAME) # + '.otf')
-
         # Setting weighted edge here
         g.edge(tail_name = headNode, head_name = tailNode)
         # g.edge(tail_name = headNode, head_name = tailNode) #,label = str(weightInfoDict['weight']))
-        g.edge_attr.update(color = edgeColor, penwidth='1',
-                           fontsize = '10', fontpath = PLAY_FONT_NAME, fontname = PLAY_FONT_NAME)
+
+
+    g.edge_attr.update(color = edgeColor, penwidth='1',
+                       fontsize = '10', fontpath = PLAY_FONT_NAME, fontname = PLAY_FONT_NAME)
+
+    g.node_attr.update(style = 'filled', gradientangle = '90', penwidth='1',
+                       fillcolor= nodeColor + ":white" , color = edgeColor,
+                       fontsize = '12',  fontpath = ACME_FONT_PATH, fontname = ACME_FONT_NAME) # + '.otf')
 
     return g
 

@@ -18,6 +18,8 @@ from typing import *
 from typing import Union, List, Any
 
 from networkx.classes.reportviews import OutEdgeDataView, OutEdgeView
+from pgmpy.independencies import Independencies
+import itertools
 
 os.getcwd()
 # Setting the baseline:
@@ -47,6 +49,14 @@ sys.path
 # Science-related imports:
 # %% codecell
 from IPython.display import Image
+
+
+# %% codecell
+# Declaring type aliases for clarity:
+Variable = str
+Value = str
+
+
 # %% markdown
 # ## 1. What are Bayesian Models
 # **Definition:** A **bayesian network** or **probabilistic directed acyclic graphical model** is a **probabilistic graphical model (PGM)** that represents a set of random variables and their conditional dependencies via a **directed acyclic graph (DAG)**.
@@ -174,7 +184,9 @@ assert model.check_model()
 
 
 # %% codecell
-# DEVELOPMENT ------------------------------------------------------------------------------------------
+
+
+# START PIC DEVELOPMENT ----------------------------------------------------------------------------
 # TODO: to visually generate from this values format into variables format of TryGraphviz file, must put in dictionary (nested) then 2) tweak
 cpdState_G.variables
 # %% codecell
@@ -190,7 +202,7 @@ cpdState_G.__dict__
 model.__dict__
 # DEVELOPMENT ------------------------------------------------------------------------------------------
 
-
+# END PIC DEVELOPMENT ----------------------------------------------------------------------------
 
 # %% codecell
 from src.utils.GraphvizUtil import *
@@ -262,14 +274,14 @@ renderGraphFromBayes(bayesModel = convertDaftToPgmpy(pgm = graphBToA))
 # %% markdown
 # Above it is obvious that any change of the node will affect the other node.
 #
-# For graph 1: if we take `difficulty --> grade` and increase the difficulty then the probability of getting a higher grade decreases.
-#
-# For graph 2: if we take `SAT <-- Intelligence` and increase the probability of getting a good score on the SAT then that implies the student is intelligent, hence increasing the probability of the event `Intelligence = Intelligent`.
+# * For graph 1: if we take `Difficulty` $\rightarrow$ `Grade` and increase the difficulty then the probability of getting a higher grade decreases.
+# * For graph 2: if we take `SAT` $\leftarrow$ `Intelligence` and increase the probability of getting a good score on the SAT then that implies the student is intelligent, hence increasing the probability of the event `Intelligence := Intelligent`.
 #
 # Therefore in both cases above any change in the variables lead to change in the other variable.
 #
-# Now there are four possible ways of connection between $3$ nodes:
-
+# Note there are four possible ways of connection between any $3$ nodes:
+# %% codecell
+Image(filename = imagePath + 'fourConnections.png')
 # %% codecell
 from src.utils.GraphvizUtil import *
 
@@ -283,18 +295,8 @@ evidentialGraph = renderGraphFromEdges(structures = evidential)
 commonEvidenceGraph = renderGraphFromEdges(structures = commonEvidence)
 commonCauseGraph = renderGraphFromEdges(structures = commonCause)
 
-# %% codecell
-causalGraph
-# %% codecell
-evidentialGraph
-# %% codecell
-commonEvidenceGraph
-# %% codecell
-commonCauseGraph
+# using later
 
-# %% codecell
-# TODO Showing above graphs from image form (more accurate)
-Image(filename = imagePath + 'fourConnections.png')
 # %% markdown
 # Now in the above cases we will see the flow of influence from $A$ to $C$ under various cases:
 #
@@ -309,99 +311,206 @@ Image(filename = imagePath + 'fourConnections.png')
 #
 #   $\color{red}{\text{TODO: not clear here}}$ But when $B$ is observed and ($\color{red}{\text{THEN??}}$) change in $A$ doesn't affect $C$ since it is only dependent on $B$. So here also $(A \; \bot \; C \; | \; B)$.
 #
-# See a few examples for finding independencies in a network using pgmpy:
+# ### Study: Independencies for Abstract Structure Types
+# Using the structures above, study how independencies are found:
+# %% codecell
+causalGraph
 # %% codecell
 causalModel = BayesianModel(causal)
 
-causalGraph
 
-assert str(causalModel.local_independencies('A')) == '(A _|_ B, C)', "Should: A is independent of B and C, at the same time"
+assert causalModel.local_independencies('A') == Independencies(['A', ['B', 'C']]), "Check: A is independent of B and C, at the same time"
+assert str(Independencies(['A', ['B', 'C']])) == '(A _|_ C, B)'
+# SANITY LOGGER:
+# was (A _|_ B, C) before
 
-assert str(causalModel.local_independencies('B')) == '(B _|_ C | A)', 'Should: B is independent of C, given A (given B is conditional on A)'
+
+
+assert str(causalModel.local_independencies('B')) == '(B _|_ C | A)', 'Check: B is independent of C, given A (so event "B is independent of C" is conditional on A)'
+
 
 # TODO is this 'should' statement true?
-assert str(causalModel.local_independencies('C')) == '(C _|_ A | B)', 'Should: C is independent of A once conditional on B'
+assert str(causalModel.local_independencies('C')) == '(C _|_ A | B)', 'Check: C is independent of A when conditional on B'
 
 
 indeps = list(map(lambda x : str(x), causalModel.get_independencies().get_assertions()))
-assert indeps == ['(A _|_ C | B)', '(C _|_ A | B)'], 'Should: overall independencies of causal model'
+assert indeps == ['(A _|_ C | B)', '(C _|_ A | B)'], 'Check: overall independencies of causal model'
 
+
+# %% codecell
+evidentialGraph
 # %% codecell
 evidentialModel = BayesianModel(evidential)
 
-evidentialGraph
+assert str(evidentialModel.local_independencies('A')) == '(A _|_ C | B)', 'Check: A is independent of C once conditional on B'
 
-assert str(evidentialModel.local_independencies('A')) == '(A _|_ C | B)', 'Should: A is independent of C once conditional on B'
+assert str(evidentialModel.local_independencies('B')) == '(B _|_ A | C)', "Check: B is independent of A once conditional on C"
 
-assert str(evidentialModel.local_independencies('B')) == '(B _|_ A | C)', "Should: B is independent of A once conditional on C"
 
 # TODO this doesn't seem correct - how can C and B be independent?
-assert str(evidentialModel.local_independencies('C')) == '(C _|_ B, A)', 'Should: C is independent of both B and A'
+assert evidentialModel.local_independencies('C') == Independencies(['C', ['B','A']]), 'Check: C is independent of both B and A'
+assert str(Independencies(['C', ['B','A']])) == '(C _|_ B, A)'
 
 
 indeps = list(map(lambda x : str(x), evidentialModel.get_independencies().get_assertions()))
-assert indeps == ['(C _|_ A | B)', '(A _|_ C | B)'], 'Should: overall independencies of evidential model'
+assert indeps == ['(C _|_ A | B)', '(A _|_ C | B)'], 'Check: overall independencies of evidential model'
+
 
 # %% codecell
-commonEvidenceModel = BayesianModel(commonEvidence)
 commonEvidenceGraph
-assert str(commonEvidenceModel.local_independencies('A')) == '(A _|_ B, C)', 'Should: A is independent of both B and C'
+# %% codecell
+commonEvidenceModel = BayesianModel(commonEvidence)
 
-# TODO why not say that B is independent of A and C once conditional on them both??
-assert str(commonEvidenceModel.local_independencies('B')) == ''
+assert commonEvidenceModel.local_independencies('A') == Independencies(['A', ['B', 'C']]), 'Check: A is independent of both B and C'
+assert str(Independencies(['A', ['B', 'C']])) == '(A _|_ C, B)'
+# SANITY LOGGER:
+# was before (A _|_ B, C)
 
-assert str(commonEvidenceModel.local_independencies('C')) == '(C _|_ B, A)', 'Should: C is independent of both B and A'
+
+assert commonEvidenceModel.local_independencies('B') == Independencies() # no independency for B TODO why?? Couldn't we say that B is independent of  (A and C) GIVEN (A and C)?
+
+
+assert commonEvidenceModel.local_independencies('C') == Independencies(['C',['B','A']]), 'Check: C is independent of both B and A'
+assert str(Independencies(['C',['B','A']])) == '(C _|_ B, A)'
 
 
 indeps = list(map(lambda x : str(x), commonEvidenceModel.get_independencies().get_assertions()))
-assert indeps == ['(A _|_ C)', '(C _|_ A)'], 'Should: overall independencies of common evidence model (A and C should be independent of each other)'
+assert indeps == ['(A _|_ C)', '(C _|_ A)'], 'Check: overall independencies of common evidence model (A and C should be independent of each other)'
 
 
 # %% codecell
-commonCauseModel = BayesianModel(commonCause)
-
 commonCauseGraph
 
-assert str(commonCauseModel.local_independencies('A')) == '(A _|_ C | B)', 'Should: A and C are independent once conditional on B'
+# %% codecell
 
-assert str(commonCauseModel.local_independencies('B')) == '(B _|_ C, A)', "Should: B is independent of C AND A at the same time"
+commonCauseModel = BayesianModel(commonCause)
+
+assert str(commonCauseModel.local_independencies('A')) == '(A _|_ C | B)', 'Check: A and C are independent once conditional on B'
+
+
+assert commonCauseModel.local_independencies('B') == Independencies(['B', ['A', 'C']]), "Check: B is independent of C AND A at the same time"
+assert str(Independencies(['B', ['A', 'C']])) == '(B _|_ C, A)'
+# SANITY LOGGER
+# was before (B _|_ A, C)
+
 
 # TODO this doesn't seem correct - how can C and B be independent?
-assert str(commonCauseModel.local_independencies('C')) == '(C _|_ A | B)', 'Should: C is independent of A once conditional on B'
+assert str(commonCauseModel.local_independencies('C')) == '(C _|_ A | B)', 'Check: C is independent of A once conditional on B'
 
 
 indeps = list(map(lambda x : str(x), commonCauseModel.get_independencies().get_assertions()))
-assert indeps == ['(A _|_ C | B)', '(C _|_ A | B)'], 'Should: overall independencies of common cause model'
+assert indeps == ['(A _|_ C | B)', '(C _|_ A | B)'], 'Check: overall independencies of common cause model'
 
 
 # %% markdown
-# Now finding the local independencies in the grade structure:
+# ### Study: Individual, Local Independencies for Grade Example
+# Using the example Grade structure, find the **individual** local independencies:
 # %% codecell
 renderGraphFromBayes(bayesModel = model)
 
 # %% codecell
-assert str(model.local_independencies('D')) == '(D _|_ L, S, I, G)', 'Should: D is independent of all L, S, I, and G'
+queryNode: str = 'D'
+otherNodes: Set[str] = set(iter(model.nodes())) - set(queryNode)
 
-assert str(model.local_independencies('I')) == '(I _|_ L, S, G, D)', 'Should: I is independent of all L, S, G, and D'
+#Independencies([queryNode, otherNodes])
+assert model.local_independencies('D') == Independencies(['D', ['G', 'S', 'I', 'L']]), 'Check: D is independent of all G, S, I, and L'
+ model.local_independencies('D') in [Independencies(['D', ['G', 'S', 'I', 'L']])]
+#assert str(model.local_independencies('D')) == '(D _|_ S, I, G, L)', 'Check: D is independent of all L, S, I, and G'
 
-# TODO is this interpretation (string) correct?
+#strCombos: List[str] = list(map(lambda tupleCombo : ', '.join(tupleCombo),
+                                itertools.permutations(otherNodes)))
+#allIndependenciesOfD: List[str] = list(map(lambda strCombo : f"(D _|_ {strCombo})", strCombos))
+
+
+queryNode: str = 'G'
+otherNodes1: Set[str] = set(['S', 'L'])
+otherNodes2 = set(['I', 'D'])
+assert model.local_independencies('G') == Independencies(['G', ['S', 'L'], ['I','D']]), 'Check: G is independent of (L, and S) given (I, and D)'
+assert str(Independencies(['G', ['L', 'S'], ['I','D']])) == '(G _|_ S, L | I, D)'
+
+
+strCombos1: List[str] = list(map(lambda tupleCombo : ', '.join(tupleCombo),
+                                itertools.permutations(otherNodes1))); strCombos1
+strCombos2: List[str] = list(map(lambda tupleCombo : ', '.join(tupleCombo),
+                                itertools.permutations(otherNodes2))); strCombos2
+allIndependenciesOfD: List[str] = list(map(lambda strCombo : f"(D _|_ {strCombo})", strCombos))
+
+#otherCombos: List[Tuple[Variable]] = list(itertools.permutations(otherNodes))
+#list(map(lambda otherNodesCombo : Independencies([queryNode, otherNodesCombo]), otherCombos))
+
+
+assert model.local_independencies('I') == Independencies(['I', ['L', 'S', 'G','D']]), 'Check: I is independent of all L, S, G, and D'
+#assert str(model.local_independencies('I')) == '(I _|_ L, S, G, D)', 'Check: I is independent of all L, S, G, and D'
+
+
+# TODO: was before (G _|_ L, S | I, D) so cannot use simple strings to compare! Must use the Independencies object equality!
+# TODO is this below interpretation (string) correct?
 # Another way? G is independent of L, also S is conditional on I and D. How to read this?
-assert str(model.local_independencies('G')) == '(G _|_ L, S | I, D)', 'Should: G is independent of (L, and S) given (I, and D)'
+assert model.local_independencies('G') == Independencies(['G', ['S', 'L'], ['I','D']]), 'Check: G is independent of (L, and S) given (I, and D)'
+assert str(Independencies(['G', ['L', 'S'], ['I','D']])) == '(G _|_ S, L | I, D)'
+#assert str(model.local_independencies('G')) == '(G _|_ L, S | I, D)'
 
-assert str(model.local_independencies('S')) == '(S _|_ D, L, G | I)', 'Should: S is independent of all D, L, and G  together when conditional on I'
 
-assert str(model.local_independencies('L')) == '(L _|_ S, I, D | G)', 'Should: S is independent of S, I, and D together, when conditional on G'
+indepS: Independencies = Independencies(['S', ['L','G','D'], 'I'])
+assert (indepS == '(S _|_ D, L, G | I)' or
+        indepS == '(S _|_ G, D, L | I)')
+assert model.local_independencies('S') == str(indepS), 'Check: S is independent of all D, L, and G  together when conditional on I'
 
+
+indepL = Independencies(['L', ['S','I','D'], 'G'])
+assert (indepL == '(L _|_ S, I, D | G)' or
+        indepL == '(L _|_ I, S, D | G)')
+assert model.local_independencies('L') == indepL, 'Check: S is independent of S, I, and D together, when conditional on G'
+
+
+
+# %% markdown
+# ### Study: Multiple Local Independencies for Grade Example
+# Using the example Grade structure, find the **n-way** local independencies: (they are just concatenations of the individual independencies)
 # %% codecell
 renderGraphFromBayes(model)
-# %% codecell
-model.local_independencies(['D', 'I'])
-# second one: S is independent of (D, L, G) when conditional on I
-model.local_independencies(['D', 'S'])
-model.local_independencies(['D', 'G'])
 
 # %% codecell
-# TODO meaning of this: (D _|_ I | S)
-# way 1? ----> does it mean D is independent of I, when conditional on S, or
-# way 2? ----> D is independent of "I given S" ?
-model.get_independencies().get_assertions()
+indep_DS: Independencies = model.local_independencies(['D','S']).get_assertions()
+indep_D = model.local_independencies('D').get_assertions()
+indep_S = model.local_independencies('S').get_assertions()
+
+assert indep_DS == indep_D + indep_S, 'Check: independencies of two nodes (D, S) equals independencies of the separate nodes, concatenated together'
+
+# -------
+indep_GL: Independencies = model.local_independencies(['G','L']).get_assertions()
+indep_G = model.local_independencies('G').get_assertions()
+indep_L = model.local_independencies('L').get_assertions()
+
+assert indep_GL == indep_G + indep_L, 'Check: independencies of two nodes (G, L) equals independencies of the separate nodes, concatenated together'
+
+
+# -------
+indep_all: Independencies = model.local_independencies(['G','I', 'D', 'S','L']).get_assertions()
+indep_G = model.local_independencies('G').get_assertions()
+indep_L = model.local_independencies('L').get_assertions()
+indep_D = model.local_independencies('D').get_assertions()
+indep_S = model.local_independencies('S').get_assertions()
+indep_I = model.local_independencies('I').get_assertions()
+
+assert set(indep_all) == set(indep_G + indep_L + indep_D + indep_S + indep_I), 'Check: independencies of all nodes (D, S, I, G, L) equals independencies of the separate nodes, concatenated together'
+
+
+
+# %% markdown
+# ### Study: Active Trails
+# %% codecell
+commonCauseGraph
+
+
+# %% codecell
+commonCauseModel.active_trail_nodes('B')
+# %% codecell
+student = BayesianModel()
+student.add_nodes_from(['diff', 'intel', 'grades'])
+student.add_edges_from([('diff', 'grades'), ('intel', 'grades')])
+renderGraphFromBayes(student)
+student.active_trail_nodes('diff')
+#{'diff': {'diff', 'grades'}}
+student.active_trail_nodes(['diff', 'intel'], observed='grades')
+#{'diff': {'diff', 'intel'}, 'intel': {'diff', 'intel'}}
