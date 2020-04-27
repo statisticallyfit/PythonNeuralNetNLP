@@ -262,7 +262,7 @@ graphBToA.render()
 plt.show()
 # %% codecell
 # Or render with graphviz to avoid having to specify x-y coordinates:
-from src.utils.DaftUtil import *
+from src.utils.NetworkUtil import *
 from src.utils.GraphvizUtil import *
 
 renderGraphFromBayes(bayesModel = convertDaftToPgmpy(pgm = graphAToB))
@@ -320,7 +320,7 @@ causalModel = BayesianModel(causal)
 
 
 assert causalModel.local_independencies('A') == Independencies(['A', ['B', 'C']]), "Check: A is independent of B and C, at the same time"
-assert str(Independencies(['A', ['B', 'C']])) == '(A _|_ C, B)'
+# assert str(Independencies(['A', ['B', 'C']])) == '(A _|_ C, B)'
 # SANITY LOGGER:
 # was (A _|_ B, C) before
 
@@ -349,8 +349,8 @@ assert str(evidentialModel.local_independencies('B')) == '(B _|_ A | C)', "Check
 
 # TODO this doesn't seem correct - how can C and B be independent?
 assert evidentialModel.local_independencies('C') == Independencies(['C', ['B','A']]), 'Check: C is independent of both B and A'
-assert str(Independencies(['C', ['B','A']])) == '(C _|_ B, A)'
-
+# assert str(Independencies(['C', ['B','A']])) == '(C _|_ B, A)'
+# SANITY logger (not C _|_ A,B)
 
 indeps = list(map(lambda x : str(x), evidentialModel.get_independencies().get_assertions()))
 assert indeps == ['(C _|_ A | B)', '(A _|_ C | B)'], 'Check: overall independencies of evidential model'
@@ -362,7 +362,7 @@ commonEvidenceGraph
 commonEvidenceModel = BayesianModel(commonEvidence)
 
 assert commonEvidenceModel.local_independencies('A') == Independencies(['A', ['B', 'C']]), 'Check: A is independent of both B and C'
-assert str(Independencies(['A', ['B', 'C']])) == '(A _|_ C, B)'
+#assert str(Independencies(['A', ['B', 'C']])) == '(A _|_ C, B)'
 # SANITY LOGGER:
 # was before (A _|_ B, C)
 
@@ -371,7 +371,9 @@ assert commonEvidenceModel.local_independencies('B') == Independencies() # no in
 
 
 assert commonEvidenceModel.local_independencies('C') == Independencies(['C',['B','A']]), 'Check: C is independent of both B and A'
-assert str(Independencies(['C',['B','A']])) == '(C _|_ B, A)'
+# assert str(Independencies(['C',['B','A']])) == '(C _|_ B, A)'
+# SANITY Logger:
+# Now C _|_ A, B
 
 
 indeps = list(map(lambda x : str(x), commonEvidenceModel.get_independencies().get_assertions()))
@@ -389,7 +391,7 @@ assert str(commonCauseModel.local_independencies('A')) == '(A _|_ C | B)', 'Chec
 
 
 assert commonCauseModel.local_independencies('B') == Independencies(['B', ['A', 'C']]), "Check: B is independent of C AND A at the same time"
-assert str(Independencies(['B', ['A', 'C']])) == '(B _|_ C, A)'
+#assert str(Independencies(['B', ['A', 'C']])) == '(B _|_ C, A)'
 # SANITY LOGGER
 # was before (B _|_ A, C)
 
@@ -409,48 +411,31 @@ assert indeps == ['(A _|_ C | B)', '(C _|_ A | B)'], 'Check: overall independenc
 renderGraphFromBayes(bayesModel = model)
 
 # %% codecell
-queryNode: str = 'D'
-otherNodes: Set[str] = set(iter(model.nodes())) - set(queryNode)
-
-#Independencies([queryNode, otherNodes])
-assert model.local_independencies('D') == Independencies(['D', ['G', 'S', 'I', 'L']]), 'Check: D is independent of all G, S, I, and L'
-model.local_independencies('D') in [Independencies(['D', ['G', 'S', 'I', 'L']])]
-#assert str(model.local_independencies('D')) == '(D _|_ S, I, G, L)', 'Check: D is independent of all L, S, I, and G'
-
-#strCombos: List[str] = list(map(lambda tupleCombo : ', '.join(tupleCombo),itertools.permutations(otherNodes)))
-#allIndependenciesOfD: List[str] = list(map(lambda strCombo : f"(D _|_ {strCombo})", strCombos))
+from src.utils.NetworkUtil import *
 
 
+indepD: Independencies = model.local_independencies('D')
 
-assert model.local_independencies('G') == Independencies(['G', ['S', 'L'], ['I','D']]), 'Check: G is independent of (L, and S) given (I, and D)'
-assert str(Independencies(['G', ['L', 'S'], ['I','D']])) == '(G _|_ S, L | I, D)'
+assert indepD == Independencies(['D', ['G', 'S', 'I', 'L']]), 'Check: D is independent of all G, S, I, and L'
 
-################
-queryNode: str = 'D'
-otherNodes: Set[str] = set(iter(model.nodes())) - set(queryNode)
-
-#beforeCondNodes: Set[str] = set(['S', 'L'])
-#afterCondNodes = set(['I', 'D'])
-others = [beforeCondNodes, afterCondNodes]; others
-otherStrList = []
-for letterGroup in others:
-    strCombos: List[str] = list(map(lambda tupleCombo : ', '.join(tupleCombo),itertools.permutations(letterGroup)))
-    otherStrList.append(strCombos)
-otherStrList
-
-condCombos = list(itertools.product(*otherStrList)); condCombos
-condCombos: List[str] = list(map(lambda condPair : ' | '.join(condPair), condCombos)); condCombos
-#beforeCondStrCombos: List[str] = list(map(lambda tupleCombo : ', '.join(tupleCombo),
-#                                          itertools.permutations(beforeCondNodes))); beforeCondStrCombos
-#afterCondStrCombos: List[str] = list(map(lambda tupleCombo : ', '.join(tupleCombo),
-#                                         itertools.permutations(afterCondNodes))); afterCondStrCombos
-#strCombos: List[str] = list(map(lambda tupleCombo : ', '.join(tupleCombo),itertools.permutations(otherNodes))); strCombos
-# create combinations using the conditional sign: (mix up)
+assert str(indepD) in allIndependencies(model = model, queryNode = 'D'), 'Check: D is independent of all L, S, I, and G'
 
 
-independencyCombos = list(map(lambda condComboStr : f"{queryNode} _|_ {condComboStr}", condCombos)); independencyCombos
+independenciesTable(model, 'D')
 
-#allIndependenciesOfD: List[str] = list(map(lambda strCombo : f"(D _|_ {strCombo})", strCombos))
+
+# %% codecell
+indepG: Independencies = model.local_independencies('G')
+
+assert indepG == Independencies(['G', ['S', 'L'], ['I','D']]), 'Check: G is independent of (L, and S) given (I, and D)'
+
+assert str(indepG) in allIndependencies(model=model, queryNode='G', otherNodes=[['L', 'S'], ['I','D']])
+
+
+independenciesTable(model = model, queryNode = 'G', otherNodes = [['L', 'S'], ['I','D']])
+
+
+# %% codecell
 
 
 
