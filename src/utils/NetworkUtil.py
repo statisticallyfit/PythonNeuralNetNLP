@@ -22,12 +22,13 @@ def convertDaftToPgmpy(pgm: daft.PGM) -> BayesianModel:
 Variable = str
 
 
+from pgmpy.independencies.Independencies import Independencies
 import itertools
 
 
-def allIndependencies(model: BayesianModel,
-                      queryNode: Variable,
-                      otherNodes: List[List[Variable]] = None, useNotation = False) -> List[Variable]:
+def localIndependencySynonyms(model: BayesianModel,
+                              queryNode: Variable,
+                              otherNodes: List[List[Variable]] = None, useNotation = False) -> List[Variable]:
     '''
     Generates all possible equivalent independencies, given a query node and separator nodes.
 
@@ -42,7 +43,11 @@ def allIndependencies(model: BayesianModel,
     Returns:
         List of generated string independency combinations.
     '''
-    #queryNode: str = 'D'
+    # First check that the query node has local independencies!
+    # TODO check how to match up with the otherNodes argument
+    if model.local_independencies(queryNode) == Independencies():
+        return
+
     if otherNodes is None: # then assume user wants to consider all other nodes in the graph are in the BEFORE spot of the conditional sign, and that there is NO conditional sign: A _|_ A2,A3,A4...., where otherNodes = [A2,A3,A4...]
         otherNodes = []
         inner: List[List[Variable]] = list(set(iter(model.nodes())) - set(queryNode))
@@ -57,7 +62,8 @@ def allIndependencies(model: BayesianModel,
             comboStrs: List[str] = list(map(lambda letterCombo : "{" + ' ∩ '.join(letterCombo) + "}",
                                             itertools.permutations(letterSet)))
         else: # use commas and no brackets (simple notation)
-            comboStrs: List[str] = list(map(lambda letterCombo : ', '.join(letterCombo), itertools.permutations(letterSet)))
+            comboStrs: List[str] = list(map(lambda letterCombo : ', '.join(letterCombo),
+                                            itertools.permutations(letterSet)))
 
         # Add this particular combination of letters (variables) to the list.
         otherComboStrList.append(comboStrs)
@@ -76,15 +82,18 @@ def allIndependencies(model: BayesianModel,
 
 
 
-
-def independenciesTable(model: BayesianModel,
-                        queryNode: Variable,
-                        otherNodes: List[List[Variable]] = None):
+def indepSynonymTable(model: BayesianModel,
+                      queryNode: Variable,
+                      otherNodes: List[List[Variable]] = None):
 
     # fancy independencies
-    xs: List[str] = allIndependencies(model = model, queryNode = queryNode, otherNodes = otherNodes, useNotation = True)
+    xs: List[str] = localIndependencySynonyms(model = model, queryNode = queryNode, otherNodes = otherNodes, useNotation = True)
     # regular notation independencies
-    ys: List[str] = allIndependencies(model = model, queryNode = queryNode, otherNodes = otherNodes)
+    ys: List[str] = localIndependencySynonyms(model = model, queryNode = queryNode, otherNodes = otherNodes)
+
+    # Skip if no result (if not independencies)
+    if xs is None and ys is None:
+        return
 
     # Create table spacing logic
     numBetweenSpace: int = 5

@@ -156,26 +156,26 @@ print('\nin edges = ', model.in_edges)
 
 # Defining individual CPDs with state names
 cpdState_D = TabularCPD(variable = 'D', variable_card = 2, values = [[0.6, 0.4]],
-                   state_names = {'D' : ['Easy', 'Hard']})
+                        state_names = {'D' : ['Easy', 'Hard']})
 
 cpdState_I = TabularCPD(variable = 'I', variable_card=2, values = [[0.7, 0.3]],
-                   state_names = {'I' : ['Dumb', 'Intelligent']})
+                        state_names = {'I' : ['Dumb', 'Intelligent']})
 
 cpdState_G = TabularCPD(variable = 'G', variable_card = 3, values = [[0.3, 0.05, 0.9, 0.5],
-                                                                [0.4, 0.25, 0.08, 0.3],
-                                                                [0.3, 0.7, 0.02, 0.2]],
-                   evidence = ['I', 'D'], evidence_card = [2,2],
-                   state_names = {'G': ['A', 'B', 'C'], 'I' : ['Dumb', 'Intelligent'], 'D':['Easy', 'Hard']})
+                                                                     [0.4, 0.25, 0.08, 0.3],
+                                                                     [0.3, 0.7, 0.02, 0.2]],
+                        evidence = ['I', 'D'], evidence_card = [2,2],
+                        state_names = {'G': ['A', 'B', 'C'], 'I' : ['Dumb', 'Intelligent'], 'D':['Easy', 'Hard']})
 
 cpdState_L = TabularCPD(variable = 'L', variable_card = 2, values = [[0.1, 0.4, 0.99],
-                                                                [0.9, 0.6, 0.01]],
-                   evidence = ['G'], evidence_card = [3],
-                   state_names = {'L' : ['Bad', 'Good'], 'G': ['A', 'B', 'C']})
+                                                                     [0.9, 0.6, 0.01]],
+                        evidence = ['G'], evidence_card = [3],
+                        state_names = {'L' : ['Bad', 'Good'], 'G': ['A', 'B', 'C']})
 
 cpdState_S = TabularCPD(variable = 'S', variable_card = 2, values = [[0.95, 0.2],
-                                                                [0.05, 0.8]],
-                   evidence = ['I'], evidence_card = [2],
-                   state_names={'S': ['Bad', 'Good'], 'I': ['Dumb', 'Intelligent']})
+                                                                     [0.05, 0.8]],
+                        evidence = ['I'], evidence_card = [2],
+                        state_names={'S': ['Bad', 'Good'], 'I': ['Dumb', 'Intelligent']})
 
 # Associating the CPDs with the network:
 model.add_cpds(cpdState_D, cpdState_I, cpdState_G, cpdState_L, cpdState_S)
@@ -321,9 +321,9 @@ causalModel = BayesianModel(causal)
 indepA: Independencies = causalModel.local_independencies('A')
 
 assert indepA == Independencies(['A', ['B', 'C']]), "Check: A is independent of B and C, at the same time"
-assert str(indepA) in allIndependencies(model = causalModel, queryNode='A')
+assert str(indepA) in localIndependencySynonyms(model = causalModel, queryNode='A')
 
-independenciesTable(model = causalModel, queryNode='A')
+indepSynonymTable(model = causalModel, queryNode='A')
 
 # %% codecell
 # Study of causalModel continued ...
@@ -350,39 +350,36 @@ assert str(evidentialModel.local_independencies('B')) == '(B _|_ A | C)', "Check
 
 # TODO this doesn't seem correct - how can C and B be independent?
 assert evidentialModel.local_independencies('C') == Independencies(['C', ['B','A']]), 'Check: C is independent of both B and A'
-# assert str(Independencies(['C', ['B','A']])) == '(C _|_ B, A)'
-# SANITY logger (not C _|_ A,B) ------------------
 
 
-# TODO NEXT
-indepG: Independencies = model.local_independencies('G')
+indepC: Independencies = evidentialModel.local_independencies('C')
+assert indepC == Independencies(['C', ['B','A']]), 'Check: C is independent of both B and A'
+assert str(indepC) in localIndependencySynonyms(model=evidentialModel, queryNode='C')
 
-assert indepG == Independencies(['G', ['S', 'L'], ['I','D']]), 'Check: G is independent of (L, and S) given (I, and D)'
+indepSynonymTable(model = evidentialModel, queryNode ='C')
 
-assert str(indepG) in allIndependencies(model=model, queryNode='G', otherNodes=[['L', 'S'], ['I','D']])
-
-
-independenciesTable(model = model, queryNode = 'G', otherNodes = [['L', 'S'], ['I','D']])
-#-------------------------------------------------
-
-
-
+# %% codecell
+# Continued on evidential model
 indeps = list(map(lambda x : str(x), evidentialModel.get_independencies().get_assertions()))
 assert indeps == ['(C _|_ A | B)', '(A _|_ C | B)'], 'Check: overall independencies of evidential model'
 
 
 # %% codecell
 commonEvidenceGraph
+
 # %% codecell
 commonEvidenceModel = BayesianModel(commonEvidence)
 
-assert commonEvidenceModel.local_independencies('A') == Independencies(['A', ['B', 'C']]), 'Check: A is independent of both B and C'
-#assert str(Independencies(['A', ['B', 'C']])) == '(A _|_ C, B)'
-# SANITY LOGGER:
-# was before (A _|_ B, C)
-
-
 assert commonEvidenceModel.local_independencies('B') == Independencies() # no independency for B TODO why?? Couldn't we say that B is independent of  (A and C) GIVEN (A and C)?
+
+# %% codecell
+indepA: Independencies = commonEvidenceModel.local_independencies('A')
+assert indepA == Independencies(['A', ['B', 'C']]), 'Check: C is independent of both B and A'
+assert str(indepA) in localIndependencySynonyms(model=commonEvidenceModel, queryNode='A')
+
+indepSynonymTable(model = commonEvidenceModel, queryNode ='A')
+
+# %% codecell
 
 
 assert commonEvidenceModel.local_independencies('C') == Independencies(['C',['B','A']]), 'Check: C is independent of both B and A'
@@ -390,7 +387,7 @@ assert commonEvidenceModel.local_independencies('C') == Independencies(['C',['B'
 # SANITY Logger:
 # Now C _|_ A, B
 
-
+# %% codecell
 indeps = list(map(lambda x : str(x), commonEvidenceModel.get_independencies().get_assertions()))
 assert indeps == ['(A _|_ C)', '(C _|_ A)'], 'Check: overall independencies of common evidence model (A and C should be independent of each other)'
 
@@ -433,10 +430,10 @@ indepD: Independencies = model.local_independencies('D')
 
 assert indepD == Independencies(['D', ['G', 'S', 'I', 'L']]), 'Check: D is independent of all G, S, I, and L'
 
-assert str(indepD) in allIndependencies(model = model, queryNode = 'D'), 'Check: D is independent of all L, S, I, and G'
+assert str(indepD) in localIndependencySynonyms(model = model, queryNode ='D'), 'Check: D is independent of all L, S, I, and G'
 
 
-independenciesTable(model, 'D')
+indepSynonymTable(model, 'D')
 
 
 # %% codecell
@@ -444,10 +441,10 @@ indepG: Independencies = model.local_independencies('G')
 
 assert indepG == Independencies(['G', ['S', 'L'], ['I','D']]), 'Check: G is independent of (L, and S) given (I, and D)'
 
-assert str(indepG) in allIndependencies(model=model, queryNode='G', otherNodes=[['L', 'S'], ['I','D']])
+assert str(indepG) in localIndependencySynonyms(model=model, queryNode='G', otherNodes=[['L', 'S'], ['I', 'D']])
 
 
-independenciesTable(model = model, queryNode = 'G', otherNodes = [['L', 'S'], ['I','D']])
+indepSynonymTable(model = model, queryNode ='G', otherNodes = [['L', 'S'], ['I', 'D']])
 
 
 # %% codecell
