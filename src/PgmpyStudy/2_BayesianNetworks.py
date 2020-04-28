@@ -516,51 +516,107 @@ indep_all
 causalGraph
 # %% codecell
 
+# Testing 0: null check
+
 assert causalModel.active_trail_nodes('A', observed = 'A') == {'A': set()}, 'Null Check: changing A and keeping A fixed results in NO change to any node'
 
 # ---------------------------------------------------------------------------------------------------------
 
-# Testing: changing individual nodes, keeping no other nodes fixed
+# Testing 1: changing individual nodes, keeping no other nodes fixed
+
 assert causalModel.active_trail_nodes('A') == {'A': {'A', 'B', 'C'}}, "Check: Changing node A results in changes of values of the nodes A, B, C"
 assert causalModel.active_trail_nodes('B') == {'B': {'A', 'B', 'C'}}, "Check: Changing node B results in changes of values of the nodes A, B, C"
 assert causalModel.active_trail_nodes('C') == {'C': {'A', 'B', 'C'}}, "Check: Changing node C results in changes of values of the nodes A, B, C"
 
 # ---------------------------------------------------------------------------------------------------------
 
-# Testing: changing individual nodes (two-node case extrapolated to the n-node case)
+# Testing 2: changing individual nodes (two-node case extrapolated to the n-node case)
+
 assert causalModel.active_trail_nodes(['A','C']) == {'A': {'A', 'B', 'C'}, 'C': {'A', 'B', 'C'}}, "Check: querying for active trail nodes of two query nodes results in the dictionary concatenated from each separate query"
 
 
 # ---------------------------------------------------------------------------------------------------------
-# Testing: changing node A, keeping other variables FIXED
+
+# Testing 3a: changing node A, keeping other variables FIXED
+
 assert causalModel.active_trail_nodes('A', observed = 'B') == {'A': {'A'}}, "Check: Changing A and keeping B fixed results in change JUST to node A (not even to C, which is fed from B)"
 assert causalModel.active_trail_nodes('A', observed = 'C') == {'A': {'A', 'B'}}, "Check: Changing A and keeping C fixed results in changes of nodes A and B"
 assert causalModel.active_trail_nodes('A', observed = ['B','C']) == {'A': {'A'}}, "Check: Changing A and keeping both B, C fixed results in change JUST to A"
 
-# Testing: changing node B, keeping other variables FIXED
+
+# Testing 3b: changing node B, keeping other variables FIXED
+
 assert causalModel.active_trail_nodes('B', observed = 'A') == {'B': {'B', 'C'}}, "Check: Changing B and keeping A fixed results in changes just to B, C"
 # TODO why is this so? THis is strange
 assert causalModel.active_trail_nodes('B', observed = 'C') == {'B': {'A', 'B'}}, "Check: Changing B and keeping C fixed results in changes just to A and B"
 assert causalModel.active_trail_nodes('B', observed = ['A','C']) == {'B': {'B'}}, "Check: Changing B and keeping A, C fixed changes just B"
 
 
-# Testing: changing node C, keeping other variables FIXED
+# Testing 3c: changing node C, keeping other variables FIXED
+
 assert causalModel.active_trail_nodes('C', observed = 'A') == {'C': {'B', 'C'}}, "Check: Changing C and keeping A fixed results in changes just to C and B"
 assert causalModel.active_trail_nodes('C', observed = 'B') == {'C': {'C'}}, "Check: Changing C and keeping B fixed results in change JUST to C"
 # NOTE on above: when changing C and keeping its neighbor fixed, that neighbor acts as interruptor so A cannot be changed. When changing C and keeping the other node (A) fixed, the neighbor (B) still gets the ripple change.
 assert causalModel.active_trail_nodes('C', observed = ['A','B']) == {'C': {'C'}}, "Check: Changing C and keeping both A, B fixed results in changing just C"
 
+
 # ---------------------------------------------------------------------------------------------------------
 
+# PREPARATION for testing 4
 
-# Testing: changing all nodes, keeping combination of other variables FIXED
 assert causalModel.active_trail_nodes(['A','B', 'C']) == {'A': {'A', 'B', 'C'}, 'B': {'A', 'B', 'C'}, 'C': {'A', 'B', 'C'}}
-assert causalModel.active_trail_nodes(['A','B','C'], observed = 'A') == {'A': set(), 'B': {'B', 'C'}, 'C': {'B', 'C'}}, "Check: changing A, B, C and keeping A fixed results in changes just to B, C (just active trail nodes from B -> B, B -> C, C -> C, C -> B)"
-assert causalModel.active_trail_nodes(['A','B','C'], observed = 'B') == {'A': {'A'}, 'B': set(), 'C': {'C'}}
-assert causalModel.active_trail_nodes(['A','B','C'], observed = 'C') == {'A': {'A', 'B'}, 'B': {'A', 'B'}, 'C': set()}
-assert causalModel.active_trail_nodes(['A','B','C'], observed = ['A', 'B']) == {'A': set(), 'B': set(), 'C': {'C'}}
-assert causalModel.active_trail_nodes(['A','B','C'], observed = ['A', 'C']) == {'A': set(), 'B': {'B'}, 'C': set()}
-assert causalModel.active_trail_nodes(['A','B','C'], observed = ['B', 'C']) == {'A': {'A'}, 'B': set(), 'C': set()}
+
+
+a_a = causalModel.active_trail_nodes('A', observed ='A'); a_a
+b_a = causalModel.active_trail_nodes('B', observed ='A'); b_a
+c_a = causalModel.active_trail_nodes('C', observed ='A'); c_a
+all_a = causalModel.active_trail_nodes(['A','B','C'], observed = 'A'); all_a
+# The first way to do this above test:
+assert list(all_a.items()) == list(a_a.items()) + list(b_a.items()) + list(c_a.items())
+# The second way to do the above test:
+assert all_a == {'A': set(), 'B': {'B', 'C'}, 'C': {'B', 'C'}}
+
+
+a_b = causalModel.active_trail_nodes('A', observed ='B'); a_b
+b_b = causalModel.active_trail_nodes('B', observed ='B'); b_b
+c_b = causalModel.active_trail_nodes('C', observed ='B'); c_b
+all_b = causalModel.active_trail_nodes(['A','B','C'], observed = 'B'); all_b
+# The first way to do the above test
+assert list(all_b.items()) == list(a_b.items()) + list(b_b.items()) + list(c_b.items())
+# The second way
+assert all_b == {'A': {'A'}, 'B': set(), 'C': {'C'}}
+
+
+a_c = causalModel.active_trail_nodes('A', observed ='C'); a_c
+b_c = causalModel.active_trail_nodes('B', observed ='C'); b_c
+c_c = causalModel.active_trail_nodes('C', observed ='C'); c_c
+all_c = causalModel.active_trail_nodes(['A','B','C'], observed = 'C'); all_c
+# The first way to do the above test
+assert list(all_c.items()) == list(a_c.items()) + list(b_c.items()) + list(c_c.items())
+# The second way
+assert all_c == {'A': {'A', 'B'}, 'B': {'A', 'B'}, 'C': set()}
+
+
+
+# Testing 4: changing all nodes, keeping combination of other variables FIXED
+# Moral of the story (general rule going on here): passing the list of variables gives a result that is the concatenation of the results from nodes passing in individually (assuming ONE observed variable, because when more than ONE observed variable, this rule doesn't hold, see case ['A','B'] below)
+
+from src.utils.GenericUtil import intersectDictValues
+
+assert causalModel.active_trail_nodes(['A','B','C'], observed = ['A', 'B']) \
+       == intersectDictValues(all_a, all_b) \
+       == {'A': set(), 'B': set(), 'C': {'C'}}
+
+assert causalModel.active_trail_nodes(['A','B','C'], observed = ['A', 'C']) \
+       == intersectDictValues(all_a, all_c) \
+       == {'A': set(), 'B': {'B'}, 'C': set()}
+
+assert causalModel.active_trail_nodes(['A','B','C'], observed = ['B', 'C']) \
+       == intersectDictValues(all_c, all_b) \
+       == {'A': {'A'}, 'B': set(), 'C': set()}
+
+
+
 
 
 
@@ -570,35 +626,40 @@ assert causalModel.active_trail_nodes(['A','B','C'], observed = ['B', 'C']) == {
 evidentialGraph
 # %% codecell
 
+# Testing 0: null check
 assert evidentialModel.active_trail_nodes('A', observed = 'A') == {'A': set()}, 'Null Check: changing A and keeping A fixed results in NO change to any node'
 
 # ---------------------------------------------------------------------------------------------------------
 
-# Testing: changing individual nodes, keeping no other nodes fixed
+# Testing 1: changing individual nodes, keeping no other nodes fixed
+
 assert evidentialModel.active_trail_nodes('A') == {'A': {'A', 'B', 'C'}}, "Check: Changing node A results in changes of values of the nodes A, B, C"
 assert evidentialModel.active_trail_nodes('B') == {'B': {'A', 'B', 'C'}}, "Check: Changing node B results in changes of values of the nodes A, B, C"
 assert evidentialModel.active_trail_nodes('C') == {'C': {'A', 'B', 'C'}}, "Check: Changing node C results in changes of values of the nodes A, B, C"
 
 # ---------------------------------------------------------------------------------------------------------
 
-# Testing: changing individual nodes (two-node case extrapolated to the n-node case)
+# Testing 2: changing individual nodes (two-node case extrapolated to the n-node case)
 assert evidentialModel.active_trail_nodes(['A','C']) == {'A': {'A', 'B', 'C'}, 'C': {'A', 'B', 'C'}}, "Check: querying for active trail nodes of two query nodes results in the dictionary concatenated from each separate query"
 
 
 # ---------------------------------------------------------------------------------------------------------
-# Testing: changing node A, keeping other variables FIXED
+# Testing 3a: changing node A, keeping other variables FIXED
+
 assert evidentialModel.active_trail_nodes('A', observed = 'B') == {'A': {'A'}}, "Check: Changing A and keeping B fixed results in change JUST to node A (not even to C, which is fed from B)"
 assert evidentialModel.active_trail_nodes('A', observed = 'C') == {'A': {'A', 'B'}}, "Check: Changing A and keeping C fixed results in changes of nodes A and B"
 assert evidentialModel.active_trail_nodes('A', observed = ['B','C']) == {'A': {'A'}}, "Check: Changing A and keeping both B, C fixed results in change JUST to A"
 
-# Testing: changing node B, keeping other variables FIXED
+# Testing 3b: changing node B, keeping other variables FIXED
+
 assert evidentialModel.active_trail_nodes('B', observed = 'A') == {'B': {'B', 'C'}}, "Check: Changing B and keeping A fixed results in changes just to B, C"
 # TODO why is this so? THis is strange
 assert evidentialModel.active_trail_nodes('B', observed = 'C') == {'B': {'A', 'B'}}, "Check: Changing B and keeping C fixed results in changes just to A and B"
 assert evidentialModel.active_trail_nodes('B', observed = ['A','C']) == {'B': {'B'}}, "Check: Changing B and keeping A, C fixed changes just B"
 
 
-# Testing: changing node C, keeping other variables FIXED
+# Testing 3c: changing node C, keeping other variables FIXED
+
 assert evidentialModel.active_trail_nodes('C', observed = 'A') == {'C': {'B', 'C'}}, "Check: Changing C and keeping A fixed results in changes just to C and B"
 assert evidentialModel.active_trail_nodes('C', observed = 'B') == {'C': {'C'}}, "Check: Changing C and keeping B fixed results in change JUST to C"
 # NOTE on above: when changing C and keeping its neighbor fixed, that neighbor acts as interruptor so A cannot be changed. When changing C and keeping the other node (A) fixed, the neighbor (B) still gets the ripple change.
@@ -606,15 +667,61 @@ assert evidentialModel.active_trail_nodes('C', observed = ['A','B']) == {'C': {'
 
 # ---------------------------------------------------------------------------------------------------------
 
+# PREPARATION for testing 4
 
-# Testing: changing all nodes, keeping combination of other variables FIXED
 assert evidentialModel.active_trail_nodes(['A','B', 'C']) == {'A': {'A', 'B', 'C'}, 'B': {'A', 'B', 'C'}, 'C': {'A', 'B', 'C'}}
-assert evidentialModel.active_trail_nodes(['A','B','C'], observed = 'A') == {'A': set(), 'B': {'B', 'C'}, 'C': {'B', 'C'}}, "Check: changing A, B, C and keeping A fixed results in changes just to B, C (just active trail nodes from B -> B, B -> C, C -> C, C -> B)"
-assert evidentialModel.active_trail_nodes(['A','B','C'], observed = 'B') == {'A': {'A'}, 'B': set(), 'C': {'C'}}
-assert evidentialModel.active_trail_nodes(['A','B','C'], observed = 'C') == {'A': {'A', 'B'}, 'B': {'A', 'B'}, 'C': set()}
-assert evidentialModel.active_trail_nodes(['A','B','C'], observed = ['A', 'B']) == {'A': set(), 'B': set(), 'C': {'C'}}
-assert evidentialModel.active_trail_nodes(['A','B','C'], observed = ['A', 'C']) == {'A': set(), 'B': {'B'}, 'C': set()}
-assert evidentialModel.active_trail_nodes(['A','B','C'], observed = ['B', 'C']) == {'A': {'A'}, 'B': set(), 'C': set()}
+
+
+a_a = evidentialModel.active_trail_nodes('A', observed ='A'); a_a
+b_a = evidentialModel.active_trail_nodes('B', observed ='A'); b_a
+c_a = evidentialModel.active_trail_nodes('C', observed ='A'); c_a
+all_a = evidentialModel.active_trail_nodes(['A','B','C'], observed = 'A'); all_a
+# The first way to do this above test:
+assert list(all_a.items()) == list(a_a.items()) + list(b_a.items()) + list(c_a.items())
+# The second way to do the above test:
+assert all_a == {'A': set(), 'B': {'B', 'C'}, 'C': {'B', 'C'}}, "Check: changing A, B, C and keeping A fixed results in changes just to B, C (just active trail nodes from B -> B, B -> C, C -> C, C -> B)"
+
+
+a_b = evidentialModel.active_trail_nodes('A', observed ='B'); a_b
+b_b = evidentialModel.active_trail_nodes('B', observed ='B'); b_b
+c_b = evidentialModel.active_trail_nodes('C', observed ='B'); c_b
+all_b = evidentialModel.active_trail_nodes(['A','B','C'], observed = 'B'); all_b
+# The first way to do the above test
+assert list(all_b.items()) == list(a_b.items()) + list(b_b.items()) + list(c_b.items())
+# The second way
+assert all_b == {'A': {'A'}, 'B': set(), 'C': {'C'}}
+
+
+a_c = evidentialModel.active_trail_nodes('A', observed ='C'); a_c
+b_c = evidentialModel.active_trail_nodes('B', observed ='C'); b_c
+c_c = evidentialModel.active_trail_nodes('C', observed ='C'); c_c
+all_c = evidentialModel.active_trail_nodes(['A','B','C'], observed = 'C'); all_c
+# The first way to do the above test
+assert list(all_c.items()) == list(a_c.items()) + list(b_c.items()) + list(c_c.items())
+# The second way
+assert all_c == {'A': {'A', 'B'}, 'B': {'A', 'B'}, 'C': set()}
+
+
+
+# Testing 4: changing all nodes, keeping combination of other variables FIXED
+# Moral of the story (general rule going on here): passing the list of variables gives a result that is the concatenation of the results from nodes passing in individually (assuming ONE observed variable, because when more than ONE observed variable, this rule doesn't hold, see case ['A','B'] below)
+
+from src.utils.GenericUtil import intersectDictValues
+
+assert evidentialModel.active_trail_nodes(['A','B','C'], observed = ['A', 'B']) \
+       == intersectDictValues(all_a, all_b) \
+       == {'A': set(), 'B': set(), 'C': {'C'}}
+
+assert evidentialModel.active_trail_nodes(['A','B','C'], observed = ['A', 'C']) \
+       == intersectDictValues(all_a, all_c) \
+       == {'A': set(), 'B': {'B'}, 'C': set()}
+
+assert evidentialModel.active_trail_nodes(['A','B','C'], observed = ['B', 'C']) \
+       == intersectDictValues(all_c, all_b) \
+       == {'A': {'A'}, 'B': set(), 'C': set()}
+
+
+
 
 
 
@@ -623,39 +730,54 @@ assert evidentialModel.active_trail_nodes(['A','B','C'], observed = ['B', 'C']) 
 commonEvidenceGraph
 
 # %% codecell
+# Testing 0: null check
+
+assert commonEvidenceModel.active_trail_nodes('A', observed = 'A') == {'A': set()}, 'Null Check: changing A and keeping A fixed results in NO change to any node'
+
+# ---------------------------------------------------------------------------------------------------------
+
+
+# Testing 1: individual nodes
+
 assert commonEvidenceModel.active_trail_nodes('A') == {'A': {'A', 'B'}}, "Check: Changing ndoe A results in changes just to A and B, not to C (since C is connected to B downward, and never to A)"
 assert commonEvidenceModel.active_trail_nodes('B') == {'B': {'A', 'B', 'C'}}, "Check: Changing node B results in changes of values of the nodes A, B, C"
 assert commonEvidenceModel.active_trail_nodes('C') == {'C': {'B', 'C'}}, "Check: changing node C results in changes to values of ndoes B, and C, not to A (since A is never connected to C, just to B downward)"
 
 # ---------------------------------------------------------------------------------------------------------
 
-# Testing: changing individual nodes (two-node case extrapolated to the n-node case)
+# Testing 2: changing individual nodes (two-node case extrapolated to the n-node case)
+
 assert commonEvidenceModel.active_trail_nodes(['A','C']) == {'A': {'A', 'B'}, 'C': {'B', 'C'}}, "Check: querying for active trail nodes of two query nodes results in the dictionary concatenated from each separate query"
 
 # ---------------------------------------------------------------------------------------------------------
 
-# Testing: changing node A, keeping other variables FIXED
-assert commonEvidenceModel.active_trail_nodes('A', observed = 'B') == {'A': {'A'}}, "Check: Changing A and keeping B fixed results in change JUST to node A (not even to C, which is fed from B)"
+# Testing 3a: changing node A, keeping other variables FIXED
+
+assert commonEvidenceModel.active_trail_nodes('A', observed = 'B') == {'A': {'A', 'C'}}, "Check: Changing A and keeping B fixed results in change A and C"
 assert commonEvidenceModel.active_trail_nodes('A', observed = 'C') == {'A': {'A', 'B'}}, "Check: Changing A and keeping C fixed results in changes of nodes A and B"
 assert commonEvidenceModel.active_trail_nodes('A', observed = ['B','C']) == {'A': {'A'}}, "Check: Changing A and keeping both B, C fixed results in change JUST to A"
 
 
-# Testing: changing node B, keeping other variables FIXED
+# Testing 3b: changing node B, keeping other variables FIXED
+
 assert commonEvidenceModel.active_trail_nodes('B', observed = 'A') == {'B': {'B', 'C'}}, "Check: Changing B and keeping A fixed results in changes just to B, C"
 # TODO why is this so? THis is strange
 assert commonEvidenceModel.active_trail_nodes('B', observed = 'C') == {'B': {'A', 'B'}}, "Check: Changing B and keeping C fixed results in changes just to A and B"
 assert commonEvidenceModel.active_trail_nodes('B', observed = ['A','C']) == {'B': {'B'}}, "Check: Changing B and keeping A, C fixed changes just B"
 
 
-# Testing: changing node C, keeping other variables FIXED
+# Testing 3c: changing node C, keeping other variables FIXED
+
 assert commonEvidenceModel.active_trail_nodes('C', observed = 'A') == {'C': {'B', 'C'}}, "Check: Changing C and keeping A fixed results in changes just to C and B"
 assert commonEvidenceModel.active_trail_nodes('C', observed = 'B') == {'C': {'A', 'C'}}, "Check: Changing C and keeping B fixed results in change to both A, C" # TODO why this is strange??
 # NOTE on above: when changing C and keeping its neighbor (B) fixed, that neighbor DOES NOT act as interruptor so A still gets changed (unlike in causal and evidence models). But when changing C and keeping the other node (A) fixed, the neighbor (B) is allowed to receive the ripple change.
 assert commonEvidenceModel.active_trail_nodes('C', observed = ['A','B']) == {'C': {'C'}}, "Check: Changing C and keeping both A, B fixed results in changing just C"
 
+
 # ---------------------------------------------------------------------------------------------------------
-# Testing: changing all nodes, keeping combination of other variables FIXED
-# Moral of the story (general rule going on here): passing the list of variables gives a result that is the concatenation of the results from nodes passing in individually (assuming ONE observed variable, because when more than ONE observed variable, this rule doesn't hold, see case ['A','B'] below)
+
+# PREPARATION for testing 4
+
 assert commonEvidenceModel.active_trail_nodes(['A','B', 'C']) == {'A': {'A', 'B'}, 'B': {'A', 'B', 'C'}, 'C': {'B', 'C'}}
 
 
@@ -666,62 +788,210 @@ all_a = commonEvidenceModel.active_trail_nodes(['A','B','C'], observed = 'A'); a
 # The first way to do this above test:
 assert list(all_a.items()) == list(a_a.items()) + list(b_a.items()) + list(c_a.items())
 # The second way to do the above test:
-assert commonEvidenceModel.active_trail_nodes(['A','B','C'], observed = 'A') == {'A': set(), 'B': {'B', 'C'}, 'C': {'B', 'C'}}, "Check 1: changing A, B, C and keeping A fixed results in changes just to B, C (just active trail nodes from B -> B, B -> C, C -> C, C -> B)"
+assert all_a == {'A': set(), 'B': {'B', 'C'}, 'C': {'B', 'C'}}, "Check 1: changing A, B, C and keeping A fixed results in changes just to B, C (just active trail nodes from B -> B, B -> C, C -> C, C -> B)"
 
 
 a_b = commonEvidenceModel.active_trail_nodes('A', observed ='B'); a_b
 b_b = commonEvidenceModel.active_trail_nodes('B', observed ='B'); b_b
 c_b = commonEvidenceModel.active_trail_nodes('C', observed ='B'); c_b
-all_b = commonEvidenceModel.active_trail_nodes(['A','B','C'], observed = 'B')
+all_b = commonEvidenceModel.active_trail_nodes(['A','B','C'], observed = 'B'); all_b
 # The first way to do the above test
 assert list(all_b.items()) == list(a_b.items()) + list(b_b.items()) + list(c_b.items())
 # The second way
-assert commonEvidenceModel.active_trail_nodes(['A','B','C'], observed = 'B') == {'A': {'A', 'C'}, 'B': set(), 'C': {'A', 'C'}}
-
+assert all_b  == {'A': {'A', 'C'}, 'B': set(), 'C': {'A', 'C'}}
 
 
 a_c = commonEvidenceModel.active_trail_nodes('A', observed ='C'); a_c
 b_c = commonEvidenceModel.active_trail_nodes('B', observed ='C'); b_c
 c_c = commonEvidenceModel.active_trail_nodes('C', observed ='C'); c_c
-all_c = commonEvidenceModel.active_trail_nodes(['A','B','C'], observed = 'C')
+all_c = commonEvidenceModel.active_trail_nodes(['A','B','C'], observed = 'C'); all_c
 # The first way to do the above test
 assert list(all_c.items()) == list(a_c.items()) + list(b_c.items()) + list(c_c.items())
 # The second way
-assert commonEvidenceModel.active_trail_nodes(['A','B','C'], observed = 'C') == {'A': {'A', 'B'}, 'B': {'A', 'B'}, 'C': set()}
+assert all_c == {'A': {'A', 'B'}, 'B': {'A', 'B'}, 'C': set()}
 
 
-commonEvidenceGraph
-all_b
-all_a
+# Testing 4: changing all nodes, keeping combination of other variables FIXED
+# Moral of the story (general rule going on here): passing the list of variables gives a result that is the concatenation of the results from nodes passing in individually (assuming ONE observed variable, because when more than ONE observed variable, this rule doesn't hold, see case ['A','B'] below)
 
-set(['A','C']).intersection(set(['B','C']))
+from src.utils.GenericUtil import intersectDictValues
 
-list(all_a.items()) == list(a_a.items()) + list(b_a.items()) + list(c_a.items())
-list(all_b.items()) == list(a_b.items()) + list(b_b.items()) + list(c_b.items())
+assert commonEvidenceModel.active_trail_nodes(['A','B','C'], observed = ['A', 'B']) \
+       == intersectDictValues(all_a, all_b) \
+       == {'A': set(), 'B': set(), 'C': {'C'}}
 
-assert commonEvidenceModel.active_trail_nodes(['A','B','C'], observed = ['A', 'B']) == {'A': set(), 'B': set(), 'C': {'C'}}
-assert commonEvidenceModel.active_trail_nodes(['A','B','C'], observed = ['A', 'C']) == {'A': set(), 'B': {'B'}, 'C': set()}
-assert commonEvidenceModel.active_trail_nodes(['A','B','C'], observed = ['B', 'C']) == {'A': {'A'}, 'B': set(), 'C': set()}
+assert commonEvidenceModel.active_trail_nodes(['A','B','C'], observed = ['A', 'C']) \
+       == intersectDictValues(all_a, all_c) \
+       == {'A': set(), 'B': {'B'}, 'C': set()}
+
+assert commonEvidenceModel.active_trail_nodes(['A','B','C'], observed = ['B', 'C']) \
+       == intersectDictValues(all_c, all_b) \
+       == {'A': {'A'}, 'B': set(), 'C': set()}
+
+
+
+
+# %% codecell
+commonCauseGraph
+# %% codecell
+# Testing 0: null check
+
+assert commonCauseModel.active_trail_nodes('A', observed = 'A') == {'A': set()}, 'Null Check: changing A and keeping A fixed results in NO change to any node'
 
 # ---------------------------------------------------------------------------------------------------------
 
-assert commonEvidenceModel.active_trail_nodes('A', observed = 'A') == {'A': set()}, 'Null Check: changing A and keeping A fixed results in NO change to any node'
+
+# Testing 1: individual nodes
+
+assert commonCauseModel.active_trail_nodes('A') == {'A': {'A', 'B', 'C'}}, "Check: Changing ndoe A results in changes to all A, B, C nodes"
+assert commonCauseModel.active_trail_nodes('B') == {'B': {'A', 'B', 'C'}}, "Check: Changing node B results in changes of values of the nodes A, B, C"
+assert commonCauseModel.active_trail_nodes('C') == {'C': {'A', 'B', 'C'}}, "Check: changing node C results in changes to values of all A, B, C nodes"
+
+# ---------------------------------------------------------------------------------------------------------
+
+# Testing 2: changing individual nodes (two-node case extrapolated to the n-node case)
+
+assert commonCauseModel.active_trail_nodes(['A','C']) == {'A': {'A', 'B', 'C'}, 'C': {'A', 'B', 'C'}}, "Check: querying for active trail nodes of two query nodes results in the dictionary concatenated from each separate query"
+
+# ---------------------------------------------------------------------------------------------------------
+
+# Testing 3a: changing node A, keeping other variables FIXED
+
+assert commonCauseModel.active_trail_nodes('A', observed = 'B') == {'A': {'A'}}, "Check: Changing A and keeping B fixed results in change just A"
+assert commonCauseModel.active_trail_nodes('A', observed = 'C') == {'A': {'A', 'B'}}, "Check: Changing A and keeping C fixed results in changes of nodes A and B"
+assert commonCauseModel.active_trail_nodes('A', observed = ['B','C']) == {'A': {'A'}}, "Check: Changing A and keeping both B, C fixed results in change JUST to A"
+
+
+# Testing 3b: changing node B, keeping other variables FIXED
+
+assert commonCauseModel.active_trail_nodes('B', observed = 'A') == {'B': {'B', 'C'}}, "Check: Changing B and keeping A fixed results in changes just to B, C"
+# TODO why is this so? THis is strange
+assert commonCauseModel.active_trail_nodes('B', observed = 'C') == {'B': {'A', 'B'}}, "Check: Changing B and keeping C fixed results in changes just to A and B"
+assert commonCauseModel.active_trail_nodes('B', observed = ['A','C']) == {'B': {'B'}}, "Check: Changing B and keeping A, C fixed changes just B"
+
+
+# Testing 3c: changing node C, keeping other variables FIXED
+
+assert commonCauseModel.active_trail_nodes('C', observed = 'A') == {'C': {'B', 'C'}}, "Check: Changing C and keeping A fixed results in changes just to C and B"
+assert commonCauseModel.active_trail_nodes('C', observed = 'B') == {'C': {'C'}}, "Check: Changing C and keeping B fixed results in change to both A, C" # TODO why this is strange??
+# NOTE on above: when changing C and keeping its neighbor (B) fixed, that neighbor DOES NOT act as interruptor so A still gets changed (unlike in causal and evidence models). But when changing C and keeping the other node (A) fixed, the neighbor (B) is allowed to receive the ripple change.
+assert commonCauseModel.active_trail_nodes('C', observed = ['A','B']) == {'C': {'C'}}, "Check: Changing C and keeping both A, B fixed results in changing just C"
+
+
+# ---------------------------------------------------------------------------------------------------------
+
+# PREPARATION for testing 4
+
+assert commonCauseModel.active_trail_nodes(['A','B', 'C']) == {'A': {'A', 'B', 'C'}, 'B': {'A', 'B', 'C'}, 'C': {'A', 'B', 'C'}}
+
+
+a_a = commonCauseModel.active_trail_nodes('A', observed ='A'); a_a
+b_a = commonCauseModel.active_trail_nodes('B', observed ='A'); b_a
+c_a = commonCauseModel.active_trail_nodes('C', observed ='A'); c_a
+all_a = commonCauseModel.active_trail_nodes(['A','B','C'], observed = 'A'); all_a
+# The first way to do this above test:
+assert list(all_a.items()) == list(a_a.items()) + list(b_a.items()) + list(c_a.items())
+# The second way to do the above test:
+assert all_a == {'A': set(), 'B': {'B', 'C'}, 'C': {'B', 'C'}}, "Check 1: changing A, B, C and keeping A fixed results in changes just to B, C (just active trail nodes from B -> B, B -> C, C -> C, C -> B)"
+
+
+a_b = commonCauseModel.active_trail_nodes('A', observed ='B'); a_b
+b_b = commonCauseModel.active_trail_nodes('B', observed ='B'); b_b
+c_b = commonCauseModel.active_trail_nodes('C', observed ='B'); c_b
+all_b = commonCauseModel.active_trail_nodes(['A','B','C'], observed = 'B'); all_b
+# The first way to do the above test
+assert list(all_b.items()) == list(a_b.items()) + list(b_b.items()) + list(c_b.items())
+# The second way
+assert all_b  == {'A': {'A'}, 'B': set(), 'C': {'C'}}
+
+
+a_c = commonCauseModel.active_trail_nodes('A', observed ='C'); a_c
+b_c = commonCauseModel.active_trail_nodes('B', observed ='C'); b_c
+c_c = commonCauseModel.active_trail_nodes('C', observed ='C'); c_c
+all_c = commonCauseModel.active_trail_nodes(['A','B','C'], observed = 'C'); all_c
+# The first way to do the above test
+assert list(all_c.items()) == list(a_c.items()) + list(b_c.items()) + list(c_c.items())
+# The second way
+assert all_c == {'A': {'A', 'B'}, 'B': {'A', 'B'}, 'C': set()}
+
+
+# Testing 4: changing all nodes, keeping combination of other variables FIXED
+# Moral of the story (general rule going on here): passing the list of variables gives a result that is the concatenation of the results from nodes passing in individually (assuming ONE observed variable, because when more than ONE observed variable, this rule doesn't hold, see case ['A','B'] below)
+
+from src.utils.GenericUtil import intersectDictValues
+
+assert commonCauseModel.active_trail_nodes(['A','B','C'], observed = ['A', 'B']) \
+       == intersectDictValues(all_a, all_b) \
+       == {'A': set(), 'B': set(), 'C': {'C'}}
+
+assert commonCauseModel.active_trail_nodes(['A','B','C'], observed = ['A', 'C']) \
+       == intersectDictValues(all_a, all_c) \
+       == {'A': set(), 'B': {'B'}, 'C': set()}
+
+assert commonCauseModel.active_trail_nodes(['A','B','C'], observed = ['B', 'C']) \
+       == intersectDictValues(all_c, all_b) \
+       == {'A': {'A'}, 'B': set(), 'C': set()}
 
 
 
+
+# %% markdown
+# ### Study: Simple Student Model's Active Trails: How Influencing Variables can Change Another Variable That is Characteristic (Seems Predetermined)
+# Here we can influence `diff` and `intel`, while keeping `grades` fixed and can recognize that `intel` is one of the variables that must respond to this change. For instance, if `diff` (difficulty) increases while `grades` are fixed (say observed to be high), then `intel` must be higher than before.
 # %% codecell
 student = BayesianModel()
 student.add_nodes_from(['diff', 'intel', 'grades'])
 student.add_edges_from([('diff', 'grades'), ('intel', 'grades')])
 renderGraphFromBayes(student)
-student.active_trail_nodes('diff')
-#{'diff': {'diff', 'grades'}}
-student.active_trail_nodes(['diff', 'intel'], observed='grades')
-#{'diff': {'diff', 'intel'}, 'intel': {'diff', 'intel'}}
+
+
+# %% codecell
+assert student.active_trail_nodes('diff') == {'diff': {'diff', 'grades'}}, "Base Case"
+
+# There is an active path from Difficulty --> Intelligence. Influencing difficulty while keeping grades fixed must also change the intelligence of the student
+assert student.active_trail_nodes('diff', observed='grades')== {'diff': {'diff', 'intel'}}, "Check: Influencing difficulty while keeping grades fixed must also change the intelligence of the student"
+
+
+
+# %% markdown
+# ### Study: Larger Student Model's Active Trails
+# %% codecell
+renderGraphFromBayes(model)
+# %% codecell
+assert model.active_trail_nodes('D', observed = 'G') == {'D': {'D', 'I', 'S'}}, "Check: Influencing Difficulty (D) must also change the Intelligence (I) and SAT score (S) of the student"
+
+assert model.active_trail_nodes('I', observed = ['G', 'S']) == {'I': {'D', 'I'}}, "Check: Influencing Inteligence (I) while keeping Grade (G) and SAT score (S) fixed must influence the Difficulty (D) of the test and intelligence (I) of the student"
+
+
+assert model.active_trail_nodes('I', observed = 'G') == {'I': {'D', 'I', 'S'}}, "Check: Influencing Intelligence (I) while keeping Grades (G) fixed must also influence Grades (G), Intelligence (I), and Letter of recommendation (L)" # difficulty is not influenced
+
+assert model.active_trail_nodes('I', observed = 'S') == {'I': {'G', 'I', 'L'}}, "Check: Influencing Intelligence (I) while keeping SAT (S) fixed must also influence Grades (G), Intelligence (I) and Letter (L) received" # difficulty is not influenced
+
+
+assert model.active_trail_nodes('L', observed = ['D', 'G']) == {'L': {'L'}}, "Check: Influencing Letter (L) while keeping Difficulty (D) and Grade (G) fixed effectively blocks other changes."
+
+assert model.active_trail_nodes('L', observed = ['G', 'I']) == {'L': {'L'}}
+
+assert model.active_trail_nodes('L', observed = ['S', 'I']) == {'L': {'D', 'G', 'L'}}
 
 
 
 
 
-
+# %% markdown
+# ## 3. Joint Distribution Represented by the Bayesian Network
+# Computing the Joint Distribution from the Bayesian Network, `model`:
+#
+# From the **chain rule of probability (also called and rule):**
+# $$
+# P(A, B) = P(B) \cdot P(A \; | \; B)
+# $$
+# Now in this case for the `model`:
+# $$
+# \begin{align}
+# P(D, I, G, L, S)
+# &= P(I, G, L, S) \cdot P(D | I, G, L, S) \\
+# &= P(G, L, S) \cdot P(I) \cdot P(D | I, G, L, S) \\
+# \end{align}
+# $$
 # %% codecell
