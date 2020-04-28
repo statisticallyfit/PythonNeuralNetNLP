@@ -990,8 +990,111 @@ assert model.active_trail_nodes('L', observed = ['S', 'I']) == {'L': {'D', 'G', 
 # $$
 # \begin{align}
 # P(D, I, G, L, S)
-# &= P(I, G, L, S) \cdot P(D | I, G, L, S) \\
-# &= P(G, L, S) \cdot P(I) \cdot P(D | I, G, L, S) \\
+# &= P(L \; | \; D, I, G, S) \cdot P(D, I, G, S) \\
+# &= P(L \; | \; D, I, G, S) \cdot {\color{cyan} (} P(S \; | \; D, I, G) \cdot P(D, I, G) {\color{cyan} )} \\
+# &= P(L \; | \; D, I, G, S) \cdot P(S \; | \; D, I, G) \cdot {\color{cyan} (}P(G \; | \; D, I) \cdot P(D, I){\color{cyan} )} \\
+# &= P(L \; | \; D, I, G, S) \cdot P(S \; | \; D, I, G) \cdot P(G \; | \; D, I) \cdot {\color{cyan} (}P(D \; | \; I) \cdot P(I){\color{cyan} )} \\
 # \end{align}
 # $$
 # %% codecell
+def probChainRule(condAcc: List[Variable], acc: Variable) -> str:
+    if len(condAcc) == 1:
+        #print(acc + "P(" + condAcc[0] + ")")
+        return acc + "P(" + condAcc[0] + ")"
+    else:
+        firstVar = condAcc[0]
+        otherVars = condAcc[1:]
+        curAcc = f'P({firstVar} | {", ".join(otherVars)}) * '
+        return probChainRule(condAcc = otherVars, acc =acc + curAcc)
+
+probChainRule(condAcc = ['L', 'S', 'G', 'D', 'I'], acc ='')
+# %% markdown
+# Applying the local independence conditions to the above euqation we get:
+# $$
+# \begin{align}
+# P(D, I, G, L, S)
+# &= P(L \; | \; D, I, G, S) \cdot P(S \; | \; D, I, G) \cdot P(G \; | \; D, I) \cdot {\color{cyan} (}P(D \; | \; I) \cdot P(I){\color{cyan} )} \\
+# &= P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D \; | \; I) \cdot P(I)
+# \end{align}
+# $$
+# %% codecell
+model.local_independencies('D')
+model.local_independencies('I')
+model.local_independencies('G')
+model.local_independencies('S')
+str(model.local_independencies('L'))
+
+# 0. split by "*"
+
+# For each probExpr P(frontNode | ...), get the frontNode
+
+# 1. get local independencies of a NODE L
+# 2. make to string
+# 3. split at the _|_ and | signs, the ones between are beforeCond letters and the ones after | are afterCond letters
+# 4. analyze the expression P(L | D,I,G,S): filter the after-cond part here and keep only the afterCond from step 3, eliminating the letters that are in beforeCond from step 3
+# 5. reconstruct the new expression with the P(L | keptLetters)
+
+### for general multiplied expression, first split by "*" then apply this mini function
+
+# %% markdown
+# From the above equation we can clearly see that the Joint Distribution over all variables is just the product of all the CPDs in the network. Hence, encoding the inependencies in the Joint Distribution in a graph structure helped us in reducing the number of parameters that we need to store.
+# %% codecell
+# Very simple, simplistic (not always right?) way to get the cpd name: just putting the second variable second
+def cpdName(model: BayesianModel, node: Variable) -> str:
+    variables = model.get_cpds(node).variables
+    if len(variables) == 1:
+        return 'P('  + variables[0] + ')'
+    else:
+        return 'P(' + variables[0] + " | " + ', '.join(variables[1:]) + ')'
+
+# The simplified names:
+assert cpdName(model, 'L') == 'P(L | G)'
+assert cpdName(model, 'S') == 'P(S | I)'
+assert cpdName(model, 'G') == 'P(G | I, D)'
+assert cpdName(model, 'D') == 'P(D)'
+assert cpdName(model, 'I') == 'P(I)'
+
+
+# %% markdown
+# ## 4. Inference in Bayesian Models
+# So far we talked about represented Bayesian Networks.
+#
+# Now let us do inference in a  Bayeisan model and predict values using this model over new data points for ML tasks.
+#
+# **Inference:** in inference we try to answer probability queries over the network given some other variables. Example: we might want to know the probable grade of an intelligent student in a difficult class given that he scored well on the SAT. So for computing these values from a Joint Distribution we will ahve to reduce over the given variables: $I = 1, D = 1, S = 1$, and then marginalize over the other variables we didn't ask about (L) to get the distribution for the variable we asked about (G), so to get the distribution: $P(G \; | \; I = 1, D = 1, S = 1)$.
+#
+# But doing marginalize and reduce operations on the complete Joint Distribution is computationally expensive since we need to iterate over the whole table for each operation and the table is exponential in size to the number of variables. But we can exploit the independencies (like above) to break these operations in smaller parts, increasing efficiency of calculation.
+#
+# ### Variable Elimination
+# **Variable Elimination:** a method of inference in graphical models.
+#
+# For our model, we know that the joint distribution (reduced using local independencies) is:
+# $$
+# \begin{align}
+# P(D, I, G, L, S) = P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D \; | \; I) \cdot P(I)
+# \end{align}
+# $$
+# Now say we want to compute the probability of just the grade $G$. That means we must **marginalize** over all other variables:
+# $$
+# \begin{align}
+# P(G) &= \sum_{D,I,L,S} P(D,I,G,L,S) \\
+# &= \sum_{D,I,L,S} P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D \; | \; I) \cdot P(I) \\
+# &= \sum_D \sum_I \sum_L \sum_S P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D \; | \; I) \cdot P(I) \\
+# &= \sum_D P(D) \sum_I P(G \; | \; D, I) \cdot P(I) \sum_S P(S \; | \; I) \sum_L P(L \; | \; G)
+# \end{align}
+# $$
+# In the above expression, to simplify the sumation, we just brought the summation with respect to a particular variable as far as it could go (as inner-deep as it could go, without putting the summation with respect to the variable past the probability expression that included that variable)
+#
+# By pushing the summations inside we have saved a lot of computation because we now have to iterate over much smaller tables.
+#
+# Taking an example for inference using Variable Elimination in pgmpy:
+# %% codecell
+from pgmpy.inference import VariableElimination
+from pgmpy.factors.discrete.DiscreteFactor import DiscreteFactor
+
+infer = VariableElimination(model = model)
+distG = infer.query(variables = ['G'])
+n, f = list(infer.query(variables = ['G']).items())[0]
+f: DiscreteFactor = f
+
+print(f)
