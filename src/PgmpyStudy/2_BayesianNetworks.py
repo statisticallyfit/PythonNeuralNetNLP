@@ -1014,7 +1014,7 @@ probChainRule(condAcc = ['L', 'S', 'G', 'D', 'I'], acc ='')
 # \begin{align}
 # P(D, I, G, L, S)
 # &= P(L \; | \; D, I, G, S) \cdot P(S \; | \; D, I, G) \cdot P(G \; | \; D, I) \cdot {\color{cyan} (}P(D \; | \; I) \cdot P(I){\color{cyan} )} \\
-# &= P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D \; | \; I) \cdot P(I)
+# &= P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D ) \cdot P(I)
 # \end{align}
 # $$
 # %% codecell
@@ -1071,15 +1071,17 @@ assert cpdName(model, 'I') == 'P(I)'
 # For our model, we know that the joint distribution (reduced using local independencies) is:
 # $$
 # \begin{align}
-# P(D, I, G, L, S) = P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D \; | \; I) \cdot P(I)
+# P(D, I, G, L, S) = P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D) \cdot P(I)
 # \end{align}
 # $$
+# **Example 1: Compute $P(G)$**
+#
 # Now say we want to compute the probability of just the grade $G$. That means we must **marginalize** over all other variables:
 # $$
 # \begin{align}
 # P(G) &= \sum_{D,I,L,S} P(D,I,G,L,S) \\
-# &= \sum_{D,I,L,S} P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D \; | \; I) \cdot P(I) \\
-# &= \sum_D \sum_I \sum_L \sum_S P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D \; | \; I) \cdot P(I) \\
+# &= \sum_{D,I,L,S} P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D) \cdot P(I) \\
+# &= \sum_D \sum_I \sum_L \sum_S P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D) \cdot P(I) \\
 # &= \sum_D P(D) \sum_I P(G \; | \; D, I) \cdot P(I) \sum_S P(S \; | \; I) \sum_L P(L \; | \; G)
 # \end{align}
 # $$
@@ -1093,8 +1095,56 @@ from pgmpy.inference import VariableElimination
 from pgmpy.factors.discrete.DiscreteFactor import DiscreteFactor
 
 infer = VariableElimination(model = model)
-distG = infer.query(variables = ['G'])
-n, f = list(infer.query(variables = ['G']).items())[0]
-f: DiscreteFactor = f
+inferResult = infer.query(variables = ['G'])
+print(inferResult)
 
-print(f)
+# Get the actual values
+node, marginalDistG = list(infer.query(variables = ['G']).items())[0]
+marginalDistG: DiscreteFactor = marginalDistG
+
+print(marginalDistG)
+
+# %% markdown
+# **Example 2:** Compute $P(G \; | \; D = 0, I = 1)$
+# Have already that:
+# $$
+# \begin{align}
+# P(G)
+# &= \sum_D \sum_I \sum_L \sum_S P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D) \cdot P(I) \\
+# &= \sum_D P(D) \sum_I P(G \; | \; D, I) \cdot P(I) \sum_S P(S \; | \; I) \sum_L P(L \; | \; G)
+# \end{align}
+# $$
+# To Compute $P(G \; | \; D = 0, I = 1)$, we must substitute the value $D = 0, I = 1$ wherever possible and then move the summations:
+# $$
+# \begin{align}
+# P(G \; | \; D = 0, I = 1) \\
+# &= \sum_D \sum_I \sum_L \sum_S P(L \; | \; G) \cdot P(S \; | \; I = 1) \cdot P(G \; | \; D = 0, I = 1) \cdot P(D = 0) \cdot P(I = 1) \\
+# &= \sum_L \sum_S P(L \; | \; G) \cdot P(S \; | \; I = 1) \cdot P(G \; | \; D = 0, I = 1) \cdot P(D = 0) \cdot P(I = 1) \\
+# &= P(D = 0) \cdot P(I = 1) \cdot P(G \; | \; D = 0, I = 1)  \;\; \cdot \;\; \sum_L P(L \; | \; G) \cdot \sum_S P(S \; | \; I = 1)  \\
+# \end{align}
+# $$
+# In pgmpy we just need to pass the extra `evidence` argument, when we want to calculate conditional distributions like these:
+# %% codecell
+
+inferResult = infer.query(variables = ['G'], evidence = {'D': 'Easy', 'I' : 'Intelligent'})
+print(inferResult)
+
+# Get the actual values
+node, marginalDistG = list(infer.query(variables = ['G']).items())[0]
+marginalDistG: DiscreteFactor = marginalDistG
+
+print(marginalDistG)
+
+
+
+infer.query(variables = ['G'], evidence = {'D': 'Easy', 'I' : 'Intelligent'})
+
+node, condDist = list(infer.query(variables = ['G'], evidence = {'D': 'Easy', 'I' : 'Intelligent'}).items())[0]
+print(condDist)
+
+
+infer.map_query(['G'])
+infer.map_query(['G'], evidence={'D': 'Easy', 'I': 'Intelligent'})
+infer.map_query(['G'], evidence={'D': 'Easy', 'I': 'Intelligent', 'L': 'Good', 'S': 'Good'})
+
+# TODO the commands with `evidence` are giving errors, must update to pgmpy version >= 0.1.9 (or what is the minimal above 0.1.6?)
