@@ -59,8 +59,9 @@ def localIndependencySynonyms(model: BayesianModel,
     for letterSet in otherNodes:
         # NOTE: could use comma here instead of the '∩' (and) symbol
         if useNotation: # use 'set and' symbol and brackets (set notation, clearer than simple notation)
-            comboStrs: List[str] = list(map(lambda letterCombo : "{" + ' ∩ '.join(letterCombo) + "}",
-                                            itertools.permutations(letterSet)))
+            comboStrs: List[str] = list(map(
+                lambda letterCombo : "{" + ' ∩ '.join(letterCombo) + "}" if len(letterCombo) > 1 else ' ∩ '.join(letterCombo),
+                itertools.permutations(letterSet)))
         else: # use commas and no brackets (simple notation)
             comboStrs: List[str] = list(map(lambda letterCombo : ', '.join(letterCombo),
                                             itertools.permutations(letterSet)))
@@ -98,14 +99,19 @@ def indepSynonymTable(model: BayesianModel,
     # Create table spacing logic
     numBetweenSpace: int = 5
     numDots: int = 5
-    numTotalRowSpace: int = len(xs[0]) + 2 * numBetweenSpace + numDots + len(ys[0])
+
 
     dots: str = ''.ljust(numDots, '.') # making as many dots as numDots
     betweenSpace: str = ''.ljust(numBetweenSpace, ' ')
 
-    title: str = "INDEPENDENCIES TABLE".center(numTotalRowSpace, ' ')
     fancyNotationTitle: str = 'Fancy Notation'.ljust(len(xs[0]) , ' ')
     regularNotationTitle: str = "Regular Notation".ljust(len(ys[0]), ' ')
+
+    numTotalRowSpace: int = max(len(xs[0]), len(fancyNotationTitle.strip())) + \
+                            2 * numBetweenSpace + numDots + \
+                            max(len(ys[0]), len(regularNotationTitle.strip()))
+
+    title: str = "INDEPENDENCIES TABLE".center(numTotalRowSpace, ' ')
 
     separatorLine: str = ''.ljust(numTotalRowSpace, '-')
 
