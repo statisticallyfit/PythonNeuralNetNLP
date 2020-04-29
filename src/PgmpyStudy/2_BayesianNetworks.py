@@ -1024,6 +1024,7 @@ model.local_independencies('G')
 model.local_independencies('S')
 str(model.local_independencies('L'))
 
+# TODO reduction function to do
 # 0. split by "*"
 
 # For each probExpr P(frontNode | ...), get the frontNode
