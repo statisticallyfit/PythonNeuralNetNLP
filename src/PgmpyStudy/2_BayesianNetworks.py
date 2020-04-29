@@ -1,5 +1,5 @@
 
-# %% markdown
+# %% markdown [markdown]
 # # Bayesian Models
 #
 # 1. What are Bayesian Models
@@ -9,7 +9,7 @@
 # 5. Types of methods for inference
 
 
-# %% markdown
+# %% markdown [markdown]
 # Doing path-setting:
 # %% codecell
 import os
@@ -45,7 +45,7 @@ sys.path.append(curPath)
 sys.path
 
 
-# %% markdown
+# %% markdown [markdown]
 # Science-related imports:
 # %% codecell
 from IPython.display import Image
@@ -57,7 +57,7 @@ Variable = str
 Value = str
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## 1. What are Bayesian Models
 # **Definition:** A **bayesian network** or **probabilistic directed acyclic graphical model** is a **probabilistic graphical model (PGM)** that represents a set of random variables and their conditional dependencies via a **directed acyclic graph (DAG)**.
 #
@@ -67,7 +67,7 @@ Value = str
 # %% codecell
 Image(filename = imagePath + 'grademodel.png')
 
-# %% markdown
+# %% markdown [markdown]
 # In pgmpy we define the network structure and the CPDs separately and only then associate them with the structure. Example for defining the above model:
 # %% codecell
 from pgmpy.models import BayesianModel
@@ -80,7 +80,7 @@ model: BayesianModel = BayesianModel([('D', 'G'), ('I', 'G'), ('G', 'L'), ('I', 
 cpd_D = TabularCPD(variable = 'D', variable_card = 2, values = [[0.6, 0.4]])
 cpd_I = TabularCPD(variable = 'I', variable_card=2, values = [[0.7, 0.3]])
 
-# %% markdown
+# %% markdown [markdown]
 # The representation of CPD in pgmpy is a bit different than the CPD in the above picture. In pgmpy the colums are the EVIDENCES and the rows are the STATES of the variable, so the grade CPD is represented like this:
 #
 # `    +---------+---------+---------+---------+---------+
@@ -150,7 +150,7 @@ assert model.has_edge(u = 'I', v = 'G')
 print('out edges = ', model.edges())
 print('\nin edges = ', model.in_edges)
 
-# %% markdown
+# %% markdown [markdown]
 # CPDs can also be defined using the state names of the variables. If there are not provided, like in previous example, pgmpy will automatically assign names as 0, 1, 2, ...
 # %% codecell
 
@@ -210,7 +210,7 @@ from src.utils.GraphvizUtil import *
 renderGraphFromBayes(bayesModel = model)
 
 
-# %% markdown
+# %% markdown [markdown]
 # We can now call some methods on the `BayesianModel` object
 # %% codecell
 model.get_cpds()
@@ -224,7 +224,7 @@ print(model.get_cpds('G'))
 model.get_cardinality('G')
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## 2. Independencies in Bayesian Networks
 # Independencies implied by the network structure of a Bayesian network can be categorized as two types:
 #
@@ -271,7 +271,7 @@ renderGraphFromBayes(bayesModel = convertDaftToPgmpy(pgm = graphAToB))
 renderGraphFromBayes(bayesModel = convertDaftToPgmpy(pgm = graphBToA))
 
 
-# %% markdown
+# %% markdown [markdown]
 # Above it is obvious that any change of the node will affect the other node.
 #
 # * For graph 1: if we take `Difficulty` $\rightarrow$ `Grade` and increase the difficulty then the probability of getting a higher grade decreases.
@@ -297,7 +297,7 @@ commonCauseGraph = renderGraphFromEdges(structures = commonCause)
 
 # using later
 
-# %% markdown
+# %% markdown [markdown]
 # Now in the above cases we will see the flow of influence from $A$ to $C$ under various cases:
 #
 # 1. **Causal:**
@@ -420,7 +420,7 @@ indeps = list(map(lambda x : str(x), commonCauseModel.get_independencies().get_a
 assert indeps == ['(A _|_ C | B)', '(C _|_ A | B)'], 'Check: overall independencies of common cause model'
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Study: Individual, Local Independencies for Grade Example
 # Using the example Grade structure, find the **individual** local independencies:
 # %% codecell
@@ -470,7 +470,7 @@ indepSynonymTable(model = model,queryNode='L', otherNodes=[['S','I','D'], ['G']]
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Study: Multiple Local Independencies for Grade Example
 # Using the example Grade structure, find the **n-way** local independencies: (they are just concatenations of the individual independencies)
 # %% codecell
@@ -505,7 +505,7 @@ indep_all
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Study: Active Trails
 # **Definition: Active Trail:** For any two variables $A$ and $B$ in a network, if any change in $A$ influences the values of $B$ then there is an active trail between $A$ and $B$.
 #
@@ -935,7 +935,7 @@ assert commonCauseModel.active_trail_nodes(['A','B','C'], observed = ['B', 'C'])
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Study: Simple Student Model's Active Trails: How Influencing Variables can Change Another Variable That is Characteristic (Seems Predetermined)
 # Here we can influence `diff` and `intel`, while keeping `grades` fixed and can recognize that `intel` is one of the variables that must respond to this change. For instance, if `diff` (difficulty) increases while `grades` are fixed (say observed to be high), then `intel` must be higher than before.
 # %% codecell
@@ -953,7 +953,7 @@ assert student.active_trail_nodes('diff', observed='grades')== {'diff': {'diff',
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Study: Larger Student Model's Active Trails
 # %% codecell
 renderGraphFromBayes(model)
@@ -978,7 +978,7 @@ assert model.active_trail_nodes('L', observed = ['S', 'I']) == {'L': {'D', 'G', 
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## 3. Joint Distribution Represented by the Bayesian Network
 # Computing the Joint Distribution from the Bayesian Network, `model`:
 #
@@ -1008,7 +1008,7 @@ def probChainRule(condAcc: List[Variable], acc: Variable) -> str:
         return probChainRule(condAcc = otherVars, acc =acc + curAcc)
 
 probChainRule(condAcc = ['L', 'S', 'G', 'D', 'I'], acc ='')
-# %% markdown
+# %% markdown [markdown]
 # Applying the local independence conditions to the above euqation we get:
 # $$
 # \begin{align}
@@ -1036,7 +1036,7 @@ str(model.local_independencies('L'))
 
 ### for general multiplied expression, first split by "*" then apply this mini function
 
-# %% markdown
+# %% markdown [markdown]
 # From the above equation we can clearly see that the Joint Distribution over all variables is just the product of all the CPDs in the network. Hence, encoding the inependencies in the Joint Distribution in a graph structure helped us in reducing the number of parameters that we need to store.
 # %% codecell
 # Very simple, simplistic (not always right?) way to get the cpd name: just putting the second variable second
@@ -1055,7 +1055,7 @@ assert cpdName(model, 'D') == 'P(D)'
 assert cpdName(model, 'I') == 'P(I)'
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## 4. Inference in Bayesian Models
 # So far we talked about represented Bayesian Networks.
 #
@@ -1104,7 +1104,7 @@ marginalDistG: DiscreteFactor = marginalDistG
 
 print(marginalDistG)
 
-# %% markdown
+# %% markdown [markdown]
 # **Example 2:** Compute $P(G \; | \; D = 0, I = 1)$
 # Have already that:
 # $$
@@ -1125,7 +1125,7 @@ print(marginalDistG)
 # $$
 # In pgmpy we just need to pass the extra `evidence` argument, when we want to calculate conditional distributions like these:
 # %% codecell
-
+'''
 inferResult = infer.query(variables = ['G'], evidence = {'D': 'Easy', 'I' : 'Intelligent'})
 print(inferResult)
 
@@ -1148,3 +1148,4 @@ infer.map_query(['G'], evidence={'D': 'Easy', 'I': 'Intelligent'})
 infer.map_query(['G'], evidence={'D': 'Easy', 'I': 'Intelligent', 'L': 'Good', 'S': 'Good'})
 
 # TODO the commands with `evidence` are giving errors, must update to pgmpy version >= 0.1.9 (or what is the minimal above 0.1.6?)
+'''
