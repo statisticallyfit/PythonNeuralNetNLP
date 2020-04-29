@@ -380,10 +380,6 @@ assert str(indepA) in localIndependencySynonyms(model=commonEvidenceModel, query
 indepSynonymTable(model = commonEvidenceModel, queryNode ='A')
 
 # %% codecell
-assert commonEvidenceModel.local_independencies('C') == Independencies(['C',['B','A']]), 'Check: C is independent of both B and A'
-# assert str(Independencies(['C',['B','A']])) == '(C _|_ B, A)'
-# SANITY Logger:
-# %% codecell
 indepC: Independencies = commonEvidenceModel.local_independencies('C')
 assert indepC == Independencies(['C',['B','A']]), 'Check: C is independent of both B and A'
 assert str(indepC) in localIndependencySynonyms(model=commonEvidenceModel, queryNode='C')
