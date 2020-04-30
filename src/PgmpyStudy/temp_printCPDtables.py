@@ -67,3 +67,6 @@ CPD_time
 CPD_usesop: DataFrame = cleanData(pd.read_csv(dataPath + 'cpd_usesop.csv', delimiter =',').dropna())
 
 CPD_usesop
+# %% codecell
+CPD_absentee: DataFrame = cleanData(pd.read_csv(dataPath + 'cpd_absentee.csv', delimiter =',').dropna())
+CPD_absentee
