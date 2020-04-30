@@ -30,7 +30,7 @@ dependencies:
   - scikit-learn
   - pytorch
   - pytorch-pretrained-bert
-  - tensorflow>=1.14.0
+  - tensorflow==1.14.0
   - tensorboard
   - tensorflow-probability
 
@@ -41,18 +41,15 @@ dependencies:
   # ========================
   - bayespy
   - algopy
-  #### - edward --- move to PIP
   - emcee
   - pymc3
-  - ankurankan::pgmpy
-  #### - causalnex -- move to pip
+  - ankurankan::pgmpy>=0.1.9
 
 
 
   # ==============
   # Matrix / Autodiff
   # ==============
-  ###### - numpyro --- move to pip
   - jax
   - numdifftools
   - xarray
@@ -81,8 +78,8 @@ dependencies:
       - causalnex>=0.5.0 # put here in pip to get version 0.5.0 as opposed to 0.4.3
       - pydot
       - svgwrite
-      ###- pygraphviz>=1.5
       - daft
+      - pampy # a functional pattern matching for python (so easier readability in lambdas!)
 
 prefix: /development/bin/python/conda3_ana/envs/pybayesian_env
 
