@@ -81,5 +81,79 @@ graphWeight
 # %% codecell
 variables
 # %% codecell
-graphProbs = renderGraphCPDTables(graphNoTable= graph, variables = variables)
+graphProbs = _renderGraphCPD(graphNoTable= graph, variables = variables)
 graphProbs
+
+
+
+
+# %% codecell
+# Build model now with pgmpy and convert from pgmpy's tabular CPD's into the above `variables` dict format above, so we can render the PGM with its CPDs
+from pgmpy.models import BayesianModel
+from pgmpy.factors.discrete import TabularCPD
+
+# Defining mdoel structure, just by passing a list of edges.
+model: BayesianModel = BayesianModel([('D', 'G'), ('I', 'G'), ('G', 'L'), ('I', 'S')])
+
+
+# Defining individual CPDs with state names
+cpdState_D = TabularCPD(variable = 'D', variable_card = 2, values = [[0.6, 0.4]],
+                        state_names = {'D' : ['Easy', 'Hard']})
+
+cpdState_I = TabularCPD(variable = 'I', variable_card=2, values = [[0.7, 0.3]],
+                        state_names = {'I' : ['Dumb', 'Intelligent']})
+
+cpdState_G = TabularCPD(variable = 'G', variable_card = 3, values = [[0.3, 0.05, 0.9, 0.5],
+                                                                     [0.4, 0.25, 0.08, 0.3],
+                                                                     [0.3, 0.7, 0.02, 0.2]],
+                        evidence = ['I', 'D'], evidence_card = [2,2],
+                        state_names = {'G': ['A', 'B', 'C'], 'I' : ['Dumb', 'Intelligent'], 'D':['Easy', 'Hard']})
+
+cpdState_L = TabularCPD(variable = 'L', variable_card = 2, values = [[0.1, 0.4, 0.99],
+                                                                     [0.9, 0.6, 0.01]],
+                        evidence = ['G'], evidence_card = [3],
+                        state_names = {'L' : ['Bad', 'Good'], 'G': ['A', 'B', 'C']})
+
+cpdState_S = TabularCPD(variable = 'S', variable_card = 2, values = [[0.95, 0.2],
+                                                                     [0.05, 0.8]],
+                        evidence = ['I'], evidence_card = [2],
+                        state_names={'S': ['Bad', 'Good'], 'I': ['Dumb', 'Intelligent']})
+
+# Associating the CPDs with the network:
+model.add_cpds(cpdState_D, cpdState_I, cpdState_G, cpdState_L, cpdState_S)
+assert model.check_model()
+
+
+# %% codecell
+renderGraphFromBayes(model)
+# %% codecell
+model.get_cpds('G').variables
+# Comparing CPD format
+strtable = str(model.get_cpds('G'))
+print(strtable)
+# %% codecell
+model.get_cpds('G').get_values()
+# %% codecell
+model.get_cpds('G').values.shape
+model.get_cpds('G').get_values().shape
+#model.get_cpds('G').values
+
+model.get_cpds('G').state_names
+
+# 1 get first variable in variables
+# save other tail variables
+# 1. create the FirstVar = STATE_i combinations (strings)
+# 2. create the OtherVar_i = STATE_j combinations (strings)
+# 3. do product of the tail variable string combos
+# 4. stick in the table at model.get_cpds(FirstVar).getvalues()
+
+# GIVEN: model and queryNode. GENERATE: the variables in dict format
+queryNode: Variable = 'G'
+
+
+g = graph.copy()
+
+g.attr('node', shape ='plaintext')
+g.node('cpd_' + queryNode, label=strtable, color='gray', fillcolor='white')
+
+g # this approach doesn't work - ugly misaligned table and also doesn't put to correct node...

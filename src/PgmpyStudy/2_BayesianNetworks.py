@@ -183,26 +183,6 @@ assert model.check_model()
 
 
 
-# %% codecell
-
-
-# START PIC DEVELOPMENT ----------------------------------------------------------------------------
-# TODO: to visually generate from this values format into variables format of TryGraphviz file, must put in dictionary (nested) then 2) tweak
-cpdState_G.variables
-# %% codecell
-cpdState_G.values
-# %% codecell
-cpdState_G.get_values()
-# %% codecell
-cpdState_G.get_evidence()
-# %% codecell
-
-cpdState_G.__dict__
-# %% codecell
-model.__dict__
-# DEVELOPMENT ------------------------------------------------------------------------------------------
-
-# END PIC DEVELOPMENT ----------------------------------------------------------------------------
 
 # %% codecell
 from src.utils.GraphvizUtil import *

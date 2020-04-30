@@ -253,8 +253,8 @@ def renderGraphFromEdges(structures: List[Tuple[Variable, Variable]],
 
 
 
-def renderGraphCPDTables(graphNoTable: gz.Digraph,
-                         variables: Dict[Variable, Dict]) -> gz.Digraph:
+def _renderGraphCPD(graphNoTable: gz.Digraph,
+                    variables: Dict[Variable, Dict]) -> gz.Digraph:
     # import random
 
     g = graphNoTable.copy() # make this just a getter, not a setter also!
@@ -277,6 +277,13 @@ def renderGraphCPDTables(graphNoTable: gz.Digraph,
             g.edge(var, 'cpd_' + var, style='invis')
 
     return g
+
+
+
+def renderGraphCPD(model: BayesianModel) -> gz.Digraph:
+    '''
+    Converts a pgmpy BayesianModel into a graphviz Digraph with its CPD tables drawn next to its nodes.
+    '''
 
 
 
