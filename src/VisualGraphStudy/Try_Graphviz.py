@@ -88,7 +88,7 @@ graphProbs
 
 
 # %% codecell
-# Build model now with pgmpy and convert from pgmpy's tabular CPD's into the above `variables` dict format above, so we can render the PGM with its CPDs
+# Build model now with pgmpy
 from pgmpy.models import BayesianModel
 from pgmpy.factors.discrete import TabularCPD
 
@@ -130,16 +130,6 @@ pgmpyToGraph(model)
 # %% codecell
 pgmpyToGrid(model, 'G')
 
-# %% codecell
-import pandas as pd
-from pandas.core.frame import DataFrame
-
-
-#gradeDF = DataFrame(pgmpyToGrid(model, 'G'), columns = ['Intelligence', 'Difficulty'] + condVarStateNames[0]); gradeDF
-
-# %% codecell
-# Too bad the string version does not have lines like the object version so can't just substitute this as edge label, needs to have those weird html tags to work...
-#print(str(gradeDF))
 
 # %% codecell
 

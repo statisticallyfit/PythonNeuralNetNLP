@@ -1,4 +1,4 @@
-Process Type,Uses Op,Chemical-Burn,Electrical-Burn,Electrical-Shock,Contact-Contusion,FallGtm
+ProcessType,UsesOp,Chemical-Burn,Electrical-Burn,Electrical-Shock,Contact-Contusion,FallGtm
 Accel-Pedal,Forklift,20,20,20,20,20
 Accel-Pedal,Front-Right-Door,20,20,20,20,20
 Accel-Pedal,Oil,20,20,20,20,20

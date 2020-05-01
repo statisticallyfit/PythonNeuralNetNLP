@@ -1,4 +1,4 @@
-Time (Days in Week),Process Type,Injury Type,Work Capacity,Low,High
+Time,ProcessType,InjuryType,WorkCapacity,Low,High
 1,Accel-Pedal,Chemical-Burn,Low,70,30
 1,Accel-Pedal,Chemical-Burn,High,90,10
 1,Accel-Pedal,Electrical-Burn,Low,60,40
