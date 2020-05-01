@@ -196,8 +196,8 @@ def pgmpyToTable(model: BayesianModel,
     numCondNodes: int = len(model.get_cpds(queryNode).get_evidence())
 
     # Variable to add to the column span
-    extra: int = numCondNodes if numCondNodes != 0 else 1
-    colSpan: int = model.get_cardinality(node = queryNode) + extra
+    #extra: int = numCondNodes if numCondNodes != 0 else 1
+    colSpan: int = model.get_cardinality(node = queryNode) + numCondNodes
 
 
     prefix: Table = '<<FONT POINT-SIZE="7"><TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0"><TR><TD COLSPAN="' + \
@@ -206,7 +206,7 @@ def pgmpyToTable(model: BayesianModel,
 
     # Cosntructing the header so that there are enough blank cell spaces above the conditional variable columns
     header: Table = "<TR>" #"<TR><TD></TD>"
-    listOfSpaces: List[str] = ['<TD></TD>' for i in range(0, extra)]
+    listOfSpaces: List[str] = ['<TD></TD>' for i in range(0, numCondNodes)]
     header += ''.join(listOfSpaces)
 
 
@@ -216,7 +216,9 @@ def pgmpyToTable(model: BayesianModel,
     numLabelTuples: List[Tuple[int, State]] = list(zip(range(0, model.get_cardinality(queryNode)), stateNames))
 
     for idNum, label in numLabelTuples:
-        header: Table = header + '<TD>'  + label + ' (' + queryNode.lower() + '_' + str(idNum)  + ')</TD>'
+        # Comment out below, just include the state name, no id number also
+        header: Table = header + '<TD>'  + label + '</TD>'
+        #header: Table = header + '<TD>'  + label + ' (' + queryNode.lower() + '_' + str(idNum)  + ')</TD>'
     header: Table = header + '</TR>'
 
 
@@ -224,7 +226,19 @@ def pgmpyToTable(model: BayesianModel,
     numLoopCol: int = len(grid[0])
     body: Table = ""
 
-    if numLoopRow > 1:
+    if numLoopRow <= 1:
+        # No need for the extra lower case letter, we know its a marginal distribution already!
+        #body: Table = "<TR><TD>" + str(queryNode).lower() + "</TD>"
+        # No need to have the starting space td / td now because we can let numCondNodes = 0 (so no more extra =
+        # 1 buffer)
+        body: Table = "<TR>" #<TD></TD>"
+
+        for col in range(numLoopCol):
+            body: Table = body + "<TD>" + str(grid[0][col]) + "</TD>"
+        body: Table = body + "</TR>"
+
+    else:
+
         for row in range(numLoopRow):
             body: Table = body + "<TR>"
 
@@ -232,12 +246,7 @@ def pgmpyToTable(model: BayesianModel,
                 body: Table = body + "<TD>" + str(grid[row][col]) + "</TD>"
             body: Table = body + "</TR>"
 
-    else:
-        body: Table = "<TR><TD>" + str(queryNode).lower() + "</TD>"
 
-        for col in range(numLoopCol - 1): #range(numLoopCol - 1):
-            body: Table = body + '<TD>' + str(grid[0][col + 1]) + '</TD>'
-        body: Table = body + "</TR>"
 
     footer: Table = '</TABLE></FONT>>'
 
