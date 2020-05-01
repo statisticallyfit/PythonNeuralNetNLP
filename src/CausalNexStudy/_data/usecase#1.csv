@@ -1,0 +1,15 @@
+ndx,time      ,process_type    ,uses_op         ,injury_type      ,absenteeism_level
+1  ,2018/01/02,Engine-Mount    ,Power-Gun       ,Electrical-Burn  ,Absenteeism-00
+2  ,2018/01/02,Engine-Mount    ,Forklift        ,Contact-Contusion,Absenteeism-03
+3  ,2018/01/03,Engine-Wiring   ,Power-Gun       ,Electrical-Shock ,Absenteeism-02
+4  ,2018/01/03,Engine-Mount    ,Forklift        ,Fall-Gtm         ,Absenteeism-03
+5  ,2018/01/04,Sun-Roof-Housing,Power-Gun       ,Electrical-Burn  ,Absenteeism-00
+6  ,2018/01/04,Accel-Pedal     ,Power-Gun       ,Electrical-Burn  ,Absenteeism-00
+7  ,2018/01/04,Oil-Fill        ,Oil             ,Chemical-Burn    ,Absenteeism-02
+8  ,2018/01/05,Door-Mount      ,Power-Gun       ,Electrical-Burn  ,Absenteeism-00
+9  ,2018/01/05,Door-Mount      ,Front-Right-Door,Contact-Contusion,Absenteeism-03
+10 ,2018/01/05,Engine-Wiring   ,Power-Gun       ,Electrical-Shock ,Absenteeism-02
+11 ,2018/01/06,Steering-Column ,Forklift        ,Fall-Gtm         ,Absenteeism-02
+12 ,2018/01/06,Sun-Roof-Housing,Power-Gun       ,Electrical-Burn  ,Absenteeism-00
+13 ,2018/01/07,Accel-Pedal     ,Power-Gun       ,Electrical-Burn  ,Absenteeism-00
+

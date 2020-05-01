@@ -16,7 +16,7 @@ os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonN
 
 curPath: str = os.getcwd() + "/src/CausalNexStudy/"
 
-dataPath: str = curPath + "data/student/"
+dataPath: str = curPath + "_data/student/"
 
 
 print("curPath = ", curPath, "\n")
@@ -116,4 +116,4 @@ sys.path
 # * bayesian networks offer a way to suggest counterfactual actions and combine actions **without aggressive independence assumptions** (normality regression anyone?)
 #
 # ** Drawbacks:**
-# * 
+# *

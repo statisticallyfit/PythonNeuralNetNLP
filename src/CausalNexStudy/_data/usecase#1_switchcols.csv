@@ -1,0 +1,8 @@
+ndx,process_type    ,tool_type,absenteeism_level,injury_type
+1  ,Engine-Mount    ,Power-Gun,Absenteeism-00   ,Electrical-Burn
+2  ,Engine-Mount    ,Forklift ,Absenteeism-03   ,Contact-Contusion
+3  ,Engine-Wiring   ,Power-Gun,Absenteeism-02   ,Electrical-Shock
+4  ,Engine-Mount    ,Forklift ,Absenteeism-03   ,Fall-Gtm
+5  ,Sun-Roof-Housing,Power-Gun,Absenteeism-00   ,Electrical-Burn
+6  ,Accel-Pedal     ,Power-Gun,Absenteeism-00   ,Electrical-Burn
+7  ,Oil-Fill        ,Oil      ,Absenteeism-02   ,Chemical-Burn

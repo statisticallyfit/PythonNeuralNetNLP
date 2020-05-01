@@ -15,7 +15,7 @@ os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonN
 
 curPath: str = os.getcwd() + "/src/CausalNexStudy/"
 
-dataPath: str = curPath + "data/"
+dataPath: str = curPath + "_data/"
 
 
 print("curPath = ", curPath, "\n")
