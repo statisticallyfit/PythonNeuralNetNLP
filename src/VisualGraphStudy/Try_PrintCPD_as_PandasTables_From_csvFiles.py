@@ -5,7 +5,7 @@ from typing import *
 
 os.getcwd()
 # Setting the baseline:
-os.chdir('/')
+os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP')
 
 
 curPath: str = os.getcwd() + "/src/VisualGraphStudy/"
