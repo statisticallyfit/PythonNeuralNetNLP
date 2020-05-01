@@ -99,7 +99,7 @@ from src.utils.GraphvizUtil import *
 carModel: BayesianModel = BayesianModel([('Time', 'WorkCapacity'), ('TrainingLevel', 'WorkCapacity'),
                                          ('ExperienceLevel', 'WorkCapacity'), ('ExertionLevel', 'WorkCapacity'),
                                          ('Time', 'AbsenteeismLevel'),
-                                         ('ProcessType', 'UserOps'), ('ProcessType', 'InjuryType'), ('ProcessType',
+                                         ('ProcessType', 'UsesOps'), ('ProcessType', 'InjuryType'), ('ProcessType',
                                                                                                      'AbsenteeismLevel'),
                                          ('UsesOps', 'InjuryType'), ('InjuryType', 'AbsenteeismLevel'),
                                          ('WorkCapacity', 'AbsenteeismLevel')])
