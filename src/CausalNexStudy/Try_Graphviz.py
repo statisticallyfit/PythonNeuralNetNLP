@@ -72,7 +72,7 @@ variables: Dict[Variable, Dict] = {
 }
 
 # %% codecell
-graph = renderGraphFromDict(structures = structures, variables = variables)
+graph = dictToGraph(structures = structures, variables = variables)
 graph
 # %% codecell
 graphWeight = graph.copy()
@@ -81,7 +81,7 @@ graphWeight
 # %% codecell
 variables
 # %% codecell
-graphProbs = _renderGraphCPD(graphNoTable= graph, variables = variables)
+graphProbs = dictToGraphCPD(graphNoTable= graph, variables = variables)
 graphProbs
 
 
@@ -125,35 +125,155 @@ assert model.check_model()
 
 
 # %% codecell
-renderGraphFromBayes(model)
+pgmpyToGraph(model)
 # %% codecell
-model.get_cpds('G').variables
-# Comparing CPD format
-strtable = str(model.get_cpds('G'))
-print(strtable)
+pgmpyToGrid(model, 'S')
+
 # %% codecell
-model.get_cpds('G').get_values()
-# %% codecell
+import pandas as pd
+from pandas.core.frame import DataFrame
+
+cpdvals = model.get_cpds('G').get_values(); cpdvals
+
+cpdvals.shape
 model.get_cpds('G').values.shape
-model.get_cpds('G').get_values().shape
-#model.get_cpds('G').values
-
-model.get_cpds('G').state_names
-
-# 1 get first variable in variables
-# save other tail variables
-# 1. create the FirstVar = STATE_i combinations (strings)
-# 2. create the OtherVar_i = STATE_j combinations (strings)
-# 3. do product of the tail variable string combos
-# 4. stick in the table at model.get_cpds(FirstVar).getvalues()
-
-# GIVEN: model and queryNode. GENERATE: the variables in dict format
-queryNode: Variable = 'G'
 
 
-g = graph.copy()
+# Get the dictionary of 'var' : [states]
+queryNode = 'G'
+def nameFormatter(variable: Variable, states: List[State]) -> Variable:
+    '''
+    Convert the input variable = 'I' and states = ['Dumb', 'Intelligent'] into the result ['I(Dumb)',
+    'I(Intelligent)']
+    '''
+    return list(map(lambda varStateTuple : f"{varStateTuple[0]}({varStateTuple[1]})",
+                    itertools.product(variable, states)))
 
+allVarAndStates = model.get_cpds(queryNode).state_names
+
+# Get the names of the evidence nodes
+condVars: List[Variable] = list(allVarAndStates.keys())
+
+# Getting the formatted var(state) names in a list, for each evidence / conditional node.
+condVarStateNames = []
+for var in condVars:
+    condVarStateNames.append(nameFormatter(variable = var, states = allVarAndStates[var]))
+condVarStateNames
+# Doing product between all the conditional variables; to get (I(Intelligent), D(Easy)), (I(Intelligent), D(Hard))
+condVarStateProducts = list(itertools.product(*condVarStateNames[1:])); condVarStateProducts
+
+
+gradeDF = DataFrame(pgmpyToGrid(model, 'G'), columns = ['Intelligence', 'Difficulty'] + condVarStateNames[0]); gradeDF
+print(str(gradeDF))
+
+var = queryNode
+
+g1 = pgmpyToGraph(model)
+g = g1.copy()
 g.attr('node', shape ='plaintext')
-g.node('cpd_' + queryNode, label=strtable, color='gray', fillcolor='white')
+g.node('cpd_' + queryNode, label=str(model.get_cpds(queryNode)), color='gray', fillcolor='white') #, color='gray')
 
-g # this approach doesn't work - ugly misaligned table and also doesn't put to correct node...
+if random.randint(0,1):
+    g.edge('cpd_' + var, var, style='invis')
+else:
+    g.edge(var, 'cpd_' + var, style='invis')
+
+g
+# %% codecell
+
+
+
+def pgmpyToTable(model: BayesianModel,
+                 queryNode: Variable,
+                 grid: Grid,
+                 queryNodeLongName: Variable = None) -> Table:
+    '''
+    Function adapted from `renderTable_fromdict that is just passed the model and constructs the hashtag table
+    '''
+    # Assigning the long name of the node (like queryNode = 'G' but queryNodeLongName = 'Grade')
+    queryNodeLongName: Variable = queryNode if queryNodeLongName is None else queryNodeLongName
+
+    numCondNodes: int = len(model.get_cpds(queryNode).get_evidence())
+
+    # Variable to add to the column span
+    extra: int = numCondNodes if numCondNodes != 0 else 1
+    colSpan: int = model.get_cardinality(node = queryNode) + extra
+
+
+    prefix: Table = '<<FONT POINT-SIZE="7"><TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0"><TR><TD COLSPAN="' + \
+                    str(colSpan) +'">' + \
+                    queryNodeLongName + '</TD></TR>'
+
+    # Cosntructing the header so that there are enough blank cell spaces above the conditional variable columns
+    header: Table = "<TR>" #"<TR><TD></TD>"
+    listOfSpaces: List[str] = ['<TD></TD>' for i in range(0, extra)]
+    header += ''.join(listOfSpaces)
+
+
+    # Getting state names and cardinality to create labels in table:
+    stateNames: List[State] = model.get_cpds(queryNode).state_names[queryNode]
+
+    numLabelTuples: List[Tuple[int, State]] = list(zip(range(0, model.get_cardinality(queryNode)), stateNames))
+
+    for idNum, label in numLabelTuples:
+        header: Table = header + '<TD>'  + label + ' (' + queryNode.lower() + '_' + str(idNum)  + ')</TD>'
+    header: Table = header + '</TR>'
+
+
+    numLoopRow: int = len(grid)
+    numLoopCol: int = len(grid[0])
+    body: Table = ""
+
+    if numLoopRow > 1:
+        for row in range(numLoopRow):
+            body: Table = body + "<TR>"
+
+            for col in range(numLoopCol):
+                body: Table = body + "<TD>" + str(grid[row][col]) + "</TD>"
+            body: Table = body + "</TR>"
+
+    else:
+        body: Table = "<TR><TD>" + str(queryNode).lower() + "</TD>"
+
+        for col in range(numLoopCol - 1): #range(numLoopCol - 1):
+            body: Table = body + '<TD>' + str(grid[0][col + 1]) + '</TD>'
+        body: Table = body + "</TR>"
+
+    footer: Table = '</TABLE></FONT>>'
+
+    return prefix + header + body + footer
+
+
+
+def pgmpyToGraphCPD(model: BayesianModel) -> gz.Digraph:
+    '''
+    Converts a pgmpy BayesianModel into a graphviz Digraph with its CPD tables drawn next to its nodes.
+    '''
+    g: gz.Digraph = pgmpyToGraph(model)
+    variables: List[Variable] = list(iter(model.nodes))
+
+    for var in variables:
+        g.attr('node', shape ='plaintext')
+
+        grid: Grid = pgmpyToGrid(model = model, queryNode = var)
+
+        table: Table = pgmpyToTable(model = model, queryNode = var, grid= grid)
+
+        random.seed(hash(table))
+
+        #g.node('cpd_' + var, label=table, color='gray')
+        g.node('cpd_' + var, label=table, color='gray', fillcolor='white') #, color='gray')
+
+        if random.randint(0,1):
+            g.edge('cpd_' + var, var, style='invis')
+        else:
+            g.edge(var, 'cpd_' + var, style='invis')
+
+    return g
+
+
+
+model.get_cpds('G').get_evidence()
+
+
+pgmpyToGraphCPD(model)

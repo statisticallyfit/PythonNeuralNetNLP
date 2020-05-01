@@ -41,6 +41,18 @@ CPD_workCapacity = cleanData(CPD_workCapacity.dropna())  # remove the NA rows (w
 
 CPD_workCapacity
 
+# %% codecell
+res = CPD_workCapacity.to_dict(orient='split')
+colnames = res['columns']; colnames
+data = res['data']; data
+
+import numpy
+
+datacols = numpy.asarray(data).T; datacols
+
+strtable = str(CPD_workCapacity)
+print(strtable)
+
 
 # %% codecell
 CPD_exertionLevel: DataFrame = cleanData(pd.read_csv(dataPath + 'cpd_exertion_experience_training.csv', delimiter =',').dropna())

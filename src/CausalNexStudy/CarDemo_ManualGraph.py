@@ -63,7 +63,7 @@ Image(filename_demo)
 from src.utils.GraphvizUtil import *
 
 
-renderGraphFromDict(weightedGraph = model)
+dictToGraph(weightedGraph = model)
 
 # %% markdown [markdown]
 # Showing the nodes:
@@ -87,7 +87,7 @@ model.adj
 modelAcyclic: StructureModel = model.copy()
 modelAcyclic.remove_edge(u = 'uses_op', v = 'process_type')
 
-renderGraphFromDict(weightedGraph = modelAcyclic)
+dictToGraph(weightedGraph = modelAcyclic)
 # %% markdown [markdown]
 # Fit the bayesian network. No need to create the `StructureModel` from data because we created it by hand and have already set its edge weights.
 # %% codecell
@@ -130,7 +130,7 @@ list(bayesNet.structure.adjacency())
 # Showing the graph again for reference
 # %% codecell
 
-renderGraphFromDict(weightedGraph = modelAcyclic)
+dictToGraph(weightedGraph = modelAcyclic)
 
 # %% markdown [markdown]
 # Because `process_type` has no incoming nodes, only outgoing nodes, its conditional distribution is also its *fully* marginal distribution - it is not conditional on any other variable.
@@ -154,5 +154,5 @@ bayesNet.cpds['absenteeism_level']
 # Showing the final rendered graph with the conditional probability distributions alongside the nodes:
 # %% codecell
 #Image(filename = curPath + 'modelWithCPDs.png')
-graph = renderGraphFromDict(weightedGraph = model)
+graph = dictToGraph(weightedGraph = model)
 #graphProbs = renderGraphProbabilities(givenGraph = graph, variables = ???)

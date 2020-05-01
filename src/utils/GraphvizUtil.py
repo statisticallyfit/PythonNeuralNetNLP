@@ -1,8 +1,11 @@
-# Obtained this source code from: https://github.com/cerebraljam/simple_bayes_network_notebook/blob/master/graphviz_helper.py
+# Obtained and heavily adapted from this source code:
+# https://github.com/cerebraljam/simple_bayes_network_notebook/blob/master/graphviz_helper.py
 
 
 from pgmpy.models import BayesianModel
 from pgmpy.factors.discrete import TabularCPD
+
+from causalnex.structure.structuremodel import StructureModel
 
 import graphviz as gz # This is directly the DOT language
 
@@ -10,21 +13,64 @@ from typing import *
 
 import random
 
+import itertools
+
+
+import os
+
+
+
+# Setting the baseline:
+os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP')
+curPath: str = os.getcwd() + "/src/CausalNexStudy/"
+
+PLAY_FONT_NAME: str = 'Play-Regular.ttf'
+PLAY_FONT_PATH = curPath + 'fonts/' + PLAY_FONT_NAME
+
+INRIA_FONT_NAME: str = 'InriaSans-Regular'
+INRIA_FONT_PATH = curPath + 'fonts/' #+ INRIA_FONT_NAME
+
+ACME_FONT_NAME: str = 'Acme-Regular.ttf'
+ACME_FONT_PATH: str = curPath + 'fonts/acme/' #+ ACME_FONT_NAME
+
+
+
+PINK = '#ff63e2'
+CHERRY = '#ff638d'
+LIGHT_PINK = '#ffe6fa'
+LIGHT_PURPLE = '#e6d4ff'
+PURPLE = '#8a49e6'
+LIGHT_TEAL = '#c7f8ff'
+TEAL = '#49d0e2'
+DARK_TEAL = '#0098ad'
+LIGHT_CORNF = '#ceccff'# '#bfcaff'
+DARK_CORNF = '#4564ff'
+CORNFLOWER = '#8fa2ff'
+BLUE = '#63ceff'
+LIGHT_BLUE = '#a3daff'
+DARK_BLUE = '#0098ff'
+LIGHT_GREEN = '#d4ffde'
 
 
 # Declaring type aliases for clarity:
 Variable = str
-Value = str
-Desc = str
+Table = str
+State = str
+Grid = List[List]
 
-Key = int
-Legend = Dict[Key , Value]
+Color = str
+
+#Value = str
+#Desc = str
+
+#Key = int
+#Legend = Dict[Key , Value]
 WeightInfo = Dict
-
 CondProbDist = Dict
 
-####
 
+# ---------------------------------------------------------------------------------------------------------
+# Regular dict conversions to Graphviz graph
 
 def extractPath(paths, cpd: CondProbDist, callback):
     for key,value in cpd.items():
@@ -34,7 +80,40 @@ def extractPath(paths, cpd: CondProbDist, callback):
             extractPath(paths + [key], value, callback)
 
 
-def renderTable(variable: Variable, values: Dict, grids):
+
+
+def dictToGrid(variable: Variable, values: Dict) -> Grid:
+
+    paths = []
+    def callback(array):
+        if len(array):
+            paths.append(array)
+
+    extractPath([variable], values['cpd'], callback)
+
+    loop_row = int(len(paths) / len(values['cpd'].keys()))
+    loop_col = int(len(paths) / loop_row)
+    grids = [[x*loop_col+y for x in range(loop_col+1)] for y in range(loop_row)]
+
+    if loop_row > 1:
+        for col in range(loop_col):
+            for row in range(loop_row):
+                labels = []
+                x = col * loop_row + row
+                for ll in range(2,len(paths[x])-1, 2):
+                    labels.append('{}_{}'.format(paths[x][ll].lower(), str(paths[x][ll+1])))
+                grids[row][0] = ', '.join(labels)
+                grids[row][col+1] = paths[x][-1]
+    else:
+        grids[0][0] = str(variable).lower()
+        for col in range(len(paths)):
+            grids[0][col+1] = paths[col][-1]
+
+    return grids
+
+
+
+def dictToTable(variable: Variable, values: Dict, grids):
 
     span = len(values['cpd']) + 1
     prefix = '<<FONT POINT-SIZE="7"><TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0"><TR><TD COLSPAN="' + str(span) +'">' + values['desc'] + '</TD></TR>'
@@ -67,110 +146,14 @@ def renderTable(variable: Variable, values: Dict, grids):
 
 
 
-def renderGrid(variable: Variable, values: Dict):
-
-    paths = []
-    def callback(array):
-        if len(array):
-            paths.append(array)
-
-    extractPath([variable], values['cpd'], callback)
-
-    loop_row = int(len(paths) / len(values['cpd'].keys()))
-    loop_col = int(len(paths) / loop_row)
-    grids = [[x*loop_col+y for x in range(loop_col+1)] for y in range(loop_row)]
-
-    if loop_row > 1:
-        for col in range(loop_col):
-            for row in range(loop_row):
-                labels = []
-                x = col * loop_row + row
-                for ll in range(2,len(paths[x])-1, 2):
-                    labels.append('{}_{}'.format(paths[x][ll].lower(), str(paths[x][ll+1])))
-                grids[row][0] = ', '.join(labels)
-                grids[row][col+1] = paths[x][-1]
-    else:
-        grids[0][0] = str(variable).lower()
-        for col in range(len(paths)):
-            grids[0][col+1] = paths[col][-1]
-
-    return grids
-
-
-
-# UNDER DEVELOPMENT:
-# ---------------------------------------------------------------------------------------------------------
-
-from causalnex.structure.structuremodel import StructureModel
-
-import os
-from typing import *
-# Setting the baseline:
-os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP')
-curPath: str = os.getcwd() + "/src/CausalNexStudy/"
-
-PLAY_FONT_NAME: str = 'Play-Regular.ttf'
-PLAY_FONT_PATH = curPath + 'fonts/' + PLAY_FONT_NAME
-
-INRIA_FONT_NAME: str = 'InriaSans-Regular'
-INRIA_FONT_PATH = curPath + 'fonts/' #+ INRIA_FONT_NAME
-
-ACME_FONT_NAME: str = 'Acme-Regular.ttf'
-ACME_FONT_PATH: str = curPath + 'fonts/acme/' #+ ACME_FONT_NAME
-
-
-Color = str
-
-PINK = '#ff63e2'
-CHERRY = '#ff638d'
-LIGHT_PINK = '#ffe6fa'
-LIGHT_PURPLE = '#e6d4ff'
-PURPLE = '#8a49e6'
-LIGHT_TEAL = '#c7f8ff'
-TEAL = '#49d0e2'
-DARK_TEAL = '#0098ad'
-LIGHT_CORNF = '#ceccff'# '#bfcaff'
-DARK_CORNF = '#4564ff'
-CORNFLOWER = '#8fa2ff'
-BLUE = '#63ceff'
-LIGHT_BLUE = '#a3daff'
-DARK_BLUE = '#0098ff'
-LIGHT_GREEN = '#d4ffde'
-
-def renderStructure(weightedGraph: StructureModel,
-                    nodeColor: Color = LIGHT_CORNF, edgeColor: Color = CHERRY) -> gz.Digraph:
-    g = gz.Digraph('G')
-
-    adjacencies: List[Tuple[Variable, Dict[Variable, WeightInfo]]] = list(weightedGraph.adjacency())
-
-    for headNode, edgeDict in adjacencies:
-        edgeList: List[Variable, WeightInfo] = list(edgeDict.items())
-
-        for tailNode, weightInfoDict in edgeList:
-            g.attr('node', shape='oval') #, color='red')
-
-            g.node(headNode, headNode) # name, label   # variables[head]['desc'])
-            g.node(tailNode, tailNode) # name, label
-            g.node_attr.update(style = 'filled', gradientangle = '90', penwidth='1',
-                               fillcolor= nodeColor + ":white" , color = edgeColor,
-                               fontsize = '12',  fontpath = ACME_FONT_PATH, fontname = ACME_FONT_NAME) # + '.otf')
-
-            # Setting weighted edge here
-            g.edge(tail_name = headNode, head_name = tailNode,label = str(weightInfoDict['weight']))
-            g.edge_attr.update(color = edgeColor, penwidth='1',
-                               fontsize = '10', fontpath = PLAY_FONT_NAME, fontname = PLAY_FONT_NAME)
-
-    return g
-
-
 
 # NOTE: need to keep the second arg 'variables` or else python confuses this function with the previous one,
 # that takes in the causalnex structure model.
 
 # Renders graph from given structure (with no edge weights currently, but can include these)
-def renderGraphFromDict(structures: List[Tuple[Variable, Variable]],
-                        variables: Dict[Variable, Dict],
-                        nodeColor: Color = LIGHT_CORNF, edgeColor: Color = CHERRY) -> gz.Digraph:
+def dictToGraph(structures: List[Tuple[Variable, Variable]],
+                variables: Dict[Variable, Dict],
+                nodeColor: Color = LIGHT_CORNF, edgeColor: Color = CHERRY) -> gz.Digraph:
     g = gz.Digraph('G')
 
     # print(structures)
@@ -198,27 +181,186 @@ def renderGraphFromDict(structures: List[Tuple[Variable, Variable]],
 
 
 
-# -------------------------------------------------------------
-from pgmpy.models.BayesianModel import BayesianModel
-from networkx.classes.reportviews import OutEdgeView
+
+def dictToGraphCPD(graphNoTable: gz.Digraph,
+                   variables: Dict[Variable, Dict]) -> gz.Digraph:
+    # import random
+
+    g = graphNoTable.copy() # make this just a getter, not a setter also!
+
+    for var, values in variables.items():
+        g.attr('node', shape ='plaintext')
+
+        grids = dictToGrid(var, values)
+
+        table = dictToTable(var, values, grids)
+
+        random.seed(hash(table))
+
+        #g.node('cpd_' + var, label=table, color='gray')
+        g.node('cpd_' + var, label=table, color='gray', fillcolor='white') #, color='gray')
+
+        if random.randint(0,1):
+            g.edge('cpd_' + var, var, style='invis')
+        else:
+            g.edge(var, 'cpd_' + var, style='invis')
+
+    return g
+
+
+
+
+
+
+# ---------------------------------------------------------------------------------------------------------
+# PGMPY conversions to Graphviz graph
+
+
+def pgmpyToGrid(model: BayesianModel, queryNode: Variable) -> Grid:
+    '''
+    Renders a list of lists (grid) from the pgmpy model, out of the CPD for the given query node.
+    '''
+    def nameFormatter(variable: Variable, states: List[State]) -> Variable:
+        '''
+        Convert the input variable = 'I' and states = ['Dumb', 'Intelligent'] into the result ['I(Dumb)',
+        'I(Intelligent)']
+        '''
+        return list(map(lambda varStateTuple : f"{varStateTuple[0]}({varStateTuple[1]})",
+                        itertools.product(variable, states)))
+
+
+    # Get the dictionary of 'var' : [states]
+    allVarAndStates = model.get_cpds(queryNode).state_names
+
+    # Get the names of the evidence nodes
+    condVars: List[Variable] = list(allVarAndStates.keys())[1:]
+
+    # Getting the formatted var(state) names in a list, for each evidence / conditional node.
+    condVarStateNames = []
+    for var in condVars:
+        condVarStateNames.append(nameFormatter(variable = var, states = allVarAndStates[var]))
+
+    # Doing product between all the conditional variables; to get (I(Intelligent), D(Easy)), (I(Intelligent), D(Hard)) ...
+    condVarStateProducts = list(itertools.product(*condVarStateNames))
+
+    # Transposing the CPDs to get the rows in column format, since this is what the renderTable function expects to use.
+    cpdOfQuery = model.get_cpds(queryNode).get_values().T
+
+    # This is basically the gird, with titles next to probabilities but need to format so everything is a list and no
+    # other structure is inside:
+    tempGrid = list(zip(condVarStateProducts, cpdOfQuery))
+
+    grid = [list(nameProduct) + list(probs) for nameProduct, probs in tempGrid]
+
+    return grid
+
+
+
+
+def pgmpyToTable(model: BayesianModel,
+                 queryNode: Variable,
+                 grid: Grid,
+                 queryNodeLongName: Variable = None) -> Table:
+    '''
+    Function adapted from `renderTable_fromdict that is just passed the model and constructs the hashtag table
+    '''
+    # Assigning the long name of the node (like queryNode = 'G' but queryNodeLongName = 'Grade')
+    queryNodeLongName: Variable = queryNode if queryNodeLongName is None else queryNodeLongName
+
+    span: int = model.get_cardinality(node = queryNode) + 3
+
+    prefix: Table = '<<FONT POINT-SIZE="7"><TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0"><TR><TD COLSPAN="' + \
+                    str(span) +'">' + \
+                    queryNodeLongName + '</TD></TR>'
+
+    header: Table = "<TR><TD></TD>"
+
+
+    # Getting state names and cardinality to create labels in table:
+    stateNames: List[State] = model.get_cpds(queryNode).state_names[queryNode]
+
+    numLabelTuples: List[Tuple[int, State]] = list(zip(range(0, model.get_cardinality(queryNode)), stateNames))
+
+    for id, label in numLabelTuples:
+        header: Table = header + '<TD>'  + label + ' (' + queryNode.lower() + '_' + str(id)  + ')</TD>'
+    header: Table = header + '</TR>'
+
+
+    numLoopRow: int = len(grid)
+    numLoopCol: int = len(grid[0])
+    body: Table = ""
+
+    if numLoopRow > 1:
+        for row in range(numLoopRow):
+            body: Table = body + "<TR>"
+            for col in range(numLoopCol):
+                body: Table = body + "<TD>" + str(grid[row][col]) + "</TD>"
+            body: Table = body + "</TR>"
+
+    else:
+        body: Table = "<TR><TD>" + str(queryNode).lower() + "</TD>"
+        for col in range(numLoopCol - 1):
+            body: Table = body + '<TD>' + str(grid[0][col + 1]) + '</TD>'
+        body: Table = body + "</TR>"
+
+    footer: Table = '</TABLE></FONT>>'
+
+    return prefix + header + body + footer
+
+
+
+
+
+
 
 # Just render graph from edge tuples
-def renderGraphFromBayes(bayesModel: BayesianModel,
-                         #structures: List[Tuple[Variable, Variable]],
-                         nodeColor: Color = LIGHT_CORNF, edgeColor: Color = CHERRY) -> gz.Digraph:
+def pgmpyToGraph(model: BayesianModel,
+                 nodeColor: Color = LIGHT_CORNF, edgeColor: Color = CHERRY) -> gz.Digraph:
 
     # Getting the edges (the .edges() results in NetworkX OutEdgeView object)
-    structures: List[Tuple[Variable, Variable]] = list(iter(bayesModel.edges()))
+    structures: List[Tuple[Variable, Variable]] = list(iter(model.edges()))
 
-    return renderGraphFromEdges(structures = structures,
-                                nodeColor = nodeColor, edgeColor = edgeColor)
-
-
+    return edgesToGraph(edges= structures,
+                        nodeColor = nodeColor, edgeColor = edgeColor)
 
 
-def renderGraphFromEdges(structures: List[Tuple[Variable, Variable]],
-                         #structures: List[Tuple[Variable, Variable]],
-                         nodeColor: Color = LIGHT_CORNF, edgeColor: Color = CHERRY) -> gz.Digraph:
+
+
+def pgmpyToGraphCPD(model: BayesianModel) -> gz.Digraph:
+    '''
+    Converts a pgmpy BayesianModel into a graphviz Digraph with its CPD tables drawn next to its nodes.
+    '''
+    g: gz.Digraph = pgmpyToGraph(model)
+    variables: List[Variable] = list(iter(model.nodes))
+
+    for var in variables:
+        g.attr('node', shape ='plaintext')
+
+        grid: Grid = pgmpyToGrid(model = model, queryNode = var)
+
+        table: Table = pgmpyToTable(model = model, queryNode = var, grid= grid)
+
+        random.seed(hash(table))
+
+        #g.node('cpd_' + var, label=table, color='gray')
+        g.node('cpd_' + var, label=table, color='gray', fillcolor='white') #, color='gray')
+
+        if random.randint(0,1):
+            g.edge('cpd_' + var, var, style='invis')
+        else:
+            g.edge(var, 'cpd_' + var, style='invis')
+
+    return g
+
+
+
+
+# ---------------------------------------------------------------------------------------------------------
+# Simple list of edges conversion to Graphviz graph
+
+def edgesToGraph(edges: List[Tuple[Variable, Variable]],
+                 #structures: List[Tuple[Variable, Variable]],
+                 nodeColor: Color = LIGHT_CORNF, edgeColor: Color = CHERRY) -> gz.Digraph:
 
     # Getting the edges (the .edges() results in NetworkX OutEdgeView object)
     #structures: List[Tuple[Variable, Variable]] = list(iter(bayesModel.edges()))
@@ -227,8 +369,8 @@ def renderGraphFromEdges(structures: List[Tuple[Variable, Variable]],
 
     # print(structures)
     #for headNode, tailNode in structures:
-    for pair in structures:
-        headNode, tailNode = pair
+    for toFrom in edges:
+        headNode, tailNode = toFrom
 
         g.attr('node', shape='oval') #, color='red')
 
@@ -252,46 +394,58 @@ def renderGraphFromEdges(structures: List[Tuple[Variable, Variable]],
 
 
 
+# ---------------------------------------------------------------------------------------------------------
+# Causal Nex conversions to Graphviz graph
 
-def _renderGraphCPD(graphNoTable: gz.Digraph,
-                    variables: Dict[Variable, Dict]) -> gz.Digraph:
-    # import random
+def structToGraph(weightedGraph: StructureModel,
+                  nodeColor: Color = LIGHT_CORNF, edgeColor: Color = CHERRY) -> gz.Digraph:
+    g = gz.Digraph('G')
 
-    g = graphNoTable.copy() # make this just a getter, not a setter also!
+    adjacencies: List[Tuple[Variable, Dict[Variable, WeightInfo]]] = list(weightedGraph.adjacency())
 
-    for var, values in variables.items():
-        g.attr('node', shape ='plaintext')
+    for headNode, edgeDict in adjacencies:
+        edgeList: List[Variable, WeightInfo] = list(edgeDict.items())
 
-        grids = renderGrid(var, values)
+        for tailNode, weightInfoDict in edgeList:
+            g.attr('node', shape='oval') #, color='red')
 
-        table = renderTable(var, values, grids)
+            g.node(headNode, headNode) # name, label   # variables[head]['desc'])
+            g.node(tailNode, tailNode) # name, label
+            g.node_attr.update(style = 'filled', gradientangle = '90', penwidth='1',
+                               fillcolor= nodeColor + ":white" , color = edgeColor,
+                               fontsize = '12',  fontpath = ACME_FONT_PATH, fontname = ACME_FONT_NAME) # + '.otf')
 
-        random.seed(hash(table))
-
-        #g.node('cpd_' + var, label=table, color='gray')
-        g.node('cpd_' + var, label=table, color='gray', fillcolor='white') #, color='gray')
-
-        if random.randint(0,1):
-            g.edge('cpd_' + var, var, style='invis')
-        else:
-            g.edge(var, 'cpd_' + var, style='invis')
+            # Setting weighted edge here
+            g.edge(tail_name = headNode, head_name = tailNode,label = str(weightInfoDict['weight']))
+            g.edge_attr.update(color = edgeColor, penwidth='1',
+                               fontsize = '10', fontpath = PLAY_FONT_NAME, fontname = PLAY_FONT_NAME)
 
     return g
 
-
-
-def renderGraphCPD(model: BayesianModel) -> gz.Digraph:
-    '''
-    Converts a pgmpy BayesianModel into a graphviz Digraph with its CPD tables drawn next to its nodes.
-    '''
+# ---------------------------------------------------------------------------------------------------------
 
 
 
 
 
+# -------------------------------------------------------------
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ------------------------------------------------------------------------------------------------------------------
 def renderValues(variable: Variable, values: Dict):
 
     paths = []

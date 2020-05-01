@@ -187,7 +187,7 @@ assert model.check_model()
 # %% codecell
 from src.utils.GraphvizUtil import *
 
-renderGraphFromBayes(bayesModel = model)
+pgmpyToGraph(model= model)
 
 
 # %% markdown [markdown]
@@ -245,10 +245,10 @@ plt.show()
 from src.utils.NetworkUtil import *
 from src.utils.GraphvizUtil import *
 
-renderGraphFromBayes(bayesModel = convertDaftToPgmpy(pgm = graphAToB))
+pgmpyToGraph(model= convertDaftToPgmpy(pgm = graphAToB))
 
 # %% codecell
-renderGraphFromBayes(bayesModel = convertDaftToPgmpy(pgm = graphBToA))
+pgmpyToGraph(model= convertDaftToPgmpy(pgm = graphBToA))
 
 
 # %% markdown [markdown]
@@ -270,10 +270,10 @@ evidential: List[Tuple[Variable, Variable]] = [('C', 'B'), ('B', 'A')]
 commonEvidence : List[Tuple[Variable, Variable]] = [('A', 'B'), ('C', 'B')]
 commonCause: List[Tuple[Variable, Variable]] = [('B', 'A'), ('B', 'C')]
 
-causalGraph = renderGraphFromEdges(structures = causal)
-evidentialGraph = renderGraphFromEdges(structures = evidential)
-commonEvidenceGraph = renderGraphFromEdges(structures = commonEvidence)
-commonCauseGraph = renderGraphFromEdges(structures = commonCause)
+causalGraph = edgesToGraph(edges= causal)
+evidentialGraph = edgesToGraph(edges= evidential)
+commonEvidenceGraph = edgesToGraph(edges= commonEvidence)
+commonCauseGraph = edgesToGraph(edges= commonCause)
 
 # using later
 
@@ -400,7 +400,7 @@ assert indeps == ['(A _|_ C | B)', '(C _|_ A | B)'], 'Check: overall independenc
 # ### Study: Individual, Local Independencies for Grade Example
 # Using the example Grade structure, find the **individual** local independencies:
 # %% codecell
-renderGraphFromBayes(bayesModel = model)
+pgmpyToGraph(model= model)
 
 # %% codecell
 indepD: Independencies = model.local_independencies('D')
@@ -450,7 +450,7 @@ indepSynonymTable(model = model,queryNode='L', otherNodes=[['S','I','D'], ['G']]
 # ### Study: Multiple Local Independencies for Grade Example
 # Using the example Grade structure, find the **n-way** local independencies: (they are just concatenations of the individual independencies)
 # %% codecell
-renderGraphFromBayes(model)
+pgmpyToGraph(model)
 
 # %% codecell
 indep_DS: Independencies = model.local_independencies(['D','S']).get_assertions()
@@ -918,7 +918,7 @@ assert commonCauseModel.active_trail_nodes(['A','B','C'], observed = ['B', 'C'])
 student = BayesianModel()
 student.add_nodes_from(['diff', 'intel', 'grades'])
 student.add_edges_from([('diff', 'grades'), ('intel', 'grades')])
-renderGraphFromBayes(student)
+pgmpyToGraph(student)
 
 
 # %% codecell
@@ -932,7 +932,7 @@ assert student.active_trail_nodes('diff', observed='grades')== {'diff': {'diff',
 # %% markdown [markdown]
 # ### Study: Larger Student Model's Active Trails
 # %% codecell
-renderGraphFromBayes(model)
+pgmpyToGraph(model)
 # %% codecell
 assert model.active_trail_nodes('D', observed = 'G') == {'D': {'D', 'I', 'S'}}, "Check: Influencing Difficulty (D) must also change the Intelligence (I) and SAT score (S) of the student"
 
