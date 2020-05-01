@@ -94,6 +94,7 @@ from pgmpy.factors.discrete import TabularCPD
 
 # Defining mdoel structure, just by passing a list of edges.
 model: BayesianModel = BayesianModel([('D', 'G'), ('I', 'G'), ('G', 'L'), ('I', 'S')])
+#model: BayesianModel = BayesianModel([('Difficulty', 'Grade'), ('Intelligence', 'Grade'), ('Grade', 'Letter'), ('Intelligence', 'SAT')])
 
 
 # Defining individual CPDs with state names
@@ -127,162 +128,19 @@ assert model.check_model()
 # %% codecell
 pgmpyToGraph(model)
 # %% codecell
-pgmpyToGrid(model, 'S')
+pgmpyToGrid(model, 'G')
 
 # %% codecell
 import pandas as pd
 from pandas.core.frame import DataFrame
 
-cpdvals = model.get_cpds('G').get_values(); cpdvals
 
-cpdvals.shape
-model.get_cpds('G').values.shape
+#gradeDF = DataFrame(pgmpyToGrid(model, 'G'), columns = ['Intelligence', 'Difficulty'] + condVarStateNames[0]); gradeDF
 
-
-# Get the dictionary of 'var' : [states]
-queryNode = 'G'
-def nameFormatter(variable: Variable, states: List[State]) -> Variable:
-    '''
-    Convert the input variable = 'I' and states = ['Dumb', 'Intelligent'] into the result ['I(Dumb)',
-    'I(Intelligent)']
-    '''
-    return list(map(lambda varStateTuple : f"{varStateTuple[0]}({varStateTuple[1]})",
-                    itertools.product(variable, states)))
-
-allVarAndStates = model.get_cpds(queryNode).state_names
-
-# Get the names of the evidence nodes
-condVars: List[Variable] = list(allVarAndStates.keys())
-
-# Getting the formatted var(state) names in a list, for each evidence / conditional node.
-condVarStateNames = []
-for var in condVars:
-    condVarStateNames.append(nameFormatter(variable = var, states = allVarAndStates[var]))
-condVarStateNames
-# Doing product between all the conditional variables; to get (I(Intelligent), D(Easy)), (I(Intelligent), D(Hard))
-condVarStateProducts = list(itertools.product(*condVarStateNames[1:])); condVarStateProducts
-
-
-gradeDF = DataFrame(pgmpyToGrid(model, 'G'), columns = ['Intelligence', 'Difficulty'] + condVarStateNames[0]); gradeDF
-print(str(gradeDF))
-
-var = queryNode
-
-g1 = pgmpyToGraph(model)
-g = g1.copy()
-g.attr('node', shape ='plaintext')
-g.node('cpd_' + queryNode, label=str(model.get_cpds(queryNode)), color='gray', fillcolor='white') #, color='gray')
-
-if random.randint(0,1):
-    g.edge('cpd_' + var, var, style='invis')
-else:
-    g.edge(var, 'cpd_' + var, style='invis')
-
-g
 # %% codecell
+# Too bad the string version does not have lines like the object version so can't just substitute this as edge label, needs to have those weird html tags to work...
+#print(str(gradeDF))
 
-
-
-def pgmpyToTable(model: BayesianModel,
-                 queryNode: Variable,
-                 grid: Grid,
-                 queryNodeLongName: Variable = None) -> Table:
-    '''
-    Function adapted from `renderTable_fromdict that is just passed the model and constructs the hashtag table
-    '''
-    # Assigning the long name of the node (like queryNode = 'G' but queryNodeLongName = 'Grade')
-    queryNodeLongName: Variable = queryNode if queryNodeLongName is None else queryNodeLongName
-
-    numCondNodes: int = len(model.get_cpds(queryNode).get_evidence())
-
-    # Variable to add to the column span
-    #extra: int = numCondNodes if numCondNodes != 0 else 1
-    colSpan: int = model.get_cardinality(node = queryNode) + numCondNodes
-
-
-    prefix: Table = '<<FONT POINT-SIZE="7"><TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0"><TR><TD COLSPAN="' + \
-                    str(colSpan) +'">' + \
-                    queryNodeLongName + '</TD></TR>'
-
-    # Cosntructing the header so that there are enough blank cell spaces above the conditional variable columns
-    header: Table = "<TR>" #"<TR><TD></TD>"
-    listOfSpaces: List[str] = ['<TD></TD>' for i in range(0, numCondNodes)]
-    header += ''.join(listOfSpaces)
-
-
-    # Getting state names and cardinality to create labels in table:
-    stateNames: List[State] = model.get_cpds(queryNode).state_names[queryNode]
-
-    numLabelTuples: List[Tuple[int, State]] = list(zip(range(0, model.get_cardinality(queryNode)), stateNames))
-
-    for idNum, label in numLabelTuples:
-        # Comment out below, just include the state name, no id number also
-        header: Table = header + '<TD>'  + label + '</TD>'
-        #header: Table = header + '<TD>'  + label + ' (' + queryNode.lower() + '_' + str(idNum)  + ')</TD>'
-    header: Table = header + '</TR>'
-
-
-    numLoopRow: int = len(grid)
-    numLoopCol: int = len(grid[0])
-    body: Table = ""
-
-    if numLoopRow <= 1:
-        # No need for the extra lower case letter, we know its a marginal distribution already!
-        #body: Table = "<TR><TD>" + str(queryNode).lower() + "</TD>"
-        # No need to have the starting space td / td now because we can let numCondNodes = 0 (so no more extra =
-        # 1 buffer)
-        body: Table = "<TR>" #<TD></TD>"
-
-        for col in range(numLoopCol):
-            body: Table = body + "<TD>" + str(grid[0][col]) + "</TD>"
-        body: Table = body + "</TR>"
-
-    else:
-
-        for row in range(numLoopRow):
-            body: Table = body + "<TR>"
-
-            for col in range(numLoopCol):
-                body: Table = body + "<TD>" + str(grid[row][col]) + "</TD>"
-            body: Table = body + "</TR>"
-
-
-
-    footer: Table = '</TABLE></FONT>>'
-
-    return prefix + header + body + footer
-
-
-
-def pgmpyToGraphCPD(model: BayesianModel) -> gz.Digraph:
-    '''
-    Converts a pgmpy BayesianModel into a graphviz Digraph with its CPD tables drawn next to its nodes.
-    '''
-    g: gz.Digraph = pgmpyToGraph(model)
-    variables: List[Variable] = list(iter(model.nodes))
-
-    for var in variables:
-        g.attr('node', shape ='plaintext')
-
-        grid: Grid = pgmpyToGrid(model = model, queryNode = var)
-
-        table: Table = pgmpyToTable(model = model, queryNode = var, grid= grid)
-
-        random.seed(hash(table))
-
-        #g.node('cpd_' + var, label=table, color='gray')
-        g.node('cpd_' + var, label=table, color='gray', fillcolor='white') #, color='gray')
-
-        if random.randint(0,1):
-            g.edge('cpd_' + var, var, style='invis')
-        else:
-            g.edge(var, 'cpd_' + var, style='invis')
-
-    return g
-
-
-
-model.get_cpds('G').get_evidence()
-
+# %% codecell
 
 pgmpyToGraphCPD(model)

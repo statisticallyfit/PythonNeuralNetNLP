@@ -220,40 +220,25 @@ def pgmpyToGrid(model: BayesianModel, queryNode: Variable) -> Grid:
     '''
     Renders a list of lists (grid) from the pgmpy model, out of the CPD for the given query node.
     '''
-    def nameFormatter(variable: Variable, states: List[State]) -> Variable:
-        '''
-        Convert the input variable = 'I' and states = ['Dumb', 'Intelligent'] into the result ['I(Dumb)',
-        'I(Intelligent)']
-        '''
-        return list(map(lambda varStateTuple : f"{varStateTuple[0]}({varStateTuple[1]})",
-                        itertools.product(variable, states)))
-
-
     # Get the dictionary of 'var' : [states]
-    allVarAndStates = model.get_cpds(queryNode).state_names
+    allVarStates: Dict[Variable, List[State]] = model.get_cpds(queryNode).state_names
 
-    # Get the names of the evidence nodes
-    condVars: List[Variable] = list(allVarAndStates.keys())[1:]
+    condVarStates: Dict[Variable, List[State]] = dict(list(allVarStates.items())[1:])
 
-    # Getting the formatted var(state) names in a list, for each evidence / conditional node.
-    condVarStateNames = []
-    for var in condVars:
-        condVarStateNames.append(nameFormatter(variable = var, states = allVarAndStates[var]))
-
-    # Doing product between all the conditional variables; to get (I(Intelligent), D(Easy)), (I(Intelligent), D(Hard)) ...
-    condVarStateProducts = list(itertools.product(*condVarStateNames))
+    # Doing product between states of the evidence (conditional) variables to get: (Dumb, Easy), (Dumb, Hard),
+    # (Intelligent, Easy), (Intelligent, Hard) ...
+    condStateProducts: List[Tuple[State, State]] = list(itertools.product(*list(condVarStates.values())))
 
     # Transposing the CPDs to get the rows in column format, since this is what the renderTable function expects to use.
     cpdOfQuery = model.get_cpds(queryNode).get_values().T
 
     # This is basically the gird, with titles next to probabilities but need to format so everything is a list and no
     # other structure is inside:
-    tempGrid = list(zip(condVarStateProducts, cpdOfQuery))
+    tempGrid = list(zip(condStateProducts, cpdOfQuery))
 
     grid = [list(nameProduct) + list(probs) for nameProduct, probs in tempGrid]
 
     return grid
-
 
 
 
@@ -267,13 +252,22 @@ def pgmpyToTable(model: BayesianModel,
     # Assigning the long name of the node (like queryNode = 'G' but queryNodeLongName = 'Grade')
     queryNodeLongName: Variable = queryNode if queryNodeLongName is None else queryNodeLongName
 
-    span: int = model.get_cardinality(node = queryNode) + 3
+    condNodes: List[Variable] = list(model.get_cpds(queryNode).state_names.keys())[1:]
+    numCondNodes: int = len(condNodes)
+
+    # Variable to add to the column span
+    #extra: int = numCondNodes if numCondNodes != 0 else 1
+    colSpan: int = model.get_cardinality(node = queryNode) + numCondNodes
+
 
     prefix: Table = '<<FONT POINT-SIZE="7"><TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0"><TR><TD COLSPAN="' + \
-                    str(span) +'">' + \
+                    str(colSpan) +'">' + \
                     queryNodeLongName + '</TD></TR>'
 
-    header: Table = "<TR><TD></TD>"
+    # Cosntructing the header so that there are enough blank cell spaces above the conditional variable columns
+    header: Table = "<TR>" #"<TR><TD></TD>"
+    condVarInHeader: List[str] = ['<TD>' + evidenceVar + '</TD>' for evidenceVar in condNodes]
+    header += ''.join(condVarInHeader)
 
 
     # Getting state names and cardinality to create labels in table:
@@ -281,8 +275,10 @@ def pgmpyToTable(model: BayesianModel,
 
     numLabelTuples: List[Tuple[int, State]] = list(zip(range(0, model.get_cardinality(queryNode)), stateNames))
 
-    for id, label in numLabelTuples:
-        header: Table = header + '<TD>'  + label + ' (' + queryNode.lower() + '_' + str(id)  + ')</TD>'
+    for idNum, state in numLabelTuples:
+        # Comment out below, just include the state name, no id number also
+        header: Table = header + '<TD>'  + queryNode + ' = ' + state + '</TD>'
+        #header: Table = header + '<TD>'  + label + ' (' + queryNode.lower() + '_' + str(idNum)  + ')</TD>'
     header: Table = header + '</TR>'
 
 
@@ -290,23 +286,31 @@ def pgmpyToTable(model: BayesianModel,
     numLoopCol: int = len(grid[0])
     body: Table = ""
 
-    if numLoopRow > 1:
+    if numLoopRow <= 1:
+        # No need for the extra lower case letter, we know its a marginal distribution already!
+        #body: Table = "<TR><TD>" + str(queryNode).lower() + "</TD>"
+        # No need to have the starting space td / td now because we can let numCondNodes = 0 (so no more extra =
+        # 1 buffer)
+        body: Table = "<TR>" #<TD></TD>"
+
+        for col in range(numLoopCol):
+            body: Table = body + "<TD>" + str(grid[0][col]) + "</TD>"
+        body: Table = body + "</TR>"
+
+    else:
+
         for row in range(numLoopRow):
             body: Table = body + "<TR>"
+
             for col in range(numLoopCol):
                 body: Table = body + "<TD>" + str(grid[row][col]) + "</TD>"
             body: Table = body + "</TR>"
 
-    else:
-        body: Table = "<TR><TD>" + str(queryNode).lower() + "</TD>"
-        for col in range(numLoopCol - 1):
-            body: Table = body + '<TD>' + str(grid[0][col + 1]) + '</TD>'
-        body: Table = body + "</TR>"
+
 
     footer: Table = '</TABLE></FONT>>'
 
     return prefix + header + body + footer
-
 
 
 
@@ -322,6 +326,7 @@ def pgmpyToGraph(model: BayesianModel,
 
     return edgesToGraph(edges= structures,
                         nodeColor = nodeColor, edgeColor = edgeColor)
+
 
 
 
