@@ -40,20 +40,6 @@ CPD_workCapacity
 
 
 # %% codecell
-# Testing how to get the values in the grid format required for generating conditional cpds
-res = CPD_workCapacity.to_dict(orient='split')
-colnames = res['columns']; colnames
-data = res['data']; data
-
-import numpy
-
-datacols = numpy.asarray(data).T; datacols
-
-strtable = str(CPD_workCapacity)
-print(strtable)
-
-
-# %% codecell
 CPD_exertionLevel: DataFrame = pd.read_csv(dataPath + 'cpd_exertion_experience_training.csv', delimiter =',').dropna()
 CPD_experienceLevel = CPD_exertionLevel.copy()
 CPD_trainingLevel = CPD_exertionLevel.copy()
@@ -90,7 +76,6 @@ CPD_absentee
 # %% codecell
 # Build model now with pgmpy
 from pgmpy.models import BayesianModel
-from pgmpy.factors.discrete import TabularCPD
 
 from src.utils.GraphvizUtil import *
 
@@ -109,8 +94,85 @@ pgmpyToGraph(model  = carModel)
 # %% codecell
 # Next: convert the DataFrames (pandas) into TabularCPDS (pgmpy)
 
-CPD_injuryType
-CPD_injuryType.get_values()
+# %% codecell
+
+from pgmpy.factors.discrete.CPD import TabularCPD
+
+
+def dataframeToTabularCPD(variable: Variable, cardinality: int,
+                          dataframe: DataFrame, convertFromPercent: bool = True) -> TabularCPD:
+    '''
+    Convert pandas.DataFrame to pgmpy TabularCPD
+    Arguments:
+        variable: name of the variable for which we build the CPD object
+        cardinality: the number of states that the variable takes on, assumed to occur in the last `numStates` column of this dataframe. (So if number of state is 3, like 'Low', 'High', "Medium", then we assume these are the last 3 columns)
+        dataframe: the pandas dataframe, structured as in the above examples
+    Returns:
+        TabularCPD object with values transferred from DataFrame.
+    '''
+    # Using this function to get  the index where the conditional variable names end and where the `variable` state names begin. Assuming the CPD values are floats so we can distinguish where they are.
+    #def indexOfFirstFloat(vals: List) -> int:
+    #    for index, value in list(zip(range(0, len(vals)), vals)):
+    #        if type(value) == float:
+    #            return index # get index of first float
+
+    # Get number of conditional variables
+    numCondVars: int = len(dataframe.columns) - cardinality
+    #numCondVars: int = indexOfFirstFloat(dataframe.values[0]) # using the first row
+
+    # Get number of states of the given variable
+    #varCardinality: int = len(dataframe.columns) - numCondVars
+
+
+    # Getting the names of the conditional variables
+    condVars: List[Variable] = dataframe.columns[0 : numCondVars]
+
+    # Getting the cardinalities of each of the conditional variables
+    condCardinalities: List[int] = [len(np.unique(dataframe[evidenceVar])) for evidenceVar in condVars]
+
+    # Getting the actual numbers (CPD values)
+    rawCPDValues: List[List[float]] = dataframe.values.T[numCondVars:].T
+
+    if convertFromPercent:
+        # Converting, since they are in percent format (convert into probability format, so 0 < p < 1)
+        rawCPDValues = list(map(lambda percentProbList : list(percentProbList / 100.0), rawCPDValues))
+
+    # Maps to the conditional variable names and the list of their states
+    condStatesTuples = [(evidenceVar, list(np.unique(dataframe[evidenceVar]))) for evidenceVar in condVars]
+
+    # Get the actual states of the variable
+    varStates: List[State] = list(dataframe.columns[numCondVars:])
+
+    # Single map from the given variable name to its states
+    varStatesTuples = [(variable, varStates)]
+
+    # Combining above information to create the dictionary of state names for the variable
+    stateNames: Dict[Variable, List[State]] = dict(varStatesTuples + condStatesTuples)
+
+    # Now finally constructing the object:
+    tabularCPD = TabularCPD(variable = variable, variable_card = cardinality,
+                            values = rawCPDValues,
+                            evidence = condVars, evidence_card = condCardinalities,
+                            state_names = stateNames)
+
+    return tabularCPD
+
+# %% codecell
+
+cpd_usesop: TabularCPD = dataframeToTabularCPD(variable = 'UsesOp', cardinality = 4, dataframe = CPD_usesop)
+cpd_process: TabularCPD = dataframeToTabularCPD(variable = 'ProcessType', cardinality = 5, dataframe = CPD_processType)
+cpd_injury: TabularCPD = dataframeToTabularCPD(variable = 'InjuryType', cardinality = 5, dataframe = CPD_injuryType)
+cpd_time: TabularCPD = dataframeToTabularCPD(variable = 'Time', cardinality = 5, dataframe = CPD_time)
+cpd_exertion: TabularCPD = dataframeToTabularCPD(variable = 'ExertionLevel', cardinality = 2, dataframe = CPD_exertionLevel)
+cpd_experience: TabularCPD = dataframeToTabularCPD(variable = 'ExperienceLevel', cardinality = 2, dataframe = CPD_experienceLevel)
+cpd_training: TabularCPD = dataframeToTabularCPD(variable = 'TrainingLevel', cardinality = 2, dataframe = CPD_trainingLevel)
+cpd_workcapacity: TabularCPD = dataframeToTabularCPD(variable = 'WorkCapacity', cardinality = 2, dataframe = CPD_workCapacity)
+cpd_absentee: TabularCPD = dataframeToTabularCPD(variable = 'AbsenteeismLevel', cardinality = 2, dataframe = CPD_absentee)
+
+carModel.add_cpds(cpd_usesop, cpd_process, cpd_injury, cpd_time, cpd_exertion, cpd_experience, cpd_training, cpd_workcapacity, cpd_absentee)
+
+assert carModel.check_model()
+# %% codecell
 
 # Defining individual CPDs with state names
 cpd_Time = TabularCPD(variable ='Time', variable_card = 2, values = [[0.6, 0.4]],

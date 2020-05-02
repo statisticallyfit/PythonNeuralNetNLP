@@ -1,9 +1,22 @@
 
 
 from typing import *
+import itertools
+import numpy as np
+
 
 import pandas as pd
 from pandas.core.frame import DataFrame
+
+
+from pgmpy.factors.discrete.CPD import TabularCPD
+
+
+
+# Type aliases
+Variable = str
+State = str
+Probability = float
 
 
 def cleanData(data: DataFrame) -> DataFrame:
@@ -20,11 +33,7 @@ def cleanData(data: DataFrame) -> DataFrame:
 
 
 #------------------------------------------------------------------------------------------
-import itertools
-import numpy as np
 
-
-Variable , Value = str, str
 
 # Going to pass this so that combinations of each of its values can be created
 # Sending the combinations data to csv file so it can be biased and tweaked so we can create training data:
@@ -34,7 +43,7 @@ def makeRawCombinationData(data: DataFrame, dataPath: str):
         data: pandas DataFrame
         dataPath: str file name of where to save the outputted data.
     '''
-    dataVals: Dict[Variable, List[Value]] = {var: data[var].unique() for var in data.columns}
+    dataVals: Dict[Variable, List[State]] = {var: data[var].unique() for var in data.columns}
 
     combinations = list(itertools.product(*list(dataVals.values())))
 
@@ -44,3 +53,9 @@ def makeRawCombinationData(data: DataFrame, dataPath: str):
 
     # Now send to csv and tweak it:
     rawCombData.to_csv(path_or_buf = dataPath + 'rawCombData_totweak.csv', sep = ',')
+
+
+
+# ----------------------------------------------------------------------------------------------
+
+# TODO put data frame to tabular cpd over here
