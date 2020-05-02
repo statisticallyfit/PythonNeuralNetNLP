@@ -43,7 +43,7 @@ dependencies:
   - algopy
   - emcee
   - pymc3
-  - ankurankan::pgmpy>=0.1.9
+  #- ankurankan::pgmpy>=0.1.9
 
 
 
@@ -67,6 +67,7 @@ dependencies:
   # Pip things
   # ============== 
   - pip:
+      - pgmpy==0.1.10
       - transformers>=2.5.0
       - tensor2tensor
       - torchtext

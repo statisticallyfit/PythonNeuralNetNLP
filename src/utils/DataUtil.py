@@ -13,7 +13,7 @@ def cleanData(data: DataFrame) -> DataFrame:
     cleanedData = cleanedData.rename(columns = lambda x : x.strip()) # inplace = False
 
     # Removing whitespace from the column VALUES
-    cleanedData = cleanedData.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+    cleanedData = cleanedData.apply(lambda x: str(x).strip() if x.dtype == "object" else x)
 
     return cleanedData
 
