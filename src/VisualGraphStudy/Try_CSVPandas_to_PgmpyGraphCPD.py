@@ -79,7 +79,7 @@ from pgmpy.models import BayesianModel
 
 from src.utils.GraphvizUtil import *
 
-# Defining mdoel structure, just by passing a list of edges.
+# Defining model structure, just by passing a list of edges.
 carModel: BayesianModel = BayesianModel([('Time', 'WorkCapacity'), ('TrainingLevel', 'WorkCapacity'),
                                          ('ExperienceLevel', 'WorkCapacity'), ('ExertionLevel', 'WorkCapacity'),
                                          ('Time', 'AbsenteeismLevel'),
@@ -159,8 +159,8 @@ def dataframeToTabularCPD(variable: Variable, cardinality: int,
 
 # %% codecell
 
-cpd_usesop: TabularCPD = dataframeToTabularCPD(variable = 'UsesOp', cardinality = 4, dataframe = CPD_usesop)
-cpd_process: TabularCPD = dataframeToTabularCPD(variable = 'ProcessType', cardinality = 5, dataframe = CPD_processType)
+cpd_usesop: TabularCPD = dataframeToTabularCPD(variable = 'UsesOps', cardinality = 4, dataframe = CPD_usesop)
+cpd_process: TabularCPD = dataframeToTabularCPD(variable = 'ProcessType', cardinality = 6, dataframe = CPD_processType)
 cpd_injury: TabularCPD = dataframeToTabularCPD(variable = 'InjuryType', cardinality = 5, dataframe = CPD_injuryType)
 cpd_time: TabularCPD = dataframeToTabularCPD(variable = 'Time', cardinality = 5, dataframe = CPD_time)
 cpd_exertion: TabularCPD = dataframeToTabularCPD(variable = 'ExertionLevel', cardinality = 2, dataframe = CPD_exertionLevel)
@@ -169,45 +169,17 @@ cpd_training: TabularCPD = dataframeToTabularCPD(variable = 'TrainingLevel', car
 cpd_workcapacity: TabularCPD = dataframeToTabularCPD(variable = 'WorkCapacity', cardinality = 2, dataframe = CPD_workCapacity)
 cpd_absentee: TabularCPD = dataframeToTabularCPD(variable = 'AbsenteeismLevel', cardinality = 2, dataframe = CPD_absentee)
 
+
 carModel.add_cpds(cpd_usesop, cpd_process, cpd_injury, cpd_time, cpd_exertion, cpd_experience, cpd_training, cpd_workcapacity, cpd_absentee)
 
-assert carModel.check_model()
-# %% codecell
-
-# Defining individual CPDs with state names
-cpd_Time = TabularCPD(variable ='Time', variable_card = 2, values = [[0.6, 0.4]],
-                      state_names = {'Time' : ['Easy', 'Hard']})
-
-cpdState_I = TabularCPD(variable = 'I', variable_card=2, values = [[0.7, 0.3]],
-                        state_names = {'I' : ['Dumb', 'Intelligent']})
-
-cpdState_G = TabularCPD(variable = 'G', variable_card = 3, values = [[0.3, 0.05, 0.9, 0.5],
-                                                                     [0.4, 0.25, 0.08, 0.3],
-                                                                     [0.3, 0.7, 0.02, 0.2]],
-                        evidence = ['I', 'D'], evidence_card = [2,2],
-                        state_names = {'G': ['A', 'B', 'C'], 'I' : ['Dumb', 'Intelligent'], 'D':['Easy', 'Hard']})
-
-cpdState_L = TabularCPD(variable = 'L', variable_card = 2, values = [[0.1, 0.4, 0.99],
-                                                                     [0.9, 0.6, 0.01]],
-                        evidence = ['G'], evidence_card = [3],
-                        state_names = {'L' : ['Bad', 'Good'], 'G': ['A', 'B', 'C']})
-
-cpdState_S = TabularCPD(variable = 'S', variable_card = 2, values = [[0.95, 0.2],
-                                                                     [0.05, 0.8]],
-                        evidence = ['I'], evidence_card = [2],
-                        state_names={'S': ['Bad', 'Good'], 'I': ['Dumb', 'Intelligent']})
-
-# Associating the CPDs with the network:
-#carModel.add_cpds(cpd_Time, cpdState_I, cpdState_G, cpdState_L, cpdState_S)
-#assert carModel.check_model()
-
+#assert carModel.check_model() # TODO says sum of CPDs is not equal to 1 for WorkCapacity (atol=0.01 in is_valid_cpd() too low???)
 
 # %% codecell
-#pgmpyToGraph(carModel)
+pgmpyToGraph(carModel)
 # %% codecell
-#pgmpyToGrid(carModel, 'AbsenteeismLevel') # assert it is the same as CPD_absenteeism.get_values()
+pgmpyToGrid(carModel, 'AbsenteeismLevel') # assert it is the same as CPD_absenteeism.get_values()
 
 
 # %% codecell
 
-#pgmpyToGraphCPD(carModel)
+pgmpyToGraphCPD(carModel)

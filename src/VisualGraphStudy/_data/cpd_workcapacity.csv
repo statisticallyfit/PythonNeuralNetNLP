@@ -1,5 +1,5 @@
 Time,ExertionLevel,ExperienceLevel,TrainingLevel,Low,High
-1,Low,Low,Low,0.014,99.986
+1,Low,Low,Low,0.01,99
 1,Low,Low,High,20,80
 1,Low,High,Low,15,85
 1,Low,High,High,2,98
