@@ -189,7 +189,8 @@ from src.utils.GraphvizUtil import *
 
 pgmpyToGraph(model= model)
 
-
+# %% codecell
+pgmpyToGraphCPD(model)
 # %% markdown [markdown]
 # We can now call some methods on the `BayesianModel` object
 # %% codecell
@@ -298,15 +299,18 @@ causalGraph
 # %% codecell
 causalModel = BayesianModel(causal)
 
-indepA: Independencies = causalModel.local_independencies('A')
-
+indepA: Independencies = causalModel.local_independencies(['A'])
+indepA
 assert indepA == Independencies(['A', ['B', 'C']]), "Check: A is independent of B and C, at the same time"
 assert str(indepA) in localIndependencySynonyms(model = causalModel, queryNode='A')
+
+localIndependencySynonyms(model = causalModel, queryNode='A')
 
 indepSynonymTable(model = causalModel, queryNode='A')
 
 # %% codecell
 # Study of causalModel continued ...
+
 assert str(causalModel.local_independencies('B')) == '(B _|_ C | A)', 'Check: B is independent of C, given A (so event "B is independent of C" is conditional on A)'
 
 
@@ -354,9 +358,9 @@ assert commonEvidenceModel.local_independencies('B') == Independencies() # no in
 
 # %% codecell
 indepA: Independencies = commonEvidenceModel.local_independencies('A')
-assert indepA == Independencies(['A', ['B', 'C']]), 'Check: C is independent of both B and A'
+assert indepA == Independencies(['A', ['C']]), 'Check: A is independent of C'
 assert str(indepA) in localIndependencySynonyms(model=commonEvidenceModel, queryNode='A')
-
+indepA
 indepSynonymTable(model = commonEvidenceModel, queryNode ='A')
 
 # %% codecell
@@ -1072,17 +1076,13 @@ from pgmpy.inference import VariableElimination
 from pgmpy.factors.discrete.DiscreteFactor import DiscreteFactor
 
 infer = VariableElimination(model = model)
-inferResult = infer.query(variables = ['G'])
+inferResult: DiscreteFactor = infer.query(variables = ['G'])
 print(inferResult)
 
-# Get the actual values
-node, marginalDistG = list(infer.query(variables = ['G']).items())[0]
-marginalDistG: DiscreteFactor = marginalDistG
-
-print(marginalDistG)
 
 # %% markdown [markdown]
 # **Example 2:** Compute $P(G \; | \; D = 0, I = 1)$
+#
 # Have already that:
 # $$
 # \begin{align}
@@ -1091,7 +1091,7 @@ print(marginalDistG)
 # &= \sum_D P(D) \sum_I P(G \; | \; D, I) \cdot P(I) \sum_S P(S \; | \; I) \sum_L P(L \; | \; G)
 # \end{align}
 # $$
-# To Compute $P(G \; | \; D = 0, I = 1)$, we must substitute the value $D = 0, I = 1$ wherever possible and then move the summations:
+# To compute $P(G \; | \; D = 0, I = 1)$, we must substitute the value $D = 0, I = 1$ wherever possible and then move the summations:
 # $$
 # \begin{align}
 # P(G \; | \; D = 0, I = 1) \\
@@ -1102,27 +1102,28 @@ print(marginalDistG)
 # $$
 # In pgmpy we just need to pass the extra `evidence` argument, when we want to calculate conditional distributions like these:
 # %% codecell
-'''
-inferResult = infer.query(variables = ['G'], evidence = {'D': 'Easy', 'I' : 'Intelligent'})
-print(inferResult)
 
-# Get the actual values
-node, marginalDistG = list(infer.query(variables = ['G']).items())[0]
-marginalDistG: DiscreteFactor = marginalDistG
-
-print(marginalDistG)
-
-
-
-infer.query(variables = ['G'], evidence = {'D': 'Easy', 'I' : 'Intelligent'})
-
-node, condDist = list(infer.query(variables = ['G'], evidence = {'D': 'Easy', 'I' : 'Intelligent'}).items())[0]
-print(condDist)
-
-
+conditionalG = infer.query(variables = ['G'], evidence = {'D': 'Easy', 'I' : 'Intelligent'})
+print(conditionalG)
+# %% markdown
+# **Predicting Values from New Data Points:**
+#
+# This is similar to computing the conditional probabilities. We need to query for the variable that we need to predict given all the other features. The only difference is that rather than getting the probability distribution,  we are interestd in getting the **most probable state of the variable**.
+#
+# Pgmpy calls this the MAP query (maximum a posterior?):
+#
+# **Key concept:** bayesian posterior update
+# * similar to BayesiaLab's setting of marginal probability states and getting the updated marginals of other variables.
+# * similar to CausalNex's .query() method, where we can pass a `dict` of observed states
+# %% codecell
+# Just the simple prediction for node G, from marginal distribution, no observed value given:
 infer.map_query(['G'])
-infer.map_query(['G'], evidence={'D': 'Easy', 'I': 'Intelligent'})
-infer.map_query(['G'], evidence={'D': 'Easy', 'I': 'Intelligent', 'L': 'Good', 'S': 'Good'})
-
-# TODO the commands with `evidence` are giving errors, must update to pgmpy version >= 0.1.9 (or what is the minimal above 0.1.6?)
-'''
+# %% codecell
+# The prediction for node G, given observed values D = Hard, I = Intelligent (so posterior update with this new observation / evidence)
+infer.map_query(['G'], evidence={'D': 'Hard', 'I': 'Intelligent'})
+# %% codecell
+#model.get_cpds('L').state_names
+infer.map_query(['G'], evidence={'D': 'Hard', 'I': 'Intelligent', 'L': 'Bad', 'S': 'Bad'})
+# %% codecell
+# Grade result when student is intelligent, test was hard, letter is bad, SAT score is Good:
+infer.map_query(['G'], evidence={'D': 'Hard', 'I': 'Intelligent', 'L': 'Bad', 'S': 'Good'})
