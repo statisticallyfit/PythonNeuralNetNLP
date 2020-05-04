@@ -114,3 +114,10 @@ alarmModel.local_independencies('MaryCalls')
 alarmModel.local_independencies('JohnCalls')
 # %% codecell
 alarmModel.get_independencies()
+
+
+# TODO say direct dependency assumptions (from Korb book)
+# TODO test imap in pgmpy and meaning? (from Korb book)
+# TODO do part 3 Joint dist from tut2
+# TODO do part 4 inference from tut3
+# TODO do the different kinds of inference from (Korb book): intercausal, diagnostic ... etc

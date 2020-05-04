@@ -988,7 +988,7 @@ def probChainRule(condAcc: List[Variable], acc: Variable) -> str:
 
 probChainRule(condAcc = ['L', 'S', 'G', 'D', 'I'], acc ='')
 # %% markdown [markdown]
-# Applying the local independence conditions to the above euqation we get:
+# Applying the local independence conditions to the above equation we get:
 # $$
 # \begin{align}
 # P(D, I, G, L, S)
