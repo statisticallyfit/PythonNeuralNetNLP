@@ -177,7 +177,11 @@ carModel.add_cpds(cpd_usesop, cpd_process, cpd_injury, cpd_time, cpd_exertion, c
 # %% codecell
 pgmpyToGraph(carModel)
 # %% codecell
-pgmpyToGrid(carModel, 'AbsenteeismLevel') # assert it is the same as CPD_absenteeism.get_values()
+pgmpyToGrid(carModel, 'AbsenteeismLevel', shorten = False) # assert it is the same as CPD_absenteeism.get_values()
+
+
+# %% codecell
+vals = pgmpyToGrid(carModel, 'AbsenteeismLevel', shorten = True) ; vals
 
 
 # %% codecell

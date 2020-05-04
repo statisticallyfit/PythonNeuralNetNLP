@@ -12,6 +12,7 @@ import graphviz as gz # This is directly the DOT language
 from typing import *
 
 import random
+import numpy as np
 
 import itertools
 
@@ -216,7 +217,8 @@ def dictToGraphCPD(graphNoTable: gz.Digraph,
 # PGMPY conversions to Graphviz graph
 
 
-def pgmpyToGrid(model: BayesianModel, queryNode: Variable) -> Grid:
+def pgmpyToGrid(model: BayesianModel, queryNode: Variable,
+                shorten: bool = True) -> Grid:
     '''
     Renders a list of lists (grid) from the pgmpy model, out of the CPD for the given query node.
     '''
@@ -230,13 +232,26 @@ def pgmpyToGrid(model: BayesianModel, queryNode: Variable) -> Grid:
     condStateProducts: List[Tuple[State, State]] = list(itertools.product(*list(condVarStates.values())))
 
     # Transposing the CPDs to get the rows in column format, since this is what the renderTable function expects to use.
-    cpdOfQuery = model.get_cpds(queryNode).get_values().T
+    cpdProbabilities: List[np.ndarray] = list(model.get_cpds(queryNode).get_values().T)
 
     # This is basically the gird, with titles next to probabilities but need to format so everything is a list and no
     # other structure is inside:
-    tempGrid = list(zip(condStateProducts, cpdOfQuery))
+    tempGrid: Grid = list(zip(condStateProducts, cpdProbabilities))
 
-    grid = [list(nameProduct) + list(probs) for nameProduct, probs in tempGrid]
+    grid: Grid = [list(nameProduct) + list(probs) for nameProduct, probs in tempGrid]
+
+
+    if shorten and len(grid) > 15: # extra test to ensure no putting dots when there are fewer than 15 rows
+        #MAX_ROWS: int = 15
+        BOTTOM_ROWS: int = 5
+        TOP_ROWS: int = 10
+
+        # Shortening the grid
+
+        blankRow = ['...' for _ in range(len(grid[0]))]
+
+        grid: Grid = grid[0 : TOP_ROWS] + [blankRow] + grid[ len(grid) - BOTTOM_ROWS : ]
+
 
     return grid
 
@@ -331,7 +346,7 @@ def pgmpyToGraph(model: BayesianModel,
 
 
 
-def pgmpyToGraphCPD(model: BayesianModel) -> gz.Digraph:
+def pgmpyToGraphCPD(model: BayesianModel, shorten: bool = True) -> gz.Digraph:
     '''
     Converts a pgmpy BayesianModel into a graphviz Digraph with its CPD tables drawn next to its nodes.
     '''
@@ -341,7 +356,7 @@ def pgmpyToGraphCPD(model: BayesianModel) -> gz.Digraph:
     for var in variables:
         g.attr('node', shape ='plaintext')
 
-        grid: Grid = pgmpyToGrid(model = model, queryNode = var)
+        grid: Grid = pgmpyToGrid(model = model, queryNode = var, shorten = shorten)
 
         table: Table = pgmpyToTable(model = model, queryNode = var, grid= grid)
 
