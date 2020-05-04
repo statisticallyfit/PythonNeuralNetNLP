@@ -763,7 +763,7 @@ print('\nProportion passes = {}'.format(counts[1] / sum(counts)))
 #
 # These observations can be made anywhere in the network and their impact will be propagated through to the node of interest.
 # %% codecell
-# Reminding of the data types for each variable:
+# Reminding of the states for each random variable: 
 discrDataVals
 # %% codecell
 # Reminder of nodes you CAN query (for instance putting 'health' in the dictionary argument of 'query' will give us an error)

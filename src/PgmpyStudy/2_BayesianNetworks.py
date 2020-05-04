@@ -305,18 +305,16 @@ indepA: Independencies = causalModel.local_independencies(['A'])
 #assert indepA == Independencies(['A', ['B', 'C']]), "Check: A is independent of B and C, at the same time"
 assert str(indepA) == ''
 #assert str(indepA) in localIndependencySynonyms(model = causalModel, queryNode='A')
-
 #indepSynonymTable(model = causalModel, queryNode='A')
-
-# %% codecell
-# Study of causalModel continued ...
 
 # TODO pgmpy change
 #assert str(causalModel.local_independencies('B')) == '(B _|_ C | A)', 'Check: B is independent of C, given A (so event "B is independent of C" is conditional on A)'
 
 assert str(causalModel.local_independencies('C')) == '(C _|_ A | B)', 'Check: C is independent of A when conditional on B'
 
+indepSynonymTable(causalModel, 'C')
 
+# %% codecell
 indeps = list(map(lambda x : str(x), causalModel.get_independencies().get_assertions()))
 assert indeps == ['(A _|_ C | B)', '(C _|_ A | B)'], 'Check: overall independencies of causal model'
 
@@ -334,12 +332,13 @@ assert str(evidentialModel.local_independencies('A')) == '(A _|_ C | B)', 'Check
 
 # TODO pgmpy version change
 indepC: Independencies = evidentialModel.local_independencies('C')
+#indepC # nothing TODO why?
 #assert indepC == Independencies(['C', ['B','A']]), 'Check: C is independent of both B and A'
 #assert str(indepC) in localIndependencySynonyms(model=evidentialModel, queryNode='C')
 
 
 #indepSynonymTable(model = evidentialModel, queryNode ='C')
-#indepSynonymTable(model = evidentialModel, queryNode ='A')
+indepSynonymTable(model = evidentialModel, queryNode ='A')
 
 # %% codecell
 # Continued on evidential model
@@ -347,6 +346,8 @@ indeps = list(map(lambda x : str(x), evidentialModel.get_independencies().get_as
 assert indeps == ['(C _|_ A | B)', '(A _|_ C | B)'], 'Check: overall independencies of evidential model'
 
 
+# %% markdown [markdown]
+# TODO: use this book by Korb (Bayesian Artificial Intelligence) to explain the intuitions behind all these four types of models: [example intuition for common evidence model, says it is INVERSE of common cause model!](https://hyp.is/TBnOeo5AEeqyTPtnV0yx1w/bayesian-intelligence.com/publications/bai/book/BAI_Chapter2.pdf)
 # %% codecell
 commonEvidenceGraph
 
@@ -355,21 +356,18 @@ commonEvidenceModel = BayesianModel(commonEvidence)
 
 assert commonEvidenceModel.local_independencies('B') == Independencies() # no independency for B TODO why?? Couldn't we say that B is independent of  (A and C) GIVEN (A and C)?
 
-# %% codecell
+
 indepA: Independencies = commonEvidenceModel.local_independencies('A')
 assert indepA == Independencies(['A', ['C']]), 'Check: A is independent of C'
-#assert str(indepA) in localIndependencySynonyms(model=commonEvidenceModel, queryNode='A')
+assert str(indepA) in localIndependencySynonyms(model=commonEvidenceModel, queryNode='A')
+assert str(indepA) == '(A _|_ C)'
 
-indepSynonymTable(model = commonEvidenceModel, queryNode ='A')
 
-# %% codecell
-indepC: Independencies = commonEvidenceModel.local_independencies('C')
-assert indepC == Independencies(['C',['B','A']]), 'Check: C is independent of both B and A'
+indepC: Independencies = commonEvidenceModel.local_independencies('C'); indepC
+assert indepC == Independencies(['C',['A']]), 'Check: C is independent of both B and A'
 assert str(indepC) in localIndependencySynonyms(model=commonEvidenceModel, queryNode='C')
+assert str(indepC) == '(C _|_ A)'
 
-indepSynonymTable(model = commonEvidenceModel, queryNode ='C')
-
-# %% codecell
 indeps = list(map(lambda x : str(x), commonEvidenceModel.get_independencies().get_assertions()))
 assert indeps == ['(A _|_ C)', '(C _|_ A)'], 'Check: overall independencies of common evidence model (A and C should be independent of each other)'
 
@@ -378,7 +376,6 @@ assert indeps == ['(A _|_ C)', '(C _|_ A)'], 'Check: overall independencies of c
 commonCauseGraph
 
 # %% codecell
-
 commonCauseModel = BayesianModel(commonCause)
 
 assert str(commonCauseModel.local_independencies('A')) == '(A _|_ C | B)', 'Check: A and C are independent once conditional on B'
@@ -387,14 +384,15 @@ assert str(commonCauseModel.local_independencies('A')) == '(A _|_ C | B)', 'Chec
 assert str(commonCauseModel.local_independencies('C')) == '(C _|_ A | B)', 'Check: C is independent of A once conditional on B'
 
 
-# %% codecell
-indepB: Independencies = commonCauseModel.local_independencies('B')
-assert indepB == Independencies(['B', ['A', 'C']]), "Check: B is independent of C AND A at the same time"
-assert str(indepB) in localIndependencySynonyms(model=commonCauseModel, queryNode='B')
+indepB: Independencies = commonCauseModel.local_independencies('B'); indepB
+# TODO pgmpy change
+assert indepB == Independencies()
+#assert indepB == Independencies(['B', ['A', 'C']]), "Check: B is independent of C AND A at the same time"
+# assert str(indepB) in localIndependencySynonyms(model=commonCauseModel, queryNode='B')
 
-indepSynonymTable(model = commonCauseModel, queryNode ='B')
+#indepSynonymTable(model = commonCauseModel, queryNode ='B')
 
-# %% codecell
+
 indeps = list(map(lambda x : str(x), commonCauseModel.get_independencies().get_assertions()))
 assert indeps == ['(A _|_ C | B)', '(C _|_ A | B)'], 'Check: overall independencies of common cause model'
 
@@ -405,182 +403,51 @@ assert indeps == ['(A _|_ C | B)', '(C _|_ A | B)'], 'Check: overall independenc
 # %% codecell
 pgmpyToGraph(model= model)
 
-# %% codecell
-# TODO developing new indepsynonyms table
-model.local_independencies('D')
-model.local_independencies('L')
-model.local_independencies('I')
-model.local_independencies('S')
-model.local_independencies('G')
-
-
-indepSynonymTable(model, 'G')
 
 # %% codecell
+indepD: Independencies = model.local_independencies('D'); indepD
 
-Variable = str
-
-
-from pgmpy.independencies.Independencies import Independencies
-import itertools
-
-
-def localIndependencySynonyms(model: BayesianModel,
-                              queryNode: Variable,
-                              useNotation = False) -> List[Variable]:
-    '''
-    Generates all possible equivalent independencies, given a query node and separator nodes.
-
-    For example, for the independency (G _|_ S, L | I, D), all possible equivalent independencies are made by permuting the letters S, L and I, D in their positions. An resulting equivalent independency would then be (G _|_ L, S | I, D) or (G _|_ L, S | D, I)  etc.
-
-    Arguments:
-        queryNode: the node from which local independencies are to be calculated.
-        condNodes: either List[str] or List[List[str]].
-            ---> When it is List[str], it contains a list of nodes that are only after the conditional | sign. For instance, for (D _|_ G,S,L,I), the otherNodes = ['D','S','L','I'].
-            ---> when it is List[List[str]], otherNodes contains usually two elements, the list of nodes BEFORE and AFTER the conditional | sign. For instance, for (G _|_ L, S | I, D), otherNodes = [ ['L','S'], ['I','D'] ], where the nodes before the conditional sign are L,S and the nodes after the conditional sign are I, D.
-
-    Returns:
-        List of generated string independency combinations.
-    '''
-    # First check that the query node has local independencies!
-    # TODO check how to match up with the otherNodes argument
-    if model.local_independencies(queryNode) == Independencies():
-        return
-
-
-    locIndeps = model.local_independencies(queryNode)
-    _, condExpr = str(locIndeps).split('_|_')
-
-    condNodes: List[List[Variable]] = []
-    if "|" in condExpr:
-        beforeCond, afterCond = condExpr.split("|")
-        # Removing the paranthesis after the last letter:
-        afterCond = afterCond[0 : len(afterCond) - 1]
-
-        beforeCondList: List[Variable] = list(map(lambda letter: letter.strip(), beforeCond.split(",")))
-        afterCondList: List[Variable] = list(map(lambda letter: letter.strip(), afterCond.split(",")))
-        condNodes: List[List[Variable]] = [beforeCondList] + [afterCondList]
-    else: # just have an expr like "leters" that are only before cond
-        beforeCond = condExpr[0 : len(condExpr) - 1]
-        beforeCondList: List[Variable] = list(map(lambda letter: letter.strip(), beforeCond.split(",")))
-        condNodes: List[List[Variable]] = [beforeCondList]
-
-    otherComboStrList = []
-
-    for letterSet in condNodes:
-        # NOTE: could use comma here instead of the '∩' (and) symbol
-        if useNotation: # use 'set and' symbol and brackets (set notation, clearer than simple notation)
-            comboStrs: List[str] = list(map(
-                lambda letterCombo : "{" + ' ∩ '.join(letterCombo) + "}" if len(letterCombo) > 1 else ' ∩ '.join(letterCombo),
-                itertools.permutations(letterSet)))
-        else: # use commas and no brackets (simple notation)
-            comboStrs: List[str] = list(map(lambda letterCombo : ', '.join(letterCombo),
-                                            itertools.permutations(letterSet)))
-
-        # Add this particular combination of letters (variables) to the list.
-        otherComboStrList.append(comboStrs)
-
-
-    # Do product of the after-before variable string combinations.
-    # (For instance, given the list [['S,L', 'L,S'], ['D,I', 'I,D']], this operation returns the product list: [('S,L', 'D,I'), ('S,L', 'I,D'), ('L,S', 'D,I'), ('L,S', 'I,D')]
-    condComboStr: List[Tuple[Variable]] = list(itertools.product(*otherComboStrList))
-
-    # Joining the individual strings in the tuples (above) with conditional sign '|'
-    condComboStr: List[str] = list(map(lambda condPair : ' | '.join(condPair), condComboStr))
-
-    independencyCombos: List[str] = list(map(lambda letterComboStr : f"({queryNode} _|_ {letterComboStr})", condComboStr))
-
-    return independencyCombos
-
-
-
-def indepSynonymTable(model: BayesianModel, queryNode: Variable):
-
-    # fancy independencies
-    xs: List[str] = localIndependencySynonyms(model = model, queryNode = queryNode, useNotation = True)
-    # regular notation independencies
-    ys: List[str] = localIndependencySynonyms(model = model, queryNode = queryNode)
-
-    # Skip if no result (if not independencies)
-    if xs is None and ys is None:
-        return
-
-    # Create table spacing logic
-    numBetweenSpace: int = 5
-    numDots: int = 5
-
-
-    dots: str = ''.ljust(numDots, '.') # making as many dots as numDots
-    betweenSpace: str = ''.ljust(numBetweenSpace, ' ')
-
-    fancyNotationTitle: str = 'Fancy Notation'.ljust(len(xs[0]) , ' ')
-    regularNotationTitle: str = "Regular Notation".ljust(len(ys[0]), ' ')
-
-    numTotalRowSpace: int = max(len(xs[0]), len(fancyNotationTitle.strip())) + \
-                            2 * numBetweenSpace + numDots + \
-                            max(len(ys[0]), len(regularNotationTitle.strip()))
-
-    title: str = "INDEPENDENCIES TABLE".center(numTotalRowSpace, ' ')
-
-    separatorLine: str = ''.ljust(numTotalRowSpace, '-')
-
-    zs: List[str] = list(map(lambda tuple : f"{tuple[0]}{betweenSpace + dots + betweenSpace}{tuple[1]}", zip(xs, ys)))
-
-    # TODO had to add extra space --- why? (below before dots to make dots in title line up with dots in rows)
-    table: str = title + "\n" + \
-                 fancyNotationTitle + betweenSpace +  dots + betweenSpace + regularNotationTitle + "\n" + \
-                 separatorLine + "\n" + \
-                 "\n".join(zs)
-
-    print(table)
-
-
-# %% codecell
-indepD: Independencies = model.local_independencies('D')
-indepD
-
-
-
-assert indepD == Independencies(['D', ['G', 'S', 'I', 'L']]), 'Check: D is independent of all G, S, I, and L'
-assert str(indepD) in localIndependencySynonyms(model = model, queryNode ='D'), 'Check: D is independent of all L, S, I, and G'
+# TODO pgmpy change
+# assert indepD == Independencies(['D', ['G', 'S', 'I', 'L']]), 'Check: D is independent of all G, S, I, and L'
+assert indepD == Independencies(['D', ['S', 'I']]), 'Check: D is independent of all S, I'
+assert str(indepD) in localIndependencySynonyms(model = model, queryNode ='D'), 'Check: D is independent of S, I'
 
 indepSynonymTable(model, 'D')
 
 # %% codecell
-indepI: Independencies = model.local_independencies('I')
-indepI
+indepI: Independencies = model.local_independencies('I'); indepI
 
-assert indepI == Independencies(['I', ['G', 'S', 'L','D']]), 'Check: I is independent of all {G,S,L,D}'
+# TODO pgmpy change
+# assert indepI == Independencies(['I', ['G', 'S', 'L','D']]), 'Check: I is independent of all {G,S,L,D}'
+assert indepI == Independencies(['I', ['D']])
 assert str(indepI) in localIndependencySynonyms(model=model, queryNode='I')
-
-indepSynonymTable(model = model, queryNode ='I')
-
-# %% codecell
-indepG: Independencies = model.local_independencies('G')
-
-assert indepG == Independencies(['G', ['S', 'L'], ['I','D']]), 'Check: G is independent of (L, and S) given (I, and D)'
-assert str(indepG) in localIndependencySynonyms(model=model, queryNode='G', condNodes=[['L', 'S'], ['I', 'D']])
-
-indepSynonymTable(model = model, queryNode ='G', otherNodes = [['L', 'S'], ['I', 'D']])
+assert str(indepI) == '(I _|_ D)'
 
 # %% codecell
-indepS: Independencies = model.local_independencies('S')
+indepG: Independencies = model.local_independencies('G'); indepG
+
+# TODO pgmpy change
+#assert indepG == Independencies(['G', ['S', 'L'], ['I','D']]), 'Check: G is independent of (L, and S) given (I, and D)'
+assert indepG == Independencies(['G', ['S'], ['D', 'I']])
+assert str(indepG) in localIndependencySynonyms(model=model, queryNode='G')
+
+indepSynonymTable(model = model, queryNode ='G')
+
+# %% codecell
+indepS: Independencies = model.local_independencies('S'); indepS
 
 assert indepS == Independencies(['S', ['D', 'G', 'L'], 'I']), 'Check: S is independent of {D,G,L} given I'
-assert str(indepS) in localIndependencySynonyms(model=model, queryNode='S', condNodes=[['D', 'G', 'L'], ['I']])
+assert str(indepS) in localIndependencySynonyms(model=model, queryNode='S')
 
-indepSynonymTable(model = model,queryNode='S', otherNodes=[['D','G','L'],['I']])
-
+indepSynonymTable(model = model,queryNode='S')
 
 # %% codecell
 indepL: Independencies = model.local_independencies('L'); indepL
 
 assert indepL == Independencies(['L', ['S','I','D'], 'G']), 'Check: L is independent of {S,I,D} given G'
-assert str(indepL) in localIndependencySynonyms(model=model, queryNode='L', condNodes=[['S', 'I', 'D'], ['G']])
+assert str(indepL) in localIndependencySynonyms(model=model, queryNode='L')
 
-indepSynonymTable(model = model,queryNode='L', otherNodes=[['S','I','D'], ['G']])
-
-
+indepSynonymTable(model = model,queryNode='L')
 
 # %% markdown [markdown]
 # ### Study: Multiple Local Independencies for Grade Example
