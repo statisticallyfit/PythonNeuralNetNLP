@@ -28,7 +28,7 @@ import itertools
 
 def localIndependencySynonyms(model: BayesianModel,
                               queryNode: Variable,
-                              otherNodes: List[List[Variable]] = None, useNotation = False) -> List[Variable]:
+                              useNotation = False) -> List[Variable]:
     '''
     Generates all possible equivalent independencies, given a query node and separator nodes.
 
@@ -36,7 +36,7 @@ def localIndependencySynonyms(model: BayesianModel,
 
     Arguments:
         queryNode: the node from which local independencies are to be calculated.
-        otherNodes: either List[str] or List[List[str]].
+        condNodes: either List[str] or List[List[str]].
             ---> When it is List[str], it contains a list of nodes that are only after the conditional | sign. For instance, for (D _|_ G,S,L,I), the otherNodes = ['D','S','L','I'].
             ---> when it is List[List[str]], otherNodes contains usually two elements, the list of nodes BEFORE and AFTER the conditional | sign. For instance, for (G _|_ L, S | I, D), otherNodes = [ ['L','S'], ['I','D'] ], where the nodes before the conditional sign are L,S and the nodes after the conditional sign are I, D.
 
@@ -48,15 +48,27 @@ def localIndependencySynonyms(model: BayesianModel,
     if model.local_independencies(queryNode) == Independencies():
         return
 
-    if otherNodes is None: # then assume user wants to consider all other nodes in the graph are in the BEFORE spot of the conditional sign, and that there is NO conditional sign: A _|_ A2,A3,A4...., where otherNodes = [A2,A3,A4...]
-        otherNodes = []
-        inner: List[List[Variable]] = list(set(iter(model.nodes())) - set(queryNode))
-        otherNodes.append(inner)
 
-    # Initializing the list of node combination strings.
+    locIndeps = model.local_independencies(queryNode)
+    _, condExpr = str(locIndeps).split('_|_')
+
+    condNodes: List[List[Variable]] = []
+    if "|" in condExpr:
+        beforeCond, afterCond = condExpr.split("|")
+        # Removing the paranthesis after the last letter:
+        afterCond = afterCond[0 : len(afterCond) - 1]
+
+        beforeCondList: List[Variable] = list(map(lambda letter: letter.strip(), beforeCond.split(",")))
+        afterCondList: List[Variable] = list(map(lambda letter: letter.strip(), afterCond.split(",")))
+        condNodes: List[List[Variable]] = [beforeCondList] + [afterCondList]
+    else: # just have an expr like "leters" that are only before cond
+        beforeCond = condExpr[0 : len(condExpr) - 1]
+        beforeCondList: List[Variable] = list(map(lambda letter: letter.strip(), beforeCond.split(",")))
+        condNodes: List[List[Variable]] = [beforeCondList]
+
     otherComboStrList = []
 
-    for letterSet in otherNodes:
+    for letterSet in condNodes:
         # NOTE: could use comma here instead of the '∩' (and) symbol
         if useNotation: # use 'set and' symbol and brackets (set notation, clearer than simple notation)
             comboStrs: List[str] = list(map(
@@ -68,6 +80,7 @@ def localIndependencySynonyms(model: BayesianModel,
 
         # Add this particular combination of letters (variables) to the list.
         otherComboStrList.append(comboStrs)
+
 
     # Do product of the after-before variable string combinations.
     # (For instance, given the list [['S,L', 'L,S'], ['D,I', 'I,D']], this operation returns the product list: [('S,L', 'D,I'), ('S,L', 'I,D'), ('L,S', 'D,I'), ('L,S', 'I,D')]
@@ -83,14 +96,12 @@ def localIndependencySynonyms(model: BayesianModel,
 
 
 
-def indepSynonymTable(model: BayesianModel,
-                      queryNode: Variable,
-                      otherNodes: List[List[Variable]] = None):
+def indepSynonymTable(model: BayesianModel, queryNode: Variable):
 
     # fancy independencies
-    xs: List[str] = localIndependencySynonyms(model = model, queryNode = queryNode, otherNodes = otherNodes, useNotation = True)
+    xs: List[str] = localIndependencySynonyms(model = model, queryNode = queryNode, useNotation = True)
     # regular notation independencies
-    ys: List[str] = localIndependencySynonyms(model = model, queryNode = queryNode, otherNodes = otherNodes)
+    ys: List[str] = localIndependencySynonyms(model = model, queryNode = queryNode)
 
     # Skip if no result (if not independencies)
     if xs is None and ys is None:
