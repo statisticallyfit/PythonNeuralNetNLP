@@ -102,6 +102,50 @@ alarmModel.add_cpds(cpdBurglary, cpdEarthquake, cpdAlarm, cpdJohnCalls, cpdMaryC
 
 assert alarmModel.check_model()
 
+
+# %% markdown
+# Making a brief-name version for viewing clarity, in tables:
+# %% codecell
+alarmModel_brief: BayesianModel = BayesianModel([('B', 'A'),
+                                                 ('E', 'A'),
+                                                 ('A', 'J'),
+                                                 ('A', 'M')])
+
+# Defining parameters using CPT
+cpdBurglary: TabularCPD = TabularCPD(variable = 'B', variable_card = 2,
+                                     values = [[0.999, 0.001]],
+                                     state_names = {'B' : ['False', 'True']})
+
+cpdEarthquake: TabularCPD = TabularCPD(variable = 'E', variable_card = 2,
+                                       values = [[0.002, 0.998]],
+                                       state_names = {'E' : ['True', 'False']})
+
+cpdAlarm: TabularCPD = TabularCPD(variable = 'A', variable_card = 2,
+                                  values = [[0.95, 0.94, 0.29, 0.001],
+                                            [0.05, 0.06, 0.71, 0.999]],
+                                  evidence = ['B', 'E'], evidence_card = [2,2],
+                                  state_names = {'A': ['True', 'False'], 'B':['True','False'],'E': ['True', 'False']})
+
+
+cpdJohnCalls: TabularCPD = TabularCPD(variable = 'J', variable_card = 2,
+                                      values = [[0.90, 0.05],
+                                                [0.10, 0.95]],
+                                      evidence = ['A'], evidence_card = [2],
+                                      state_names = {'J': ['True', 'False'], 'A' : ['True', 'False']})
+
+
+cpdMaryCalls: TabularCPD = TabularCPD(variable = 'M', variable_card = 2,
+                                      values = [[0.70, 0.01],
+                                                [0.30, 0.99]],
+                                      evidence = ['A'], evidence_card = [2],
+                                      state_names = {'M': ['True', 'False'], 'A' : ['True', 'False']})
+
+
+alarmModel_brief.add_cpds(cpdBurglary, cpdEarthquake, cpdAlarm, cpdJohnCalls, cpdMaryCalls)
+
+assert alarmModel_brief.check_model()
+
+
 # %% codecell
 pgmpyToGraphCPD(model = alarmModel, shorten = False)
 
@@ -142,7 +186,7 @@ pgmpyToGraph(alarmModel)
 # Testing meaning of an **I-map** using a simple student example
 # %% codecell
 
-G = BayesianModel([('diff', 'grade'), ('intel', 'grade')])
+gradeModel = BayesianModel([('diff', 'grade'), ('intel', 'grade')])
 
 diff_cpd = TabularCPD('diff', 2, [[0.2], [0.8]])
 intel_cpd = TabularCPD('intel', 3, [[0.5], [0.3], [0.2]])
@@ -151,101 +195,75 @@ grade_cpd = TabularCPD('grade', 3, [[0.1,0.1,0.1,0.1,0.1,0.1],
                                     [0.8,0.8,0.8,0.8,0.8,0.8]],
                        evidence=['diff', 'intel'], evidence_card=[2, 3])
 
-G.add_cpds(diff_cpd, intel_cpd, grade_cpd)
+gradeModel.add_cpds(diff_cpd, intel_cpd, grade_cpd)
 
 
-pgmpyToGraphCPD(G)
+pgmpyToGraphCPD(gradeModel)
 
+# %% markdown
+# Showing two ways of creating the `JointProbabilityDistribution`    : (1) by feeding in values manually, or (2) by using `reduce` over the `TabularCPD`s or `DiscreteFactor`s.
 # %% codecell
-
-def jointProbNode_manual(model: BayesianModel, queryNode: Variable) -> JointProbabilityDistribution:
-    queryCPD: List[List[Probability]] = model.get_cpds(queryNode).get_values().T.tolist()
-    evVars: List[Variable] = list(model.get_cpds(queryNode).state_names.keys())[1:]
-
-    # 1 create combos of values between the evidence vars
-    evCPDLists: List[List[Probability]] = [(model.get_cpds(ev).get_values().T.tolist()) for ev in evVars]
-    # Make flatter so combinations can be made properly (below)
-    evCPDFlatter: List[Probability] = list(itertools.chain(*evCPDLists))
-    # passing the flattened list
-    evValueCombos = list(itertools.product(*evCPDFlatter))
-
-    # 2. do product of the combos of those evidence var values
-    evProds = list(map(lambda evCombo : reduce(mul, evCombo), evValueCombos))
-
-    # 3. zip the products above with the list of values of the CPD of the queryNode
-    pairProdAndQueryCPD: List[Tuple[float, List[float]]] = list(zip(evProds, queryCPD))
-    # 4. do product on that zip
-    jpd: List[Probability] = list(itertools.chain(*[ [evProd * prob for prob in probs] for evProd, probs in pairProdAndQueryCPD]))
-
-    return JointProbabilityDistribution(variables = [queryNode] + evVars,
-                                        cardinality = G.get_cpds(queryNode).cardinality,
-                                        values = jpd)
-
-
-
-def jointProb(model: BayesianModel) -> JointProbabilityDistribution:
-    ''' Returns joint prob distribution over entire network'''
-
-    # There is no reason the cpds must be converted to DiscreteFactors ; can access variables, values, cardinality the same way, but this is how the mini-example in API docs does it. (imap() implementation)
-    factors: List[DiscreteFactor] = [cpd.to_factor() for cpd in model.get_cpds()]
-    jointProbFactor: DiscreteFactor = reduce(mul, factors)
-
-    return JointProbabilityDistribution(variables = jointProbFactor.variables,
-                                        cardinality = jointProbFactor.cardinality,
-                                        values = jointProbFactor.values)
-
-def jointProbNode(model: BayesianModel, queryNode: Variable) -> JointProbabilityDistribution:
-    '''Returns joint prob distribution for queryNode'''
-
-    # Get the conditional variables
-    evVars: List[Variable] = list(model.get_cpds(queryNode).state_names.keys())[1:]
-    evCPDs: List[DiscreteFactor] = [model.get_cpds(evVar).to_factor() for evVar in evVars]
-
-    # There is no reason the cpds must be converted to DiscreteFactors ; can access variables, values, cardinality the same way, but this is how the mini-example in API docs does it. (imap() implementation)
-
-    #factors: List[DiscreteFactor] = [cpd.to_factor() for cpd in model.get_cpds(queryNode)]
-    jointProbFactor: DiscreteFactor = reduce(mul, evCPDs)
-
-    return JointProbabilityDistribution(variables = jointProbFactor.variables,
-                                        cardinality = jointProbFactor.cardinality,
-                                        values = jointProbFactor.values)
-
-
-# %% codecell
-print(jointProbNode(alarmModel, 'JohnCalls'))
-print(jointProbNode(G, 'grade'))
-
-list(alarmModel.predecessors(n = 'JohnCalls'))
-
-
-evVars: List[Variable] = list(alarmModel.get_cpds('Alarm').state_names.keys())[1:]; evVars
-[ alarmModel.get_cpds(evVar) for evVar in evVars]
-
-
-
-# Method 1 to create the joint probabilities
+# Method 1: Creating joint distribution manually, by feeding in the calculated values:
 jpdValues = [0.01, 0.01, 0.08, 0.006, 0.006, 0.048, 0.004, 0.004, 0.032,
            0.04, 0.04, 0.32, 0.024, 0.024, 0.192, 0.016, 0.016, 0.128]
 
 JPD = JointProbabilityDistribution(variables = ['diff', 'intel', 'grade'], cardinality = [2, 3, 3], values = jpdValues)
-factorJPD = DiscreteFactor(variables = JPD.variables,cardinality =  JPD.cardinality, values = JPD.values)
 
 print(JPD)
 
-# Method 2: easy way to create jpd values (reduce mul factors)
-pgmpyToGraphCPD(alarmModel)
-
-joint_diffAndIntel: TabularCPD = reduce(mul, [G.get_cpds('diff'), G.get_cpds('intel')])
-
-
-#(reduce(mul, [cpd for cpd in G.get_cpds()])).get_values()
+# %% markdown
+# Showing if small student model is I-map:
+# %% codecell
+from src.utils.NetworkUtil import *
 
 
-assert G.is_imap(JPD = JPD), "Check: using JPD to verify the graph is an independence-map: means no hidden backdoors between nodes and no way for variables to influence others except by one path"
+# Method 2: creating the JPD by multiplying over the TabularCPDs
+jpdFactor: DiscreteFactor = DiscreteFactor(variables = JPD.variables, cardinality =  JPD.cardinality, values = JPD.values)
+prodFactor: DiscreteFactor = jointProb(gradeModel)
 
-assert factorProd == factorJPD, "Check: joint distribution is the same as multiplying the cpds"
 
-print(factorProd)
+assert gradeModel.is_imap(JPD = JPD), "Check: using JPD to verify the graph is an independence-map: means no hidden backdoors between nodes and no way for variables to influence others except by one path"
+
+assert prodFactor == jpdFactor, "Check: joint distribution is the same as multiplying the cpds"
+
+print(jpdFactor)
+
+# %% markdown
+# Showing if alarm mode is I-map:
+# %% codecell
+#jointProb()
+
+
+# %% markdown
+# My function for the joint probabilities just until node `JohnCalls`, so this result isn't guaranteed to be a probability distributions (values won't sum to $1$)
+
+# %% codecell
+print(jointProbNode(gradeModel, 'diff'))
+print(jointProbNode_manual(gradeModel, 'diff'))
+# %% codecell
+# TODO start here tomorrow
+# TODO major wrong, these functions are NOT correct since the two tables below are not the same.
+# TODO major question: when we find joint prob of a noe do we consider ALL cpds? Am I doing repetition? See formula under section 3 from tut 2, bayes nets, or formula page 17 in Ankur Ankan book
+print(jointProbNode_manual(alarmModel_brief, 'J'))
+# %% codecell
+print(jointProbNode(alarmModel_brief, 'J'))
+# %% markdown
+# The entire `JointProbabilityDistribution`, over all the variables:
+# %% codecell
+print(jointProb(alarmModel_brief))
+
+# %% codecell
+joint_diffAndIntel: TabularCPD = reduce(mul, [gradeModel.get_cpds('diff'), gradeModel.get_cpds('intel')])
+print(joint_diffAndIntel)
+# %% markdown
+# $\color{red}{\text{TODO}}$ making a function to do joint prob of two separate nodes, assuming they also have evidence vars
+#
+# $\color{red}{\text{TODO}}$ valid?
+# %% codecell
+print(jointProbNode(gradeModel, 'diff'))
+# %% codecell
+print(jointProbNode(alarmModel, 'Alarm'))
+
 
 
 # %% codecell
@@ -255,44 +273,6 @@ print(factorProd)
 
 
 
-alarmModel_brief: BayesianModel = BayesianModel([('B', 'A'),
-                                                 ('E', 'A'),
-                                                 ('A', 'J'),
-                                                 ('A', 'M')])
-
-# Defining parameters using CPT
-cpdBurglary: TabularCPD = TabularCPD(variable = 'B', variable_card = 2,
-                                     values = [[0.999, 0.001]],
-                                     state_names = {'B' : ['False', 'True']})
-
-cpdEarthquake: TabularCPD = TabularCPD(variable = 'E', variable_card = 2,
-                                       values = [[0.002, 0.998]],
-                                       state_names = {'E' : ['True', 'False']})
-
-cpdAlarm: TabularCPD = TabularCPD(variable = 'A', variable_card = 2,
-                                  values = [[0.95, 0.94, 0.29, 0.001],
-                                            [0.05, 0.06, 0.71, 0.999]],
-                                  evidence = ['B', 'E'], evidence_card = [2,2],
-                                  state_names = {'A': ['True', 'False'], 'B':['True','False'],'E': ['True', 'False']})
-
-
-cpdJohnCalls: TabularCPD = TabularCPD(variable = 'J', variable_card = 2,
-                                      values = [[0.90, 0.05],
-                                                [0.10, 0.95]],
-                                      evidence = ['A'], evidence_card = [2],
-                                      state_names = {'J': ['True', 'False'], 'A' : ['True', 'False']})
-
-
-cpdMaryCalls: TabularCPD = TabularCPD(variable = 'M', variable_card = 2,
-                                      values = [[0.70, 0.01],
-                                                [0.30, 0.99]],
-                                      evidence = ['A'], evidence_card = [2],
-                                      state_names = {'M': ['True', 'False'], 'A' : ['True', 'False']})
-
-
-alarmModel_brief.add_cpds(cpdBurglary, cpdEarthquake, cpdAlarm, cpdJohnCalls, cpdMaryCalls)
-
-assert alarmModel_brief.check_model()
 
 # %% codecell
 

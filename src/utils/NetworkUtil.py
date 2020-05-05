@@ -4,6 +4,13 @@ from typing import *
 
 from pgmpy.models.BayesianModel import BayesianModel
 from pgmpy.independencies.Independencies import Independencies
+from pgmpy.factors.discrete import TabularCPD
+from pgmpy.factors.discrete import JointProbabilityDistribution
+from pgmpy.factors.discrete.DiscreteFactor import DiscreteFactor
+
+from operator import mul
+from functools import reduce
+
 import itertools
 
 
@@ -139,6 +146,70 @@ def indepSynonymTable(model: BayesianModel, queryNode: Variable):
 
 
 
+# ------------------------------------------------------------------------------------------------------------
+
+
+
+def jointProbNode_manual(model: BayesianModel, queryNode: Variable) -> DiscreteFactor:
+    queryCPD: List[List[Probability]] = model.get_cpds(queryNode).get_values().T.tolist()
+
+    evVars: List[Variable] = list(model.get_cpds(queryNode).state_names.keys())[1:]
+
+    if evVars == []:
+        return model.get_cpds(queryNode).to_factor()
+
+    # 1 create combos of values between the evidence vars
+    evCPDLists: List[List[Probability]] = [(model.get_cpds(ev).get_values().T.tolist()) for ev in evVars]
+    # Make flatter so combinations can be made properly (below)
+    evCPDFlatter: List[Probability] = list(itertools.chain(*evCPDLists))
+    # passing the flattened list
+    evValueCombos = list(itertools.product(*evCPDFlatter))
+
+    # 2. do product of the combos of those evidence var values
+    evProds = list(map(lambda evCombo : reduce(mul, evCombo), evValueCombos))
+
+    # 3. zip the products above with the list of values of the CPD of the queryNode
+    pairProdAndQueryCPD: List[Tuple[float, List[float]]] = list(zip(evProds, queryCPD))
+    # 4. do product on that zip
+    jpd: List[Probability] = list(itertools.chain(*[ [evProd * prob for prob in probs] for evProd, probs in pairProdAndQueryCPD]))
+
+    return DiscreteFactor(variables = [queryNode] + evVars,
+                          cardinality = model.get_cpds(queryNode).cardinality,
+                          values = jpd)
+
+
+def jointProbNode(model: BayesianModel, queryNode: Variable) -> DiscreteFactor:
+    '''Returns joint prob (discrete factor) for queryNode. Not a probability distribution since sum of outputted probabilities may not be 1, so cannot put in JointProbabilityDistribution object'''
+
+    # Get the conditional variables
+    evVars: List[Variable] = list(model.get_cpds(queryNode).state_names.keys())[1:]
+    evCPDs: List[DiscreteFactor] = [model.get_cpds(evVar).to_factor() for evVar in evVars]
+    queryCPD: DiscreteFactor = model.get_cpds(queryNode).to_factor()
+    # There is no reason the cpds must be converted to DiscreteFactors ; can access variables, values, cardinality the same way, but this is how the mini-example in API docs does it. (imap() implementation)
+
+    #factors: List[DiscreteFactor] = [cpd.to_factor() for cpd in model.get_cpds(queryNode)]
+    # If there are no evidence variables, then the query node is not conditional on anything, so just return its cpd
+    jointProbFactor: DiscreteFactor = reduce(mul, [queryCPD] + evCPDs) if evCPDs != [] else queryCPD
+
+    return jointProbFactor
+    #return JointProbabilityDistribution(variables = jointProbFactor.variables,
+    #                                    cardinality = jointProbFactor.cardinality,
+    #                                    values = jointProbFactor.values)
+
+
+
+
+
+def jointProb(model: BayesianModel) -> JointProbabilityDistribution:
+    ''' Returns joint prob distribution over entire network'''
+
+    # There is no reason the cpds must be converted to DiscreteFactors ; can access variables, values, cardinality the same way, but this is how the mini-example in API docs does it. (imap() implementation)
+    factors: List[DiscreteFactor] = [cpd.to_factor() for cpd in model.get_cpds()]
+    jointProbFactor: DiscreteFactor = reduce(mul, factors)
+
+    return JointProbabilityDistribution(variables = jointProbFactor.variables,
+                                        cardinality = jointProbFactor.cardinality,
+                                        values = jointProbFactor.values)
 
 # ------------------------------------------------------------------------------
 
