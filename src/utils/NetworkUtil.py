@@ -2,10 +2,18 @@ import daft
 from typing import *
 
 
-# ----------------------------------------------------
-
-# We can now import the development version of pgmpy
 from pgmpy.models.BayesianModel import BayesianModel
+from pgmpy.independencies.Independencies import Independencies
+import itertools
+
+
+# Type alias for clarity
+
+Variable = str
+Probability = float
+
+
+# ----------------------------------------------------
 
 def convertDaftToPgmpy(pgm: daft.PGM) -> BayesianModel:
     """Takes a Daft PGM object and converts it to a pgmpy BayesianModel"""
@@ -16,15 +24,6 @@ def convertDaftToPgmpy(pgm: daft.PGM) -> BayesianModel:
 
 
 # ----------------------------------------------------
-
-# Type alias for clarity
-
-Variable = str
-
-
-from pgmpy.independencies.Independencies import Independencies
-import itertools
-
 
 def localIndependencySynonyms(model: BayesianModel,
                               queryNode: Variable,
@@ -53,6 +52,7 @@ def localIndependencySynonyms(model: BayesianModel,
     _, condExpr = str(locIndeps).split('_|_')
 
     condNodes: List[List[Variable]] = []
+
     if "|" in condExpr:
         beforeCond, afterCond = condExpr.split("|")
         # Removing the paranthesis after the last letter:
@@ -61,6 +61,7 @@ def localIndependencySynonyms(model: BayesianModel,
         beforeCondList: List[Variable] = list(map(lambda letter: letter.strip(), beforeCond.split(",")))
         afterCondList: List[Variable] = list(map(lambda letter: letter.strip(), afterCond.split(",")))
         condNodes: List[List[Variable]] = [beforeCondList] + [afterCondList]
+
     else: # just have an expr like "leters" that are only before cond
         beforeCond = condExpr[0 : len(condExpr) - 1]
         beforeCondList: List[Variable] = list(map(lambda letter: letter.strip(), beforeCond.split(",")))
@@ -135,3 +136,30 @@ def indepSynonymTable(model: BayesianModel, queryNode: Variable):
                  "\n".join(zs)
 
     print(table)
+
+
+
+
+# ------------------------------------------------------------------------------
+
+# TODO function that simplifies expr like P(L | S, G, I) into P(L | S) when L _|_ G, I, for instance
+# TODO RULE (from Ankur ankan, page 17 probability chain rule for bayesian networks)
+
+# See 2_BayesianNetworks file after the probChainRule example
+
+# -------------------------------------------------------------------------------------
+
+def probChainRule(condAcc: List[Variable], acc: Variable = '') -> str:
+    '''
+    Recursively applies the probability chain rule when given a list like [A, B, C] interprets this to be P(A, B,
+    C) and decomposes it into 'P(A | B, C) * P(B | C) * P(C)'
+
+    '''
+    if len(condAcc) == 1:
+        #print(acc + "P(" + condAcc[0] + ")")
+        return acc + "P(" + condAcc[0] + ")"
+    else:
+        firstVar = condAcc[0]
+        otherVars = condAcc[1:]
+        curAcc = f'P({firstVar} | {", ".join(otherVars)}) * '
+        return probChainRule(condAcc = otherVars, acc = acc + curAcc)

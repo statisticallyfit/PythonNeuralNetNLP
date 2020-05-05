@@ -48,6 +48,10 @@ from pgmpy.factors.discrete import JointProbabilityDistribution
 from pgmpy.factors.discrete.DiscreteFactor import DiscreteFactor
 from pgmpy.independencies import Independencies
 
+from operator import mul
+from functools import reduce
+
+
 from src.utils.GraphvizUtil import *
 from src.utils.NetworkUtil import *
 # %% markdown
@@ -153,69 +157,88 @@ G.add_cpds(diff_cpd, intel_cpd, grade_cpd)
 pgmpyToGraphCPD(G)
 
 # %% codecell
-[0.5*0.2*0.1, 0.5*0.2*0.1, 0.5*0.2*0.8,
- 0.5*]
-jpdValues
-ds = G.get_cpds('diff').get_values().T.tolist(); ds
-iis = G.get_cpds('intel').get_values().T.tolist(); iis
-gs = G.get_cpds('grade').get_values().T.tolist(); gs
-combos = list(itertools.product(ds, iis, gs)); combos
-tuplecombos = list(itertools.product(*combos[0])); tuplecombos
-prodcombos = list(map(lambda combo : reduce(mul, combo), tuplecombos)); prodcombos
 
-# TODO saving this way 2 of getting the joint distribution, but it is dependend on dimensions of inner arrays, not sure if can get this each time. 
-pgmpyToGraphCPD(G)
-res = list(itertools.product(ds, iis)); res
-resprod = list(map(lambda tup: tup[0] * tup[1], res)); resprod
-interm = list(zip(resprod, gs)); interm
+def jointProbNode_manual(model: BayesianModel, queryNode: Variable) -> JointProbabilityDistribution:
+    queryCPD: List[List[Probability]] = model.get_cpds(queryNode).get_values().T.tolist()
+    evVars: List[Variable] = list(model.get_cpds(queryNode).state_names.keys())[1:]
 
-jpds = list(map(lambda tup: tup[0] * tup[1], interm)); jpds
-print(list(itertools.chain(*jpds)))
-np.allclose(list(itertools.chain(*jpds)), jpdValues, rtol=0.001, atol=0.001)
+    # 1 create combos of values between the evidence vars
+    evCPDLists: List[List[Probability]] = [(model.get_cpds(ev).get_values().T.tolist()) for ev in evVars]
+    # Make flatter so combinations can be made properly (below)
+    evCPDFlatter: List[Probability] = list(itertools.chain(*evCPDLists))
+    # passing the flattened list
+    evValueCombos = list(itertools.product(*evCPDFlatter))
 
-print(JPD)
+    # 2. do product of the combos of those evidence var values
+    evProds = list(map(lambda evCombo : reduce(mul, evCombo), evValueCombos))
+
+    # 3. zip the products above with the list of values of the CPD of the queryNode
+    pairProdAndQueryCPD: List[Tuple[float, List[float]]] = list(zip(evProds, queryCPD))
+    # 4. do product on that zip
+    jpd: List[Probability] = list(itertools.chain(*[ [evProd * prob for prob in probs] for evProd, probs in pairProdAndQueryCPD]))
+
+    return JointProbabilityDistribution(variables = [queryNode] + evVars,
+                                        cardinality = G.get_cpds(queryNode).cardinality,
+                                        values = jpd)
+
+
+
+def jointProb(model: BayesianModel) -> JointProbabilityDistribution:
+    ''' Returns joint prob distribution over entire network'''
+
+    # There is no reason the cpds must be converted to DiscreteFactors ; can access variables, values, cardinality the same way, but this is how the mini-example in API docs does it. (imap() implementation)
+    factors: List[DiscreteFactor] = [cpd.to_factor() for cpd in model.get_cpds()]
+    jointProbFactor: DiscreteFactor = reduce(mul, factors)
+
+    return JointProbabilityDistribution(variables = jointProbFactor.variables,
+                                        cardinality = jointProbFactor.cardinality,
+                                        values = jointProbFactor.values)
+
+def jointProbNode(model: BayesianModel, queryNode: Variable) -> JointProbabilityDistribution:
+    '''Returns joint prob distribution for queryNode'''
+
+    # Get the conditional variables
+    evVars: List[Variable] = list(model.get_cpds(queryNode).state_names.keys())[1:]
+    evCPDs: List[DiscreteFactor] = [model.get_cpds(evVar).to_factor() for evVar in evVars]
+
+    # There is no reason the cpds must be converted to DiscreteFactors ; can access variables, values, cardinality the same way, but this is how the mini-example in API docs does it. (imap() implementation)
+
+    #factors: List[DiscreteFactor] = [cpd.to_factor() for cpd in model.get_cpds(queryNode)]
+    jointProbFactor: DiscreteFactor = reduce(mul, evCPDs)
+
+    return JointProbabilityDistribution(variables = jointProbFactor.variables,
+                                        cardinality = jointProbFactor.cardinality,
+                                        values = jointProbFactor.values)
+
 
 # %% codecell
-def probChainRule(condAcc: List[Variable], acc: Variable) -> str:
-    if len(condAcc) == 1:
-        #print(acc + "P(" + condAcc[0] + ")")
-        #return acc + "P(" + condAcc[0] + ")"
-        return "P(" + condAcc[0] + ")" + acc
-    else:
-        firstVar = condAcc[0]
-        otherVars = condAcc[1:]
-        curAcc = f' * P({firstVar} | {", ".join(otherVars)})'
-        return probChainRule(condAcc = otherVars, acc = curAcc + acc) #acc + curAcc)
+print(jointProbNode(alarmModel, 'JohnCalls'))
+print(jointProbNode(G, 'grade'))
 
-probChainRule(condAcc = ['grade', 'intel', 'diff'], acc ='')
-
-probChainRule(condAcc = ['J', 'A', 'B', 'E'], acc ='')
+list(alarmModel.predecessors(n = 'JohnCalls'))
 
 
-probChainRule(condAcc = ['Q', 'S', 'L', 'J', 'R', 'A'], acc ='')
-JPD.check_independence('diff','grade')
-alarmModel_brief.local_independencies('J')
+evVars: List[Variable] = list(alarmModel.get_cpds('Alarm').state_names.keys())[1:]; evVars
+[ alarmModel.get_cpds(evVar) for evVar in evVars]
 
-pgmpyToGraph(alarmModel)
 
-list(map(lambda tup : tup[0] * tup[1], itertools.product(ds, iis, *gs)))
 
 # Method 1 to create the joint probabilities
 jpdValues = [0.01, 0.01, 0.08, 0.006, 0.006, 0.048, 0.004, 0.004, 0.032,
            0.04, 0.04, 0.32, 0.024, 0.024, 0.192, 0.016, 0.016, 0.128]
 
-JPD = JointProbabilityDistribution(['diff', 'intel', 'grade'], [2, 3, 3], jpdValues)
-factorJPD = DiscreteFactor(JPD.variables, JPD.cardinality, JPD.values)
+JPD = JointProbabilityDistribution(variables = ['diff', 'intel', 'grade'], cardinality = [2, 3, 3], values = jpdValues)
+factorJPD = DiscreteFactor(variables = JPD.variables,cardinality =  JPD.cardinality, values = JPD.values)
+
+print(JPD)
+
+# Method 2: easy way to create jpd values (reduce mul factors)
+pgmpyToGraphCPD(alarmModel)
+
+joint_diffAndIntel: TabularCPD = reduce(mul, [G.get_cpds('diff'), G.get_cpds('intel')])
 
 
-# Method 2: to create the JPD values
-from operator import mul
-from functools import reduce
-
-factors = [cpd.to_factor() for cpd in [G.get_cpds('diff'), G.get_cpds('intel')]] #[cpd.to_factor() for cpd in G.get_cpds()]
-factorProd = reduce(mul, factors)
-print(factorProd)
-
+#(reduce(mul, [cpd for cpd in G.get_cpds()])).get_values()
 
 
 assert G.is_imap(JPD = JPD), "Check: using JPD to verify the graph is an independence-map: means no hidden backdoors between nodes and no way for variables to influence others except by one path"

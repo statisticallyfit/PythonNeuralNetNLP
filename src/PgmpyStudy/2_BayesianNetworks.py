@@ -978,17 +978,10 @@ assert model.active_trail_nodes('L', observed = ['S', 'I']) == {'L': {'D', 'G', 
 # \end{align}
 # $$
 # %% codecell
-def probChainRule(condAcc: List[Variable], acc: Variable) -> str:
-    if len(condAcc) == 1:
-        #print(acc + "P(" + condAcc[0] + ")")
-        return acc + "P(" + condAcc[0] + ")"
-    else:
-        firstVar = condAcc[0]
-        otherVars = condAcc[1:]
-        curAcc = f'P({firstVar} | {", ".join(otherVars)}) * '
-        return probChainRule(condAcc = otherVars, acc =acc + curAcc)
+from src.utils.NetworkUtil import *
 
-probChainRule(condAcc = ['L', 'S', 'G', 'D', 'I'], acc ='')
+probChainRule(condAcc = ['L', 'S', 'G', 'D', 'I'])
+
 # %% markdown [markdown]
 # Applying the local independence conditions to the above equation we get:
 # $$
