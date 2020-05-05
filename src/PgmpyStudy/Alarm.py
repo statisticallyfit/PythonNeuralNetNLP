@@ -46,8 +46,10 @@ sys.path
 from pgmpy.models import BayesianModel
 from pgmpy.inference import VariableElimination
 from pgmpy.factors.discrete import TabularCPD
+from pgmpy.factors.discrete import JointProbabilityDistribution
 
 from src.utils.GraphvizUtil import *
+from src.utils.NetworkUtil import *
 # %% markdown
 # ## Problem Statement: 2.5.1 Earthquake
 # **Example statement:** You have a new burglar alarm installed. It reliably detects burglary, but also responds to minor earthquakes. Two neighbors, John and Mary, promise to call the police when they hear the alarm. John always calls when he hears the alarm, but sometimes confuses the alarm with the phone ringing and calls then also. On the other hand, Mary likes loud music and sometimes doesn't hear the alarm. Given evidence about who has and hasn't called, you'd like to estimate the probability of a burglary alarm (from Pearl (1988)).
@@ -109,15 +111,48 @@ alarmModel.local_independencies('Earthquake')
 # %% codecell
 alarmModel.local_independencies('Alarm')
 # %% codecell
-alarmModel.local_independencies('MaryCalls')
+print(alarmModel.local_independencies('MaryCalls'))
+
+indepSynonymTable(model = alarmModel, queryNode = 'MaryCalls')
 # %% codecell
-alarmModel.local_independencies('JohnCalls')
+print(alarmModel.local_independencies('JohnCalls'))
+
+indepSynonymTable(model = alarmModel, queryNode = 'JohnCalls')
 # %% codecell
 alarmModel.get_independencies()
 
 
+
+# %% codecell
 # TODO say direct dependency assumptions (from Korb book)
+
+# %% codecell
 # TODO test imap in pgmpy and meaning? (from Korb book)
+
+G = BayesianModel([('diff', 'grade'), ('intel', 'grade')])
+diff_cpd = TabularCPD('diff', 2, [[0.2], [0.8]])
+intel_cpd = TabularCPD('intel', 3, [[0.5], [0.3], [0.2]])
+grade_cpd = TabularCPD('grade', 3, [[0.1,0.1,0.1,0.1,0.1,0.1],
+                                    [0.1,0.1,0.1,0.1,0.1,0.1],
+                                    [0.8,0.8,0.8,0.8,0.8,0.8]],
+                       evidence=['diff', 'intel'], evidence_card=[2, 3])
+
+G.add_cpds(diff_cpd, intel_cpd, grade_cpd)
+val = [0.01, 0.01, 0.08, 0.006, 0.006, 0.048, 0.004, 0.004, 0.032,
+           0.04, 0.04, 0.32, 0.024, 0.024, 0.192, 0.016, 0.016, 0.128]
+
+JPD = JointProbabilityDistribution(['diff', 'intel', 'grade'], [2, 3, 3], val)
+G.is_imap(JPD)
+# %% codecell
+from operator import mul
+from functools import reduce
+
+factors = [cpd.to_factor() for cpd in alarmModel.get_cpds()]; factors
+
+factor_prod = reduce(mul, factors); factor_prod
+
+print(factor_prod)
+# %% codecell
 # TODO do part 3 Joint dist from tut2
 # TODO do part 4 inference from tut3
 # TODO do the different kinds of inference from (Korb book): intercausal, diagnostic ... etc
