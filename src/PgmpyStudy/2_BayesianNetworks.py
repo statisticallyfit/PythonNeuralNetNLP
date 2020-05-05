@@ -348,6 +348,8 @@ assert indeps == ['(C _|_ A | B)', '(A _|_ C | B)'], 'Check: overall independenc
 
 # %% markdown [markdown]
 # TODO: use this book by Korb (Bayesian Artificial Intelligence) to explain the intuitions behind all these four types of models: [example intuition for common evidence model, says it is INVERSE of common cause model!](https://hyp.is/TBnOeo5AEeqyTPtnV0yx1w/bayesian-intelligence.com/publications/bai/book/BAI_Chapter2.pdf)
+#
+# TODO: also use the pgmpy book [https://subscription.packtpub.com/book/big_data_and_business_intelligence/9781784394684/1/ch01lvl1sec14/bayesian-models](https://subscription.packtpub.com/book/big_data_and_business_intelligence/9781784394684/1/ch01lvl1sec14/bayesian-models) which has more complete explanations
 # %% codecell
 commonEvidenceGraph
 

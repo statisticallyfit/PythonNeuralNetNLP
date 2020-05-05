@@ -12,8 +12,6 @@ import sys
 from typing import *
 from typing import Union, List, Any
 
-from networkx.classes.reportviews import OutEdgeDataView, OutEdgeView
-from pgmpy.independencies import Independencies
 import itertools
 
 os.getcwd()
@@ -47,6 +45,8 @@ from pgmpy.models import BayesianModel
 from pgmpy.inference import VariableElimination
 from pgmpy.factors.discrete import TabularCPD
 from pgmpy.factors.discrete import JointProbabilityDistribution
+from pgmpy.factors.discrete.DiscreteFactor import DiscreteFactor
+from pgmpy.independencies import Independencies
 
 from src.utils.GraphvizUtil import *
 from src.utils.NetworkUtil import *
@@ -126,10 +126,20 @@ alarmModel.get_independencies()
 # %% codecell
 # TODO say direct dependency assumptions (from Korb book)
 
+pgmpyToGraph(alarmModel)
+# %% markdown
+# ### Study: Independence Maps (I-Maps)
+# * **Markov Assumption:** Bayesian networks require the assumption of **Markov Property**: that there are no direct dependencies in the system being modeled, which are not already explicitly shown via arcs. (In the earthquake example, this translates to saying there is no way for an `Earthquake` to influence `MaryCalls` except by way of the `Alarm`.  There is no **hidden backdoor** from  `Earthquake` to `MaryCalls`).
+# * **I-maps:** Bayesian networks which have this **Markov property** are called **Independence-maps** or **I-maps**, since every independence suggested by the lack of an arc is actual a valid, real independence in the system.
+#
+# Source: Korb book, Bayesian Artificial Intelligence (section 2.2.4)
+# %% markdown
+# ### Example 1: I-map
+# Testing meaning of an **I-map** using a simple student example
 # %% codecell
-# TODO test imap in pgmpy and meaning? (from Korb book)
 
 G = BayesianModel([('diff', 'grade'), ('intel', 'grade')])
+
 diff_cpd = TabularCPD('diff', 2, [[0.2], [0.8]])
 intel_cpd = TabularCPD('intel', 3, [[0.5], [0.3], [0.2]])
 grade_cpd = TabularCPD('grade', 3, [[0.1,0.1,0.1,0.1,0.1,0.1],
@@ -138,21 +148,141 @@ grade_cpd = TabularCPD('grade', 3, [[0.1,0.1,0.1,0.1,0.1,0.1],
                        evidence=['diff', 'intel'], evidence_card=[2, 3])
 
 G.add_cpds(diff_cpd, intel_cpd, grade_cpd)
-val = [0.01, 0.01, 0.08, 0.006, 0.006, 0.048, 0.004, 0.004, 0.032,
+
+
+pgmpyToGraphCPD(G)
+
+# %% codecell
+ds = G.get_cpds('diff').get_values(); ds
+iis = G.get_cpds('intel').get_values(); iis
+
+gs = G.get_cpds('grade').get_values().T; gs
+import numpy as np
+
+ls = list(itertools.product(ds, iis)); ls
+ls[0][0] * ls[0][1]
+ls[0]
+np.array([0.2]) * np.array([0.5, 0.8])
+
+np.array([1]) * np.array([2,3,4]) * np.array([5,8, 2])
+
+
+
+list(itertools.product(ds, iis, gs))
+
+pgmpyToGraphCPD(G)
+res = list(itertools.product(ds, iis)); res
+resprod = list(map(lambda tup: tup[0] * tup[1], res)); resprod
+interm = list(zip(resprod, gs)); interm
+
+jpds = list(map(lambda tup: tup[0] * tup[1], interm)); jpds
+print(list(itertools.chain(*jpds)))
+np.allclose(list(itertools.chain(*jpds)), jpdValues, rtol=0.001, atol=0.001)
+
+print(JPD)
+
+# %% codecell
+def probChainRule(condAcc: List[Variable], acc: Variable) -> str:
+    if len(condAcc) == 1:
+        #print(acc + "P(" + condAcc[0] + ")")
+        #return acc + "P(" + condAcc[0] + ")"
+        return "P(" + condAcc[0] + ")" + acc
+    else:
+        firstVar = condAcc[0]
+        otherVars = condAcc[1:]
+        curAcc = f' * P({firstVar} | {", ".join(otherVars)})'
+        return probChainRule(condAcc = otherVars, acc = curAcc + acc) #acc + curAcc)
+
+probChainRule(condAcc = ['grade', 'intel', 'diff'], acc ='')
+
+probChainRule(condAcc = ['J', 'A', 'B', 'E'], acc ='')
+
+
+probChainRule(condAcc = ['Q', 'S', 'L', 'J', 'R', 'A'], acc ='')
+JPD.check_independence('diff','grade')
+alarmModel_brief.local_independencies('J')
+
+pgmpyToGraph(alarmModel)
+
+list(map(lambda tup : tup[0] * tup[1], itertools.product(ds, iis, *gs)))
+
+# Method 1 to create the joint probabilities
+jpdValues = [0.01, 0.01, 0.08, 0.006, 0.006, 0.048, 0.004, 0.004, 0.032,
            0.04, 0.04, 0.32, 0.024, 0.024, 0.192, 0.016, 0.016, 0.128]
 
-JPD = JointProbabilityDistribution(['diff', 'intel', 'grade'], [2, 3, 3], val)
-G.is_imap(JPD)
-# %% codecell
+JPD = JointProbabilityDistribution(['diff', 'intel', 'grade'], [2, 3, 3], jpdValues)
+factorJPD = DiscreteFactor(JPD.variables, JPD.cardinality, JPD.values)
+
+
+# Method 2: to create the JPD values
 from operator import mul
 from functools import reduce
 
-factors = [cpd.to_factor() for cpd in alarmModel.get_cpds()]; factors
+factors = [cpd.to_factor() for cpd in G.get_cpds()]
+factorProd = reduce(mul, factors)
 
-factor_prod = reduce(mul, factors); factor_prod
 
-print(factor_prod)
+assert G.is_imap(JPD = JPD), "Check: using JPD to verify the graph is an independence-map: means no hidden backdoors between nodes and no way for variables to influence others except by one path"
+
+assert factorProd == factorJPD, "Check: joint distribution is the same as multiplying the cpds"
+
+print(factorProd)
+
+
 # %% codecell
 # TODO do part 3 Joint dist from tut2
 # TODO do part 4 inference from tut3
 # TODO do the different kinds of inference from (Korb book): intercausal, diagnostic ... etc
+
+
+
+alarmModel_brief: BayesianModel = BayesianModel([('B', 'A'),
+                                                 ('E', 'A'),
+                                                 ('A', 'J'),
+                                                 ('A', 'M')])
+
+# Defining parameters using CPT
+cpdBurglary: TabularCPD = TabularCPD(variable = 'B', variable_card = 2,
+                                     values = [[0.999, 0.001]],
+                                     state_names = {'B' : ['False', 'True']})
+
+cpdEarthquake: TabularCPD = TabularCPD(variable = 'E', variable_card = 2,
+                                       values = [[0.002, 0.998]],
+                                       state_names = {'E' : ['True', 'False']})
+
+cpdAlarm: TabularCPD = TabularCPD(variable = 'A', variable_card = 2,
+                                  values = [[0.95, 0.94, 0.29, 0.001],
+                                            [0.05, 0.06, 0.71, 0.999]],
+                                  evidence = ['B', 'E'], evidence_card = [2,2],
+                                  state_names = {'A': ['True', 'False'], 'B':['True','False'],'E': ['True', 'False']})
+
+
+cpdJohnCalls: TabularCPD = TabularCPD(variable = 'J', variable_card = 2,
+                                      values = [[0.90, 0.05],
+                                                [0.10, 0.95]],
+                                      evidence = ['A'], evidence_card = [2],
+                                      state_names = {'J': ['True', 'False'], 'A' : ['True', 'False']})
+
+
+cpdMaryCalls: TabularCPD = TabularCPD(variable = 'M', variable_card = 2,
+                                      values = [[0.70, 0.01],
+                                                [0.30, 0.99]],
+                                      evidence = ['A'], evidence_card = [2],
+                                      state_names = {'M': ['True', 'False'], 'A' : ['True', 'False']})
+
+
+alarmModel_brief.add_cpds(cpdBurglary, cpdEarthquake, cpdAlarm, cpdJohnCalls, cpdMaryCalls)
+
+assert alarmModel_brief.check_model()
+
+# %% codecell
+
+
+factors = [cpd.to_factor() for cpd in alarmModel_brief.get_cpds()]; factors
+
+factor_prod = reduce(mul, factors); factor_prod
+#JPD_fact = DiscreteFactor(JPD.variables, JPD.cardinality, JPD.values)
+
+#factor_prod == JPD_fact
+type(factors[0])
+print(factor_prod)

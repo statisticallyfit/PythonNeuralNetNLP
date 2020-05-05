@@ -292,7 +292,7 @@ def pgmpyToTable(model: BayesianModel,
 
     for idNum, state in numLabelTuples:
         # Comment out below, just include the state name, no id number also
-        header: Table = header + '<TD>'  + queryNode + ' = ' + state + '</TD>'
+        header: Table = header + '<TD>'  + queryNode + ' = ' + str(state) + '</TD>'
         #header: Table = header + '<TD>'  + label + ' (' + queryNode.lower() + '_' + str(idNum)  + ')</TD>'
     header: Table = header + '</TR>'
 
