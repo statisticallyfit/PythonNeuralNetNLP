@@ -153,23 +153,17 @@ G.add_cpds(diff_cpd, intel_cpd, grade_cpd)
 pgmpyToGraphCPD(G)
 
 # %% codecell
-ds = G.get_cpds('diff').get_values(); ds
-iis = G.get_cpds('intel').get_values(); iis
+[0.5*0.2*0.1, 0.5*0.2*0.1, 0.5*0.2*0.8,
+ 0.5*]
+jpdValues
+ds = G.get_cpds('diff').get_values().T.tolist(); ds
+iis = G.get_cpds('intel').get_values().T.tolist(); iis
+gs = G.get_cpds('grade').get_values().T.tolist(); gs
+combos = list(itertools.product(ds, iis, gs)); combos
+tuplecombos = list(itertools.product(*combos[0])); tuplecombos
+prodcombos = list(map(lambda combo : reduce(mul, combo), tuplecombos)); prodcombos
 
-gs = G.get_cpds('grade').get_values().T; gs
-import numpy as np
-
-ls = list(itertools.product(ds, iis)); ls
-ls[0][0] * ls[0][1]
-ls[0]
-np.array([0.2]) * np.array([0.5, 0.8])
-
-np.array([1]) * np.array([2,3,4]) * np.array([5,8, 2])
-
-
-
-list(itertools.product(ds, iis, gs))
-
+# TODO saving this way 2 of getting the joint distribution, but it is dependend on dimensions of inner arrays, not sure if can get this each time. 
 pgmpyToGraphCPD(G)
 res = list(itertools.product(ds, iis)); res
 resprod = list(map(lambda tup: tup[0] * tup[1], res)); resprod
@@ -218,8 +212,10 @@ factorJPD = DiscreteFactor(JPD.variables, JPD.cardinality, JPD.values)
 from operator import mul
 from functools import reduce
 
-factors = [cpd.to_factor() for cpd in G.get_cpds()]
+factors = [cpd.to_factor() for cpd in [G.get_cpds('diff'), G.get_cpds('intel')]] #[cpd.to_factor() for cpd in G.get_cpds()]
 factorProd = reduce(mul, factors)
+print(factorProd)
+
 
 
 assert G.is_imap(JPD = JPD), "Check: using JPD to verify the graph is an independence-map: means no hidden backdoors between nodes and no way for variables to influence others except by one path"
