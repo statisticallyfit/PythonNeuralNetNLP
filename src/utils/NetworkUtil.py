@@ -148,9 +148,15 @@ def indepSynonymTable(model: BayesianModel, queryNode: Variable):
 
 # ------------------------------------------------------------------------------------------------------------
 
+# TODO given two nodes A, B with conditional dependencies, say A | D, E and B | D,F,H then how do we compute their
+#  joint probability distribution?
+
+# The efforts of the goal below are these two commented functions:
+
+"""
 
 
-def jointProbNode_manual(model: BayesianModel, queryNode: Variable) -> DiscreteFactor:
+def jointProbNode_manual(model: BayesianModel, queryNode: Variable) -> JointProbabilityDistribution:
     queryCPD: List[List[Probability]] = model.get_cpds(queryNode).get_values().T.tolist()
 
     evVars: List[Variable] = list(model.get_cpds(queryNode).state_names.keys())[1:]
@@ -173,9 +179,9 @@ def jointProbNode_manual(model: BayesianModel, queryNode: Variable) -> DiscreteF
     # 4. do product on that zip
     jpd: List[Probability] = list(itertools.chain(*[ [evProd * prob for prob in probs] for evProd, probs in pairProdAndQueryCPD]))
 
-    return DiscreteFactor(variables = [queryNode] + evVars,
+    return JointProbabilityDistribution(variables = [queryNode] + evVars,
                           cardinality = model.get_cpds(queryNode).cardinality,
-                          values = jpd)
+                          values = jpd / sum(jpd)
 
 
 def jointProbNode(model: BayesianModel, queryNode: Variable) -> JointProbabilityDistribution:
@@ -200,10 +206,28 @@ def jointProbNode(model: BayesianModel, queryNode: Variable) -> JointProbability
                                         values = jointProbFactor.values)
 
 
+# --------
+
+# Test cases
+#print(jointProbNode_manual(alarmModel_brief, 'J'))
+
+#print(jointProbNode(alarmModel_brief, 'J'))
 
 
+# %% codecell
+print(jointProbNode(alarmModel, 'Alarm'))
+# -------
 
-def jointProb(model: BayesianModel) -> JointProbabilityDistribution:
+# Test cases 2 (grade model from Alarm.py) ----- works well when the tables are independent!
+
+joint_diffAndIntel: TabularCPD = reduce(mul, [gradeModel.get_cpds('diff'), gradeModel.get_cpds('intel')])
+print(joint_diffAndIntel)
+
+"""
+
+# ------------------------------------------------------------------------------
+
+def jointDistribution(model: BayesianModel) -> JointProbabilityDistribution:
     ''' Returns joint prob distribution over entire network'''
 
     # There is no reason the cpds must be converted to DiscreteFactors ; can access variables, values, cardinality the same way, but this is how the mini-example in API docs does it. (imap() implementation)

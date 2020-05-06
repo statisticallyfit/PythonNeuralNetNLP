@@ -1072,7 +1072,7 @@ from pgmpy.factors.discrete.JointProbabilityDistribution import JointProbability
 
 from src.utils.NetworkUtil import *
 
-jpd: JointProbabilityDistribution = jointProb(model)
+jpd: JointProbabilityDistribution = jointDistribution(model)
 
 jpd.marginalize(variables = ['L', 'S', 'D', 'I'])
 print(jpd)

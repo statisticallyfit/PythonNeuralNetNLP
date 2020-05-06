@@ -219,176 +219,34 @@ print(JPD)
 from src.utils.NetworkUtil import *
 
 
-# Method 2: creating the JPD by multiplying over the TabularCPDs
-jpdFactor: DiscreteFactor = DiscreteFactor(variables = JPD.variables, cardinality =  JPD.cardinality, values = JPD.values)
-prodFactor: DiscreteFactor = jointProb(gradeModel)
+# Method 2: creating the JPD by multiplying over the TabularCPDs (as per formula in page 16 of pgmpy book, Ankur Ankan)
+gradeJPDFactor: DiscreteFactor = DiscreteFactor(variables = JPD.variables, cardinality =  JPD.cardinality, values = JPD.values)
+gradeJPD: JointProbabilityDistribution = jointDistribution(gradeModel)
 
 
 assert gradeModel.is_imap(JPD = JPD), "Check: using JPD to verify the graph is an independence-map: means no hidden backdoors between nodes and no way for variables to influence others except by one path"
 
-assert prodFactor == jpdFactor, "Check: joint distribution is the same as multiplying the cpds"
-
-print(jpdFactor)
+assert gradeJPD == gradeJPDFactor, "Check: joint distribution is the same as multiplying the cpds"
 
 # %% markdown
-# Showing if alarm model is I-map:
+# Grade model's `JointProbabilityDistribution` over all variables:
 # %% codecell
-#jointProb()
-
+print(gradeJPD)
 
 # %% markdown
-# My function for the joint probabilities just until node `JohnCalls`, so this result isn't guaranteed to be a probability distributions (values won't sum to $1$)
-
+# Checking if alarm model is I-map:
 # %% codecell
-print(jointProbNode(gradeModel, 'diff'))
-print(jointProbNode_manual(gradeModel, 'diff'))
-# %% codecell
-pgmpyToGraphCPD(alarmModel)
+alarmJPD: JointProbabilityDistribution = jointDistribution(alarmModel_brief)
 
-probChainRule(['J', 'A', 'M', 'E', 'B'])
+assert not alarmModel_brief.is_imap(JPD = alarmJPD)
 
-
-
-
-
-
-# TODO quality restaurant model  from pgmpy book page 16
-probChainRule(['N', "C", 'L', 'Q'])
-
-# %% codecell
-# L = Location
-# Q = Quality
-# C = Cost
-# N = Number of people
-qualityModel = BayesianModel([('Location', 'Cost'),
-                              ('Quality', 'Cost'),
-                              ('Cost', 'Number'),
-                              ('Location', 'Number')])
-
-
-# Defining parameters using CPT
-cpdQuality: TabularCPD = TabularCPD(variable = 'Quality', variable_card = 3,
-                                    values = [[0.3, 0.5, 0.2]],
-                                    state_names = {'Quality' : ['Good', 'Normal', 'Bad']})
-print(cpdQuality)
-
-cpdLocation: TabularCPD = TabularCPD(variable = 'Location', variable_card = 2,
-                                     values = [[0.6, 0.4]],
-                                     state_names = {'Location': ['Good', 'Bad']})
-print(cpdLocation)
-
-cpdCost: TabularCPD = TabularCPD(variable = 'Cost', variable_card = 2,
-                                      values = [[0.8, 0.6, 0.1, 0.6, 0.6, 0.05],
-                                                [0.2, 0.4, 0.9, 0.4, 0.4, 0.95]],
-                                      evidence = ['Location', 'Quality'], evidence_card = [2, 3],
-                                      state_names = {'Cost': ['High', 'Low'],
-                                                     'Location' : ['Good', 'Bad'],
-                                                     'Quality': ['Good', 'Normal', 'Bad']})
-print(cpdCost)
-
-cpdNumberOfPeople: TabularCPD = TabularCPD(variable = 'Number', variable_card = 2,
-                                           values = [[0.6, 0.8, 0.1, 0.6],
-                                                     [0.4, 0.2, 0.9, 0.4]],
-                                           evidence = ['Location', 'Cost'], evidence_card = [2,2],
-                                           state_names = {'Number': ['High', 'Low'],
-                                                          'Location':['Good', 'Bad'],
-                                                          'Cost':['High', 'Low']})
-print(cpdNumberOfPeople)
-
-
-qualityModel.add_cpds(cpdQuality, cpdLocation, cpdCost, cpdNumberOfPeople)
-
-assert qualityModel.check_model()
-
-# %% codecell
-
-# TODO how to get joint of C and N? P(C, N)? Need to marginalize somehow over their combined conditional variable L?
-print(qualityModel.get_cpds('Cost'))
-print(qualityModel.get_cpds('Number'))
-# WAY 1: eliminating then mutliplying the marginalizations
-elimQ = VariableElimination(qualityModel)
-factorCost = elimQ.query(['Cost'])
-factorNumber = elimQ.query(['Number'])
-
-res = reduce(mul, [factorCost, factorNumber])
-sum(sum(res.values))
-print(res)
-
-# WAY 2: condition on the same conditioning node and then do combinations of the other variables
-qualityModel.get_parents(node = 'Cost')
-qualityModel.get_parents(node = 'Number')
-
-res2 = (reduce(mul, [qualityModel.get_cpds('Cost').to_factor(), qualityModel.get_cpds('Number').to_factor()]).normalize(inplace=False))
-
-
-print(res2.marginalize(variables = ['Quality', 'Location'], inplace=False).normalize(inplace = False))
-
-
-
-
-# make combinations of the variables that are NOT same conditioning ones (same for both nodes)
-nonsameEv: Set[Variable] = ev1.symmetric_difference(ev2); nonsameEv
-
-
-# make product of the SAME conditioning ones with the NONT same products above
-# do probability multiplication
-# %% codecell
-# TODO start here tomorrow
-# TODO major wrong, these functions are NOT correct since the two tables below are not the same.
-# TODO major question: when we find joint prob of a noe do we consider ALL cpds? Am I doing repetition? See formula under section 3 from tut 2, bayes nets, or formula page 17 in Ankur Ankan book
-# Variable elimination
-elim = VariableElimination(alarmModel)
-factor: DiscreteFactor = elim.query(['JohnCalls'])
-print(factor)
-# %% codecell
-# Doing joint prob using chain rule for networks way (parents, not evidence)
-alarmModel.get_cpds('JohnCalls')
-
-alarmModel.get_parents(node = 'JohnCalls')
-
-tab: TabularCPD = alarmModel.get_cpds('JohnCalls')
-tab.marginalize(variables = ['Alarm'])
-print(tab)
-
-# %% codecell
-print(jointProbNode_manual(alarmModel_brief, 'J'))
-# %% codecell
-print(jointProbNode(alarmModel_brief, 'J'))
 # %% markdown
-# The entire `JointProbabilityDistribution`, over all the variables:
+# Alarm model's `JointProbabilityDistribution` over all variables
 # %% codecell
-print(jointProb(alarmModel_brief))
-
-# %% codecell
-joint_diffAndIntel: TabularCPD = reduce(mul, [gradeModel.get_cpds('diff'), gradeModel.get_cpds('intel')])
-print(joint_diffAndIntel)
-# %% markdown
-# $\color{red}{\text{TODO}}$ making a function to do joint prob of two separate nodes, assuming they also have evidence vars
-#
-# $\color{red}{\text{TODO}}$ valid?
-# %% codecell
-print(jointProbNode(gradeModel, 'diff'))
-# %% codecell
-print(jointProbNode(alarmModel, 'Alarm'))
-
+print(alarmJPD)
 
 
 # %% codecell
 # TODO do part 3 Joint dist from tut2
 # TODO do part 4 inference from tut3
 # TODO do the different kinds of inference from (Korb book): intercausal, diagnostic ... etc
-
-
-
-
-# %% codecell
-
-
-factors = [cpd.to_factor() for cpd in alarmModel_brief.get_cpds()]; factors
-
-factor_prod = reduce(mul, factors); factor_prod
-#JPD_fact = DiscreteFactor(JPD.variables, JPD.cardinality, JPD.values)
-
-#factor_prod == JPD_fact
-type(factors[0])
-print(factor_prod)
