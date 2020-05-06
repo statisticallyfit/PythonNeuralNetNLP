@@ -57,7 +57,7 @@ from functools import reduce
 from src.utils.GraphvizUtil import *
 from src.utils.NetworkUtil import *
 # %% markdown
-# ## Problem Statement: 2.5.1 Earthquake
+# ## Problem Statement: 2.5.1 Earthquake Alarm
 # **Example statement:** You have a new burglar alarm installed. It reliably detects burglary, but also responds to minor earthquakes. Two neighbors, John and Mary, promise to call the police when they hear the alarm. John always calls when he hears the alarm, but sometimes confuses the alarm with the phone ringing and calls then also. On the other hand, Mary likes loud music and sometimes doesn't hear the alarm. Given evidence about who has and hasn't called, you'd like to estimate the probability of a burglary alarm (from Pearl (1988)).
 #
 # %% codecell
@@ -153,7 +153,7 @@ pgmpyToGraphCPD(model = alarmModel, shorten = False)
 
 
 # %% markdown
-# ### Study: Independencies of the Alarm Model
+# ## 1/ Independencies of the Alarm Model
 # %% codecell
 alarmModel.local_independencies('Burglary')
 # %% codecell
@@ -240,13 +240,130 @@ alarmJPD: JointProbabilityDistribution = jointDistribution(alarmModel_brief)
 
 assert not alarmModel_brief.is_imap(JPD = alarmJPD)
 
+
+
+
+
+# %% markdown [markdown]
+# ## 3/ Joint Distribution Represented by the Bayesian Network
+# Computing the Joint Distribution from the Bayesian Network, `model`:
+#
+# From the **chain rule of probability (also called and rule):**
+# $$
+# P(A, B) = P(B) \cdot P(A \; | \; B)
+# $$
+# Now in this case for the `alarmModel`:
+# $$
+# \begin{align}
+# P(J, M, A, E, B)
+# &= P(J \; | \; M, A, E, B) \cdot P(J, M, A, E, B) \\
+# &= P(J \; | \; M, A, E, B) \cdot {\color{cyan} (} P(M \; | \; A,E,B) \cdot P(A,E,B) {\color{cyan} )} \\
+# &=  P(J \; | \; M, A, E, B) \cdot  P(M \; | \; A,E,B) \cdot {\color{cyan} (}P(A \; | \; E,B) \cdot P(E, B){\color{cyan} )} \\
+# &= P(J \; | \; M, A, E, B) \cdot  P(M \; | \; A,E,B) \cdot P(A \; | \; E,B) \cdot {\color{cyan} (}P(E \; | \; B) \cdot P(B){\color{cyan} )} \\
+# \end{align}
+# $$
+# %% codecell
+probChainRule(['J','M','A','E','B'])
 # %% markdown
 # Alarm model's `JointProbabilityDistribution` over all variables
 # %% codecell
 print(alarmJPD)
 
+pgmpyToGraph(alarmModel)
+# %% markdown [markdown]
+# ## 4. Inference in Bayesian Alarm Model
+# So far we talked about represented Bayesian Networks.
+#
+# Now let us do inference in a  Bayesian model and predict values using this model over new data points for ML tasks.
+#
+# **Inference:** in inference we try to answer probability queries over the network given some other variables. Example: given that Mary calls, what is the probability that the Alarm rang? The probability that there actually was an earthquake? Burglary? So for computing these values from a Joint Distribution we will have to reduce over the given variables:
+#
+# TODO: three types of reasoning and for each, fix the variable and unfix it (observe / nonobserve) from page 23 in pgmpy book
+#
+#
+# ### 1. Causal Reasoning
+# * Causal Chain: B ---> A --> M
+#   * (A unobserved): if no Alarm is observed, then Burglary can influence MaryCalls through Alarm.
+#   * (A fixed): if Alarm is observed to ring, then irrespective of whether there was a Burglary or not, it won't change the belief of MaryCalls: $B _|_ M | A$
+# * B ---> A --> J
+# * E ---> A --> M
+# * E ---> A --> J
+
+# 2. Evidential Reasoning
+# 3. Intercausal Reasoning
+#   * Given: Mary calls, Alarm rang, John id not call --> M = True, A = True, J = False
+#   * Find: probability of earthquake: P(E = True | M = True, A = True, J = False)
+# %% codecell
+elim = VariableElimination(alarmModel)
+
+## Causal reasoning:
+# B -> A -> M
+alarmModel.local_independencies('MaryCalls')
+
+
+# Case: Alarm is unobserved
+marginalM: DiscreteFactor = elim.query(['MaryCalls'])
+print(marginalM)
+# Case: Alarm is observed, what is effect on MaryCalls?
+# ??? Showing independence of M and B: (B _|_ M | A)
+# Case 1: Alarm = True
+print(elim.query(variables = ['MaryCalls'], evidence = {'Alarm': 'True'}))
+print(elim.query(variables = ['MaryCalls'], evidence = {'Alarm': 'True', 'Burglary':'True'}))
+print(elim.query(variables = ['MaryCalls'], evidence = {'Alarm': 'True', 'Burglary':'False'}))
+
+
+# Case 2: Alarm = False
+# Showing independence: (B _|_ M | A)
+BAM: DiscreteFactor = elim.query(variables = ['MaryCalls'], evidence = {'Alarm': 'False'})
+BAM_1 = elim.query(variables = ['MaryCalls'], evidence = {'Alarm': 'False', 'Burglary':'True'})
+BAM_2 = elim.query(variables = ['MaryCalls'], evidence = {'Alarm': 'False', 'Burglary':'False'})
+assert (BAM.values == BAM_1.values).all() and (BAM.values == BAM_2.values).all()
+
+print(BAM)
 
 # %% codecell
-# TODO do part 3 Joint dist from tut2
-# TODO do part 4 inference from tut3
+# Causal Reasoning: B ---> A ---> J
+
+# Case 1: Alarm = True
+BAJ: DiscreteFactor = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'False'})
+BAJ_1 = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'False', 'Burglary':'True'})
+BAJ_2 = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'False', 'Burglary':'False'})
+assert (BAJ.values == BAJ_1.values).all() and (BAJ.values == BAJ_2.values).all()
+
+print(BAJ)
+
+# %% codecell
+# Case 2: Alarm = False
+
+# %% markdown
+# -----------------
+# $I = 1, D = 1, S = 1$, and then marginalize over the other variables we didn't ask about (L) to get the distribution for the variable we asked about (G), so to get the distribution: $P(G \; | \; I = 1, D = 1, S = 1)$.
+#
+# But doing marginalize and reduce operations on the complete Joint Distribution is computationally expensive since we need to iterate over the whole table for each operation and the table is exponential in size to the number of variables. But we can exploit the independencies (like above) to break these operations in smaller parts, increasing efficiency of calculation.
+#
+# ### Variable Elimination
+# **Variable Elimination:** a method of inference in graphical models.
+#
+# For our model, we know that the joint distribution (reduced using local independencies) is:
+# $$
+# \begin{align}
+# P(D, I, G, L, S) = P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D) \cdot P(I)
+# \end{align}
+# $$
+# **Example 1: Compute $P(G)$**
+#
+# Now say we want to compute the probability of just the grade $G$. That means we must **marginalize** over all other variables:
+# $$
+# \begin{align}
+# P(G) &= \sum_{D,I,L,S} P(D,I,G,L,S) \\
+# &= \sum_{D,I,L,S} P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D) \cdot P(I) \\
+# &= \sum_D \sum_I \sum_L \sum_S P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D) \cdot P(I) \\
+# &= \sum_D P(D) \sum_I P(G \; | \; D, I) \cdot P(I) \sum_S P(S \; | \; I) \sum_L P(L \; | \; G)
+# \end{align}
+# $$
+# In the above expression, to simplify the sumation, we just brought the summation with respect to a particular variable as far as it could go (as inner-deep as it could go, without putting the summation with respect to the variable past the probability expression that included that variable)
+#
+# By pushing the summations inside we have saved a lot of computation because we now have to iterate over much smaller tables.
+
+
 # TODO do the different kinds of inference from (Korb book): intercausal, diagnostic ... etc

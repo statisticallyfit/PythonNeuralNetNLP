@@ -295,26 +295,46 @@ commonCauseGraph = edgesToGraph(edges= commonCause)
 # ### Study: Independencies for Abstract Structure Types
 # Using the structures above, study how independencies are found:
 # %% codecell
+
+# TODO better document these types of graphcs using:
+# ---> Korb book, page 40
+# ---> pgmpy book (Ankur ankan), page 22
+# ---> bayesialab book, page 336
+
+# TODO better document the types of reasoning using:
+# ---> Korb book, page 34
+# ---> pgmpy book, page 21
+# ---> bayesialab book, page 62
+
+
+
+# TODO where to start: see page 338 in bayesialab for the kinds of reasonings that spring from the specific models.
+
+
 causalGraph
 # %% codecell
 causalModel = BayesianModel(causal)
 
-indepA: Independencies = causalModel.local_independencies(['A'])
 
 # TODO newer pgmpy version: changes results!
 #assert indepA == Independencies(['A', ['B', 'C']]), "Check: A is independent of B and C, at the same time"
-assert str(indepA) == ''
+assert causalModel.local_independencies(['A']) == Independencies()
+
 #assert str(indepA) in localIndependencySynonyms(model = causalModel, queryNode='A')
 #indepSynonymTable(model = causalModel, queryNode='A')
 
 # TODO pgmpy change
+assert causalModel.local_independencies('B') == Independencies()
 #assert str(causalModel.local_independencies('B')) == '(B _|_ C | A)', 'Check: B is independent of C, given A (so event "B is independent of C" is conditional on A)'
 
 assert str(causalModel.local_independencies('C')) == '(C _|_ A | B)', 'Check: C is independent of A when conditional on B'
+assert causalModel.local_independencies('A') != causalModel.local_independencies('C'), 'Check: independencies of C is not the same as independencies of A, in causal model'
+
 
 indepSynonymTable(causalModel, 'C')
 
 # %% codecell
+# TODO why wasn't A _|_C | B found when we queried the node A or B? what does this mean? global dependency? how is this calculated?
 indeps = list(map(lambda x : str(x), causalModel.get_independencies().get_assertions()))
 assert indeps == ['(A _|_ C | B)', '(C _|_ A | B)'], 'Check: overall independencies of causal model'
 
@@ -1034,7 +1054,7 @@ assert cpdName(model, 'I') == 'P(I)'
 # ## 4. Inference in Bayesian Models
 # So far we talked about represented Bayesian Networks.
 #
-# Now let us do inference in a  Bayeisan model and predict values using this model over new data points for ML tasks.
+# Now let us do inference in a  Bayesian model and predict values using this model over new data points for ML tasks.
 #
 # **Inference:** in inference we try to answer probability queries over the network given some other variables. Example: we might want to know the probable grade of an intelligent student in a difficult class given that he scored well on the SAT. So for computing these values from a Joint Distribution we will ahve to reduce over the given variables: $I = 1, D = 1, S = 1$, and then marginalize over the other variables we didn't ask about (L) to get the distribution for the variable we asked about (G), so to get the distribution: $P(G \; | \; I = 1, D = 1, S = 1)$.
 #
