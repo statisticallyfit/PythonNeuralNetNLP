@@ -1068,6 +1068,14 @@ assert cpdName(model, 'I') == 'P(I)'
 # %% codecell
 from pgmpy.inference import VariableElimination
 from pgmpy.factors.discrete.DiscreteFactor import DiscreteFactor
+from pgmpy.factors.discrete.JointProbabilityDistribution import JointProbabilityDistribution
+
+from src.utils.NetworkUtil import *
+
+jpd: JointProbabilityDistribution = jointProb(model)
+
+jpd.marginalize(variables = ['L', 'S', 'D', 'I'])
+print(jpd)
 
 infer = VariableElimination(model = model)
 inferResult: DiscreteFactor = infer.query(variables = ['G'])

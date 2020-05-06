@@ -48,6 +48,8 @@ from pgmpy.factors.discrete import JointProbabilityDistribution
 from pgmpy.factors.discrete.DiscreteFactor import DiscreteFactor
 from pgmpy.independencies import Independencies
 
+
+
 from operator import mul
 from functools import reduce
 
@@ -229,7 +231,7 @@ assert prodFactor == jpdFactor, "Check: joint distribution is the same as multip
 print(jpdFactor)
 
 # %% markdown
-# Showing if alarm mode is I-map:
+# Showing if alarm model is I-map:
 # %% codecell
 #jointProb()
 
@@ -241,9 +243,108 @@ print(jpdFactor)
 print(jointProbNode(gradeModel, 'diff'))
 print(jointProbNode_manual(gradeModel, 'diff'))
 # %% codecell
+pgmpyToGraphCPD(alarmModel)
+
+probChainRule(['J', 'A', 'M', 'E', 'B'])
+
+
+
+
+
+
+# TODO quality restaurant model  from pgmpy book page 16
+probChainRule(['N', "C", 'L', 'Q'])
+
+# %% codecell
+# L = Location
+# Q = Quality
+# C = Cost
+# N = Number of people
+qualityModel = BayesianModel([('Location', 'Cost'),
+                              ('Quality', 'Cost'),
+                              ('Cost', 'Number'),
+                              ('Location', 'Number')])
+
+
+# Defining parameters using CPT
+cpdQuality: TabularCPD = TabularCPD(variable = 'Quality', variable_card = 3,
+                                    values = [[0.3, 0.5, 0.2]],
+                                    state_names = {'Quality' : ['Good', 'Normal', 'Bad']})
+print(cpdQuality)
+
+cpdLocation: TabularCPD = TabularCPD(variable = 'Location', variable_card = 2,
+                                     values = [[0.6, 0.4]],
+                                     state_names = {'Location': ['Good', 'Bad']})
+print(cpdLocation)
+
+cpdCost: TabularCPD = TabularCPD(variable = 'Cost', variable_card = 2,
+                                      values = [[0.8, 0.6, 0.1, 0.6, 0.6, 0.05],
+                                                [0.2, 0.4, 0.9, 0.4, 0.4, 0.95]],
+                                      evidence = ['Location', 'Quality'], evidence_card = [2, 3],
+                                      state_names = {'Cost': ['High', 'Low'],
+                                                     'Location' : ['Good', 'Bad'],
+                                                     'Quality': ['Good', 'Normal', 'Bad']})
+print(cpdCost)
+
+cpdNumberOfPeople: TabularCPD = TabularCPD(variable = 'Number', variable_card = 2,
+                                           values = [[0.6, 0.8, 0.1, 0.6],
+                                                     [0.4, 0.2, 0.9, 0.4]],
+                                           evidence = ['Location', 'Cost'], evidence_card = [2,2],
+                                           state_names = {'Number': ['High', 'Low'],
+                                                          'Location':['Good', 'Bad'],
+                                                          'Cost':['High', 'Low']})
+print(cpdNumberOfPeople)
+
+
+qualityModel.add_cpds(cpdQuality, cpdLocation, cpdCost, cpdNumberOfPeople)
+
+assert qualityModel.check_model()
+
+# %% codecell
+
+# TODO how to get joint of C and N? P(C, N)? Need to marginalize somehow over their combined conditional variable L?
+print(qualityModel.get_cpds('Cost'))
+print(qualityModel.get_cpds('Number'))
+# WAY 1: eliminating then mutliplying the marginalizations
+elimQ = VariableElimination(qualityModel)
+factorCost = elimQ.query(['Cost'])
+factorNumber = elimQ.query(['Number'])
+
+res = reduce(mul, [factorCost, factorNumber])
+sum(sum(res.values))
+print(res)
+
+# WAY 2: condition on the same conditioning node and then do combinations of the other variables
+queryNode1 = "Cost"
+queryNode2 = "Number"
+ev1 = set(list(qualityModel.get_cpds(queryNode1).state_names.keys())[1:]); ev1
+ev2 = set(list(qualityModel.get_cpds(queryNode2).state_names.keys())[1:]); ev2
+
+# make combinations of the variables that are NOT same conditioning ones (same for both nodes)
+nonsameEv: Set[Variable] = ev1.symmetric_difference(ev2); nonsameEv
+
+
+# make product of the SAME conditioning ones with the NONT same products above
+# do probability multiplication
+# %% codecell
 # TODO start here tomorrow
 # TODO major wrong, these functions are NOT correct since the two tables below are not the same.
 # TODO major question: when we find joint prob of a noe do we consider ALL cpds? Am I doing repetition? See formula under section 3 from tut 2, bayes nets, or formula page 17 in Ankur Ankan book
+# Variable elimination
+elim = VariableElimination(alarmModel)
+factor: DiscreteFactor = elim.query(['JohnCalls'])
+print(factor)
+# %% codecell
+# Doing joint prob using chain rule for networks way (parents, not evidence)
+alarmModel.get_cpds('JohnCalls')
+
+alarmModel.get_parents(node = 'JohnCalls')
+
+tab: TabularCPD = alarmModel.get_cpds('JohnCalls')
+tab.marginalize(variables = ['Alarm'])
+print(tab)
+
+# %% codecell
 print(jointProbNode_manual(alarmModel_brief, 'J'))
 # %% codecell
 print(jointProbNode(alarmModel_brief, 'J'))

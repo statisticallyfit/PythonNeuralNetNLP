@@ -178,7 +178,7 @@ def jointProbNode_manual(model: BayesianModel, queryNode: Variable) -> DiscreteF
                           values = jpd)
 
 
-def jointProbNode(model: BayesianModel, queryNode: Variable) -> DiscreteFactor:
+def jointProbNode(model: BayesianModel, queryNode: Variable) -> JointProbabilityDistribution:
     '''Returns joint prob (discrete factor) for queryNode. Not a probability distribution since sum of outputted probabilities may not be 1, so cannot put in JointProbabilityDistribution object'''
 
     # Get the conditional variables
@@ -191,10 +191,13 @@ def jointProbNode(model: BayesianModel, queryNode: Variable) -> DiscreteFactor:
     # If there are no evidence variables, then the query node is not conditional on anything, so just return its cpd
     jointProbFactor: DiscreteFactor = reduce(mul, [queryCPD] + evCPDs) if evCPDs != [] else queryCPD
 
-    return jointProbFactor
-    #return JointProbabilityDistribution(variables = jointProbFactor.variables,
-    #                                    cardinality = jointProbFactor.cardinality,
-    #                                    values = jointProbFactor.values)
+    #Normalizing numbers so they sum to 1, so that we can return as distribution.
+    jointProbFactor: DiscreteFactor = jointProbFactor.normalize(inplace = False)
+
+
+    return JointProbabilityDistribution(variables = jointProbFactor.variables,
+                                        cardinality = jointProbFactor.cardinality,
+                                        values = jointProbFactor.values)
 
 
 
@@ -206,6 +209,8 @@ def jointProb(model: BayesianModel) -> JointProbabilityDistribution:
     # There is no reason the cpds must be converted to DiscreteFactors ; can access variables, values, cardinality the same way, but this is how the mini-example in API docs does it. (imap() implementation)
     factors: List[DiscreteFactor] = [cpd.to_factor() for cpd in model.get_cpds()]
     jointProbFactor: DiscreteFactor = reduce(mul, factors)
+
+    # TODO need to assert that probabilities sum to 1? Always true? or to normalize here?
 
     return JointProbabilityDistribution(variables = jointProbFactor.variables,
                                         cardinality = jointProbFactor.cardinality,
