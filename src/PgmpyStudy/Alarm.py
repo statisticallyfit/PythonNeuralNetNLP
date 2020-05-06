@@ -315,10 +315,16 @@ sum(sum(res.values))
 print(res)
 
 # WAY 2: condition on the same conditioning node and then do combinations of the other variables
-queryNode1 = "Cost"
-queryNode2 = "Number"
-ev1 = set(list(qualityModel.get_cpds(queryNode1).state_names.keys())[1:]); ev1
-ev2 = set(list(qualityModel.get_cpds(queryNode2).state_names.keys())[1:]); ev2
+qualityModel.get_parents(node = 'Cost')
+qualityModel.get_parents(node = 'Number')
+
+res2 = (reduce(mul, [qualityModel.get_cpds('Cost').to_factor(), qualityModel.get_cpds('Number').to_factor()]).normalize(inplace=False))
+
+
+print(res2.marginalize(variables = ['Quality', 'Location'], inplace=False).normalize(inplace = False))
+
+
+
 
 # make combinations of the variables that are NOT same conditioning ones (same for both nodes)
 nonsameEv: Set[Variable] = ev1.symmetric_difference(ev2); nonsameEv
