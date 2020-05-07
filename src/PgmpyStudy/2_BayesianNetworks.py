@@ -943,7 +943,7 @@ assert commonCauseModel.active_trail_nodes(['A','B','C'], observed = ['B', 'C'])
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Study: Types of Reasonings As Active Trails for the Four Abstract Models
 #
 # Understanding how conditioning on different variables for different kinds of models creates active trails, thus enabling different kinds of reasoning types.
@@ -951,7 +951,7 @@ assert commonCauseModel.active_trail_nodes(['A','B','C'], observed = ['B', 'C'])
 # %% codecell
 causalGraph
 
-# %% markdown
+# %% markdown [markdown]
 # $\color{Violet}{\texttt{Case 1: Marginal Dependence}}$
 #
 # $$
@@ -966,7 +966,7 @@ assert causalModel.is_active_trail(start = 'A', end = 'C', observed = None)
 assert causalModel.active_trail_nodes(variables = ['A', 'C']) == {'A': {'A', 'B', 'C'}, 'C': {'A', 'B', 'C'}}
 
 showActiveTrails(model = causalModel, variables = ['A', 'C'])
-# %% markdown
+# %% markdown [markdown]
 # $\color{Violet}{\texttt{Case 2: Conditional Independence}}$
 #
 # $$
@@ -1003,7 +1003,7 @@ indepSynonymTable(model = causalModel, queryNode = 'C')
 # %% codecell
 evidentialGraph
 
-# %% markdown
+# %% markdown [markdown]
 # $\color{Violet}{\texttt{Case 1: Marginal Dependence}}$
 #
 # $$
@@ -1019,7 +1019,7 @@ assert evidentialModel.is_active_trail(start = 'A', end = 'C', observed = None)
 assert evidentialModel.active_trail_nodes(variables = ['A', 'C']) == {'A': {'A', 'B', 'C'}, 'C': {'A', 'B', 'C'}}
 
 showActiveTrails(model = evidentialModel, variables = ['A', 'C'], observed = None)
-# %% markdown
+# %% markdown [markdown]
 # $\color{Violet}{\texttt{Case 2: Conditional Independence}}$
 #
 # $$
@@ -1054,7 +1054,7 @@ indepSynonymTable(model = evidentialModel, queryNode = 'A')
 # %% codecell
 commonCauseGraph
 
-# %% markdown
+# %% markdown [markdown]
 # $\color{Violet}{\texttt{Case 1: Marginal Dependence}}$
 #
 # $$
@@ -1069,8 +1069,8 @@ assert commonCauseModel.is_active_trail(start = 'A', end = 'C', observed = None)
 assert commonCauseModel.active_trail_nodes(variables = ['A', 'C']) == {'A': {'A', 'B', 'C'}, 'C': {'A', 'B', 'C'}}
 
 showActiveTrails(model = commonCauseModel, variables = ['A', 'C'], observed = None)
-# %% markdown
-# %% markdown
+# %% markdown [markdown]
+# %% markdown [markdown]
 # $\color{Violet}{\texttt{Case 2: Conditional Independence}}$
 #
 # $$
@@ -1108,7 +1108,7 @@ print(indepSynonymTable(model = commonCauseModel, queryNode = 'C'))
 # %% codecell
 commonEvidenceGraph
 
-# %% markdown
+# %% markdown [markdown]
 # $\color{Violet}{\texttt{Case 1: Marginal Independence}}$
 #
 # $$
@@ -1139,7 +1139,7 @@ assert (commonEvidenceModel.local_independencies('C') == indepC and
 print(indepSynonymTable(model = commonEvidenceModel, queryNode = 'A'))
 print(indepSynonymTable(model = commonEvidenceModel, queryNode = 'C'))
 
-# %% markdown
+# %% markdown [markdown]
 # **$\color{Violet}{\texttt{Case 2: Conditional Dependence}}$**
 #
 # $$
@@ -1361,7 +1361,7 @@ print(inferResult)
 
 conditionalG = infer.query(variables = ['G'], evidence = {'D': 'Easy', 'I' : 'Intelligent'})
 print(conditionalG)
-# %% markdown
+# %% markdown [markdown]
 # **Predicting Values from New Data Points:**
 #
 # This is similar to computing the conditional probabilities. We need to query for the variable that we need to predict given all the other features. The only difference is that rather than getting the probability distribution,  we are interestd in getting the **most probable state of the variable**.
