@@ -952,10 +952,10 @@ assert commonCauseModel.active_trail_nodes(['A','B','C'], observed = ['B', 'C'])
 causalGraph
 
 # %% markdown [markdown]
-# $\color{Violet}{\texttt{Case 1: Marginal Dependence}}$
+# $\color{MediumVioletRed}{\text{Case 1: Marginal Dependence}}$
 #
 # $$
-# \color{SpringGreen}{ B \; \text{is unknown: }\;\;\;\;\;\;\;\;\;\;\; A \longrightarrow B \longrightarrow C}
+# \color{Green}{ B \; \text{is unknown: }\;\;\;\;\;\;\;\;\;\;\; A \longrightarrow B \longrightarrow C}
 # $$
 #
 # When the middle node $B$ is unknown / unobserved, there IS an active trail between $A$ and $C$. In other words, there is a dependence between $A$ and $C$ when $B$ is unobserved. This means the probability of $A$ can influence probability of $C$ (and vice versa) when information about $B$'s state is unknown.
@@ -967,7 +967,7 @@ assert causalModel.active_trail_nodes(variables = ['A', 'C']) == {'A': {'A', 'B'
 
 showActiveTrails(model = causalModel, variables = ['A', 'C'])
 # %% markdown [markdown]
-# $\color{Violet}{\texttt{Case 2: Conditional Independence}}$
+# $\color{MediumVioletRed}{\text{Case 2: Conditional Independence}}$
 #
 # $$
 # \color{DeepSkyBlue}{ B \; \text{is fixed: }\;\;\;\;\;\;\;\;\;\;\; A \; \bot \; C \; | \; B}
@@ -1004,10 +1004,10 @@ indepSynonymTable(model = causalModel, queryNode = 'C')
 evidentialGraph
 
 # %% markdown [markdown]
-# $\color{Violet}{\texttt{Case 1: Marginal Dependence}}$
+# $\color{MediumVioletRed}{\text{Case 1: Marginal Dependence}}$
 #
 # $$
-# \color{SpringGreen}{ B \; \text{is unknown: }\;\;\;\;\;\;\;\;\;\;\; A \longrightarrow B \longrightarrow C}
+# \color{Green}{ B \; \text{is unknown: }\;\;\;\;\;\;\;\;\;\;\; A \longrightarrow B \longrightarrow C}
 # $$
 #
 # When the middle node $B$ is unknown / unobserved, there IS an active trail between $A$ and $C$. In other words, there is a dependence between $A$ and $C$ when $B$ is unobserved. This means the probability of $A$ can influence probability of $C$ (and vice versa) when information about $B$'s state is unknown.
@@ -1020,7 +1020,7 @@ assert evidentialModel.active_trail_nodes(variables = ['A', 'C']) == {'A': {'A',
 
 showActiveTrails(model = evidentialModel, variables = ['A', 'C'], observed = None)
 # %% markdown [markdown]
-# $\color{Violet}{\texttt{Case 2: Conditional Independence}}$
+# $\color{MediumVioletRed}{\text{Case 2: Conditional Independence}}$
 #
 # $$
 # \color{DeepSkyBlue}{ B \; \text{is fixed: }\;\;\;\;\;\;\;\;\;\;\; A \; \bot \; C \; | \; B}
@@ -1055,10 +1055,10 @@ indepSynonymTable(model = evidentialModel, queryNode = 'A')
 commonCauseGraph
 
 # %% markdown [markdown]
-# $\color{Violet}{\texttt{Case 1: Marginal Dependence}}$
+# $\color{MediumVioletRed}{\text{Case 1: Marginal Dependence}}$
 #
 # $$
-# \color{SpringGreen}{ B \; \text{is unknown: }\;\;\;\;\;\;\;\;\;\;\; A \longrightarrow B \longrightarrow C}
+# \color{Green}{ B \; \text{is unknown: }\;\;\;\;\;\;\;\;\;\;\; A \longrightarrow B \longrightarrow C}
 # $$
 #
 # When the parent $B$ is unknown / unobserved, there IS an active trail between $A$ and $C$. In other words, there is a dependence between $A$ and $C$ when $B$ is unobserved. This means the probability of $A$ can influence probability of $C$ (and vice versa) when information about $B$'s state is unknown.
@@ -1071,7 +1071,7 @@ assert commonCauseModel.active_trail_nodes(variables = ['A', 'C']) == {'A': {'A'
 showActiveTrails(model = commonCauseModel, variables = ['A', 'C'], observed = None)
 # %% markdown [markdown]
 # %% markdown [markdown]
-# $\color{Violet}{\texttt{Case 2: Conditional Independence}}$
+# $\color{MediumVioletRed}{\text{Case 2: Conditional Independence}}$
 #
 # $$
 # \color{DeepSkyBlue}{ B \; \text{is fixed: }\;\;\;\;\;\;\;\;\;\;\; A \; \bot \; C \; | \; B}
@@ -1109,7 +1109,7 @@ print(indepSynonymTable(model = commonCauseModel, queryNode = 'C'))
 commonEvidenceGraph
 
 # %% markdown [markdown]
-# $\color{Violet}{\texttt{Case 1: Marginal Independence}}$
+# $\color{MediumVioletRed}{\text{Case 1: Marginal Independence}}$
 #
 # $$
 # \color{DeepSkyBlue}{ B \; \text{is unknown: }\;\;\;\;\;\;\;\;\;\;\; A \; \bot \; C}
@@ -1140,10 +1140,10 @@ print(indepSynonymTable(model = commonEvidenceModel, queryNode = 'A'))
 print(indepSynonymTable(model = commonEvidenceModel, queryNode = 'C'))
 
 # %% markdown [markdown]
-# **$\color{Violet}{\texttt{Case 2: Conditional Dependence}}$**
+# **$\color{MediumVioletRed}{\text{Case 2: Conditional Dependence}}$**
 #
 # $$
-# \color{SpringGreen}{ B \; \text{is fixed: }\;\;\;\;\;\;\;\;\;\;\; A \longrightarrow B \longrightarrow C}
+# \color{Green}{ B \; \text{is fixed: }\;\;\;\;\;\;\;\;\;\;\; A \longrightarrow B \longrightarrow C}
 # $$
 #
 # When the collider $B$ is known (fixed / observed), then there IS an active trail between $A$ and $C$. In other words, there is a dependence between $A$ and $C$ when $B$ is observed, meaning the probability of $A$ can influence probability of $C$ (and vice versa) when information about $B$ is known.
