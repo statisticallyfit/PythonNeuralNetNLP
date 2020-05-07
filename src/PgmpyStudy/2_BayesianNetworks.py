@@ -1184,21 +1184,31 @@ assert student.active_trail_nodes('diff', observed='grades')== {'diff': {'diff',
 pgmpyToGraph(model)
 # %% codecell
 assert model.active_trail_nodes('D', observed = 'G') == {'D': {'D', 'I', 'S'}}, "Check: Influencing Difficulty (D) must also change the Intelligence (I) and SAT score (S) of the student"
-
+showActiveTrails(model, variables = 'D', observed = 'G')
+# %% codecell
 assert model.active_trail_nodes('I', observed = ['G', 'S']) == {'I': {'D', 'I'}}, "Check: Influencing Inteligence (I) while keeping Grade (G) and SAT score (S) fixed must influence the Difficulty (D) of the test and intelligence (I) of the student"
 
-
+showActiveTrails(model, variables = 'I', observed = ['G', 'S'])
+# %% codecell
 assert model.active_trail_nodes('I', observed = 'G') == {'I': {'D', 'I', 'S'}}, "Check: Influencing Intelligence (I) while keeping Grades (G) fixed must also influence Grades (G), Intelligence (I), and Letter of recommendation (L)" # difficulty is not influenced
-
+showActiveTrails(model, variables = 'I', observed = 'G')
+# %% codecell
 assert model.active_trail_nodes('I', observed = 'S') == {'I': {'G', 'I', 'L'}}, "Check: Influencing Intelligence (I) while keeping SAT (S) fixed must also influence Grades (G), Intelligence (I) and Letter (L) received" # difficulty is not influenced
 
+showActiveTrails(model, variables = 'I', observed = 'S')
 
+# %% codecell
 assert model.active_trail_nodes('L', observed = ['D', 'G']) == {'L': {'L'}}, "Check: Influencing Letter (L) while keeping Difficulty (D) and Grade (G) fixed effectively blocks other changes."
+showActiveTrails(model, variables = 'L', observed = ['D', 'G'])
 
+# %% codecell
 assert model.active_trail_nodes('L', observed = ['G', 'I']) == {'L': {'L'}}
 
+showActiveTrails(model, variables = 'L', observed = ['I', 'G'])
+# %% codecell
 assert model.active_trail_nodes('L', observed = ['S', 'I']) == {'L': {'D', 'G', 'L'}}
 
+showActiveTrails(model, variables = 'L', observed = ['S', 'I'])
 
 
 

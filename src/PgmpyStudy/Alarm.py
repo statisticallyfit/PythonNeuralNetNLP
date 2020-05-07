@@ -278,7 +278,8 @@ pgmpyToGraph(alarmModel)
 #
 # **Inference:** in inference we try to answer probability queries over the network given some other variables. Example: given that Mary calls, what is the probability that the Alarm rang? The probability that there actually was an earthquake? Burglary? So for computing these values from a Joint Distribution we will have to reduce over the given variables:
 #
-# TODO: three types of reasoning and for each, fix the variable and unfix it (observe / nonobserve) from page 23 in pgmpy book
+# TODO start here: following example of 2_Bayes tutorial, document each type of reasoning using the active trail ndoe (1 assert active trail node exists for the particular kind of chain (causal, evidence, common caus ..), and then (2) do the use cases, the different kinds of chains, asserting values of marginalized dist are equal)
+# page 23 pgmpy book
 #
 #
 # ### 1. Causal Reasoning
