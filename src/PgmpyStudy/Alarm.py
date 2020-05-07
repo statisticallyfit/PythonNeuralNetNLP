@@ -269,23 +269,109 @@ probChainRule(['J','M','A','E','B'])
 # %% codecell
 print(alarmJPD)
 
-pgmpyToGraph(alarmModel)
+
+
+
 # %% markdown [markdown]
-# ## 4. Inference in Bayesian Alarm Model
+# ## 4/ Inference in Bayesian Alarm Model
 # So far we talked about represented Bayesian Networks.
 #
 # Now let us do inference in a  Bayesian model and predict values using this model over new data points for ML tasks.
-#
-# **Inference:** in inference we try to answer probability queries over the network given some other variables. Example: given that Mary calls, what is the probability that the Alarm rang? The probability that there actually was an earthquake? Burglary? So for computing these values from a Joint Distribution we will have to reduce over the given variables:
 #
 # TODO start here: following example of 2_Bayes tutorial, document each type of reasoning using the active trail ndoe (1 assert active trail node exists for the particular kind of chain (causal, evidence, common caus ..), and then (2) do the use cases, the different kinds of chains, asserting values of marginalized dist are equal)
 # page 23 pgmpy book
 #
 #
-# ### 1. Causal Reasoning
-# * Causal Chain: B ---> A --> M
+# ### 1. Causal Reasoning in the Causal Model
+# * Causal Chain: $B \longrightarrow A \longrightarrow M$
 #   * (A unobserved): if no Alarm is observed, then Burglary can influence MaryCalls through Alarm.
 #   * (A fixed): if Alarm is observed to ring, then irrespective of whether there was a Burglary or not, it won't change the belief of MaryCalls: $B _|_ M | A$
+
+# %% codecell
+pgmpyToGraph(alarmModel)
+# %% markdown [markdown]
+# $\color{MediumVioletRed}{\text{Case 1: Marginal Dependence}}$
+#
+# $$
+# \color{Green}{ \text{Alarm (unknown): }\;\;\;\;\;\;\;\;\; \text{Burglary} \longrightarrow \text{Alarm} \longrightarrow \text{MaryCalls}}
+# $$
+#
+# When the middle node `Alarm` is unknown / unobserved, there IS an active trail between `Burglary` and `MaryCalls`. In other words, there is a dependence between `Burglary` and `MaryCalls` when `Alarm` is unobserved. This means the probability of `Burglary` can influence probability of `MaryCalls` (and vice versa) when information about `Alarm`'s state is unknown.
+#
+#
+# $$
+# \color{Green}{ \text{Alarm (unknown): }\;\;\;\;\;\;\;\;\; \text{Burglary} \longrightarrow \text{Alarm} \longrightarrow \text{JohnCalls}}
+# $$
+# When `Alarm`'s state is uknown, there is an active trail or dependency between `Burglary` and `JohnCalls`, so the probability of `Burglary` can influence the probability of `JohnCalls` (and vice versa) when `Alarm`'s state is unknown.
+#
+# $$
+# \color{Green}{ \text{Alarm (unknown): }\;\;\;\;\;\;\;\;\; \text{Earthquake} \longrightarrow \text{Alarm} \longrightarrow \text{MaryCalls}}
+# $$
+# When `Alarm`'s state is uknown, there is an active trail or dependency between `Earthquake` and `MaryCalls`, so the probability of `Earthquake` can influence the probability of `MaryCalls` (and vice versa) when `Alarm`'s state is unknown.
+#
+# $$
+# \color{Green}{ \text{Alarm (unknown): }\;\;\;\;\;\;\;\;\; \text{Earthquake} \longrightarrow \text{Alarm} \longrightarrow \text{JohnCalls}}
+# $$
+# When `Alarm`'s state is uknown, there is an active trail or dependency between `Earthquake` and `JohnCalls`, so the probability of `Earthquake` can influence the probability of `JohnCalls` (and vice versa) when `Alarm`'s state is unknown.
+# %% codecell
+# TESTING: active trail method
+assert alarmModel.is_active_trail(start = 'Burglary', end = 'MaryCalls', observed = None)
+assert alarmModel.is_active_trail(start = 'Burglary', end = 'JohnCalls', observed = None)
+assert alarmModel.is_active_trail(start = 'Earthquake', end = 'MaryCalls', observed = None)
+assert alarmModel.is_active_trail(start = 'Earthquake', end = 'JohnCalls', observed = None)
+
+showActiveTrails(model = alarmModel, variables = ['Burglary', 'MaryCalls'])
+# %% markdown [markdown]
+# $\color{MediumVioletRed}{\text{Case 2: Conditional Independence}}$
+#
+# $$
+# \color{DeepSkyBlue}{ \text{Alarm (fixed): }\;\;\;\;\;\;\;\; \text{Burglary} \; \bot \; \text{MaryCalls} \; | \; \text{Alarm}}
+# $$
+# When the `Alarm`'s state is known (fixed / observed), then there is NO active trail between `Burglary` and `MaryCalls`. In other words, `Burglary` and `MaryCalls` are locally independent when `Alarm`'s state is observed. This means the probability of `Burglary` won't influence probability of `MaryCalls` (and vice versa) when `Alarm`'s state is observed.
+#
+# $$
+# \color{DeepSkyBlue}{ \text{Alarm (fixed): }\;\;\;\;\;\;\;\; \text{Burglary} \; \bot \; \text{JohnCalls} \; | \; \text{Alarm}}
+# $$
+# When the `Alarm`'s state is known (fixed / observed), then there is NO active trail between `Burglary` and `JohnCalls`. In other words, `Burglary` and `JohnCalls` are locally independent when `Alarm`'s state is observed. This means the probability of `Burglary` won't influence probability of `JohnCalls` (and vice versa) when `Alarm`'s state is observed.
+#
+# $$
+# \color{DeepSkyBlue}{ \text{Alarm (fixed): }\;\;\;\;\;\;\;\; \text{Earthquake} \; \bot \; \text{MaryCalls} \; | \; \text{Alarm}}
+# $$
+# When the `Alarm`'s state is known (fixed / observed), then there is NO active trail between `Earthquake` and `MaryCalls`. In other words, `Earthquake` and `MaryCalls` are locally independent when `Alarm`'s state is observed. This means the probability of `Earthquake` won't influence probability of `MaryCalls` (and vice versa) when `Alarm`'s state is observed.
+#
+# $$
+# \color{DeepSkyBlue}{ \text{Alarm (fixed): }\;\;\;\;\;\;\;\; \text{Earthquake} \; \bot \; \text{JohnCalls} \; | \; \text{Alarm}}
+# $$
+# When the `Alarm`'s state is known (fixed / observed), then there is NO active trail between `Earthquake` and `JohnCalls`. In other words, `Earthquake` and `JohnCalls` are locally independent when `Alarm`'s state is observed. This means the probability of `Earthquake` won't influence probability of `JohnCalls` (and vice versa) when `Alarm`'s state is observed.
+# %% codecell
+# TESTING: active trail method
+assert not alarmModel.is_active_trail(start = 'Burglary', end = 'MaryCalls', observed = 'Alarm')
+assert not alarmModel.is_active_trail(start = 'Burglary', end = 'JohnCalls', observed = 'Alarm')
+assert not alarmModel.is_active_trail(start = 'Earthquake', end = 'MaryCalls', observed = 'Alarm')
+assert not alarmModel.is_active_trail(start = 'Earthquake', end = 'JohnCalls', observed = 'Alarm')
+
+showActiveTrails(model = alarmModel, variables = ['Burglary', 'MaryCalls'], observed = 'Alarm')
+
+# %% codecell
+# TESTING: independencies method
+indepA = Independencies(['A', 'C', ['B']])
+indepC = Independencies(['C', 'A', ['B']])
+
+assert causalModel.local_independencies('A') == Independencies()
+
+assert (causalModel.local_independencies('C') == indepC and
+        indepA == indepC), \
+        "Check: A and C are independent once conditional on B (once B is fixed / observed)"
+
+
+indepSynonymTable(model = causalModel, queryNode = 'C')
+
+
+
+
+
+
+# %% markdown
 # * B ---> A --> J
 # * E ---> A --> M
 # * E ---> A --> J
