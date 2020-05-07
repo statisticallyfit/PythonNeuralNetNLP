@@ -18,7 +18,7 @@ import itertools
 
 Variable = str
 Probability = float
-
+Trail = str
 
 # ----------------------------------------------------
 
@@ -263,3 +263,32 @@ def probChainRule(condAcc: List[Variable], acc: Variable = '') -> str:
         otherVars = condAcc[1:]
         curAcc = f'P({firstVar} | {", ".join(otherVars)}) * '
         return probChainRule(condAcc = otherVars, acc = acc + curAcc)
+
+
+# ------------------------------------------------------------------------------------------
+
+
+def activeTrails(model: BayesianModel,
+                 variables: List[Variable],
+                 observed: List[Variable] = None) -> List[Trail]:
+    '''Creates trails by threading the way through the dictionary returned by the pgmpy function `active_trail_nodes`'''
+
+    trails: Dict[Variable, Set[Variable]] = model.active_trail_nodes(variables = variables, observed = observed)
+
+    trailTupleList: List[List[Tuple[Variable]]] = [[(startVar, endVar) for endVar in endVarList]
+                                                   for (startVar, endVarList) in trails.items()]
+
+    trailTuples: List[Tuple[Variable]] = list(itertools.chain(*trailTupleList))
+
+    explicitTrails: List[Trail] = list(map(lambda tup : f"{tup[0]} --> {tup[1]}", trailTuples))
+
+    return explicitTrails
+
+
+
+def showActiveTrails(model: BayesianModel,
+                     variables: List[Variable],
+                     observed: List[Variable] = None):
+
+    trails: List[Trail] = activeTrails(model, variables, observed)
+    print('\n'.join(trails))

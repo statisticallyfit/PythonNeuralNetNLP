@@ -296,7 +296,7 @@ commonCauseGraph = edgesToGraph(edges= commonCause)
 # Using the structures above, study how independencies are found:
 # %% codecell
 
-# TODO better document these types of graphcs using:
+# TODO better document these types of model graphs using:
 # ---> Korb book, page 40
 # ---> pgmpy book (Ankur ankan), page 22
 # ---> bayesialab book, page 336
@@ -402,9 +402,9 @@ commonCauseModel = BayesianModel(commonCause)
 
 assert str(commonCauseModel.local_independencies('A')) == '(A _|_ C | B)', 'Check: A and C are independent once conditional on B'
 
-# TODO this doesn't seem correct - how can C and B be independent?
-assert str(commonCauseModel.local_independencies('C')) == '(C _|_ A | B)', 'Check: C is independent of A once conditional on B'
 
+assert str(commonCauseModel.local_independencies('C')) == '(C _|_ A | B)', 'Check: A and C are independent once conditional on B (when B is fixed / observed)'
+# assert Independencies(['A', 'C', ['B']]) == Independencies(['C', 'A', ['B']])
 
 indepB: Independencies = commonCauseModel.local_independencies('B'); indepB
 # TODO pgmpy change
@@ -513,6 +513,10 @@ indep_all
 # The function `active_trail_nodes` in pgmpy gives a set of nodes which are affected (correlated) by any change in the node passed in the argument. The return value is `{keyNode : trailSetNodes}`, where the key value in the dictionary is the node that is changed, and the set in the value of the dictionary is the set of (trail) nodes that are affected by the change in the key node. (`{changerNode : affectedNodes}`)
 #
 # * NOTE: exact description from documentation: Returns a dictionary with the given variables as keys (of the dict) and all the nodes reachable from that respective variable as values (of the dict). This means the active trails are: `changerNode ---> affectedNodes[0], changerNode ---> affectedNodes[1], ... changerNode ---> affectedNodes[LEN-1]`, ... etc
+#
+# * NOTE: studying active trails from a purely combinatorial point of view, for each type of model (no intuition yet,
+# that is below when we combine independencies + active trails + types of reasoning per model)
+#
 # %% codecell
 causalGraph
 # %% codecell
@@ -932,6 +936,226 @@ assert commonCauseModel.active_trail_nodes(['A','B','C'], observed = ['A', 'C'])
 assert commonCauseModel.active_trail_nodes(['A','B','C'], observed = ['B', 'C']) \
        == intersectDictValues(all_c, all_b) \
        == {'A': {'A'}, 'B': set(), 'C': set()}
+
+
+
+
+
+
+
+# %% markdown
+# ### Study: Types of Reasonings As Active Trails for the Four Abstract Models
+#
+# Understanding how conditioning on different variables for different kinds of models creates active trails, thus enabling different kinds of reasoning types.
+
+# %% codecell
+causalGraph
+
+# %% markdown
+# $\color{Violet}{\texttt{Case 1: Marginal Dependence}}$
+#
+# $$
+# \color{SpringGreen}{ B \; \text{is unknown: }\;\;\;\;\;\;\;\;\;\;\; A \longrightarrow B \longrightarrow C}
+# $$
+#
+# When the middle node $B$ is unknown / unobserved, there IS an active trail between $A$ and $C$. In other words, there is a dependence between $A$ and $C$ when $B$ is unobserved. This means the probability of $A$ can influence probability of $C$ (and vice versa) when information about $B$'s state is unknown.
+# %% codecell
+# TESTING: active trail method
+assert causalModel.is_active_trail(start = 'A', end = 'C', observed = None)
+
+assert causalModel.active_trail_nodes(variables = ['A', 'C']) == {'A': {'A', 'B', 'C'}, 'C': {'A', 'B', 'C'}}
+
+showActiveTrails(model = causalModel, variables = ['A', 'C'])
+# %% markdown
+# $\color{Violet}{\texttt{Case 2: Conditional Independence}}$
+#
+# $$
+# \color{DeepSkyBlue}{ B \; \text{is fixed: }\;\;\;\;\;\;\;\;\;\;\; A \; \bot \; C \; | \; B}
+# $$
+#
+# When the middle node $B$ is known (fixed / observed), then there is NO active trail between $A$ and $C$. In other words, $A$ and $C$ are locally independent when $B$'s state is observed. This means the probability of $A$ won't influence probability of $C$ (and vice versa) when $B$'s state is observed.
+# %% codecell
+# TESTING: active trail method
+assert not causalModel.is_active_trail(start = 'A', end = 'C', observed = 'B')
+
+assert causalModel.active_trail_nodes(variables = ['A', 'C'], observed = 'B') == {'A': {'A'}, 'C': {'C'}}
+
+showActiveTrails(model = causalModel, variables = ['A', 'C'], observed = 'B')
+
+# %% codecell
+# TESTING: independencies method
+indepA = Independencies(['A', 'C', ['B']])
+indepC = Independencies(['C', 'A', ['B']])
+
+assert causalModel.local_independencies('A') == Independencies()
+
+assert (causalModel.local_independencies('C') == indepC and
+        indepA == indepC), \
+        "Check: A and C are independent once conditional on B (once B is fixed / observed)"
+
+
+indepSynonymTable(model = causalModel, queryNode = 'C')
+
+
+
+
+
+# %% codecell
+evidentialGraph
+
+# %% markdown
+# $\color{Violet}{\texttt{Case 1: Marginal Dependence}}$
+#
+# $$
+# \color{SpringGreen}{ B \; \text{is unknown: }\;\;\;\;\;\;\;\;\;\;\; A \longrightarrow B \longrightarrow C}
+# $$
+#
+# When the middle node $B$ is unknown / unobserved, there IS an active trail between $A$ and $C$. In other words, there is a dependence between $A$ and $C$ when $B$ is unobserved. This means the probability of $A$ can influence probability of $C$ (and vice versa) when information about $B$'s state is unknown.
+# %% codecell
+# TESTING: active trail method
+# NOTE: active trail is symmetric:
+assert evidentialModel.is_active_trail(start = 'C', end = 'A', observed = None)
+assert evidentialModel.is_active_trail(start = 'A', end = 'C', observed = None)
+assert evidentialModel.active_trail_nodes(variables = ['A', 'C']) == {'A': {'A', 'B', 'C'}, 'C': {'A', 'B', 'C'}}
+
+showActiveTrails(model = evidentialModel, variables = ['A', 'C'], observed = None)
+# %% markdown
+# $\color{Violet}{\texttt{Case 2: Conditional Independence}}$
+#
+# $$
+# \color{DeepSkyBlue}{ B \; \text{is fixed: }\;\;\;\;\;\;\;\;\;\;\; A \; \bot \; C \; | \; B}
+# $$
+#
+# When the middle node $B$ is known (fixed / observed), then there is NO active trail between $A$ and $C$. In other words, $A$ and $C$ are locally independent when $B$'s state is observed. This means the probability of $A$ won't influence probability of $C$ (and vice versa) when $B$'s state is observed.
+# %% codecell
+# TESTING: active trail method
+assert not evidentialModel.is_active_trail(start = 'C', end = 'A', observed = 'B')
+
+assert evidentialModel.active_trail_nodes(variables = ['A', 'C'], observed = 'B') == {'A': {'A'}, 'C': {'C'}}
+
+showActiveTrails(model = evidentialModel, variables = ['A', 'C'], observed = 'B')
+
+# %% codecell
+# TESTING: independencies method
+indepA = Independencies(['A', 'C', ['B']])
+indepC = Independencies(['C', 'A', ['B']])
+
+assert evidentialModel.local_independencies('C') == Independencies()
+
+assert (evidentialModel.local_independencies('A') == indepA and
+        indepA == indepC),  \
+        "Check: A and C are independent once conditional on B (once B is fixed / observed)"
+
+indepSynonymTable(model = evidentialModel, queryNode = 'A')
+
+
+
+
+# %% codecell
+commonCauseGraph
+
+# %% markdown
+# $\color{Violet}{\texttt{Case 1: Marginal Dependence}}$
+#
+# $$
+# \color{SpringGreen}{ B \; \text{is unknown: }\;\;\;\;\;\;\;\;\;\;\; A \longrightarrow B \longrightarrow C}
+# $$
+#
+# When the parent $B$ is unknown / unobserved, there IS an active trail between $A$ and $C$. In other words, there is a dependence between $A$ and $C$ when $B$ is unobserved. This means the probability of $A$ can influence probability of $C$ (and vice versa) when information about $B$'s state is unknown.
+# %% codecell
+# TESTING: active trail method
+assert commonCauseModel.is_active_trail(start = 'A', end = 'C', observed = None)
+
+assert commonCauseModel.active_trail_nodes(variables = ['A', 'C']) == {'A': {'A', 'B', 'C'}, 'C': {'A', 'B', 'C'}}
+
+showActiveTrails(model = commonCauseModel, variables = ['A', 'C'], observed = None)
+# %% markdown
+# %% markdown
+# $\color{Violet}{\texttt{Case 2: Conditional Independence}}$
+#
+# $$
+# \color{DeepSkyBlue}{ B \; \text{is fixed: }\;\;\;\;\;\;\;\;\;\;\; A \; \bot \; C \; | \; B}
+# $$
+#
+# When the parent $B$ is known (fixed / observed), then there is NO active trail between $A$ and $C$. In other words, $A$ and $C$ are locally independent when $B$'s state is observed. This means the probability of $A$ won't influence probability of $C$ (and vice versa) when $B$'s state is observed.
+# %% codecell
+# TESTING: active trail method
+assert not commonCauseModel.is_active_trail(start = 'A', end = 'C', observed = 'B')
+
+assert commonCauseModel.active_trail_nodes(variables = ['A', 'C'], observed = 'B') == {'A': {'A'}, 'C': {'C'}}
+
+showActiveTrails(model = commonCauseModel, variables = ['A', 'C'], observed = 'B')
+
+# %% codecell
+# TESTING: independencies method
+indepA = Independencies(['A', 'C', ['B']])
+indepC = Independencies(['C', 'A', ['B']])
+
+
+assert (commonCauseModel.local_independencies('C') == indepC and
+        commonCauseModel.local_independencies('A') == indepA and
+        indepA == indepC),  \
+        "Check: A and C are independent once conditional on B (once B is fixed / observed)"
+
+print(indepSynonymTable(model = commonCauseModel, queryNode = 'A'))
+print(indepSynonymTable(model = commonCauseModel, queryNode = 'C'))
+
+
+
+
+
+
+# %% codecell
+commonEvidenceGraph
+
+# %% markdown
+# $\color{Violet}{\texttt{Case 1: Marginal Independence}}$
+#
+# $$
+# \color{DeepSkyBlue}{ B \; \text{is unknown: }\;\;\;\;\;\;\;\;\;\;\; A \; \bot \; C}
+# $$
+#
+# When the collider $B$ is unknown / unobserved, there is NO active trail between $A$ and $C$. In other words, $A$ and $C$ are locally independent when $B$ is unobserved. This means the probability of $A$ won't influence probability of $C$ (and vice versa) when $B$'s state is unobserved.
+# %% codecell
+# TESTING: active trail method
+assert not commonEvidenceModel.is_active_trail(start = 'A', end = 'C', observed = None)
+
+assert commonEvidenceModel.active_trail_nodes(variables = ['A', 'C']) == {'A': {'A', 'B'}, 'C': {'B', 'C'}}
+
+showActiveTrails(model = commonEvidenceModel, variables = ['A', 'C'], observed = None)
+
+# %% codecell
+# TESTING: independencies method
+indepA = Independencies(['A', 'C'])
+indepC = Independencies(['C', 'A'])
+
+assert commonEvidenceModel.local_independencies('B') == Independencies()
+
+assert (commonEvidenceModel.local_independencies('C') == indepC and
+        commonEvidenceModel.local_independencies('A') == indepA and
+        indepA == indepC),  \
+        "Check: A and C are marginally independent (independent even when not conditioning / fixing / observing B)"
+
+print(indepSynonymTable(model = commonEvidenceModel, queryNode = 'A'))
+print(indepSynonymTable(model = commonEvidenceModel, queryNode = 'C'))
+
+# %% markdown
+# **$\color{Violet}{\texttt{Case 2: Conditional Dependence}}$**
+#
+# $$
+# \color{SpringGreen}{ B \; \text{is fixed: }\;\;\;\;\;\;\;\;\;\;\; A \longrightarrow B \longrightarrow C}
+# $$
+#
+# When the collider $B$ is known (fixed / observed), then there IS an active trail between $A$ and $C$. In other words, there is a dependence between $A$ and $C$ when $B$ is observed, meaning the probability of $A$ can influence probability of $C$ (and vice versa) when information about $B$ is known.
+# %% codecell
+# TESTING: active trail method
+assert commonEvidenceModel.is_active_trail(start = 'A', end = 'C', observed = 'B')
+
+assert commonEvidenceModel.active_trail_nodes(variables = ['A', 'C'], observed = 'B') == {'A': {'A', 'C'}, 'C': {'A', 'C'}}
+
+showActiveTrails(model = commonEvidenceModel, variables = ['A', 'C'], observed = 'B')
+
+
 
 
 
