@@ -47,7 +47,7 @@ from pgmpy.factors.discrete import TabularCPD
 from pgmpy.factors.discrete import JointProbabilityDistribution
 from pgmpy.factors.discrete.DiscreteFactor import DiscreteFactor
 from pgmpy.independencies import Independencies
-
+from pgmpy.independencies.Independencies import IndependenceAssertion
 
 
 from operator import mul
@@ -313,14 +313,41 @@ pgmpyToGraph(alarmModel)
 # \color{Green}{ \text{Alarm (unknown): }\;\;\;\;\;\;\;\;\; \text{Earthquake} \longrightarrow \text{Alarm} \longrightarrow \text{JohnCalls}}
 # $$
 # When `Alarm`'s state is uknown, there is an active trail or dependency between `Earthquake` and `JohnCalls`, so the probability of `Earthquake` can influence the probability of `JohnCalls` (and vice versa) when `Alarm`'s state is unknown.
+# %% markdown
+# **Verify:** Using Active Trails
 # %% codecell
-# TESTING: active trail method
 assert alarmModel.is_active_trail(start = 'Burglary', end = 'MaryCalls', observed = None)
 assert alarmModel.is_active_trail(start = 'Burglary', end = 'JohnCalls', observed = None)
 assert alarmModel.is_active_trail(start = 'Earthquake', end = 'MaryCalls', observed = None)
 assert alarmModel.is_active_trail(start = 'Earthquake', end = 'JohnCalls', observed = None)
 
+
+
 showActiveTrails(model = alarmModel, variables = ['Burglary', 'MaryCalls'])
+
+# %% codecell
+elim: VariableElimination = VariableElimination(model = alarmModel)
+
+# %% markdown
+# **Verify:** Using Probabilities (just the $B \rightarrow A \rightarrow J$ trail)
+# %% codecell
+
+# Case 1: Alarm = True
+BAJ: DiscreteFactor = elim.query(variables = ['JohnCalls'], evidence = None)
+print(BAJ)
+# %% codecell
+# When there has been burglary and no Alarm was observed, there is a higher probability of John calling, compared to when no burglary was observed and no alarm was observed. (above)
+BAJ_1 = elim.query(variables = ['JohnCalls'], evidence = {'Burglary':'True'})
+print(BAJ_1)
+# %% codecell
+# When there was no burglary and no alarm was observed, there is a lower probability of John calling than when no burglary and alarm were observed (first case)
+BAJ_2 = elim.query(variables = ['JohnCalls'], evidence = {'Burglary':'False'})
+print(BAJ_2)
+# %% codecell
+assert (BAJ.values != BAJ_1.values).all() and (BAJ.values != BAJ_2.values).all(), "Check there is dependency between Burglary and JohnCalls, when Alarm state is unobserved "
+
+
+
 # %% markdown [markdown]
 # $\color{MediumVioletRed}{\text{Case 2: Conditional Independence}}$
 #
@@ -343,8 +370,9 @@ showActiveTrails(model = alarmModel, variables = ['Burglary', 'MaryCalls'])
 # \color{DeepSkyBlue}{ \text{Alarm (fixed): }\;\;\;\;\;\;\;\; \text{Earthquake} \; \bot \; \text{JohnCalls} \; | \; \text{Alarm}}
 # $$
 # When the `Alarm`'s state is known (fixed / observed), then there is NO active trail between `Earthquake` and `JohnCalls`. In other words, `Earthquake` and `JohnCalls` are locally independent when `Alarm`'s state is observed. This means the probability of `Earthquake` won't influence probability of `JohnCalls` (and vice versa) when `Alarm`'s state is observed.
+# %% markdown
+# **Verify:** Using Active Trails
 # %% codecell
-# TESTING: active trail method
 assert not alarmModel.is_active_trail(start = 'Burglary', end = 'MaryCalls', observed = 'Alarm')
 assert not alarmModel.is_active_trail(start = 'Burglary', end = 'JohnCalls', observed = 'Alarm')
 assert not alarmModel.is_active_trail(start = 'Earthquake', end = 'MaryCalls', observed = 'Alarm')
@@ -352,19 +380,48 @@ assert not alarmModel.is_active_trail(start = 'Earthquake', end = 'JohnCalls', o
 
 showActiveTrails(model = alarmModel, variables = ['Burglary', 'MaryCalls'], observed = 'Alarm')
 
+# %% markdown
+# **Verify:** Using Independencies (just the $(B \; \bot \; M \; | \; A)$ independence)
 # %% codecell
-# TESTING: independencies method
-indepA = Independencies(['A', 'C', ['B']])
-indepC = Independencies(['C', 'A', ['B']])
+indepBurglary: IndependenceAssertion = Independencies(['Burglary', 'MaryCalls', ['Alarm']]).get_assertions()[0]; indepBurglary
 
-assert causalModel.local_independencies('A') == Independencies()
+indepMary: IndependenceAssertion = Independencies(['MaryCalls', 'Burglary', ['Alarm']]).get_assertions()[0]; indepMary
 
-assert (causalModel.local_independencies('C') == indepC and
-        indepA == indepC), \
-        "Check: A and C are independent once conditional on B (once B is fixed / observed)"
+# Using the fact that closure returns independencies that are IMPLIED by the current independencies:
+assert indepMary in alarmModel.local_independencies('MaryCalls').closure().get_assertions(), "Check 1: Burglary and MaryCalls are independent once conditional on Alarm"
+
+assert indepBurglary in alarmModel.local_independencies('MaryCalls').closure().get_assertions(), "Check 2: Burglary and MaryCalls are independent once conditional on Alarm"
+
+indepMaryLarger.closure()
 
 
-indepSynonymTable(model = causalModel, queryNode = 'C')
+# See: MaryCalls and Burglary are conditionally independent on Alarm:
+indepSynonymTable(model = alarmModel_brief, queryNode = 'M')
+
+
+
+# %% markdown
+# **Verify:** Using Probabilities Method (just the $(E \; \bot \; J \; | \; A)$ independence)
+# %% codecell
+# Causal Chain: B --> A --> J
+# Case 1: Alarm = True
+EAJ: DiscreteFactor = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'True'})
+EAJ_1 = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'True', 'Earthquake':'True'})
+EAJ_2 = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'True', 'Earthquake':'False'})
+
+assert (EAJ.values == EAJ_1.values).all() and (EAJ.values == EAJ_2.values).all(), "Check: there is independence between Earthquake and JohnCalls when Alarm state is observed (Alarm = True)"
+
+print(EAJ)
+# %% codecell
+# Case 2: Alarm = False
+EAJ: DiscreteFactor = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'False'})
+EAJ_1 = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'False', 'Earthquake':'True'})
+EAJ_2 = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'False', 'Earthquake':'False'})
+
+assert (EAJ.values == EAJ_1.values).all() and (EAJ.values == EAJ_2.values).all(), "Check: there is independence between Earthquake and JohnCalls when Alarm state is observed (Alarm = False)"
+
+print(EAJ)
+
 
 
 
@@ -372,10 +429,6 @@ indepSynonymTable(model = causalModel, queryNode = 'C')
 
 
 # %% markdown
-# * B ---> A --> J
-# * E ---> A --> M
-# * E ---> A --> J
-
 # 2. Evidential Reasoning
 # 3. Intercausal Reasoning
 #   * Given: Mary calls, Alarm rang, John id not call --> M = True, A = True, J = False
@@ -412,9 +465,9 @@ print(BAM)
 # Causal Reasoning: B ---> A ---> J
 
 # Case 1: Alarm = True
-BAJ: DiscreteFactor = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'False'})
-BAJ_1 = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'False', 'Burglary':'True'})
-BAJ_2 = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'False', 'Burglary':'False'})
+BAJ: DiscreteFactor = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'True'})
+BAJ_1 = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'True', 'Burglary':'True'})
+BAJ_2 = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'True', 'Burglary':'False'})
 assert (BAJ.values == BAJ_1.values).all() and (BAJ.values == BAJ_2.values).all()
 
 print(BAJ)
