@@ -278,19 +278,16 @@ print(alarmJPD)
 #
 # Now let us do inference in a  Bayesian model and predict values using this model over new data points for ML tasks.
 #
-# TODO start here: following example of 2_Bayes tutorial, document each type of reasoning using the active trail ndoe (1 assert active trail node exists for the particular kind of chain (causal, evidence, common caus ..), and then (2) do the use cases, the different kinds of chains, asserting values of marginalized dist are equal)
-# page 23 pgmpy book
-#
-#
-# ### 1. Causal Reasoning in the Causal Model
-# * Causal Chain: $B \longrightarrow A \longrightarrow M$
-#   * (A unobserved): if no Alarm is observed, then Burglary can influence MaryCalls through Alarm.
-#   * (A fixed): if Alarm is observed to ring, then irrespective of whether there was a Burglary or not, it won't change the belief of MaryCalls: $B _|_ M | A$
+# ### 1. Causal Reasoning in the Alarm Model
+# For a causal model $A \rightarrow B \rightarrow C$, there are two cases:
+#   * **Marginal Independence:** ($B$ unknown): When $B$ is unknown / unobserved, there is NO active trail between $A$ and $C$, so they are independent. The probability of $A$ won't influence probability of $C$ (and vice versa) when $B$'s state is unobserved.
+#   * **Conditional Dependence:** ($B$ fixed): When $B$ is fixed, there is an active trail between $A$ and $C$, meaning the probability of $A$ can influence probability of $C$ (and vice versa) when information about $B$ is known.
+
 
 # %% codecell
 pgmpyToGraph(alarmModel)
 # %% markdown [markdown]
-# $\color{MediumVioletRed}{\text{Case 1: Marginal Dependence}}$
+# $\color{MediumVioletRed}{\text{Case 1: Marginal Dependence (for Causal Model)}}$
 #
 # $$
 # \color{Green}{ \text{Alarm (unknown): }\;\;\;\;\;\;\;\;\; \text{Burglary} \longrightarrow \text{Alarm} \longrightarrow \text{MaryCalls}}
@@ -321,18 +318,14 @@ assert alarmModel.is_active_trail(start = 'Burglary', end = 'JohnCalls', observe
 assert alarmModel.is_active_trail(start = 'Earthquake', end = 'MaryCalls', observed = None)
 assert alarmModel.is_active_trail(start = 'Earthquake', end = 'JohnCalls', observed = None)
 
-
-
 showActiveTrails(model = alarmModel, variables = ['Burglary', 'MaryCalls'])
 
 # %% codecell
 elim: VariableElimination = VariableElimination(model = alarmModel)
 
 # %% markdown
-# **Verify:** Using Probabilities (just the $B \rightarrow A \rightarrow J$ trail)
+# **Verify:** Using Probabilities (example of $B \rightarrow A \rightarrow J$ trail)
 # %% codecell
-
-# Case 1: Alarm = True
 BAJ: DiscreteFactor = elim.query(variables = ['JohnCalls'], evidence = None)
 print(BAJ)
 # %% codecell
@@ -347,9 +340,27 @@ print(BAJ_2)
 assert (BAJ.values != BAJ_1.values).all() and (BAJ.values != BAJ_2.values).all(), "Check there is dependency between Burglary and JohnCalls, when Alarm state is unobserved "
 
 
+# %% markdown
+# **Verify:** Using Probabilities (example of $E \rightarrow A \rightarrow M$ trail)
+# %% codecell
+EAM: DiscreteFactor = elim.query(variables = ['MaryCalls'], evidence = None)
+print(EAM)
+# %% codecell
+# When there has been earthquake and no Alarm was observed, there is a higher probability of Mary calling, compared to when there was no earthquake and no alarm was observed. (above)
+EAM_1 = elim.query(variables = ['MaryCalls'], evidence = {'Earthquake':'True'})
+print(EAM_1)
+# %% codecell
+# When there was no earthquake and no alarm was observed, there is a lower probability (??) of Mary calling than when there was no earthquake and no alarm  observed
+EAM_2 = elim.query(variables = ['MaryCalls'], evidence = {'Earthquake':'False'})
+print(EAM_2)
+# %% codecell
+assert (EAM.values != EAM_1.values).all() and (EAM.values != EAM_2.values).all(), "Check there is dependency between Earthquake and MaryCalls, when Alarm state is unobserved "
+
+
+
 
 # %% markdown [markdown]
-# $\color{MediumVioletRed}{\text{Case 2: Conditional Independence}}$
+# $\color{MediumVioletRed}{\text{Case 2: Conditional Independence (for Causal Model)}}$
 #
 # $$
 # \color{DeepSkyBlue}{ \text{Alarm (fixed): }\;\;\;\;\;\;\;\; \text{Burglary} \; \bot \; \text{MaryCalls} \; | \; \text{Alarm}}
@@ -388,13 +399,17 @@ indepBurglary: IndependenceAssertion = Independencies(['Burglary', 'MaryCalls', 
 indepMary: IndependenceAssertion = Independencies(['MaryCalls', 'Burglary', ['Alarm']]).get_assertions()[0]; indepMary
 
 # Using the fact that closure returns independencies that are IMPLIED by the current independencies:
-assert indepMary in alarmModel.local_independencies('MaryCalls').closure().get_assertions(), "Check 1: Burglary and MaryCalls are independent once conditional on Alarm"
+assert (str(indepMary) == '(MaryCalls _|_ Burglary | Alarm)' and
+        indepMary in alarmModel.local_independencies('MaryCalls').closure().get_assertions()),  \
+        "Check 1: Burglary and MaryCalls are independent once conditional on Alarm"
 
-assert indepBurglary in alarmModel.local_independencies('MaryCalls').closure().get_assertions(), "Check 2: Burglary and MaryCalls are independent once conditional on Alarm"
+assert (str(indepBurglary) == '(Burglary _|_ MaryCalls | Alarm)' and
+        indepBurglary in alarmModel.local_independencies('MaryCalls').closure().get_assertions()), \
+        "Check 2: Burglary and MaryCalls are independent once conditional on Alarm"
 
-indepMaryLarger.closure()
+alarmModel.local_independencies('MaryCalls').closure()
 
-
+# %% codecell
 # See: MaryCalls and Burglary are conditionally independent on Alarm:
 indepSynonymTable(model = alarmModel_brief, queryNode = 'M')
 
@@ -403,7 +418,7 @@ indepSynonymTable(model = alarmModel_brief, queryNode = 'M')
 # %% markdown
 # **Verify:** Using Probabilities Method (just the $(E \; \bot \; J \; | \; A)$ independence)
 # %% codecell
-# Causal Chain: B --> A --> J
+
 # Case 1: Alarm = True
 EAJ: DiscreteFactor = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'True'})
 EAJ_1 = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'True', 'Earthquake':'True'})
@@ -428,52 +443,347 @@ print(EAJ)
 
 
 
+
+
+# %% markdown
+# ### 2. Evidential Reasoning in the Alarm Model
+# For an evidential model $A \leftarrow B \leftarrow C$, there are two cases:
+#   * **Marginal Independence:** ($B$ unknown): When $B$ is unknown / unobserved, there is NO active trail between $A$ and $C$, so they are independent. The probability of $A$ won't influence probability of $C$ (and vice versa) when $B$'s state is unobserved.
+#   * **Conditional Dependence:** ($B$ fixed): When $B$ is fixed, there is an active trail between $A$ and $C$, meaning the probability of $A$ can influence probability of $C$ (and vice versa) when information about $B$ is known.
+
+
+# %% codecell
+pgmpyToGraph(alarmModel)
+# %% markdown [markdown]
+# $\color{MediumVioletRed}{\text{Case 1: Marginal Dependence (for Evidential Model)}}$
+#
+# $$
+# \color{Green}{ \text{Alarm (unknown): }\;\;\;\;\;\;\;\;\; \text{Burglary} \longleftarrow \text{Alarm} \longleftarrow
+# \text{MaryCalls}}
+# $$
+#
+# When the middle node `Alarm` is unknown / unobserved, there IS an active trail between `Burglary` and `MaryCalls`. In other words, there is a dependence between `Burglary` and `MaryCalls` when `Alarm` is unobserved. This means the probability of `Burglary` can influence probability of `MaryCalls` (and vice versa) when information about `Alarm`'s state is unknown.
+#
+#
+# $$
+# \color{Green}{ \text{Alarm (unknown): }\;\;\;\;\;\;\;\;\; \text{Burglary} \longleftarrow \text{Alarm} \longleftarrow \text{JohnCalls}}
+# $$
+# When `Alarm`'s state is uknown, there is an active trail or dependency between `Burglary` and `JohnCalls`, so the probability of `Burglary` can influence the probability of `JohnCalls` (and vice versa) when `Alarm`'s state is unknown.
+#
+# $$
+# \color{Green}{ \text{Alarm (unknown): }\;\;\;\;\;\;\;\;\; \text{Earthquake} \longleftarrow \text{Alarm} \longleftarrow \text{MaryCalls}}
+# $$
+# When `Alarm`'s state is uknown, there is an active trail or dependency between `Earthquake` and `MaryCalls`, so the probability of `Earthquake` can influence the probability of `MaryCalls` (and vice versa) when `Alarm`'s state is unknown.
+#
+# $$
+# \color{Green}{ \text{Alarm (unknown): }\;\;\;\;\;\;\;\;\; \text{Earthquake} \longleftarrow \text{Alarm} \longleftarrow \text{JohnCalls}}
+# $$
+# When `Alarm`'s state is uknown, there is an active trail or dependency between `Earthquake` and `JohnCalls`, so the probability of `Earthquake` can influence the probability of `JohnCalls` (and vice versa) when `Alarm`'s state is unknown.
+# %% markdown
+# **Verify:** Using Active Trails
+# %% codecell
+assert alarmModel.is_active_trail(start = 'MaryCalls', end = 'Burglary',  observed = None)
+assert alarmModel.is_active_trail(start = 'MaryCalls', end = 'Earthquake', observed = None)
+assert alarmModel.is_active_trail(start = 'JohnCalls', end = 'Burglary', observed = None)
+assert alarmModel.is_active_trail(start = 'JohnCalls', end = 'Earthquake', observed = None)
+
+showActiveTrails(model = alarmModel, variables = ['MaryCalls', 'Burglary'])
+
+
+# %% markdown
+# **Verify:** Using Probabilities (example of $B \leftarrow A \leftarrow J$ trail)
+# %% codecell
+JAB: DiscreteFactor = elim.query(variables = ['Burglary'], evidence = None)
+print(JAB)
+# %% codecell
+# When John has called and no Alarm was observed, there is a lower probability of Burglary, compared to when no call from John is observed and no alarm was observed. (above)
+JAB_1 = elim.query(variables = ['Burglary'], evidence = {'JohnCalls':'True'})
+print(JAB_1)
+# %% codecell
+# When John does not call and no alarm was observed, there is a higher probability of Burglary than when no call from John is observed and no alarm is observed (first case)
+JAB_2 = elim.query(variables = ['Burglary'], evidence = {'JohnCalls':'False'})
+print(JAB_2)
+# %% codecell
+assert (JAB.values != JAB_1.values).all() and (JAB.values != JAB_2.values).all(), "Check there is dependency between Burglary and JohnCalls, when Alarm state is unobserved "
+
+
+# %% markdown
+# **Verify:** Using Probabilities (example of $E \leftarrow A \leftarrow J$ trail)
+# %% codecell
+JAE: DiscreteFactor = elim.query(variables = ['Earthquake'], evidence = None)
+print(JAE)
+# %% codecell
+# When John calls and no Alarm was observed, there comes out a lower probability of Earthquake than when there is no evidence of John calling nor Alarm ringing.
+JAE_1 = elim.query(variables = ['Earthquake'], evidence = {'JohnCalls':'True'})
+print(JAE_1)
+# %% codecell
+# When John does not call and no Alarm was observed, there comes out a higher probability of Earthquake than when there is no evidence of John calling nor Alarm ringing. (and higher even than when Mary does call and no alarm rings (above))
+JAE_2 = elim.query(variables = ['Earthquake'], evidence = {'JohnCalls':'False'})
+print(JAE_2)
+# %% codecell
+assert (JAE.values != JAE_1.values).all() and (JAE.values != JAE_2.values).all(), "Check there is dependency between Burglary and MaryCalls, when Alarm state is unobserved "
+
+
+
+
+# %% markdown [markdown]
+# $\color{MediumVioletRed}{\text{Case 2: Conditional Independence (for Evidential Model)}}$
+#
+# $$
+# \color{DeepSkyBlue}{ \text{Alarm (fixed): }\;\;\;\;\;\;\;\; \text{Burglary} \; \bot \; \text{MaryCalls} \; | \; \text{Alarm}}
+# $$
+# When the `Alarm`'s state is known (fixed / observed), then there is NO active trail between `Burglary` and `MaryCalls`. In other words, `Burglary` and `MaryCalls` are locally independent when `Alarm`'s state is observed. This means the probability of `Burglary` won't influence probability of `MaryCalls` (and vice versa) when `Alarm`'s state is observed.
+#
+# $$
+# \color{DeepSkyBlue}{ \text{Alarm (fixed): }\;\;\;\;\;\;\;\; \text{Burglary} \; \bot \; \text{JohnCalls} \; | \; \text{Alarm}}
+# $$
+# When the `Alarm`'s state is known (fixed / observed), then there is NO active trail between `Burglary` and `JohnCalls`. In other words, `Burglary` and `JohnCalls` are locally independent when `Alarm`'s state is observed. This means the probability of `Burglary` won't influence probability of `JohnCalls` (and vice versa) when `Alarm`'s state is observed.
+#
+# $$
+# \color{DeepSkyBlue}{ \text{Alarm (fixed): }\;\;\;\;\;\;\;\; \text{Earthquake} \; \bot \; \text{MaryCalls} \; | \; \text{Alarm}}
+# $$
+# When the `Alarm`'s state is known (fixed / observed), then there is NO active trail between `Earthquake` and `MaryCalls`. In other words, `Earthquake` and `MaryCalls` are locally independent when `Alarm`'s state is observed. This means the probability of `Earthquake` won't influence probability of `MaryCalls` (and vice versa) when `Alarm`'s state is observed.
+#
+# $$
+# \color{DeepSkyBlue}{ \text{Alarm (fixed): }\;\;\;\;\;\;\;\; \text{Earthquake} \; \bot \; \text{JohnCalls} \; | \; \text{Alarm}}
+# $$
+# When the `Alarm`'s state is known (fixed / observed), then there is NO active trail between `Earthquake` and `JohnCalls`. In other words, `Earthquake` and `JohnCalls` are locally independent when `Alarm`'s state is observed. This means the probability of `Earthquake` won't influence probability of `JohnCalls` (and vice versa) when `Alarm`'s state is observed.
+# %% markdown
+# **Verify:** Using Active Trails
+# %% codecell
+assert not alarmModel.is_active_trail(start = 'MaryCalls', end = 'Burglary', observed = 'Alarm')
+assert not alarmModel.is_active_trail(start = 'MaryCalls', end = 'Earthquake', observed = 'Alarm')
+assert not alarmModel.is_active_trail(start = 'JohnCalls', end = 'Burglary', observed = 'Alarm')
+assert not alarmModel.is_active_trail(start = 'JohnCalls', end = 'Earthquake', observed = 'Alarm')
+
+showActiveTrails(model = alarmModel, variables = ['JohnCalls', 'Earthquake'], observed = 'Alarm')
+
+# %% markdown
+# **Verify:** Using Independencies (just the $(B \; \bot \; M \; | \; A)$ independence)
+# %% codecell
+indepBurglary: IndependenceAssertion = Independencies(['Burglary', 'MaryCalls', ['Alarm']]).get_assertions()[0]; indepBurglary
+
+indepMary: IndependenceAssertion = Independencies(['MaryCalls', 'Burglary', ['Alarm']]).get_assertions()[0]; indepMary
+
+# Using the fact that closure returns independencies that are IMPLIED by the current independencies:
+assert (str(indepMary) == '(MaryCalls _|_ Burglary | Alarm)' and
+        indepMary in alarmModel.local_independencies('MaryCalls').closure().get_assertions()),  \
+        "Check 1: Burglary and MaryCalls are independent once conditional on Alarm"
+
+assert (str(indepBurglary) == '(Burglary _|_ MaryCalls | Alarm)' and
+        indepBurglary in alarmModel.local_independencies('MaryCalls').closure().get_assertions()), \
+        "Check 2: Burglary and MaryCalls are independent once conditional on Alarm"
+
+alarmModel.local_independencies('MaryCalls').closure()
+
+# %% codecell
+# See: MaryCalls and Burglary are conditionally independent on Alarm:
+indepSynonymTable(model = alarmModel_brief, queryNode = 'M')
+
+
+
+# %% markdown
+# **Verify:** Using Probabilities Method (just the $(E \; \bot \; J \; | \; A)$ independence)
+# %% codecell
+
+# Case 1: Alarm = True
+JAE: DiscreteFactor = elim.query(variables = ['Earthquake'], evidence = {'Alarm': 'True'})
+JAE_1 = elim.query(variables = ['Earthquake'], evidence = {'Alarm': 'True', 'JohnCalls':'True'})
+JAE_2 = elim.query(variables = ['Earthquake'], evidence = {'Alarm': 'True', 'JohnCalls':'False'})
+
+assert (JAE.values == JAE_1.values).all() and (JAE.values == JAE_2.values).all(), "Check: there is independence between Earthquake and JohnCalls when Alarm state is observed (Alarm = True)"
+
+print(JAE)
+# %% codecell
+# Case 2: Alarm = False
+JAE: DiscreteFactor = elim.query(variables = ['Earthquake'], evidence = {'Alarm': 'False'})
+JAE_1 = elim.query(variables = ['Earthquake'], evidence = {'Alarm': 'False', 'JohnCalls':'True'})
+JAE_2 = elim.query(variables = ['Earthquake'], evidence = {'Alarm': 'False', 'JohnCalls':'False'})
+
+assert (JAE.values == JAE_1.values).all() and (JAE.values == JAE_2.values).all(), "Check: there is independence between Earthquake and JohnCalls when Alarm state is observed (Alarm = False)"
+
+print(JAE)
+
+
+
+
+
+
+
+# %% markdown
+# ### 3. $\color{red}{\text{TODO}}$: what kind of reasoning is in the Common Cause Model?
+# ### 4. Inter-Causal Reasoning in the Alarm Model
+# For a common effect model $A \rightarrow B \leftarrow C$, there are two cases:
+#   * **Marginal Independence:** ($B$ unknown): When $B$ is unknown / unobserved, there is NO active trail between $A$ and $C$; they are independent. The probability of $A$ won't influence probability of $C$ (and vice versa) when $B$'s state is unknown.
+#   * **Conditional Dependence:** ($B$ fixed): When $B$ is fixed, there IS an active trail between $A$ and $C$, meaning the probability of $A$ can influence probability of $C$ (and vice versa) when information about $B$ is observed / fixed.
+
+
+# %% codecell
+pgmpyToGraph(alarmModel)
+# %% markdown [markdown]
+# $\color{MediumVioletRed}{\text{Case 1: Marginal Dependence (for Evidential Model)}}$
+#
+# $$
+# \color{Green}{ \text{Alarm (unknown): }\;\;\;\;\;\;\;\;\; \text{Burglary} \longleftarrow \text{Alarm} \longleftarrow
+# \text{MaryCalls}}
+# $$
+#
+# When the middle node `Alarm` is unknown / unobserved, there IS an active trail between `Burglary` and `MaryCalls`. In other words, there is a dependence between `Burglary` and `MaryCalls` when `Alarm` is unobserved. This means the probability of `Burglary` can influence probability of `MaryCalls` (and vice versa) when information about `Alarm`'s state is unknown.
+#
+#
+# $$
+# \color{Green}{ \text{Alarm (unknown): }\;\;\;\;\;\;\;\;\; \text{Burglary} \longleftarrow \text{Alarm} \longleftarrow \text{JohnCalls}}
+# $$
+# When `Alarm`'s state is uknown, there is an active trail or dependency between `Burglary` and `JohnCalls`, so the probability of `Burglary` can influence the probability of `JohnCalls` (and vice versa) when `Alarm`'s state is unknown.
+#
+# $$
+# \color{Green}{ \text{Alarm (unknown): }\;\;\;\;\;\;\;\;\; \text{Earthquake} \longleftarrow \text{Alarm} \longleftarrow \text{MaryCalls}}
+# $$
+# When `Alarm`'s state is uknown, there is an active trail or dependency between `Earthquake` and `MaryCalls`, so the probability of `Earthquake` can influence the probability of `MaryCalls` (and vice versa) when `Alarm`'s state is unknown.
+#
+# $$
+# \color{Green}{ \text{Alarm (unknown): }\;\;\;\;\;\;\;\;\; \text{Earthquake} \longleftarrow \text{Alarm} \longleftarrow \text{JohnCalls}}
+# $$
+# When `Alarm`'s state is uknown, there is an active trail or dependency between `Earthquake` and `JohnCalls`, so the probability of `Earthquake` can influence the probability of `JohnCalls` (and vice versa) when `Alarm`'s state is unknown.
+# %% markdown
+# **Verify:** Using Active Trails
+# %% codecell
+assert alarmModel.is_active_trail(start = 'MaryCalls', end = 'Burglary',  observed = None)
+assert alarmModel.is_active_trail(start = 'MaryCalls', end = 'Earthquake', observed = None)
+assert alarmModel.is_active_trail(start = 'JohnCalls', end = 'Burglary', observed = None)
+assert alarmModel.is_active_trail(start = 'JohnCalls', end = 'Earthquake', observed = None)
+
+showActiveTrails(model = alarmModel, variables = ['MaryCalls', 'Burglary'])
+
+
+# %% markdown
+# **Verify:** Using Probabilities (example of $B \leftarrow A \leftarrow J$ trail)
+# %% codecell
+JAB: DiscreteFactor = elim.query(variables = ['Burglary'], evidence = None)
+print(JAB)
+# %% codecell
+# When John has called and no Alarm was observed, there is a lower probability of Burglary, compared to when no call from John is observed and no alarm was observed. (above)
+JAB_1 = elim.query(variables = ['Burglary'], evidence = {'JohnCalls':'True'})
+print(JAB_1)
+# %% codecell
+# When John does not call and no alarm was observed, there is a higher probability of Burglary than when no call from John is observed and no alarm is observed (first case)
+JAB_2 = elim.query(variables = ['Burglary'], evidence = {'JohnCalls':'False'})
+print(JAB_2)
+# %% codecell
+assert (JAB.values != JAB_1.values).all() and (JAB.values != JAB_2.values).all(), "Check there is dependency between Burglary and JohnCalls, when Alarm state is unobserved "
+
+
+# %% markdown
+# **Verify:** Using Probabilities (example of $E \leftarrow A \leftarrow J$ trail)
+# %% codecell
+JAE: DiscreteFactor = elim.query(variables = ['Earthquake'], evidence = None)
+print(JAE)
+# %% codecell
+# When John calls and no Alarm was observed, there comes out a lower probability of Earthquake than when there is no evidence of John calling nor Alarm ringing.
+JAE_1 = elim.query(variables = ['Earthquake'], evidence = {'JohnCalls':'True'})
+print(JAE_1)
+# %% codecell
+# When John does not call and no Alarm was observed, there comes out a higher probability of Earthquake than when there is no evidence of John calling nor Alarm ringing. (and higher even than when Mary does call and no alarm rings (above))
+JAE_2 = elim.query(variables = ['Earthquake'], evidence = {'JohnCalls':'False'})
+print(JAE_2)
+# %% codecell
+assert (JAE.values != JAE_1.values).all() and (JAE.values != JAE_2.values).all(), "Check there is dependency between Burglary and MaryCalls, when Alarm state is unobserved "
+
+
+
+
+# %% markdown [markdown]
+# $\color{MediumVioletRed}{\text{Case 2: Conditional Independence (for Evidential Model)}}$
+#
+# $$
+# \color{DeepSkyBlue}{ \text{Alarm (fixed): }\;\;\;\;\;\;\;\; \text{Burglary} \; \bot \; \text{MaryCalls} \; | \; \text{Alarm}}
+# $$
+# When the `Alarm`'s state is known (fixed / observed), then there is NO active trail between `Burglary` and `MaryCalls`. In other words, `Burglary` and `MaryCalls` are locally independent when `Alarm`'s state is observed. This means the probability of `Burglary` won't influence probability of `MaryCalls` (and vice versa) when `Alarm`'s state is observed.
+#
+# $$
+# \color{DeepSkyBlue}{ \text{Alarm (fixed): }\;\;\;\;\;\;\;\; \text{Burglary} \; \bot \; \text{JohnCalls} \; | \; \text{Alarm}}
+# $$
+# When the `Alarm`'s state is known (fixed / observed), then there is NO active trail between `Burglary` and `JohnCalls`. In other words, `Burglary` and `JohnCalls` are locally independent when `Alarm`'s state is observed. This means the probability of `Burglary` won't influence probability of `JohnCalls` (and vice versa) when `Alarm`'s state is observed.
+#
+# $$
+# \color{DeepSkyBlue}{ \text{Alarm (fixed): }\;\;\;\;\;\;\;\; \text{Earthquake} \; \bot \; \text{MaryCalls} \; | \; \text{Alarm}}
+# $$
+# When the `Alarm`'s state is known (fixed / observed), then there is NO active trail between `Earthquake` and `MaryCalls`. In other words, `Earthquake` and `MaryCalls` are locally independent when `Alarm`'s state is observed. This means the probability of `Earthquake` won't influence probability of `MaryCalls` (and vice versa) when `Alarm`'s state is observed.
+#
+# $$
+# \color{DeepSkyBlue}{ \text{Alarm (fixed): }\;\;\;\;\;\;\;\; \text{Earthquake} \; \bot \; \text{JohnCalls} \; | \; \text{Alarm}}
+# $$
+# When the `Alarm`'s state is known (fixed / observed), then there is NO active trail between `Earthquake` and `JohnCalls`. In other words, `Earthquake` and `JohnCalls` are locally independent when `Alarm`'s state is observed. This means the probability of `Earthquake` won't influence probability of `JohnCalls` (and vice versa) when `Alarm`'s state is observed.
+# %% markdown
+# **Verify:** Using Active Trails
+# %% codecell
+assert not alarmModel.is_active_trail(start = 'MaryCalls', end = 'Burglary', observed = 'Alarm')
+assert not alarmModel.is_active_trail(start = 'MaryCalls', end = 'Earthquake', observed = 'Alarm')
+assert not alarmModel.is_active_trail(start = 'JohnCalls', end = 'Burglary', observed = 'Alarm')
+assert not alarmModel.is_active_trail(start = 'JohnCalls', end = 'Earthquake', observed = 'Alarm')
+
+showActiveTrails(model = alarmModel, variables = ['JohnCalls', 'Earthquake'], observed = 'Alarm')
+
+# %% markdown
+# **Verify:** Using Independencies (just the $(B \; \bot \; M \; | \; A)$ independence)
+# %% codecell
+indepBurglary: IndependenceAssertion = Independencies(['Burglary', 'MaryCalls', ['Alarm']]).get_assertions()[0]; indepBurglary
+
+indepMary: IndependenceAssertion = Independencies(['MaryCalls', 'Burglary', ['Alarm']]).get_assertions()[0]; indepMary
+
+# Using the fact that closure returns independencies that are IMPLIED by the current independencies:
+assert (str(indepMary) == '(MaryCalls _|_ Burglary | Alarm)' and
+        indepMary in alarmModel.local_independencies('MaryCalls').closure().get_assertions()),  \
+        "Check 1: Burglary and MaryCalls are independent once conditional on Alarm"
+
+assert (str(indepBurglary) == '(Burglary _|_ MaryCalls | Alarm)' and
+        indepBurglary in alarmModel.local_independencies('MaryCalls').closure().get_assertions()), \
+        "Check 2: Burglary and MaryCalls are independent once conditional on Alarm"
+
+alarmModel.local_independencies('MaryCalls').closure()
+
+# %% codecell
+# See: MaryCalls and Burglary are conditionally independent on Alarm:
+indepSynonymTable(model = alarmModel_brief, queryNode = 'M')
+
+
+
+# %% markdown
+# **Verify:** Using Probabilities Method (just the $(E \; \bot \; J \; | \; A)$ independence)
+# %% codecell
+
+# Case 1: Alarm = True
+JAE: DiscreteFactor = elim.query(variables = ['Earthquake'], evidence = {'Alarm': 'True'})
+JAE_1 = elim.query(variables = ['Earthquake'], evidence = {'Alarm': 'True', 'JohnCalls':'True'})
+JAE_2 = elim.query(variables = ['Earthquake'], evidence = {'Alarm': 'True', 'JohnCalls':'False'})
+
+assert (JAE.values == JAE_1.values).all() and (JAE.values == JAE_2.values).all(), "Check: there is independence between Earthquake and JohnCalls when Alarm state is observed (Alarm = True)"
+
+print(JAE)
+# %% codecell
+# Case 2: Alarm = False
+JAE: DiscreteFactor = elim.query(variables = ['Earthquake'], evidence = {'Alarm': 'False'})
+JAE_1 = elim.query(variables = ['Earthquake'], evidence = {'Alarm': 'False', 'JohnCalls':'True'})
+JAE_2 = elim.query(variables = ['Earthquake'], evidence = {'Alarm': 'False', 'JohnCalls':'False'})
+
+assert (JAE.values == JAE_1.values).all() and (JAE.values == JAE_2.values).all(), "Check: there is independence between Earthquake and JohnCalls when Alarm state is observed (Alarm = False)"
+
+print(JAE)
+
+
+
+
 # %% markdown
 # 2. Evidential Reasoning
 # 3. Intercausal Reasoning
 #   * Given: Mary calls, Alarm rang, John id not call --> M = True, A = True, J = False
 #   * Find: probability of earthquake: P(E = True | M = True, A = True, J = False)
-# %% codecell
-elim = VariableElimination(alarmModel)
-
-## Causal reasoning:
-# B -> A -> M
-alarmModel.local_independencies('MaryCalls')
 
 
-# Case: Alarm is unobserved
-marginalM: DiscreteFactor = elim.query(['MaryCalls'])
-print(marginalM)
-# Case: Alarm is observed, what is effect on MaryCalls?
-# ??? Showing independence of M and B: (B _|_ M | A)
-# Case 1: Alarm = True
-print(elim.query(variables = ['MaryCalls'], evidence = {'Alarm': 'True'}))
-print(elim.query(variables = ['MaryCalls'], evidence = {'Alarm': 'True', 'Burglary':'True'}))
-print(elim.query(variables = ['MaryCalls'], evidence = {'Alarm': 'True', 'Burglary':'False'}))
 
 
-# Case 2: Alarm = False
-# Showing independence: (B _|_ M | A)
-BAM: DiscreteFactor = elim.query(variables = ['MaryCalls'], evidence = {'Alarm': 'False'})
-BAM_1 = elim.query(variables = ['MaryCalls'], evidence = {'Alarm': 'False', 'Burglary':'True'})
-BAM_2 = elim.query(variables = ['MaryCalls'], evidence = {'Alarm': 'False', 'Burglary':'False'})
-assert (BAM.values == BAM_1.values).all() and (BAM.values == BAM_2.values).all()
 
-print(BAM)
 
-# %% codecell
-# Causal Reasoning: B ---> A ---> J
-
-# Case 1: Alarm = True
-BAJ: DiscreteFactor = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'True'})
-BAJ_1 = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'True', 'Burglary':'True'})
-BAJ_2 = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'True', 'Burglary':'False'})
-assert (BAJ.values == BAJ_1.values).all() and (BAJ.values == BAJ_2.values).all()
-
-print(BAJ)
-
-# %% codecell
-# Case 2: Alarm = False
 
 # %% markdown
 # -----------------
