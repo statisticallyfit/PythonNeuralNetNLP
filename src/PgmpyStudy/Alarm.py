@@ -1,10 +1,10 @@
-# %% markdown
+# %% markdown [markdown]
 # [Source for tutorial](https://github.com/pgmpy/pgmpy/blob/dev/examples/Alarm.ipynb)
 #
 # Alarm Bayesian Network
 # Creating the Alarm Bayesian network using pgmpy and doing some simple queries (mentioned in Bayesian Artificial Intelligence, Section 2.5.1: )
 
-# %% markdown
+# %% markdown [markdown]
 # Doing path-setting:
 # %% codecell
 import os
@@ -38,7 +38,7 @@ sys.path.append(curPath)
 sys.path
 
 
-# %% markdown
+# %% markdown [markdown]
 # Science imports:
 # %% codecell
 from pgmpy.models import BayesianModel
@@ -56,7 +56,7 @@ from functools import reduce
 
 from src.utils.GraphvizUtil import *
 from src.utils.NetworkUtil import *
-# %% markdown
+# %% markdown [markdown]
 # ## Problem Statement: 2.5.1 Earthquake Alarm
 # **Example statement:** You have a new burglar alarm installed. It reliably detects burglary, but also responds to minor earthquakes. Two neighbors, John and Mary, promise to call the police when they hear the alarm. John always calls when he hears the alarm, but sometimes confuses the alarm with the phone ringing and calls then also. On the other hand, Mary likes loud music and sometimes doesn't hear the alarm. Given evidence about who has and hasn't called, you'd like to estimate the probability of a burglary alarm (from Pearl (1988)).
 #
@@ -105,7 +105,7 @@ alarmModel.add_cpds(cpdBurglary, cpdEarthquake, cpdAlarm, cpdJohnCalls, cpdMaryC
 assert alarmModel.check_model()
 
 
-# %% markdown
+# %% markdown [markdown]
 # Making a brief-name version for viewing clarity, in tables:
 # %% codecell
 alarmModel_brief: BayesianModel = BayesianModel([('B', 'A'),
@@ -152,7 +152,7 @@ assert alarmModel_brief.check_model()
 pgmpyToGraphCPD(model = alarmModel, shorten = False)
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## 1/ Independencies of the Alarm Model
 # %% codecell
 alarmModel.local_independencies('Burglary')
@@ -177,13 +177,13 @@ alarmModel.get_independencies()
 # TODO say direct dependency assumptions (from Korb book)
 
 pgmpyToGraph(alarmModel)
-# %% markdown
+# %% markdown [markdown]
 # ### Study: Independence Maps (I-Maps)
 # * **Markov Assumption:** Bayesian networks require the assumption of **Markov Property**: that there are no direct dependencies in the system being modeled, which are not already explicitly shown via arcs. (In the earthquake example, this translates to saying there is no way for an `Earthquake` to influence `MaryCalls` except by way of the `Alarm`.  There is no **hidden backdoor** from  `Earthquake` to `MaryCalls`).
 # * **I-maps:** Bayesian networks which have this **Markov property** are called **Independence-maps** or **I-maps**, since every independence suggested by the lack of an arc is actual a valid, real independence in the system.
 #
 # Source: Korb book, Bayesian Artificial Intelligence (section 2.2.4)
-# %% markdown
+# %% markdown [markdown]
 # ### Example 1: I-map
 # Testing meaning of an **I-map** using a simple student example
 # %% codecell
@@ -202,7 +202,7 @@ gradeModel.add_cpds(diff_cpd, intel_cpd, grade_cpd)
 
 pgmpyToGraphCPD(gradeModel)
 
-# %% markdown
+# %% markdown [markdown]
 # Showing two ways of creating the `JointProbabilityDistribution`    : (1) by feeding in values manually, or (2) by using `reduce` over the `TabularCPD`s or `DiscreteFactor`s.
 # %% codecell
 # Method 1: Creating joint distribution manually, by feeding in the calculated values:
@@ -213,7 +213,7 @@ JPD = JointProbabilityDistribution(variables = ['diff', 'intel', 'grade'], cardi
 
 print(JPD)
 
-# %% markdown
+# %% markdown [markdown]
 # Showing if small student model is I-map:
 # %% codecell
 from src.utils.NetworkUtil import *
@@ -228,12 +228,12 @@ assert gradeModel.is_imap(JPD = JPD), "Check: using JPD to verify the graph is a
 
 assert gradeJPD == gradeJPDFactor, "Check: joint distribution is the same as multiplying the cpds"
 
-# %% markdown
+# %% markdown [markdown]
 # Grade model's `JointProbabilityDistribution` over all variables:
 # %% codecell
 print(gradeJPD)
 
-# %% markdown
+# %% markdown [markdown]
 # Checking if alarm model is I-map:
 # %% codecell
 alarmJPD: JointProbabilityDistribution = jointDistribution(alarmModel_brief)
@@ -264,7 +264,7 @@ assert not alarmModel_brief.is_imap(JPD = alarmJPD)
 # $$
 # %% codecell
 probChainRule(['J','M','A','E','B'])
-# %% markdown
+# %% markdown [markdown]
 # Alarm model's `JointProbabilityDistribution` over all variables
 # %% codecell
 print(alarmJPD)
@@ -312,7 +312,7 @@ pgmpyToGraph(alarmModel)
 # \color{Green}{ \text{Alarm (unknown): }\;\;\;\;\;\;\;\;\; \text{Earthquake} \longrightarrow \text{Alarm} \longrightarrow \text{JohnCalls}}
 # $$
 # When `Alarm`'s state is uknown, there is an active trail or dependency between `Earthquake` and `JohnCalls`, so the probability of `Earthquake` can influence the probability of `JohnCalls` (and vice versa) when `Alarm`'s state is unknown.
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Active Trails
 # %% codecell
 assert alarmModel.is_active_trail(start = 'Burglary', end = 'MaryCalls', observed = None)
@@ -325,10 +325,10 @@ showActiveTrails(model = alarmModel, variables = ['Burglary', 'MaryCalls'])
 # %% codecell
 elim: VariableElimination = VariableElimination(model = alarmModel)
 
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Probabilities (example of $B \rightarrow A \rightarrow J$ trail)
 # ##### Causal Reasoning For Causal Model:
-# %% markdown
+# %% markdown [markdown]
 # The probability below is:
 # $$
 # P(\text{JohnCalls} = \text{True}) = 0.8482
@@ -336,7 +336,7 @@ elim: VariableElimination = VariableElimination(model = alarmModel)
 # %% codecell
 BJ: DiscreteFactor = elim.query(variables = ['JohnCalls'], evidence = None)
 print(BJ)
-# %% markdown
+# %% markdown [markdown]
 # Below we see that when there has been `Burglary` and no `Alarm` was observed, there is a higher probability of `JohnCalls`, compared to when no `Burglary` was observed and no `Alarm` was observed (BJ). Specifically,
 # $$
 # P(\text{JohnCalls} = \text{True} \; | \; \text{Burglary} = \text{True}) = 0.8490
@@ -348,7 +348,7 @@ print(BJ)
 # %% codecell
 BJ_1 = elim.query(variables = ['JohnCalls'], evidence = {'Burglary':'True'})
 print(BJ_1)
-# %% markdown
+# %% markdown [markdown]
 # Below we see that when there is no `Burglary` and no `Alarm` was observed, there is a lower probability of `JohnCalls`, compared to when `Burglary` did occur and no `Alarm` was observed (BJ_1). Specifically,
 # $$
 # P(\text{JohnCalls} = \text{True} \; | \; \text{Burglary} = \text{False}) = 0.0513
@@ -360,10 +360,10 @@ print(BJ_2)
 assert (BJ.values != BJ_1.values).all() and (BJ.values != BJ_2.values).all(), "Check there is dependency between Burglary and JohnCalls, when Alarm state is unobserved "
 
 
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Probabilities (example of $E \rightarrow A \rightarrow M$ trail)
 # ##### Causal Reasoning For Causal Model:
-# %% markdown
+# %% markdown [markdown]
 # The probability below is:
 # $$
 # P(\text{MaryCalls} = \text{True}) = 0.6580
@@ -371,7 +371,7 @@ assert (BJ.values != BJ_1.values).all() and (BJ.values != BJ_2.values).all(), "C
 # %% codecell
 EM: DiscreteFactor = elim.query(variables = ['MaryCalls'], evidence = None)
 print(EM)
-# %% markdown
+# %% markdown [markdown]
 # Below we see that when `Earthquake` occurs and no `Alarm` was observed, there is a higher probability of `MaryCalls`, compared to when neither `Alarm` nor `Earthquake` were observed:
 # $$
 # P(\text{MaryCalls} = \text{True} \; | \; \text{Earthquake} = \text{True}) = 0.6650
@@ -379,7 +379,7 @@ print(EM)
 # %% codecell
 EM_1 = elim.query(variables = ['MaryCalls'], evidence = {'Earthquake':'True'})
 print(EM_1)
-# %% markdown
+# %% markdown [markdown]
 # Below we see that when `Earthquake` does not occur and no `Alarm` was observed, there is a lower probability of `MaryCalls`, compared to when `Earthquake` occurs and no `Alarm` was observed:
 # $$
 # P(\text{MaryCalls} = \text{True} \; | \; \text{Earthquake} = \text{False}) = 0.6580
@@ -416,7 +416,7 @@ assert (EM.values != EM_1.values).all() and (EM.values != EM_2.values).all(), "C
 # \color{DeepSkyBlue}{ \text{Alarm (fixed): }\;\;\;\;\;\;\;\; \text{Earthquake} \; \bot \; \text{JohnCalls} \; | \; \text{Alarm}}
 # $$
 # When the `Alarm`'s state is known (fixed / observed), then there is NO active trail between `Earthquake` and `JohnCalls`. In other words, `Earthquake` and `JohnCalls` are locally independent when `Alarm`'s state is observed. This means the probability of `Earthquake` won't influence probability of `JohnCalls` (and vice versa) when `Alarm`'s state is observed.
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Active Trails
 # %% codecell
 assert not alarmModel.is_active_trail(start = 'Burglary', end = 'MaryCalls', observed = 'Alarm')
@@ -426,7 +426,7 @@ assert not alarmModel.is_active_trail(start = 'Earthquake', end = 'JohnCalls', o
 
 showActiveTrails(model = alarmModel, variables = ['Burglary', 'MaryCalls'], observed = 'Alarm')
 
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Independencies (just the $(B \; \bot \; M \; | \; A)$ independence)
 # %% codecell
 indepBurglary: IndependenceAssertion = Independencies(['Burglary', 'MaryCalls', ['Alarm']]).get_assertions()[0]; indepBurglary
@@ -450,9 +450,9 @@ indepSynonymTable(model = alarmModel_brief, queryNode = 'M')
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Probabilities Method (just the $(E \; \bot \; J \; | \; A)$ independence)
-# %% markdown
+# %% markdown [markdown]
 # The probability below is:
 # $$
 # \begin{align}
@@ -472,7 +472,7 @@ EAJ_2 = elim.query(variables = ['JohnCalls'], evidence = {'Alarm': 'True', 'Eart
 assert (EAJ.values == EAJ_1.values).all() and (EAJ.values == EAJ_2.values).all(), "Check: there is independence between Earthquake and JohnCalls when Alarm state is observed (Alarm = True)"
 
 print(EAJ)
-# %% markdown
+# %% markdown [markdown]
 # The probability below is:
 # $$
 # \begin{align}
@@ -492,7 +492,7 @@ assert (EAJ.values == EAJ_1.values).all() and (EAJ.values == EAJ_2.values).all()
 
 print(EAJ)
 
-# %% markdown
+# %% markdown [markdown]
 # Comment: above we see that the probability of John calling when there is an `Alarm` is higher than when there is no `Alarm` ringing, because $P(\text{JohnCalls} = \text{True} \; | \; \text{Alarm} = \text{False}) = 0.05$ while $P(\text{JohnCalls} = \text{True} \; | \; \text{Alarm} = \text{True}) = 0.90$.
 
 
@@ -502,7 +502,7 @@ print(EAJ)
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### 2. Evidential Reasoning in the Alarm Model
 # For an evidential model $A \leftarrow B \leftarrow C$, there are two cases:
 #   * **Marginal Dependence:** ($B$ unknown): When $B$ is unknown / unobserved, there is an active trail between $A$
@@ -537,7 +537,7 @@ pgmpyToGraph(alarmModel)
 # \color{Green}{ \text{Alarm (unknown): }\;\;\;\;\;\;\;\;\; \text{Earthquake} \longleftarrow \text{Alarm} \longleftarrow \text{JohnCalls}}
 # $$
 # When `Alarm`'s state is uknown, there is an active trail or dependency between `Earthquake` and `JohnCalls`, so the probability of `Earthquake` can influence the probability of `JohnCalls` (and vice versa) when `Alarm`'s state is unknown.
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Active Trails
 # %% codecell
 assert alarmModel.is_active_trail(start = 'MaryCalls', end = 'Burglary',  observed = None)
@@ -548,7 +548,7 @@ assert alarmModel.is_active_trail(start = 'JohnCalls', end = 'Earthquake', obser
 showActiveTrails(model = alarmModel, variables = ['MaryCalls', 'Burglary'])
 
 
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Probabilities (example of $B \leftarrow A \leftarrow J$ trail)
 # ##### Evidential Reasoning For Evidential Model:
 # %% codecell
@@ -558,7 +558,7 @@ print(JB)
 # %% codecell
 JB_1 = elim.query(variables = ['Burglary'], evidence = {'JohnCalls':'True'})
 print(JB_1)
-# %% markdown
+# %% markdown [markdown]
 # Below we see that when `JohnCalls` does not occur and no `Alarm` was observed, there is a lower probability of `Burglary`, compared to when neither `Alarm` nor `JohnCalls` were observed:
 # $$
 # P(\text{Burglary} = \text{True} \; | \; \text{JohnCalls} = \text{False}) = 0.9937
@@ -570,7 +570,7 @@ print(JB_2)
 assert (JB.values != JB_1.values).all() and (JB.values != JB_2.values).all(), "Check there is dependency between Burglary and JohnCalls, when Alarm state is unobserved "
 
 
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Probabilities (example of $E \leftarrow A \leftarrow J$ trail)
 # ##### Evidential Reasoning For Evidential Model:
 # %% codecell
@@ -580,7 +580,7 @@ print(JE)
 # %% codecell
 JE_1 = elim.query(variables = ['Earthquake'], evidence = {'JohnCalls':'True'})
 print(JE_1)
-# %% markdown
+# %% markdown [markdown]
 # Below we see that when `JohnCalls` does not occur and no `Alarm` was not observed, there is a lower probability of `Earthquake`, compared to when John did call and `Alarm` was not observed:
 # $$
 # P(\text{Earthquake} = \text{True} \; | \; \text{JohnCalls} = \text{False}) = 0.0019
@@ -616,7 +616,7 @@ assert (JE.values != JE_1.values).all() and (JE.values != JE_2.values).all(), "C
 # \color{DeepSkyBlue}{ \text{Alarm (fixed): }\;\;\;\;\;\;\;\; \text{Earthquake} \; \bot \; \text{JohnCalls} \; | \; \text{Alarm}}
 # $$
 # When the `Alarm`'s state is known (fixed / observed), then there is NO active trail between `Earthquake` and `JohnCalls`. In other words, `Earthquake` and `JohnCalls` are locally independent when `Alarm`'s state is observed. This means the probability of `Earthquake` won't influence probability of `JohnCalls` (and vice versa) when `Alarm`'s state is observed.
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Active Trails
 # %% codecell
 assert not alarmModel.is_active_trail(start = 'MaryCalls', end = 'Burglary', observed = 'Alarm')
@@ -626,7 +626,7 @@ assert not alarmModel.is_active_trail(start = 'JohnCalls', end = 'Earthquake', o
 
 showActiveTrails(model = alarmModel, variables = ['JohnCalls', 'Earthquake'], observed = 'Alarm')
 
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Independencies (just the $(B \; \bot \; M \; | \; A)$ independence)
 # %% codecell
 indepBurglary: IndependenceAssertion = Independencies(['Burglary', 'MaryCalls', ['Alarm']]).get_assertions()[0]; indepBurglary
@@ -650,9 +650,9 @@ indepSynonymTable(model = alarmModel_brief, queryNode = 'M')
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Probabilities Method (just the $(E \; \bot \; J \; | \; A)$ independence)
-# %% markdown
+# %% markdown [markdown]
 # The probability below is:
 # $$
 # \begin{align}
@@ -672,7 +672,7 @@ JAE_2 = elim.query(variables = ['Earthquake'], evidence = {'Alarm': 'True', 'Joh
 assert (JAE.values == JAE_1.values).all() and (JAE.values == JAE_2.values).all(), "Check: there is independence between Earthquake and JohnCalls when Alarm state is observed (Alarm = True)"
 
 print(JAE)
-# %% markdown
+# %% markdown [markdown]
 # The probability below is:
 # $$
 # \begin{align}
@@ -698,7 +698,7 @@ print(JAE)
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### 3. Inter-Causal (?) Reasoning in the Alarm Model
 # For a common cause model $A \leftarrow B \rightarrow C$, there are two cases:
 #   * **Marginal Dependence:** ($B$ unknown): When $B$ is unknown / unobserved, there is an active trail between $A$ and $C$, meaning the probability of $A$ can influence probability of $C$ (and vice versa) when information about $B$'s state is unknown.
@@ -715,7 +715,7 @@ pgmpyToGraph(alarmModel)
 #
 # When the parent node `Alarm` is unknown / unobserved, there IS an active trail between `JohnCalls` and `MaryCalls`. In other words, there is a dependence between `JohnCalls` and `MaryCalls` when `Alarm` is unobserved. This means the probability of `JohnCalls` can influence probability of `MaryCalls` (and vice versa) when information about `Alarm`'s state is unknown.
 
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Active Trails
 # %% codecell
 assert alarmModel.is_active_trail(start = 'JohnCalls', end = 'MaryCalls',  observed = None)
@@ -723,13 +723,13 @@ assert alarmModel.is_active_trail(start = 'JohnCalls', end = 'MaryCalls',  obser
 showActiveTrails(model = alarmModel, variables = ['JohnCalls', 'MaryCalls'])
 
 
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Probabilities
 # ##### Inter-Causal Reasoning For Common Cause Model:
 # %% codecell
 JM: DiscreteFactor = elim.query(variables = ['MaryCalls'], evidence = None)
 print(JM)
-# %% markdown
+# %% markdown [markdown]
 # Below we see that when `JohnCalls` and no `Alarm` was observed, there is a higher probability of `MaryCalls`, compared to when no `JohnCalls` nor `Alarm` were observed:
 # $$
 # P(\text{MaryCalls} = \text{True} \; | \; \text{JohnCalls} = \text{True}) = 0.6975
@@ -737,7 +737,7 @@ print(JM)
 # %% codecell
 JM_1 = elim.query(variables = ['MaryCalls'], evidence = {'JohnCalls':'True'})
 print(JM_1)
-# %% markdown
+# %% markdown [markdown]
 # Below we see that when `JohnCalls` does not occur and no `Alarm` was observed, there is a lower probability of `MaryCalls`, compared to when `JohnCalls` and `Alarm` was not observed:
 # $$
 # P(\text{MaryCalls} = \text{True} \; | \; \text{JohnCalls} = \text{False}) = 0.4369
@@ -757,14 +757,14 @@ assert (JM.values != JM_1.values).all() and (JM.values != JM_2.values).all(), "C
 # $$
 # When the `Alarm`'s state is known (fixed / observed), then there is NO active trail between `JohnCalls` and `MaryCalls`. In other words, `JohnCalls` and `MaryCalls` are locally independent when `Alarm`'s state is observed. This means the probability of `JohnCalls` won't influence probability of `MaryCalls` (and vice versa) when `Alarm`'s state is observed.
 #
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Active Trails
 # %% codecell
 assert not alarmModel.is_active_trail(start = 'JohnCalls', end = 'MaryCalls', observed = 'Alarm')
 
 showActiveTrails(model = alarmModel, variables = ['JohnCalls', 'MaryCalls'], observed = 'Alarm')
 
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Independencies
 # %% codecell
 indepJohn: IndependenceAssertion = Independencies(['JohnCalls', 'MaryCalls', ['Alarm']]).get_assertions()[0]; indepJohn
@@ -792,10 +792,10 @@ indepSynonymTable(model = alarmModel_brief, queryNode = 'M')
 indepSynonymTable(model = alarmModel_brief, queryNode = 'J')
 
 
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Probabilities Method
 
-# %% markdown
+# %% markdown [markdown]
 # The probability below is:
 # $$
 # \begin{align}
@@ -815,7 +815,7 @@ JAM_2 = elim.query(variables = ['MaryCalls'], evidence = {'Alarm': 'True', 'John
 assert (JAM.values == JAM_1.values).all() and (JAM.values == JAM_2.values).all(), "Check: there is independence between MaryCalls and JohnCalls when Alarm state is observed (Alarm = True)"
 
 print(JAM)
-# %% markdown
+# %% markdown [markdown]
 # The probability below is:
 # $$
 # \begin{align}
@@ -849,7 +849,7 @@ print(MAJ)
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### 4. Inter-Causal Reasoning in the Alarm Model
 # For a common evidence model $A \rightarrow B \leftarrow C$, there are two cases:
 #   * **Marginal Independence:** ($B$ unknown): When $B$ is unknown / unobserved, there is NO active trail between $A$ and $C$; they are independent. The probability of $A$ won't influence probability of $C$ (and vice versa) when $B$'s state is unknown.
@@ -867,14 +867,14 @@ pgmpyToGraph(alarmModel)
 #
 # When the effect node `Alarm` is unknown / unobserved, there is NO an active trail between `Burglary` and `Earthquake`. In other words, there is a local marginal independence between `Burglary` and `Earthquake` when `Alarm` is unobserved. This means the probability of `Burglary` won't influence the probability of `Earthquake` (and vice versa) when `Alarm`'s state is unknown.
 #
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Active Trails
 # %% codecell
 assert not alarmModel.is_active_trail(start = 'Burglary', end = 'Earthquake', observed = None)
 
 showActiveTrails(model = alarmModel, variables = ['Burglary', 'Earthquake'])
 
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Independencies
 # %% codecell
 indepBurgEarth = Independencies(['Burglary', 'Earthquake'])
@@ -889,9 +889,9 @@ print(indepSynonymTable(model = alarmModel, queryNode = 'Burglary'))
 print(indepSynonymTable(model = alarmModel, queryNode = 'Earthquake'))
 
 
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Probabilities Method
-# %% markdown
+# %% markdown [markdown]
 # The probability below is:
 # $$
 # \begin{align}
@@ -922,7 +922,7 @@ print(BE)
 # $$
 # When the `Alarm`'s state is known (fixed / observed), then there IS an active trail between `Burglary` and `Earthquake`. In other words, `Burglary` and `Earthquake` are dependent when `Alarm`'s state is observed. This means the probability of `Burglary` can influence probability of `Earthquake` (and vice versa) when `Alarm`'s state is observed.
 
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Active Trails
 # %% codecell
 assert alarmModel.is_active_trail(start = 'Burglary', end = 'Earthquake',  observed = 'Alarm')
@@ -930,7 +930,7 @@ assert alarmModel.is_active_trail(start = 'Burglary', end = 'Earthquake',  obser
 showActiveTrails(model = alarmModel, variables = ['Burglary', 'Earthquake'], observed = 'Alarm')
 
 
-# %% markdown
+# %% markdown [markdown]
 # **Verify:** Using Probabilities
 # ##### Inter-Causal Reasoning For Common Evidence Model:
 # %% codecell
@@ -941,7 +941,7 @@ print(BAE)
 # %% codecell
 BAE_1: DiscreteFactor = elim.query(variables = ['Earthquake'], evidence = {'Burglary':'True', 'Alarm': 'True'})
 print(BAE_1)
-# %% markdown
+# %% markdown [markdown]
 # Below we see that when there was no`Burglary` (cause) and `Alarm` rang, there is a higher probability of `Earthquake` (other cause) compared to when there was a `Burglary` and `Alarm` rang:
 # $$
 # P(\text{Earthquake} = \text{True} \; | \; \text{Burglary} = \text{False} \; \cap \; \text{Alarm} = \text{True}) = 0.3676
@@ -954,7 +954,7 @@ print(BAE_2)
 # %% codecell
 assert (BAE_2.values != BAE.values).all(), 'Check: there is dependency between Earthquake and Burglary when Alarm state is observed (True)'
 
-# %% markdown
+# %% markdown [markdown]
 # The probability below is:
 # $$
 # P(\text{Earthquake} = \text{True} \; | \;\text{Alarm} = \text{False}) = 0.0017
@@ -963,7 +963,7 @@ assert (BAE_2.values != BAE.values).all(), 'Check: there is dependency between E
 # Case 2: Alarm = False
 BAE: DiscreteFactor = elim.query(variables = ['Earthquake'], evidence = {'Alarm': 'False'})
 print(BAE)
-# %% markdown
+# %% markdown [markdown]
 # The probability below is:
 # $$
 # P(\text{Earthquake} = \text{True} \; | \; \text{Burglary} = \text{True} \; \cap \; \text{Alarm} = \text{False}) = 0.0017
@@ -971,7 +971,7 @@ print(BAE)
 # %% codecell
 BAE_1: DiscreteFactor = elim.query(variables = ['Earthquake'], evidence = {'Burglary':'True', 'Alarm': 'False'})
 print(BAE_1)
-# %% markdown
+# %% markdown [markdown]
 # Below we see that when there was no `Burglary` (cause) and `Alarm` did not ring, there is a lower probability of `Earthquake` (other cause) compared to when there was a `Burglary` and `Alarm` didn't ring:
 # $$
 # P(\text{Earthquake} = \text{True} \; | \; \text{Burglary} = \text{False} \; \cap \; \text{Alarm} = \text{False}) = 0.0014
@@ -981,42 +981,3 @@ BAE_2: DiscreteFactor = elim.query(variables = ['Earthquake'], evidence = {'Burg
 print(BAE_2)
 # %% codecell
 assert (BAE_2.values != BAE.values).all(), 'Check: there is dependency between Earthquake and Burglary when Alarm state is observed (False)'
-
-
-
-
-
-
-
-# %% markdown
-# -----------------
-# $I = 1, D = 1, S = 1$, and then marginalize over the other variables we didn't ask about (L) to get the distribution for the variable we asked about (G), so to get the distribution: $P(G \; | \; I = 1, D = 1, S = 1)$.
-#
-# But doing marginalize and reduce operations on the complete Joint Distribution is computationally expensive since we need to iterate over the whole table for each operation and the table is exponential in size to the number of variables. But we can exploit the independencies (like above) to break these operations in smaller parts, increasing efficiency of calculation.
-#
-# ### Variable Elimination
-# **Variable Elimination:** a method of inference in graphical models.
-#
-# For our model, we know that the joint distribution (reduced using local independencies) is:
-# $$
-# \begin{align}
-# P(D, I, G, L, S) = P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D) \cdot P(I)
-# \end{align}
-# $$
-# **Example 1: Compute $P(G)$**
-#
-# Now say we want to compute the probability of just the grade $G$. That means we must **marginalize** over all other variables:
-# $$
-# \begin{align}
-# P(G) &= \sum_{D,I,L,S} P(D,I,G,L,S) \\
-# &= \sum_{D,I,L,S} P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D) \cdot P(I) \\
-# &= \sum_D \sum_I \sum_L \sum_S P(L \; | \; G) \cdot P(S \; | \; I) \cdot P(G \; | \; D, I) \cdot P(D) \cdot P(I) \\
-# &= \sum_D P(D) \sum_I P(G \; | \; D, I) \cdot P(I) \sum_S P(S \; | \; I) \sum_L P(L \; | \; G)
-# \end{align}
-# $$
-# In the above expression, to simplify the sumation, we just brought the summation with respect to a particular variable as far as it could go (as inner-deep as it could go, without putting the summation with respect to the variable past the probability expression that included that variable)
-#
-# By pushing the summations inside we have saved a lot of computation because we now have to iterate over much smaller tables.
-
-
-# TODO do the different kinds of inference from (Korb book): intercausal, diagnostic ... etc
