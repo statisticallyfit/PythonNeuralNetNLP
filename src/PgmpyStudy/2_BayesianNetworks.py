@@ -1367,3 +1367,4 @@ infer.map_query(['G'], evidence={'D': 'Hard', 'I': 'Intelligent', 'L': 'Bad', 'S
 # %% codecell
 # Grade result when student is intelligent, test was hard, letter is bad, SAT score is Good:
 infer.map_query(['G'], evidence={'D': 'Hard', 'I': 'Intelligent', 'L': 'Bad', 'S': 'Good'})
+# TODO: compare to predict and predict_probability() functions, same for Alarm
