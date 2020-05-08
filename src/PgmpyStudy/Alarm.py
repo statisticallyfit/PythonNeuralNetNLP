@@ -589,7 +589,9 @@ print(JE_1)
 JE_2 = elim.query(variables = ['Earthquake'], evidence = {'JohnCalls':'False'})
 print(JE_2)
 # %% codecell
-assert (JE.values != JE_1.values).all() and (JE.values != JE_2.values).all(), "Check there is dependency between Burglary and MaryCalls, when Alarm state is unobserved "
+assert (JE.values != JE_1.values).all() and (JE.values != JE_2.values).all(), "Check there is dependency between " \
+                                                                              "JohnCalls and Earthquake, when Alarm " \
+                                                                              "state is unobserved "
 
 
 
