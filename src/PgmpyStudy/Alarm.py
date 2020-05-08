@@ -1,7 +1,7 @@
 # %% markdown [markdown]
 # [Source for tutorial](https://github.com/pgmpy/pgmpy/blob/dev/examples/Alarm.ipynb)
 #
-# Alarm Bayesian Network
+# # Alarm Bayesian Network
 # Creating the Alarm Bayesian network using pgmpy and doing some simple queries (mentioned in Bayesian Artificial Intelligence, Section 2.5.1: )
 
 # %% markdown [markdown]

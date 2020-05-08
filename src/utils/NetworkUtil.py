@@ -152,6 +152,11 @@ def indepSynonymTable(model: BayesianModel, queryNode: Variable):
 #  joint probability distribution?
 
 # The efforts of the goal below are these two commented functions:
+# TODO IDEA: P(A, B) = SUM (other vars not A, B) of P(A, B, C, D, E, F ...)
+# and that is the so-called joint distribution over two nodes or one node or whatever (is in fact called the marginal
+# distribution)
+# TODO Same as saying variableElimObj.query(A, B)
+# And provide evidence if only need state ???
 
 """
 
