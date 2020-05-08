@@ -295,22 +295,6 @@ commonCauseGraph = edgesToGraph(edges= commonCause)
 # ### Study: Independencies for Abstract Structure Types
 # Using the structures above, study how independencies are found:
 # %% codecell
-
-# TODO better document these types of model graphs using:
-# ---> Korb book, page 40
-# ---> pgmpy book (Ankur ankan), page 22
-# ---> bayesialab book, page 336
-
-# TODO better document the types of reasoning using:
-# ---> Korb book, page 34
-# ---> pgmpy book, page 21
-# ---> bayesialab book, page 62
-
-
-
-# TODO where to start: see page 338 in bayesialab for the kinds of reasonings that spring from the specific models.
-
-
 causalGraph
 # %% codecell
 causalModel = BayesianModel(causal)
