@@ -327,38 +327,59 @@ elim: VariableElimination = VariableElimination(model = alarmModel)
 
 # %% markdown
 # **Verify:** Using Probabilities (example of $B \rightarrow A \rightarrow J$ trail)
-# ##### Inter-Causal Reasoning For Causal Model:
+# ##### Causal Reasoning For Causal Model:
 # %% codecell
-BAJ: DiscreteFactor = elim.query(variables = ['JohnCalls'], evidence = None)
-print(BAJ)
+BJ: DiscreteFactor = elim.query(variables = ['JohnCalls'], evidence = None)
+print(BJ)
+# %% markdown
+# Below we see that when there has been `Burglary` and no `Alarm` was observed, there is a higher probability of `JohnCalls`, compared to when no `Burglary` was observed and no `Alarm` was observed (BJ). Specifically,
+# $$
+# P(\text{JohnCalls} = \text{True} \; | \; \text{Burglary} = \text{True}) = 0.8490
+# $$
+# while above:
+# $$
+# P(\text{JohnCalls} = \text{True}) = 0.8482
+# $$
 # %% codecell
-# When there has been burglary and no Alarm was observed, there is a higher probability of John calling, compared to when no burglary was observed and no alarm was observed. (above)
-BAJ_1 = elim.query(variables = ['JohnCalls'], evidence = {'Burglary':'True'})
-print(BAJ_1)
+BJ_1 = elim.query(variables = ['JohnCalls'], evidence = {'Burglary':'True'})
+print(BJ_1)
+# %% markdown
+# Below we see that when there is no `Burglary` and no `Alarm` was observed, there is a lower probability of `JohnCalls`, compared to when `Burglary` did occur and no `Alarm` was observed (BJ_1). Specifically,
+# $$
+# P(\text{JohnCalls} = \text{True} \; | \; \text{Burglary} = \text{False}) = 0.0513
+# $$
 # %% codecell
-# When there was no burglary and no alarm was observed, there is a lower probability of John calling than when no burglary and alarm were observed (first case)
-BAJ_2 = elim.query(variables = ['JohnCalls'], evidence = {'Burglary':'False'})
-print(BAJ_2)
+BJ_2 = elim.query(variables = ['JohnCalls'], evidence = {'Burglary':'False'})
+print(BJ_2)
 # %% codecell
-assert (BAJ.values != BAJ_1.values).all() and (BAJ.values != BAJ_2.values).all(), "Check there is dependency between Burglary and JohnCalls, when Alarm state is unobserved "
+assert (BJ.values != BJ_1.values).all() and (BJ.values != BJ_2.values).all(), "Check there is dependency between Burglary and JohnCalls, when Alarm state is unobserved "
 
 
 # %% markdown
 # **Verify:** Using Probabilities (example of $E \rightarrow A \rightarrow M$ trail)
-# ##### Inter-Causal Reasoning For Causal Model:
+# ##### Causal Reasoning For Causal Model:
 # %% codecell
-EAM: DiscreteFactor = elim.query(variables = ['MaryCalls'], evidence = None)
-print(EAM)
+EM: DiscreteFactor = elim.query(variables = ['MaryCalls'], evidence = None)
+print(EM)
+# %% markdown
+# Below we see that when `Earthquake` occurs and no `Alarm` was observed, there is a higher probability of `MaryCalls`, compared to when neither `Alarm` nor `Earthquake` were observed:
+# $$
+# P(\text{MaryCalls} = \text{True} \; | \; \text{Earthquake} = \text{True}) = 0.6650
+# $$
 # %% codecell
-# When there has been earthquake and no Alarm was observed, there is a higher probability of Mary calling, compared to when there was no earthquake and no alarm was observed. (above)
-EAM_1 = elim.query(variables = ['MaryCalls'], evidence = {'Earthquake':'True'})
-print(EAM_1)
+EM_1 = elim.query(variables = ['MaryCalls'], evidence = {'Earthquake':'True'})
+print(EM_1)
+# %% markdown
+# Below we see that when `Earthquake` does not occur and no `Alarm` was observed, there is a lower probability of `MaryCalls`, compared to when `Earthquake` occurs and no `Alarm` was observed:
+# $$
+# P(\text{MaryCalls} = \text{True} \; | \; \text{Earthquake} = \text{False}) = 0.6580
+# $$
+# Incidentally, this is the same probability as when no `Earthquake` and no `Alarm` was observed.
 # %% codecell
-# When there was no earthquake and no alarm was observed, there is a lower probability (??) of Mary calling than when there was no earthquake and no alarm  observed
-EAM_2 = elim.query(variables = ['MaryCalls'], evidence = {'Earthquake':'False'})
-print(EAM_2)
+EM_2 = elim.query(variables = ['MaryCalls'], evidence = {'Earthquake':'False'})
+print(EM_2)
 # %% codecell
-assert (EAM.values != EAM_1.values).all() and (EAM.values != EAM_2.values).all(), "Check there is dependency between Earthquake and MaryCalls, when Alarm state is unobserved "
+assert (EM.values != EM_1.values).all() and (EM.values != EM_2.values).all(), "Check there is dependency between Earthquake and MaryCalls, when Alarm state is unobserved "
 
 
 
@@ -441,6 +462,8 @@ assert (EAJ.values == EAJ_1.values).all() and (EAJ.values == EAJ_2.values).all()
 
 print(EAJ)
 
+# %% markdown
+# Comment: above we see that the probability of John calling when there is an `Alarm` is higher than when there is no `Alarm` ringing, because $P(\text{JohnCalls} = \text{True} \; | \; \text{Alarm} = \text{False}) = 0.05$ while $P(\text{JohnCalls} = \text{True} \; | \; \text{Alarm} = \text{True}) = 0.90$.
 
 
 
@@ -497,38 +520,46 @@ showActiveTrails(model = alarmModel, variables = ['MaryCalls', 'Burglary'])
 
 # %% markdown
 # **Verify:** Using Probabilities (example of $B \leftarrow A \leftarrow J$ trail)
-# ##### Inter-Causal Reasoning For Evidential Model:
+# ##### Evidential Reasoning For Evidential Model:
 # %% codecell
-JAB: DiscreteFactor = elim.query(variables = ['Burglary'], evidence = None)
-print(JAB)
+JB: DiscreteFactor = elim.query(variables = ['Burglary'], evidence = None)
+print(JB)
+
 # %% codecell
-# When John has called and no Alarm was observed, there is a lower probability of Burglary, compared to when no call from John is observed and no alarm was observed. (above)
-JAB_1 = elim.query(variables = ['Burglary'], evidence = {'JohnCalls':'True'})
-print(JAB_1)
+JB_1 = elim.query(variables = ['Burglary'], evidence = {'JohnCalls':'True'})
+print(JB_1)
+# %% markdown
+# Below we see that when `JohnCalls` does not occur and no `Alarm` was observed, there is a lower probability of `Burglary`, compared to when neither `Alarm` nor `JohnCalls` were observed:
+# $$
+# P(\text{Burglary} = \text{True} \; | \; \text{JohnCalls} = \text{False}) = 0.9937
+# $$
 # %% codecell
-# When John does not call and no alarm was observed, there is a higher probability of Burglary than when no call from John is observed and no alarm is observed (first case)
-JAB_2 = elim.query(variables = ['Burglary'], evidence = {'JohnCalls':'False'})
-print(JAB_2)
+JB_2 = elim.query(variables = ['Burglary'], evidence = {'JohnCalls':'False'})
+print(JB_2)
 # %% codecell
-assert (JAB.values != JAB_1.values).all() and (JAB.values != JAB_2.values).all(), "Check there is dependency between Burglary and JohnCalls, when Alarm state is unobserved "
+assert (JB.values != JB_1.values).all() and (JB.values != JB_2.values).all(), "Check there is dependency between Burglary and JohnCalls, when Alarm state is unobserved "
 
 
 # %% markdown
 # **Verify:** Using Probabilities (example of $E \leftarrow A \leftarrow J$ trail)
-# ##### Inter-Causal Reasoning For Evidential Model:
+# ##### Evidential Reasoning For Evidential Model:
 # %% codecell
-JAE: DiscreteFactor = elim.query(variables = ['Earthquake'], evidence = None)
-print(JAE)
+JE: DiscreteFactor = elim.query(variables = ['Earthquake'], evidence = None)
+print(JE)
+
 # %% codecell
-# When John calls and no Alarm was observed, there comes out a lower probability of Earthquake than when there is no evidence of John calling nor Alarm ringing.
-JAE_1 = elim.query(variables = ['Earthquake'], evidence = {'JohnCalls':'True'})
-print(JAE_1)
+JE_1 = elim.query(variables = ['Earthquake'], evidence = {'JohnCalls':'True'})
+print(JE_1)
+# %% markdown
+# Below we see that when `JohnCalls` does not occur and no `Alarm` was not observed, there is a lower probability of `Earthquake`, compared to when John did call and `Alarm` was not observed:
+# $$
+# P(\text{Earthquake} = \text{True} \; | \; \text{JohnCalls} = \text{False}) = 0.0019
+# $$
 # %% codecell
-# When John does not call and no Alarm was observed, there comes out a higher probability of Earthquake than when there is no evidence of John calling nor Alarm ringing. (and higher even than when Mary does call and no alarm rings (above))
-JAE_2 = elim.query(variables = ['Earthquake'], evidence = {'JohnCalls':'False'})
-print(JAE_2)
+JE_2 = elim.query(variables = ['Earthquake'], evidence = {'JohnCalls':'False'})
+print(JE_2)
 # %% codecell
-assert (JAE.values != JAE_1.values).all() and (JAE.values != JAE_2.values).all(), "Check there is dependency between Burglary and MaryCalls, when Alarm state is unobserved "
+assert (JE.values != JE_1.values).all() and (JE.values != JE_2.values).all(), "Check there is dependency between Burglary and MaryCalls, when Alarm state is unobserved "
 
 
 
@@ -646,18 +677,18 @@ showActiveTrails(model = alarmModel, variables = ['JohnCalls', 'MaryCalls'])
 # **Verify:** Using Probabilities
 # ##### Inter-Causal Reasoning For Common Cause Model:
 # %% codecell
-JAM: DiscreteFactor = elim.query(variables = ['MaryCalls'], evidence = None)
-print(JAM)
+JM: DiscreteFactor = elim.query(variables = ['MaryCalls'], evidence = None)
+print(JM)
 # %% codecell
 # When John calls and no Alarm is observed, the probability of Mary calling is higher than when no call from John is observed (above).
-JAM_1 = elim.query(variables = ['MaryCalls'], evidence = {'JohnCalls':'True'})
-print(JAM_1)
+JM_1 = elim.query(variables = ['MaryCalls'], evidence = {'JohnCalls':'True'})
+print(JM_1)
 # %% codecell
 # When John does not call and no Alarm is observed, there is lower probability of Mary calling than when John does call and no alarm is observed, and than when no call from John is observed and no alarm is observed.
-JAM_2 = elim.query(variables = ['MaryCalls'], evidence = {'JohnCalls':'False'})
-print(JAM_2)
+JM_2 = elim.query(variables = ['MaryCalls'], evidence = {'JohnCalls':'False'})
+print(JM_2)
 # %% codecell
-assert (JAM.values != JAM_1.values).all() and (JAM.values != JAM_2.values).all(), "Check: Marginal Dependence: there is dependency between MaryCalls and JohnCalls, when Alarm state is unobserved "
+assert (JM.values != JM_1.values).all() and (JM.values != JM_2.values).all(), "Check: Marginal Dependence: there is dependency between MaryCalls and JohnCalls, when Alarm state is unobserved "
 
 
 # %% markdown [markdown]
@@ -741,7 +772,7 @@ print(MAJ)
 
 # %% markdown
 # ### 4. Inter-Causal Reasoning in the Alarm Model
-# For a common evdience model $A \rightarrow B \leftarrow C$, there are two cases:
+# For a common evidence model $A \rightarrow B \leftarrow C$, there are two cases:
 #   * **Marginal Independence:** ($B$ unknown): When $B$ is unknown / unobserved, there is NO active trail between $A$ and $C$; they are independent. The probability of $A$ won't influence probability of $C$ (and vice versa) when $B$'s state is unknown.
 #   * **Conditional Dependence:** ($B$ fixed): When $B$ is fixed, there IS an active trail between $A$ and $C$, meaning the probability of $A$ can influence probability of $C$ (and vice versa) when information about $B$ is observed / fixed.
 
@@ -783,14 +814,14 @@ print(indepSynonymTable(model = alarmModel, queryNode = 'Earthquake'))
 # **Verify:** Using Probabilities Method
 # %% codecell
 
-BAE: DiscreteFactor = elim.query(variables = ['Earthquake'], evidence = None)
-BAE_1 = elim.query(variables = ['Earthquake'], evidence = {'Burglary':'True'})
-BAE_2 = elim.query(variables = ['Earthquake'], evidence = {'Burglary': 'False'})
+BE: DiscreteFactor = elim.query(variables = ['Earthquake'], evidence = None)
+BE_1 = elim.query(variables = ['Earthquake'], evidence = {'Burglary':'True'})
+BE_2 = elim.query(variables = ['Earthquake'], evidence = {'Burglary': 'False'})
 
 # Using np.allclose instead of exact equals sign (there must be some numerical inconsistency ... otherwise they wouldn't be different at all! BAE.values[0] = 0.0019999999 while BAE_1.values[0] = 0.002)
-assert np.allclose(BAE.values, BAE_1.values) and np.allclose(BAE.values, BAE_2.values), "Check: there is marginal independence between Earthquake and Burglary when Alarm state is NOT observed"
+assert np.allclose(BE.values, BE_1.values) and np.allclose(BE.values, BE_2.values), "Check: there is marginal independence between Earthquake and Burglary when Alarm state is NOT observed"
 
-print(BAE)
+print(BE)
 
 
 
@@ -822,7 +853,10 @@ print(BAE)
 BAE_1: DiscreteFactor = elim.query(variables = ['Earthquake'], evidence = {'Burglary':'True', 'Alarm': 'True'})
 print(BAE_1)
 # %% codecell
-# When there was no burglary and alarm did ring, then there is higher probability of earthquake than when there was a burglary and alarm did ring, or when there was no burglary observed but alarm did ring.
+# When there was no burglary (cause) and alarm did ring, then there is higher probability of earthquake (other cause)
+# than when there was a burglary and alarm did ring (BAE_2), or when there was no burglary observed but alarm did
+# ring (BAE).
+# This is like in page 41 of Korb book (inverse of "explaining away")
 BAE_2: DiscreteFactor = elim.query(variables = ['Earthquake'], evidence = {'Burglary':'False', 'Alarm': 'True'})
 print(BAE_2)
 
