@@ -81,11 +81,382 @@ from pandas import DataFrame
 # ## Parameter Learning
 # Supposed we have the following data:
 # %% codecell
-data: DataFrame = DataFrame(data = {'fruit': ["banana", "apple", "banana", "apple", "banana","apple", "banana",
+fruitData: DataFrame = DataFrame(data = {'fruit': ["banana", "apple", "banana", "apple", "banana","apple", "banana",
                                               "apple", "apple", "apple", "banana", "banana", "apple", "banana",],
                                     'tasty': ["yes", "no", "yes", "yes", "yes", "yes", "yes",
                                               "yes", "yes", "yes", "yes", "no", "no", "no"],
                                     'size': ["large", "large", "large", "small", "large", "large", "large",
                                              "small", "large", "large", "large", "large", "small", "small"]})
 
-data
+fruitData
+
+# %% codecell
+fruitModel = BayesianModel([('fruit', 'tasty'), ('size', 'tasty')])
+
+pgmpyToGraph(fruitModel)
+
+
+# %% markdown
+# ### 1/ State Counts
+# To make sense of the given data we can count how often each state of the variable occurs. If the variable is dependent on parents, the counts are done conditionally on the parents' states, so separately for each parent configuration.
+# %% codecell
+from pgmpy.estimators import ParameterEstimator
+
+pe: ParameterEstimator = ParameterEstimator(model = fruitModel, data = fruitData)
+
+print(pe.state_counts(variable = 'fruit')) # example of unconditional state counts
+print('\n', pe.state_counts('tasty')) # example of conditional count of fruit and size
+
+# %% markdown
+# Can see that as many apples as bananas were observed and that $5$ large bananas were tasty while the only small one was not.
+
+# %% markdown
+# ### 2/ Maximum Likelihood Estimation
+# A natural estimate for the CPDs is to use the *relative frequencies* (probabilities version of the state count table above). For instance we observed $7$ apples among a total of $14$ fruits, so we might guess that about half the fruits are apples.
+#
+# This approach is **Maximum Likelihood Estimation (MLE)**: this fills the CPDs in such a way that $P(\text{data} \; | \; \text{model})$ is maximumal, and this is achieved using the *relative frequencies*. The `mle.estimate_cpd(variable)` function computes the state counts and divides each cell by the (conditional) sample size.
+# %% codecell
+
+from pgmpy.estimators import MaximumLikelihoodEstimator
+
+mle: MaximumLikelihoodEstimator = MaximumLikelihoodEstimator(model = fruitModel, data = fruitData)
+
+assert mle.state_names == {'fruit': ['apple', 'banana'], 'tasty': ['no', 'yes'], 'size': ['large', 'small']}
+
+
+estCPD_fruit: TabularCPD = mle.estimate_cpd('fruit') # unconditional
+print(estCPD_fruit)
+estCPD_size: TabularCPD = mle.estimate_cpd("size")
+print(estCPD_size)
+
+estCPD_tasty: TabularCPD = mle.estimate_cpd('tasty') # conditional
+print(estCPD_tasty)
+
+# %% markdown
+# The `mle.get_parameters()` method returns a list of CPDs for all variables of the model.
+#
+# The `fit()` method of `BayesianModel` provides more convenient access to parameter estimators:
+# %% codecell
+estCPDs: List[TabularCPD] = mle.get_parameters()
+
+assert (estCPDs[0] == estCPD_fruit and
+        estCPDs[1] == estCPD_size and
+        estCPDs[2] == estCPD_tasty), 'Check: both methods of estimating CPDs gives the same results'
+
+for cpd in estCPDs:
+    print(cpd)
+
+# %% markdown
+# #### $\color{red}{\text{Problem with MLE Estimation: }}$
+# The MLE estimator has the problem of *overfitting* to the data. In the above CPD, the probability of a large banance being tasty is estimated at $0.833$ because $5$ out of $6$ observed large bananas were tasty. Ok, but note that the probability of a small banana being tasty is estimated at $0.0$ because we **observed ONLY ONE small banana** and it **happened not to be tasty**.
+#
+# But that should hardly make us certain that small bananas aren't tasty!
+#
+# We simply **do not have enough observations to rely on the observed frequencies.**
+#
+# $\color{orange}{\text{WARNING RULE: }}$ If the observed data is not $\color{Turquoise}{\text{representative for the underlying distribution}}$, ML estimations will be EXTREMELY far off.
+#
+# When estimating parameters for Bayesian networks, lack of data is a frequent problem. Even if the total sample size is very large, that fact that state counts are done conditionally for each parent node's configuration causes immense fragmentation. If a variable has $3$ parents that can each take $10$ states, then state counts will be done separately for $10^3 = 1000$ parent configurations. That makes MLE very fragile and unstable for learning Bayesian Network parameters. A way to mitigate MLE's overfitting is *Bayesian Parameter Estimation*.
+#
+# ### 3/ Bayesian Parameter Estimation
+# The Bayesian Parameter Estimator starts with already existing prior CPDs that express our beliefs about the variables **before the data was observed**. These priors are then updated, using the state counts from observed data.
+#
+# The priors are consisting of *psuedo state counts*, that are added to the actual counts before normalization. Unless one wants to encode specific beliefs about the distributions of the variables, one commonly chooses uniform priors, that deem all states equiprobable.
+#
+# A very simple prior is the `K2` prior which simply adds $1$ to the count of every single state. A more sensible choice of prior is the `BDeu` (Bayesian Dirichlet equivalent uniform prior). For `BDeu` we need to specify an *equivalent sample size* $N$ and then the pseudo-counts are equivalent of having observed $N$ uniform samples of each variable (and each parent configuration). In pgmpy:
+# %% codecell
+from pgmpy.estimators import BayesianEstimator
+
+est: BayesianEstimator = BayesianEstimator(model = fruitModel, data = fruitData)
+
+bayesEstCPD_fruit: TabularCPD = est.estimate_cpd(node = 'fruit',
+                                                 prior_type = 'BDeu',
+                                                 equivalent_sample_size = 10)
+bayesEstCPD_size: TabularCPD = est.estimate_cpd(node = 'size',
+                                              prior_type = 'BDeu',
+                                              equivalent_sample_size = 10)
+bayesEstCPD_tasty: TabularCPD = est.estimate_cpd(node = 'tasty',
+                                                 prior_type = 'BDeu',
+                                                 equivalent_sample_size = 10)
+
+print("New Bayes CPD: \n", bayesEstCPD_tasty)
+# %% codecell
+print("Old MLE CPD: \n", estCPD_tasty)
+# %% markdown
+# The estimated CPD values are more conservative. In particular, the estimate for a small banana being not tasty is now around $0.64$ instead of $1.0$. Setting `euiqvalent_sample_size` = $10$ means that for each parent configuration, we add the equivalent of $10$ uniform samples (meaning $+5$ small bananas are seen as tasty and $+5$ are not tasty)
+#
+# #### Fitting Model CPDs with `BayesianEstimator`:
+# We can use the `fit()` method to estimate the CPDs the bayesian way, using `BayesianEstimator`:
+# %% codecell
+
+import numpy as np
+
+
+assert fruitModel.get_cpds() == [], "Check the cpds are empty beforehand"
+
+fruitModel.fit(data, estimator = BayesianEstimator,
+               prior_type = 'BDeu',
+               equivalent_sample_size= 10) # default equivalent_sample_size = 5
+
+bayesCPDs: List[TabularCPD] = fruitModel.get_cpds()
+assert (bayesEstCPD_fruit == bayesCPDs[0] and
+        bayesEstCPD_size == bayesCPDs[2] and
+        bayesEstCPD_tasty == bayesCPDs[1])
+
+for cpd in bayesCPDs:
+    print(cpd)
+
+# %% markdown
+# The `fruitModel` with estimated CPDs using `BayesianEstimator`:
+# %% codecell
+pgmpyToGraphCPD(fruitModel)
+# %% markdown
+# Another example using `fit()` with `BayesianEstimator`:
+# %% codecell
+# Generate data:
+data: DataFrame = pd.DataFrame(data = np.random.randint(low = 0, high = 2, size = (5000, 4)),
+                               columns = ['A', 'B', 'C', 'D'])
+
+model: BayesianModel = BayesianModel([('A', 'B'), ('A', 'C'), ('D', 'C'), ('B', 'D')])
+
+model.fit(data, estimator = BayesianEstimator, prior_type = 'BDeu') #leaving equivalent_sample_size = 5 , as in default
+
+for cpd in model.get_cpds():
+    print(cpd)
+# %% codecell
+pgmpyToGraphCPD(model)
+
+# %% markdown
+# ## Structure Learning
+# To learn model structure (a DAG) from a data set, there are two broad techniques:
+# * score-based structure learning
+# * constraint-based structure learning
+#
+# The combination of both techniques allows further improvement:
+# * hybrid structure learning
+#
+# ### Score-Based Structure Learning
+# This approach construes / interprets model selection as an optimization task. It has two building blocks:
+# * A **scoring function**   $\;\;s_D : \; M \rightarrow \mathbb{R}\;\;$ that maps models to a numerical score, based on how well they fit to a given data set $D$.
+# * A **search strategy** to traverse the search space of possible models $M$ and select a model with optimal score.
+#
+# ### Scoring Functions
+# Commonly used scores to meausre the fit between model and data are: *Bayesian Dirichlet scores* like *BDeu* or *K2* and the *Bayesian Information Criterion (BIC)*. (*BDeu* is dependent on the `equivalent_sample_size` argument)
+#
+# **Example 1:** $Z = X + Y$
+# %% codecell
+from pgmpy.estimators import BDeuScore, K2Score, BicScore
+
+# Create random data sample with 3 variables, where Z is dependent on X, Y:
+data: DataFrame = DataFrame(data = np.random.randint(low=0, high = 4, size=(5000,2)),
+                            columns = list('XY'))
+
+# Making Z dependent (in some arbitrary relation like addition) on X and Y
+data['Z'] = data['X'] + data['Y']
+
+# %% codecell
+# Creating the scoring objects from this data:
+bdeu: BDeuScore = BDeuScore(data, equivalent_sample_size = 5)
+k2: K2Score = K2Score(data = data)
+bic: BicScore = BicScore(data = data)
+
+# %% codecell
+commonEvidenceModel: BayesianModel = BayesianModel([('X', 'Z'), ('Y', 'Z')])
+pgmpyToGraph(commonEvidenceModel)
+# %% codecell
+commonCauseModel: BayesianModel = BayesianModel([('X', 'Z'), ('X', 'Y')])
+pgmpyToGraph(commonCauseModel)
+
+# %% codecell
+bdeu.score(commonEvidenceModel)
+# %% codecell
+k2.score(commonEvidenceModel)
+# %% codecell
+bic.score(commonEvidenceModel)
+
+# %% markdown
+# The `commonEvidenceModel` is the correct model for the data relationship $ Z = X + Y$ and scores higher than the `commonCauseModel`, as expected.
+#
+# $\color{red}{\text{TODO: }}$ why higher BIC scores good here? Thought lower BIC is good, which would indicated `commmonCauseModel` is better...?
+# %% codecell
+bdeu.score(commonCauseModel)
+# %% codecell
+k2.score(commonCauseModel)
+# %% codecell
+bic.score(commonCauseModel)
+
+# %% markdown
+# * KEY NOTE: these scores *decompose* so they can be computed locally for each of the variables, **given** their **potential parents**, while **independent** of other parts of the network:
+# %% codecell
+bdeu.local_score(variable = 'Z', parents = [])
+# %% codecell
+bdeu.local_score(variable = 'Z', parents = ['X'])
+# %% codecell
+bdeu.local_score(variable = 'Z', parents = ['X', 'Y'])
+# %% markdown
+# The local score is highest when both parents are considered, which reflects the data relation $Z = X + Y$
+#
+# **Example 2:** Fruit Data
+# %% codecell
+bdeuFruit: BDeuScore = BDeuScore(fruitData, equivalent_sample_size = 10)
+k2Fruit: K2Score = K2Score(data = fruitData)
+bicFruit: BicScore = BicScore(data = fruitData)
+
+print("BDeu = ", bdeuFruit.score(fruitModel))
+print("k2 = ", k2Fruit.score(fruitModel))
+print("bic = ", bicFruit.score(fruitModel))
+
+# %% codecell
+print(bdeuFruit.local_score(variable = 'fruit', parents = []))
+print(k2Fruit.local_score(variable = 'fruit', parents = []))
+print(bicFruit.local_score(variable = 'fruit', parents = []))
+# %% codecell
+print(bdeuFruit.local_score(variable = 'size', parents = []))
+print(k2Fruit.local_score(variable = 'size', parents = []))
+print(bicFruit.local_score(variable = 'size', parents = []))
+# %% codecell
+print(bdeuFruit.local_score(variable = 'tasty', parents = []))
+print(k2Fruit.local_score(variable = 'tasty', parents = []))
+print(bicFruit.local_score(variable = 'tasty', parents = []))
+# %% codecell
+print(bdeuFruit.local_score(variable = 'tasty', parents = ['size']))
+print(k2Fruit.local_score(variable = 'tasty', parents = ['size']))
+print(bicFruit.local_score(variable = 'tasty', parents = ['size']))
+# %% codecell
+print(bdeuFruit.local_score(variable = 'tasty', parents = ['fruit']))
+print(k2Fruit.local_score(variable = 'tasty', parents = ['fruit']))
+print(bicFruit.local_score(variable = 'tasty', parents = ['fruit']))
+# %% codecell
+print(bdeuFruit.local_score(variable = 'tasty', parents = ['size', 'fruit']))
+print(k2Fruit.local_score(variable = 'tasty', parents = ['size', 'fruit']))
+print(bicFruit.local_score(variable = 'tasty', parents = ['size', 'fruit']))
+
+
+# %% markdown
+# ### Search Strategies
+# The search space of DAGs is super-exponential in the number of variables and the above scoring functions allow for local maxima. The first property makes exhaustive search intractable for all but very small networks, the second prohibits efficient local optimization algorithms to always find the optimal structure. Thus, identifiying the ideal structure is often not tractable. Despite these bad news, heuristic search strategies often yields good results.
+#
+# If only few nodes are involved (read: less than 5), ExhaustiveSearch can be used to compute the score for every DAG and returns the best-scoring one:
+
+# #### Exhaustive Search
+# **Example 1:** $Z + X + Y$
+# %% codecell
+from pgmpy.estimators import ExhaustiveSearch
+from pgmpy.base.DAG import DAG
+
+es: ExhaustiveSearch = ExhaustiveSearch(data = data, scoring_method = bic)
+bestModel: DAG = es.estimate()
+
+bestModel.edges()
+# %% codecell
+# The best model (structurally estimated):
+pgmpyToGraph(bestModel, nodeColor = LIGHT_GREEN)
+
+# %% codecell
+# Computing scores for all structurally analyzed DAGS:
+
+print("All DAGs sorted by score:\n")
+
+for score, dag in reversed(es.all_scores()):
+    print(f"Score = {score},   Edges: {dag.edges()}")
+# %% markdown
+# Drawing a few of the highest-scoring ones and lowest-scoring ones
+# %% codecell
+from networkx.classes.digraph import DiGraph
+
+
+scoresAndDags: List[Tuple[float, DiGraph]] = list(reversed(es.all_scores()))
+LEN = len(scoresAndDags)
+
+# Second-highest scoring graph
+pgmpyToGraph(scoresAndDags[1][1])
+# %% codecell
+# Third-highest scoring graph
+pgmpyToGraph(scoresAndDags[2][1])
+# %% codecell
+# Fourth-highest scoring graph
+pgmpyToGraph(scoresAndDags[3][1])
+# %% codecell
+# Fifth-highest scoring graph
+pgmpyToGraph(scoresAndDags[4][1])
+# %% codecell
+# Sixth-highest scoring graph
+pgmpyToGraph(scoresAndDags[5][1])
+
+# %% codecell
+# Worst graph:
+pgmpyToGraph(scoresAndDags[LEN-1][1])
+# %% codecell
+# Second-worst graph:
+pgmpyToGraph(scoresAndDags[LEN-2][1])
+
+# %% markdown
+# **Example 2:* Fruit data
+# %% codecell
+es: ExhaustiveSearch = ExhaustiveSearch(data = fruitData, scoring_method = bicFruit)
+bestFruitModel: DAG = es.estimate()
+
+bestFruitModel.edges()
+# TODO why is this empty?
+
+# %% markdown
+# #### Heuristic Search
+# Once more ndoes are involved we need to switch to heuristic search. The `HillClimbSearch` implements a greedy local search that starts from the DAG `start` (default disconnected DAG) and proceeds by iteratively performing single-edge manipulations that maximally increase the score. The search terminates once a local maximum is found.
+#
+# **Example 1:** $Z = X + Y$
+# %% codecell
+from pgmpy.estimators import HillClimbSearch
+
+# Create data with dependencies:
+data: DataFrame = DataFrame(np.random.randint(low = 0, high = 3, size=(2500,8)),
+                            columns = list('ABCDEFGH'))
+data['A'] += data['B'] + data['C']
+data['H'] = data['G'] - data['A']
+
+
+hc = HillClimbSearch(data = data, scoring_method = BicScore(data))
+
+bestModel = hc.estimate()
+# %% codecell
+bestModel.edges()
+# %% codecell
+pgmpyToGraph(bestModel)
+
+# %% markdown
+# The search correctly identifies that $B$ and $C$ do not influence $H$ directly, only through $A$ and of course that $D$, $E$, $F$ are independent.
+#
+# To enforce a wider exploration of the search space, the search can be enhanced with a tabu list. The list keeps track of the last n modfications; those are then not allowed to be reversed, regardless of the score. Additionally a `white_list` or `black_list` can be supplied to restrict the search to a particular subset or to exclude certain edges. The parameter `max_indegree` allows to restrict the maximum number of parents for each node.
+#
+# **Example 2:** Fruit data
+# %% codecell
+hc = HillClimbSearch(fruitData, scoring_method = BicScore(fruitData))
+bestFruitModel: DAG = hc.estimate()
+
+bestFruitModel.edges()
+#pgmpyToGraph(bestFruitModel)
+
+# TODO why is this empty??
+
+
+
+# %% markdown
+# ### Constraint-Based Structure Learning
+# A different but straightforward approach to build a DAG from data is:
+# 1. Identify independencies in the data set using hypothesis tests
+# 2. Construct DAG (pattern) according to these independencies.
+#
+# #### Conditional Independence Tests
+# Independencies in the data can be identified using $\chi$-squared conditional independence hypothesis tests. Constraint-based estimators in pgmpy have a `test_conditional_independence(X, Y, Z)` method that performs a hypothesis test on the data sample to check if $X$ is independent from $Y$ given a set of variables $Z$s.
+#
+# **Example 1:** Linear Relationships Data
+# %% codecell
+from pgmpy.estimators import ConstraintBasedEstimator
+
+data: DataFrame = DataFrame(data = np.random.randint(low=0, high=3, size=(2500,8)),
+                            columns=list('ABCDEFGH'))
+data['A'] += data['B'] + data['C']
+data['H'] = data['G'] - data['A']
+data['E'] *= data['F']
+
+est: ConstraintBasedEstimator(data = data)
+est.test_conditional_independence('B', 'H')
