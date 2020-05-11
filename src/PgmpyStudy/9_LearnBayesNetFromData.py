@@ -458,5 +458,67 @@ data['A'] += data['B'] + data['C']
 data['H'] = data['G'] - data['A']
 data['E'] *= data['F']
 
-est: ConstraintBasedEstimator(data = data)
-est.test_conditional_independence('B', 'H')
+est: ConstraintBasedEstimator = ConstraintBasedEstimator(data = data)
+
+
+assert not est.test_conditional_independence('B', 'H')
+assert est.test_conditional_independence('B', 'E')
+assert not est.test_conditional_independence('A', 'B')
+
+assert est.test_conditional_independence(X = 'B', Y = 'H', Zs = ['A'])
+
+assert est.test_conditional_independence('A', 'G')
+
+assert not est.test_conditional_independence('A', 'G', Zs = ['H'])
+assert not est.test_conditional_independence('A', 'H', Zs = ['G'])
+
+# %% markdown
+# `test_conditional_independence()` returns a triple `(chi2, pValue, sufficientData)` consisting of the computed $\chi$-squared test statistic, the `pValue` of the test, and a heuristic flag that indicates if the sample size was sufficient. The `pValue` is the probability of observing the computed $\chi$-squared statistic (or an even higher $\chi$-squared value) given the null hypothesis that $X$ and $Y$ are independent given $Z$s.
+#
+# $\color{red}{\text{TODO: this is not true!}}$
+#
+# #### DAG (pattern) Construction
+# Can now construct a DAG from the data set in three steps:
+#
+# 1. Construct an undirected skeleton using `estimate_skeleton()`. The job of `estimate_skeleton()` is: to estimate a graph skeleton (UndirectedGraph) for the data set. Uses the `build_skeleton` method (PC algorithm); independencies are determined using a chisquare statistic with the acceptance threshold of `significance_level`. Returns
+#    * `skeleton`: `UndirectedGraph` = An estimate for the undirected graph skeleton of the BN underlying the data.
+#    * `separating_sets`: dict = A dict containing for each pair of not directly connected nodes a separating set of variables that makes them conditionally independent. (needed for edge orientation procedures)
+# 2. Orient compelled edges to obtain partially directed acyclic graph (PDAG, I-equivalence class of DAGs) using `skeleton_to_pdag()`, which takes the outputted `skeleton` and `separating_sets` to create a DAG pattern. Returns:
+#       * pdag: DAG = An estimate for the DAG pattern of the BN underlying the data. The graph might contain some nodes with both-way edges (X->Y and Y->X). Any completion by (removing one of the both-way edges for each such pair) results in a I-equivalent Bayesian network DAG.
+# 3. Extend DAG pattern to a DAG by conservatively orienting the remaining edges in some way, using `pdag_to_dag()`.Completes a PDAG to a DAG, without adding v-structures, if such a completion exists. If no faithful extension is possible, some fully oriented DAG that corresponds to the PDAG is returned and a warning is generated. This is a static method. Returns:
+#       * dag: DAG = A faithful orientation of pdag, if one exists. Otherwise any fully orientated DAG/BayesianModel with the structure of pdag.
+#
+# PDAGs are `DirectedGraph`s that may contain both-way edges, to indicate that the orientation for the edge is not determined.
+# %% codecell
+from pgmpy.base.UndirectedGraph import UndirectedGraph
+
+skel, separatingSets = est.estimate_skeleton(significance_level = 0.01)
+skel: UndirectedGraph = skel
+
+print("Undirected edges: ", skel.edges())
+# %% codecell
+separatingSets
+# %% codecell
+# Remember this draws the graph as directed, but in fact the edges are undirected.
+pgmpyToGraph(skel)
+
+# %% codecell
+from networkx.classes.digraph import DiGraph
+
+pdag: DiGraph = est.skeleton_to_pdag(skel = skel, separating_sets = separatingSets)
+
+print("PDAG edges: ", pdag.edges())
+# %% codecell
+pgmpyToGraph(pdag) # This is a directed graph (but how to show only partially?)
+
+# %% codecell
+model: DAG = est.pdag_to_dag(pdag = pdag)
+print("DAG edges: ", model.edges())
+
+
+pgmpyToGraph(model)
+
+
+# %% markdown
+# The `estimate()` method gives a shorthand for the three steps and directly reutrns a `BayesianModel`:
+# %% codecell
