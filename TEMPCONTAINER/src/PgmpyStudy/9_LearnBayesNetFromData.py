@@ -33,7 +33,7 @@ import itertools
 
 os.getcwd()
 # Setting the baseline:
-os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP')
+os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonProbabilisticGraphicalModels')
 
 
 curPath: str = os.getcwd() + "/src/PgmpyStudy/"
@@ -391,7 +391,7 @@ pgmpyToGraph(scoresAndDags[LEN-1][1])
 pgmpyToGraph(scoresAndDags[LEN-2][1])
 
 # %% markdown [markdown]
-# **Example 2:* Fruit data
+# **Example 2:** Fruit data
 # %% codecell
 es: ExhaustiveSearch = ExhaustiveSearch(data = fruitData, scoring_method = bicFruit)
 bestFruitModel: DAG = es.estimate()
@@ -475,7 +475,6 @@ assert not est.test_conditional_independence('A', 'H', Zs = ['G'])
 # %% markdown [markdown]
 # `test_conditional_independence()` returns a triple `(chi2, pValue, sufficientData)` consisting of the computed $\chi$-squared test statistic, the `pValue` of the test, and a heuristic flag that indicates if the sample size was sufficient. The `pValue` is the probability of observing the computed $\chi$-squared statistic (or an even higher $\chi$-squared value) given the null hypothesis that $X$ and $Y$ are independent given $Z$s.
 #
-# $\color{red}{\text{TODO: this is not true!}}$
 #
 # #### DAG (pattern) Construction
 # Can now construct a DAG from the data set in three steps:

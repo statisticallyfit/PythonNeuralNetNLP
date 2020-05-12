@@ -87,3 +87,6 @@ res2 = (reduce(mul, [qualityModel.get_cpds('Cost').to_factor(), qualityModel.get
 
 
 print(res2.marginalize(variables = ['Quality', 'Location'], inplace=False).normalize(inplace = False))
+
+
+# Answer: see the answer in the commented section of NetworkUtils file

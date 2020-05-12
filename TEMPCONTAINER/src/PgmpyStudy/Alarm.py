@@ -16,7 +16,7 @@ import itertools
 
 os.getcwd()
 # Setting the baseline:
-os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP')
+os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonProbabilisticGraphicalModels')
 
 
 curPath: str = os.getcwd() + "/src/PgmpyStudy/"
@@ -35,8 +35,10 @@ sys.path.append(os.getcwd() + "/src/utils/")
 # For being able to import files within PgmpyStudy folder
 sys.path.append(curPath)
 
-sys.path
+#sys.path.remove('/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP/src/utils/')
+#sys.path.remove('/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP/src/PgmpyStudy/')
 
+sys.path
 
 # %% markdown [markdown]
 # Science imports:
@@ -72,12 +74,15 @@ cpdBurglary: TabularCPD = TabularCPD(variable = 'Burglary', variable_card = 2,
                                      values = [[0.999, 0.001]],
                                      state_names = {'Burglary' : ['False', 'True']})
 print(cpdBurglary)
+
+# %% codecell
 cpdEarthquake: TabularCPD = TabularCPD(variable = 'Earthquake', variable_card = 2,
                                        values = [[0.002, 0.998]],
                                        state_names = {'Earthquake' : ['True', 'False']})
 
 print(cpdEarthquake)
 
+# %% codecell
 cpdAlarm: TabularCPD = TabularCPD(variable = 'Alarm', variable_card = 2,
                                   values = [[0.95, 0.94, 0.29, 0.001],
                                             [0.05, 0.06, 0.71, 0.999]],
@@ -85,6 +90,8 @@ cpdAlarm: TabularCPD = TabularCPD(variable = 'Alarm', variable_card = 2,
                                   state_names = {'Alarm': ['True', 'False'], 'Burglary':['True','False'],'Earthquake': ['True', 'False']})
 print(cpdAlarm)
 
+
+# %% codecell
 cpdJohnCalls: TabularCPD = TabularCPD(variable = 'JohnCalls', variable_card = 2,
                                       values = [[0.90, 0.05],
                                                 [0.10, 0.95]],
@@ -92,6 +99,7 @@ cpdJohnCalls: TabularCPD = TabularCPD(variable = 'JohnCalls', variable_card = 2,
                                       state_names = {'JohnCalls': ['True', 'False'], 'Alarm' : ['True', 'False']})
 print(cpdJohnCalls)
 
+# %% codecell
 cpdMaryCalls: TabularCPD = TabularCPD(variable = 'MaryCalls', variable_card = 2,
                                       values = [[0.70, 0.01],
                                                 [0.30, 0.99]],
@@ -99,7 +107,7 @@ cpdMaryCalls: TabularCPD = TabularCPD(variable = 'MaryCalls', variable_card = 2,
                                       state_names = {'MaryCalls': ['True', 'False'], 'Alarm' : ['True', 'False']})
 print(cpdMaryCalls)
 
-
+# %% codecell
 alarmModel.add_cpds(cpdBurglary, cpdEarthquake, cpdAlarm, cpdJohnCalls, cpdMaryCalls)
 
 assert alarmModel.check_model()

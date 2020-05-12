@@ -23,7 +23,7 @@ import itertools
 
 os.getcwd()
 # Setting the baseline:
-os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP')
+os.chdir('/development/projects/statisticallyfit/github/learningmathstat/PythonProbabilisticGraphicalModels')
 
 
 curPath: str = os.getcwd() + "/src/PgmpyStudy/"
