@@ -1,4 +1,6 @@
 # %% markdown [markdown]
+# #### Conda Environment: pytensorly_env (for most recent version of pytorch 1.4.0)
+# 
 # #### SOURCES:
 # [(experimental) Named Tensors Introduction)](https://pytorch.org/tutorials/intermediate/named_tensor_tutorial.html#annotations:VOh11nKBEeqlHi8b3rPBxg)
 # $\hspace{1em}$ | $\hspace{1em}$
@@ -471,9 +473,13 @@ assert tensorRemade2.names == ('N', 'C', 'H', 'W')
 
 
 
+
+
+
 # %% markdown [markdown]
 # ### [Manipulating Dimensions](https://pytorch.org/docs/stable/named_tensor.html#explicit-alignment-by-names)
 #
+# # {\color{red}{\text{TODO: compare the effects of } \textsc{align_as, view, unflatten, flatten} \text{ to verify if  they are the same, and then compare the effects of } \textsc{align_to, permute} \text{to see if they are the same} }}
 # **CASE: Permuting (unnamed) vs. Aligning (named)**
 #
 # Use [`align_to()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_to) to permute large amounts of dimensions without menionting all of them as in required by [`permute()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.permute).
