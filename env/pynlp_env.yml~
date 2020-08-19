@@ -1,4 +1,4 @@
-name: pybayesian_env
+name: pynlp_env
 channels:
   - conda-forge
   - defaults
@@ -17,42 +17,47 @@ dependencies:
   - python-language-server
   - ipykernel
 
+  # ========
+  # Misc Core stuff for nlp books
+  # ========
+  - cython 
+  - tqdm 
+  - html2text
+
+
+
   # ========================
   # NLP
   # ========================
+  #### - tensorly>=0.4.5 
+  # - allennlp
+  - pytorch>=1.4.0
+  - pytorch-pretrained-bert
+  - torchvision
+  - tensorflow>=1.14.0
+  - tensorboard
+  - tensorflow-probability
+  - keras
+  - theano
+  - textblob
+  - pattern>=3.6.0
+  - textblob
+  - python-annoy
+  - gym
   - numpy
   - scipy
   - sympy
   - spacy
   - statsmodels
+  - patsy
   - pandas
   - nltk
   - scikit-learn
-  - pytorch
-  - pytorch-pretrained-bert
-  - tensorflow==1.14.0
-  - tensorboard
-  - tensorflow-probability
+  - gensim # includes word2vec
 
 
 
-  # ========================
-  # Bayesian Networks / Statistics (SPOTLIGHT)
-  # ========================
-  - bayespy
-  - algopy
-  - emcee
-  - pymc3
-  #- ankurankan::pgmpy>=0.1.9
 
-
-
-  # ==============
-  # Matrix / Autodiff
-  # ==============
-  - jax
-  - numdifftools
-  - xarray
 
   # ==============
   # Plotting
@@ -60,27 +65,31 @@ dependencies:
   - matplotlib
   - seaborn
   - plotly
-  - pygraphviz>=1.5
+
 
 
   # ==============
   # Pip things
   # ============== 
   - pip:
-      - pgmpy==0.1.10
       - transformers>=2.5.0
       - tensor2tensor
       - torchtext
       - mxnet>=1.5.1,<1.6.0
       - gluonnlp
-      - gluonts
-      - numpyro
-      - edward
-      - causalnex>=0.5.0 # put here in pip to get version 0.5.0 as opposed to 0.4.3
-      - pydot
-      - svgwrite
-      - daft
+      - gluonts>=0.5.0
+      - allennlp
       - pampy # a functional pattern matching for python (so easier readability in lambdas!)
+      # - requests # misc stuff here for nlp books
+      # - annoy
+      - gzip
+      # - os
+      # - pickle
+      # - time
+      # - json
+      - argparse
+      ## - codecs
+      ## - csv
 
-prefix: /development/bin/python/conda3_ana/envs/pybayesian_env
+prefix: /development/bin/python/conda3_ana/envs/pynlp_env
 

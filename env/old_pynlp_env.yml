@@ -1,0 +1,76 @@
+name: pynlp_env2
+channels:
+  #- ankurankan
+  #- anaconda
+  - conda-forge
+  - defaults
+dependencies:
+
+  # =======
+  # core
+  # =======
+  - pip
+  - python>=3.6.7 #3.7.3
+  - jupyterlab
+  # https://hyp.is/5GZIiCyUEeq39Z_3EE6t6Q/github.com/kiwi0fruit/pandoctools/blob/master/docs/tips.md
+  - exec-wrappers
+  - ipykernel
+  # Hydrogen plugin
+  - jupytext
+  - statsmodels
+  - numpy
+  - scipy
+  - sympy
+  - spacy
+  - pandas
+  - patsy
+  - numdifftools
+  - xarray
+
+  # ======================================================
+  # Natural Language Processing / Autodiff / Neural Nets
+  # ======================================================
+  - tensorflow>=1.14.0
+  - tensorboard
+  - tensorflow-probability
+  - allennlp
+  - pytorch
+  - pytorch-pretrained-bert
+  - transformers
+  - word2vec
+  - scikit-learn
+  - spacy
+  - nltk
+
+
+  # ============================
+  # Bayesian Inference (not the spotlight here)
+  # ============================
+  - algopy
+  - bayespy
+  - emcee
+  #- pystan
+  - pymc3
+  - ankurankan::pgmpy
+
+  # ==============
+  # Report / doc generation
+  # ==============
+  - knitty=0.6.0
+  - conda-forge::pandoc>=2.9.1
+  - conda-forge::pandoctools>=2.8.0.3
+  - conda-forge::sugartex>=0.1.16
+
+  # ==============
+  # Plotting
+  # ==============
+  - matplotlib
+  - seaborn
+  - plotly
+
+  - pip:
+      - tensor2tensor
+      - torchtext
+      - edward
+
+prefix: /development/bin/python/conda3_ana/envs/pynlp_env

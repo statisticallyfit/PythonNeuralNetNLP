@@ -1,65 +1,55 @@
-name: pynlp_env2
+name: pynlp_env
 channels:
-  #- ankurankan
-  #- anaconda
   - conda-forge
   - defaults
 dependencies:
 
-  # =======
-  # core
-  # =======
+  # ========================
+  # Core
+  # ========================
+  - mypy
+  - typing 
   - pip
-  - python>=3.6.7 #3.7.3
-  - jupyterlab
-  # https://hyp.is/5GZIiCyUEeq39Z_3EE6t6Q/github.com/kiwi0fruit/pandoctools/blob/master/docs/tips.md
-  - exec-wrappers
-  - ipykernel
-  # Hydrogen plugin
+  - python
   - jupytext
-  - statsmodels
+  - jupyterlab
+  - ipywidgets
+  - python-language-server
+  - ipykernel
+
+
+  # ========================
+  # NLP
+  # ========================
+  #### - tensorly>=0.4.5 
+  # - allennlp
+  - pytorch>=1.4.0
+  - pytorch-pretrained-bert
+  - torchvision
+  - tensorflow>=1.14.0
+  - tensorboard
+  - tensorflow-probability
+  - keras
+  - theano
+  - textblob
+  - pattern>=3.6.0
+  - textblob
+  - python-annoy
+  - gym
   - numpy
   - scipy
   - sympy
   - spacy
-  - pandas
+  - statsmodels
   - patsy
-  - numdifftools
-  - xarray
-
-  # ======================================================
-  # Natural Language Processing / Autodiff / Neural Nets
-  # ======================================================
-  - tensorflow>=1.14.0
-  - tensorboard
-  - tensorflow-probability
-  - allennlp
-  - pytorch
-  - pytorch-pretrained-bert
-  - transformers
-  - word2vec
-  - scikit-learn
-  - spacy
+  - pandas
   - nltk
+  - scikit-learn
+  - gensim # includes word2vec
 
 
-  # ============================
-  # Bayesian Inference (not the spotlight here)
-  # ============================
-  - algopy
-  - bayespy
-  - emcee
-  #- pystan
-  - pymc3
-  - ankurankan::pgmpy
 
-  # ==============
-  # Report / doc generation
-  # ==============
-  - knitty=0.6.0
-  - conda-forge::pandoc>=2.9.1
-  - conda-forge::pandoctools>=2.8.0.3
-  - conda-forge::sugartex>=0.1.16
+
 
   # ==============
   # Plotting
@@ -68,9 +58,40 @@ dependencies:
   - seaborn
   - plotly
 
+
+
+  # ========
+  # Misc Core stuff for nlp books
+  # ========
+  - cython 
+  - tqdm 
+  - html2text
+
+
+
+
+  # ==============
+  # Pip things
+  # ============== 
   - pip:
+      - transformers>=2.5.0
       - tensor2tensor
       - torchtext
-      - edward
+      - mxnet>=1.5.1,<1.6.0
+      - gluonnlp
+      - gluonts>=0.5.0
+      - allennlp
+      - pampy # a functional pattern matching for python (so easier readability in lambdas!)
+      # - requests # misc stuff here for nlp books
+      # - annoy
+      - gzip
+      # - os
+      # - pickle
+      # - time
+      # - json
+      - argparse
+      ## - codecs
+      ## - csv
 
 prefix: /development/bin/python/conda3_ana/envs/pynlp_env
+
