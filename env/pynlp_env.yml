@@ -2,6 +2,7 @@ name: pynlp_env
 channels:
   - conda-forge
   - defaults
+  - fastai
 dependencies:
 
   # ========================
@@ -30,6 +31,11 @@ dependencies:
   - tensorboard
   - tensorflow-probability
   - keras
+  - fastai::fastai2>=0.0.11
+  - fastai::nbdev>=0.2.12
+  # TODO for fastai book: 
+  # - azure-cognitiveservices-search-imagesearch
+  # - sentencepiece
   - theano
   - textblob
   - pattern>=3.6.0
