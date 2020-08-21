@@ -1,0 +1,1000 @@
+ 1135  idea19
+ 1136  conad deactivate
+ 1137  conda deactivate
+ 1138  conda activate pybayesian_env
+ 1139  atom
+ 1140  conda activate pybayesian_env
+ 1141  idea19
+ 1142  conda activate pybayesian_env
+ 1143  atom
+ 1144  cd /development/projects/statisticallyfit/github/learningmathstat/PythonProbabilisticGraphicalModels/
+ 1145  cd src/PgmpyStudy/
+ 1146  jupytext --to ipynb --execute MontyHall.py --set-kernel=pybayesian_env
+ 1147  cd ../../
+ 1148  git add --all
+ 1149  git commit -m "done monty hall pgmpy example"
+ 1150  git push
+ 1151  cd src/PgmpyStudy/
+ 1152  jupytext --to ipynb --execute MontyHall.py --set-kernel=pybayesian_env
+ 1153  cd ../../
+ 1154  git add --all
+ 1155  git commit -m "added link to source tutorial for monty hall"
+ 1156  git push
+ 1157  git add --all
+ 1158  git commit -m "started causal games file but todo more reading about temporal networks and explore pyagurm before, to understand the knowledge better rather than sparse notebooks"
+ 1159  git push
+ 1160  conda deactivate
+ 1161  conda activate pybayesian_env
+ 1162  idea19
+ 1163  conda deactivate
+ 1164  conda activate pybayesian_env
+ 1165  conda list
+ 1166  cd /development/projects/statisticallyfit/github/learningmathstat/PythonProbabilisticGraphicalModels/env/
+ 1167  ls
+ 1168  gedit pybayesian_env.yml 
+ 1169  conda deactivate
+ 1170  conda env remove --name pybayesian_env
+ 1171  conda clean -tipsy
+ 1172  conda env create -f pybayesian_env.yml
+ 1173  conda activate pybayesian_env
+ 1174  conda clean -tipsy
+ 1175  cd ../
+ 1176  ls
+ 1177  cd RESEARCH_PROJECTS/
+ 1178  ls
+ 1179  cd ../
+ 1180  ls
+ 1181  ls packages/
+ 1182  ls GithubTools/
+ 1183  ls learningprogramming/
+ 1184  ls
+ 1185  cd learningmathstat/
+ 1186  ls
+ 1187  mkdir lib
+ 1188  git clone https://github.com/sstucki/odds.git
+ 1189  git remote -v
+ 1190  cd odds/
+ 1191  git remote -v
+ 1192  git status 
+ 1193  cd ../
+ 1194  rm -rf odds/
+ 1195  ls
+ 1196  mkdir ScalaProbilisticProgramming
+ 1197  ls
+ 1198  mkdir ScalaNNNLP
+ 1199  mkdir PythonNNNLP
+ 1200  ls
+ 1201  rm PythonNNNLP/ ScalaNNNLP/
+ 1202  rmdir PythonNNNLP/ ScalaNNNLP/
+ 1203  ls
+ 1204  ls RBayesianStatistics/MarcoScutari_BayesianNetworksInR/
+ 1205  cd ScalaProbilisticProgramming/
+ 1206  cd ../ScalaNeuralNetNLP/
+ 1207  ls
+ 1208  gedit build.sbt
+ 1209  gedit build.sbt 
+ 1210  sbt --version
+ 1211  cd ../ScalaProbilisticProgramming/
+ 1212  cd ../
+ 1213  rmdir ScalaProbilisticProgramming/
+ 1214  cd ScalaProbabilisticProgramming/
+ 1215  ls
+ 1216  cd src/
+ 1217  ls
+ 1218  cat ~/.bash_profile
+ 1219  which scala
+ 1220  du -sh
+ 1221  du -sh /usr/bin/scala
+ 1222  du -sh /usr/bin/sbt
+ 1223  which java
+ 1224  which sbt
+ 1225  cd ../../ScalaNeuralNetNLP/
+ 1226  ls
+ 1227  gedit build.sbt 
+ 1228  cd ../
+ 1229  ls
+ 1230  cd ScalaCategoryTheory/
+ 1231  gedit build.sbt
+ 1232  cd ../ScalaProbabilisticProgramming/
+ 1233  sbt
+ 1234  cd src/main/scala/lib/
+ 1235  git clone https://github.com/statisticallyfit/odds.git
+ 1236  cd odds/
+ 1237  git status 
+ 1238  git remote -v
+ 1239  sbt compile
+ 1240  conda deactivate
+ 1241  sbt
+ 1242  cd ../
+ 1243  rm -rf odds/
+ 1244  git clone https://github.com/statisticallyfit/odds.git
+ 1245  rm -rf odds/
+ 1246  cd ../
+ 1247  rmdir lib
+ 1248  cd ../../../
+ 1249  ls
+ 1250  mkdir lib
+ 1251  cd lib
+ 1252  git clone https://github.com/statisticallyfit/odds.git
+ 1253  cd odds
+ 1254  ls
+ 1255  cd project/
+ 1256  gedit build.properties 
+ 1257  gedit Build.scala
+ 1258  cd ../../../../ScalaCategoryTheory/
+ 1259  ls
+ 1260  gedit build.prop
+ 1261  gedit project/build.properties 
+ 1262  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1263  ls
+ 1264  gedit project/build.properties 
+ 1265  ls
+ 1266  cd lib/odds/
+ 1267  ls -la
+ 1268  gedit project/build.properties 
+ 1269  cd ../../
+ 1270  ls
+ 1271  cd lib/odds/
+ 1272  ls
+ 1273  ls -la
+ 1274  cd project/
+ 1275  ls
+ 1276  cat Build.scala 
+ 1277  cd ../../../
+ 1278  rm -rf lib/
+ 1279  sbt
+ 1280  rm -rf project/
+ 1281  cp ../ScalaCategoryTheory/.gitignore .
+ 1282  ls -la
+ 1283  cat .gitignore 
+ 1284  sbt
+ 1285  git init
+ 1286  git add .
+ 1287  git commit -m "initial"
+ 1288  git remote add origin https://github.com/statisticallyfit/ScalaProbabilisticProgramming.git
+ 1289  git push -u origin master
+ 1290  git remote -v
+ 1291  git status 
+ 1292  cd lib/
+ 1293  git clone https://github.com/statisticallyfit/odds.git
+ 1294  ls
+ 1295  cd ../
+ 1296  ls
+ 1297  mv odds/ lib/
+ 1298  ls
+ 1299  cd lib/
+ 1300  ls 
+ 1301  cd odds/
+ 1302  sbt
+ 1303  sbt compile
+ 1304  cd ../
+ 1305  rm -rf odds/
+ 1306  cd ../
+ 1307  git add --all
+ 1308  git commit -m "trying to figure out how to include Odds library underneath here"
+ 1309  git push
+ 1310  idea19
+ 1311  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1312  gedit build.sbt 
+ 1313  idea19
+ 1314  cd
+ 1315  idea19
+ 1316  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1317  cd project/
+ 1318  ls -la
+ 1319  mv plugins.sbt ../
+ 1320  ls
+ 1321  ls ../
+ 1322  cd ../
+ 1323  rm -rf project/
+ 1324  sbt
+ 1325  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/lib/OddsLibrary/src/scala/
+ 1326  ls
+ 1327  ls -la
+ 1328  git clone https://github.com/statisticallyfit/odds.git
+ 1329  cd ../../../../../
+ 1330  git clone https://github.com/statisticallyfit/odds.git
+ 1331  cd odds
+ 1332  sbt
+ 1333  sbt compile
+ 1334  compile
+ 1335  sbt
+ 1336  exit
+ 1337  cd /development/projects/statisticallyfit/github/learningmathstat/odds/
+ 1338  git status 
+ 1339  git remote -v
+ 1340  git add --all
+ 1341  git commit -m "tried to make Odds compile separately from my main project (here) but is not working, due to macros plugin"
+ 1342  git status 
+ 1343  git add --all
+ 1344  git commit -m "added .gitignore"
+ 1345  git status 
+ 1346  git push
+ 1347  git rm -r --cached project/
+ 1348  ls -la
+ 1349  git add --all
+ 1350  git status 
+ 1351  git commit -m "removed project folders after committing accidentally"
+ 1352  git push origin master
+ 1353  git rm -r --cached target/
+ 1354  cat .gitignore 
+ 1355  git status 
+ 1356  cd project/
+ 1357  ls -la
+ 1358  cp Build.scala ../../
+ 1359  cd ../../
+ 1360  ls -la
+ 1361  ls
+ 1362  rm -rf odds/
+ 1363  git clone https://github.com/statisticallyfit/odds.git
+ 1364  cp ScalaProbabilisticProgramming/.gitignore odds/
+ 1365  mv Build.scala odds/
+ 1366  cd odds
+ 1367  ls -la
+ 1368  rm project/Build.scala 
+ 1369  mv Build.scala project/
+ 1370  ls -la project/
+ 1371  git status 
+ 1372  git add --all
+ 1373  git commit -m "fresh clone and added gitignore and updated Build.scala file, though still unresolved dependencies --- cannot make this project compile!"
+ 1374  git push
+ 1375  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/lib/
+ 1376  git clone https://github.com/statisticallyfit/odds.git
+ 1377  cd odds/
+ 1378  ls -la
+ 1379  cd ../../
+ 1380  git add --all
+ 1381  git commit -m "trying to update main project's build sbt to create project dependency between main and Odds"
+ 1382  git push
+ 1383  sbt
+ 1384  ls
+ 1385  rm -rf project/
+ 1386  ls
+ 1387  ls target/
+ 1388  ls -la target/
+ 1389  rm -rf target/
+ 1390  sbt
+ 1391  rm -rf project/ target/
+ 1392  cd lib/
+ 1393  ls
+ 1394  rm -rf odds/
+ 1395  cd ../
+ 1396  sbt
+ 1397  rm -rf project/ target/
+ 1398  sbt
+ 1399  ls
+ 1400  cd lib/
+ 1401  ls
+ 1402  rm -rf odds/
+ 1403  cd ../
+ 1404  sbt
+ 1405  rm -rf project/ target/
+ 1406  sbt
+ 1407  ls
+ 1408  rm -rf project/
+ 1409  ls -la
+ 1410  cd lib/
+ 1411  ls
+ 1412  ls- la
+ 1413  ls -la
+ 1414  cd OddsLibrary/
+ 1415  ls -la
+ 1416  cat build.sbt
+ 1417  cd ../
+ 1418  rm -rf OddsLibrary/
+ 1419  cd ../
+ 1420  sbt
+ 1421  rm -rf project/
+ 1422  ls lib/
+ 1423  sbt
+ 1424  cp .gitignore ../odds/
+ 1425  cd ../
+ 1426  cd odds/
+ 1427  ls -la
+ 1428  cd ../ScalaProbabilisticProgramming/
+ 1429  git status 
+ 1430  git add --all
+ 1431  git status 
+ 1432  git commit -m "commented out any mention of OddsLibrary --- return to this later when figured out how to compile Odds alone, successfully"
+ 1433  git push
+ 1434  mv plugins.sbt project/
+ 1435  ls 
+ 1436  ls project/
+ 1437  git add --all
+ 1438  git status 
+ 1439  git commit -m "moved plugins.sbt into the project folder"
+ 1440  git status 
+ 1441  git push
+ 1442  sbt
+ 1443  git status 
+ 1444  git add --all
+ 1445  git commit -m "done wilkinson particle example"
+ 1446  git status 
+ 1447  git push
+ 1448  cd /development/projects/statisticallyfit/github/learningmathstat/odds/
+ 1449  ls
+ 1450  ls -la
+ 1451  cd project/
+ 1452  ls -la
+ 1453  gedit Build.scala
+ 1454  cd ../../ScalaProbabilisticProgramming/lib/OddsLibrary/
+ 1455  ls
+ 1456  rm -rf src/ target/
+ 1457  ls
+ 1458  ls -la
+ 1459  cd ../../
+ 1460  git add --all
+ 1461  git commit -m "tried to make Odds library compile separately in another directory but the macros plugin won't download -- compilation fails, so I deleted odds from under this repo - just focus on the other libraries first.."
+ 1462  git push
+ 1463  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1464  ls
+ 1465  cd src/main/scala/Blogs/
+ 1466  ls
+ 1467  cd ../../../
+ 1468  cd ../
+ 1469  git add --all
+ 1470  git commit -m "refactored directories for blog files"
+ 1471  git push
+ 1472  git status 
+ 1473  idea19
+ 1474  ls
+ 1475  cd /
+ 1476  ls
+ 1477  which sample_asia.csv
+ 1478  grep sample_asia.csv
+ 1479  find . -name 'sample_asia.csv'
+ 1480  conda activate pybayesian_env
+ 1481  atom
+ 1482  python -m ipykernel install --user --name pybayesian_env
+ 1483  atom
+ 1484  cd /development/projects/statisticallyfit/github/learningmathstat/PythonProbabilisticGraphicalModels/
+ 1485  git status 
+ 1486  git add --all
+ 1487  git commit -m "started pyagrum tutorial Asia"
+ 1488  git push
+ 1489  conda activate pybayesian_env
+ 1490  idea19
+ 1491  conda deactivate
+ 1492  conda activate pybayesian_env
+ 1493  atom
+ 1494  cd /development/projects/statisticallyfit/github/learningmathstat/PythonProbabilisticGraphicalModels/
+ 1495  git status 
+ 1496  git add --all
+ 1497  git commit -m "goal to add some pyagrum code to Alarm file for comparison"
+ 1498  git push
+ 1499  conda deactivate
+ 1500  conda activate pybayesian_env
+ 1501  idea19
+ 1502  conda deactivate
+ 1503  conda activate pybayesian_env
+ 1504  atom
+ 1505  conda activate pybayesian_env
+ 1506  idea19
+ 1507  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1508  git status 
+ 1509  git add --all
+ 1510  git commit -m "moved particle example; and started on Figaro HMM website example from mio alter"
+ 1511  git push
+ 1512  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1513  git status 
+ 1514  git add --all
+ 1515  git commit -m "added sequence of hidden states function"
+ 1516  git push
+ 1517  idea19
+ 1518  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1519  git status 
+ 1520  git add --all
+ 1521  git commit -m "understand through debugger how the HMM is evaluated in the weather example"
+ 1522  git push
+ 1523  cd /development/projects/statisticallyfit/github/learningmathstat/RESEARCH_PROJECTS/DataSciPdfHoster 
+ 1524  git init
+ 1525  git add .
+ 1526  git commit -m "initial"
+ 1527  git remote add origin https://github.com/statisticallyfit/DataSciPdfHoster.git
+ 1528  git push -u origin master
+ 1529  ls -la
+ 1530  rm -rf .git/ NOTE.txt~ README.md~
+ 1531  cd ../../ScalaProbabilisticProgramming/
+ 1532  git status 
+ 1533  exit
+ 1534  idea19
+ 1535  . ~/.bash_profile
+ 1536  idea19
+ 1537  cd /development/projects/statisticallyfit/github/learningmathstat/
+ 1538  ls
+ 1539  mkdir StatsBookNook
+ 1540  git init
+ 1541  git add .
+ 1542  git commit -m "initial"
+ 1543  ls -la
+ 1544  rm -rf .git/
+ 1545  git status 
+ 1546  cd StatsBookNook/
+ 1547  git init
+ 1548  git add .
+ 1549  git commit -m "initial"
+ 1550  git status 
+ 1551  git remote add origin https://github.com/statisticallyfit/StatsBookNook.git
+ 1552  git push -u origin master
+ 1553  git status 
+ 1554  git add --all
+ 1555  git commit -m "adding Conrady, Korb, Ankur, Kruschke to the list of Avi Pfeffer + Koller bayesian books, so they can be hosted on Fast.io so they can be highlighted with hyp.is to put in wiki"
+ 1556  git push
+ 1557  git status 
+ 1558  git add --all
+ 1559  git commit -m "delete the three books with too many highlights since those foxit highlights trip up the hyp.is"
+ 1560  git push
+ 1561  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1562  sbt
+ 1563  git status 
+ 1564  git add --all
+ 1565  git commit -m "started to add listing 8.1 markov chain soccer example from Avi Pfeffer"
+ 1566  git push
+ 1567  idea19
+ 1568  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1569  git status 
+ 1570  git add --all
+ 1571  git status
+ 1572  git commit -m "todo: compare HMM tests with markov chain tests"
+ 1573  git push
+ 1574  cd /development/projects/statisticallyfit/github/learningmathstat/StatsBookNook 
+ 1575  git status 
+ 1576  git add --all
+ 1577  git commit -m "added causal inference books Jonas peters and Hernan"
+ 1578  git push
+ 1579  git add --all
+ 1580  git commit -m "added bill shipley's biology causation books"
+ 1581  git push
+ 1582  git status 
+ 1583  cd ../ScalaProbabilisticProgramming/
+ 1584  git status 
+ 1585  idea19
+ 1586  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1587  sbt
+ 1588  ls -la
+ 1589  rm -rf project/ target/
+ 1590  ls lib/
+ 1591  sbt
+ 1592  cd ../scalaprobprog/
+ 1593  sbt
+ 1594  cd ../ScalaProbabilisticProgramming/
+ 1595  sbt
+ 1596  reload
+ 1597  which java
+ 1598  cd /development/projects/statisticallyfit/github/learningmathstat/
+ 1599  cp ScalaCategoryTheory/ ScalaProbProg/
+ 1600  ls -la
+ 1601  cd ScalaProbabilisticProgramming/
+ 1602  ls -la
+ 1603  rm -rf project/ target/
+ 1604  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming
+ 1605  sbt
+ 1606  git status 
+ 1607  git add --all
+ 1608  git commit -m "figured out why specs2 wasn't working before! Must use it only in the test/scala folder, never main/scala, so build.sbt wasn't wrong. But updated anyway to version 2.11.11 from 2.11.0"
+ 1609  git push
+ 1610  git status 
+ 1611  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1612  ls
+ 1613  gedit built.sbt
+ 1614  idea19
+ 1615  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1616  git status 
+ 1617  git add --all
+ 1618  git commit -m "triple equals from scalactic highlights red in IDEA but sbt compile and GUI compile work"
+ 1619  git status 
+ 1620  git add --all
+ 1621  git commit -m "1) renamed test file to match markov chain soccer in main folder, and 2) created basic non-immediate past scenario test cases for t = 2, 3, --- 5. NEXT: do this for immediate past and then future, markov assumption. Then do all these three with property based testing"
+ 1622  git push
+ 1623  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1624  sbt
+ 1625  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1626  git add --all
+ 1627  git commit -m "understand difference between feature 1 and feature 2, if any"
+ 1628  git push
+ 1629  git status 
+ 1630  git add --all
+ 1631  git commit -m "finished markov chain tests for immediate past cases"
+ 1632  git push
+ 1633  exit
+ 1634  idea19
+ 1635  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1636  git add --all
+ 1637  git commit -m "updated markov immediate past tests with zero prob"
+ 1638  git add --all
+ 1639  git commit -m "save"
+ 1640  git push
+ 1641  git add --all
+ 1642  git commit -m "scenario 3 is the groundbreaker: book said 'given the immediate preceding state is observed --> then the other states are the same' but this is not true because scenario 3 shows that even when immediate preceding state t = 4 is not observed, the other state probs are still the same"
+ 1643  git push
+ 1644  git add --all
+ 1645  git commit -m "got the immediate past and non-immediate past cases correct now"
+ 1646  git push
+ 1647  git add --all
+ 1648  git commit -m "saving todos"
+ 1649  git push
+ 1650  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1651  git add --all
+ 1652  git commit -m "did the past and future immediate  / non-immediate test cases by spec-style, NEXT must do them in property-check style
+ 1653  "
+ 1654  git push
+ 1655  cd ../TopologyInLatex/
+ 1656  git status 
+ 1657  git add --all
+ 1658  git commit -m "added lemma 1.24 and proof of first part (1) with extra macro features"
+ 1659  git push
+ 1660  cd ../ScalaProbabilisticProgramming/
+ 1661  git status 
+ 1662  git add --all
+ 1663  git commit -m "did todos 1, 2) of adding util functions and doing future spec test. NEXT must do the property-style test equivalents"
+ 1664  git add --all
+ 1665  git commit -m "removed unnecessary comments in listing8_1_tests file and created Util"
+ 1666  git push
+ 1667  exit
+ 1668  idea19
+ 1669  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1670  git status 
+ 1671  git add --all
+ 1672  git commit -m "refactoring spec and prop directory structure"
+ 1673  git push
+ 1674  cd
+ 1675  gedit .bash_profile
+ 1676  gedit .bash_aliases
+ 1677  gedit .bashrc
+ 1678  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1679  git add --all
+ 1680  git commit -m "started property testing -- why is array out of bounds exception being thrown and where does '20' fit in?"
+ 1681  git push
+ 1682  git status 
+ 1683  exit
+ 1684  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1685  git status 
+ 1686  git add --all
+ 1687  git commit -m "fixed a lot of errors with markov soccer property checking, made 100 tests pass, array index out of bounds"
+ 1688  git push
+ 1689  git add --all
+ 1690  git commit -m "problem - can't automate observing variables with for loop?"
+ 1691  git push
+ 1692  git add --all
+ 1693  git commit -m "created object to verify markov assumption can hold in any order of observation"
+ 1694  git push
+ 1695  git add --all
+ 1696  git commit -m "updated second test to calculate observations in any order (incr, decr, rand), now must 1) update first test, 2) check that second test works"
+ 1697  git status 
+ 1698  git add --all
+ 1699  git commit -m "fix by: ignoring the first element from the ZERO initialization of the Markov chain, this is a step in the book, chapter 8, think this is observation probability that is different from the others AFTER zero and this I think is what is falsifying the tests"
+ 1700  git push
+ 1701  idea19
+ 1702  git add --all
+ 1703  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1704  git status 
+ 1705  git add --all
+ 1706  git commit -m "ignoring the zero generation technique is not working: still getting different values, so going to try the "given immediate" test case and see if the generated values are still different"
+ 1707  git push
+ 1708  git add --all
+ 1709  git commit -m "managed to reach 80+ tests successfully so i think the problem is fixed!"
+ 1710  git push
+ 1711  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1712  git status 
+ 1713  git add --all
+ 1714  git status 
+ 1715  git commit -m "renamed tests and variables but also added the two cases of inclusive (indep + dep), NEXT going to do the same for the exclusive (indep + dep)"
+ 1716  git push
+ 1717  git add --all
+ 1718  git commit -m "fixing specs as well"
+ 1719  git push
+ 1720  atom
+ 1721  Mathematica 
+ 1722  MATLAB
+ 1723  idea19
+ 1724  cd /development/projects/statisticallyfit/github/learningmathstat/StatsBookNook/
+ 1725  ls
+ 1726  git status 
+ 1727  git add --all
+ 1728  git commit -m "added feigelson's astronomy stats book not for statistics learning (bad) but for some snippets on astronomical context for that particular statistics area (like for time series usage in astronomy, chapter 11)"
+ 1729  git push
+ 1730  idea19
+ 1731  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1732  git add --all
+ 1733  git commit -m "fixing specs2 to have should matchers, after Hinojosa book"
+ 1734  git add --all
+ 1735  git commit -m "adding tests with And in specs and updating specs with Logger from utils. TODO: use specs2's way of debugging"
+ 1736  git push
+ 1737  git add --all
+ 1738  git commit -m "remove tag arg in logger function and use counter instead for iteration number, use tagger test code just at top when printing the  code of the test at very top, not for every time"
+ 1739  git push
+ 1740  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1741  git add --all
+ 1742  git status 
+ 1743  git commit -m "save"
+ 1744  git push
+ 1745  idea19
+ 1746  exit
+ 1747  atom
+ 1748  atom
+ 1749  which caonda
+ 1750  which conda
+ 1751  find /development/bin/python/conda3_ana/ -name libdbus-1.so
+ 1752  ls /home/statisticallyfit/.local/share/jupyter/kernels/
+ 1753  ipython kernelspec list
+ 1754  jupyter kernelspec
+ 1755  jupyter kernelspec list
+ 1756  cd ~
+ 1757  pwd
+ 1758  conda create --name tempJupyter_env
+ 1759  conda activate tempJupyter_env
+ 1760  conda create --name tempJupyter_env
+ 1761  conda install -c conda-forge jupyterlab
+ 1762  python -m ipykernel install --user --name tempJupyter_env
+ 1763  atom
+ 1764  su - statisticalyfit
+ 1765  su - statisticallyfit
+ 1766  . ~/.bash_profile
+ 1767  atom
+ 1768  history
+ 1769  . ~/.bash_profile
+ 1770  conda activate pynlp_env
+ 1771  atom
+ 1772  cd /development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP/src/PyTorchStudy/
+ 1773  ls
+ 1774  jupytext --to ipynb --execute NamedTensorTutorial.py 
+ 1775  jupytext --to ipynb --execute NamedTensorTutorial.py --set-kernel=pynlp_env
+ 1776  conda list
+ 1777  conda deactivate
+ 1778  conda activate pyhugface_env
+ 1779  conda list
+ 1780  conda deactivate
+ 1781  conda activate pytensorly_env
+ 1782  conda list
+ 1783  conda deactivate
+ 1784  conda activate pyhugface_env
+ 1785  atom
+ 1786  conda deactivate
+ 1787  conda activate pytensorly
+ 1788  conda activate pytensorly_env
+ 1789  atom
+ 1790  conda env export > ../../env/pytensorly_EXACT.yml
+ 1791  gedit ../../env/pytensorly_EXACT.yml 
+ 1792  jupytext --to ipynb --execute NamedTensorTutorial.py --set-kernel=pytensorly_env
+ 1793  cd ../../
+ 1794  git status 
+ 1795  git add --all
+ 1796  git commit -m "exported pytesnorly and made note on namedtensorpytorchtutorial file to compare several functions"
+ 1797  git push
+ 1798  cd src/PyTorchStudy/
+ 1799  jupytext --to ipynb --execute NamedTensorTutorial.py --set-kernel=pytensorly_env
+ 1800  cd ../../
+ 1801  git add -all
+ 1802  git add --all
+ 1803  git commit -m "updated red todo note in namedtensor file"
+ 1804  git push
+ 1805  git status 
+ 1806  conda deactivate
+ 1807  conda activate pynlp_env
+ 1808  idea19
+ 1809  conda deactivate
+ 1810  conda activate pytensorly_env
+ 1811  atom
+ 1812  conda activate pytensorly_env
+ 1813  idea19
+ 1814  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1815  git add --all
+ 1816  git commit -m "refactored the Specs markov soccer using criteria 1) reorder obs, 2) testing structure from Hinojosa book, 3) logger and .pp, 4) correct test cases. NOW: refactoring to include variable names in Specs instead of just 5, 4, 3,, 2, 1..."
+ 1817  git push
+ 1818  git add --all
+ 1819  git commit -m "declaring variables for Specs tests"
+ 1820  git push
+ 1821  which java
+ 1822  gedit .bash_profile
+ 1823  cd /development/bin/java/jdk1.8.0_181/
+ 1824  ls
+ 1825  README.html
+ 1826  cd bin/
+ 1827  ls -la
+ 1828  cd ../
+ 1829  ls
+ 1830  cd jre/bin/
+ 1831  ls -la
+ 1832  cd ../../
+ 1833  ls
+ 1834  ls -la
+ 1835  gedit LICENSE 
+ 1836  README.html
+ 1837  THIRDPARTYLICENSEREADME.txt
+ 1838  gedit THIRDPARTYLICENSEREADME.txt
+ 1839  cd
+ 1840  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1841  git status 
+ 1842  idea19
+ 1843  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1844  git add --all
+ 1845  git commit -m "finished updating markov soccer specs to hold the variable names instead of 5, 4, 1, ..."
+ 1846  git add --all
+ 1847  git commit -m "save"
+ 1848  git push
+ 1849  cd /development/projects/statisticallyfit/github/learningmathstat/ScalaProbabilisticProgramming/
+ 1850  git add --all
+ 1851  git commit -m "added all the combos of tests; refactored first one to use GivenWhenThen and Should Matchers but there is a failing should, so fix that"
+ 1852  git commit -m "added all the combos of tests; refactored first one to use GivenWhenThen and Should Matchers but there is a failing should, so fix that, and (2) find way to reduce number of tests since the 'dependent' cases take too long to print"
+ 1853  git push
+ 1854  git status 
+ 1855  exit
+ 1856  idea19
+ 1857  exit
+ 1858  . ~/.bash_profile
+ 1859  cd /development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP/env/
+ 1860  ls -la
+ 1861  echo $JAVA_HOME
+ 1862  echo $PATH
+ 1863  echo $ACTIVATOR_HOME
+ 1864  cd /development/bin/java/jdk1.8.0_181
+ 1865  ls -la
+ 1866  cd ../
+ 1867  ls -la
+ 1868  which java
+ 1869  cd /development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP/env/
+ 1870  echo $PATH
+ 1871  gedit ~/.bash_profile
+ 1872  conda activate pytensorly_env
+ 1873  conda list
+ 1874  conda deactivate
+ 1875  cd /development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP/env/
+ 1876  conda env remove --name pynlp_env
+ 1877  conda clean -tipsy
+ 1878  conda env create -f pynlp_env.yml
+ 1879  conda info -e
+ 1880  conda env remove arxiv_text2path_env
+ 1881  conda env remove --name arxiv_text2path_env
+ 1882  conda activate pycausal_env
+ 1883  conda list
+ 1884  conda deactivate
+ 1885  conda env remove --name pycausal_env
+ 1886  conda info -e
+ 1887  conda env remove --name tempJupyter_env
+ 1888  conda info -e
+ 1889  conda clean -tipsy
+ 1890  conda env create -f pynlp_env.yml
+ 1891  conda info -e
+ 1892  conda env create -f pynlp_env.yml
+ 1893  idea19
+ 1894  which conda
+ 1895  which scala
+ 1896  which sbt
+ 1897  which java
+ 1898  echo $JAVA_HOME
+ 1899  echo $JAVA_HOME 
+ 1900  echo $PATH
+ 1901  gedit .bash_profile
+ 1902  gedit .bashrc
+ 1903  which miniconda
+ 1904  where miniconda
+ 1905  which conda
+ 1906  conda info -e
+ 1907  cd /development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP/env/
+ 1908  conda activate pybayesian_env
+ 1909  conda clean -tipsy
+ 1910  conda deactivate
+ 1911  conda env create -f pynlp_env.yml
+ 1912  conda info -e
+ 1913  conda activate pynlp_env
+ 1914  conda list
+ 1915  conda env export > pynlp_EXACT.yml
+ 1916  gedit pynlp_EXACT.yml 
+ 1917  conda clean -tipsy
+ 1918  conda deactivate
+ 1919  conda env create -f pynlp_env.yml
+ 1920  conda env remove --name pynlp_env
+ 1921  conda info -e
+ 1922  conda env create -f pynlp_env.yml
+ 1923  conda info -e
+ 1924  cd /development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP/env/
+ 1925  conda env create -f pynlp_env.yml
+ 1926  conda info -e
+ 1927  cd /development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP/
+ 1928  cd env/
+ 1929  gedit pynlp_env.yml
+ 1930  conda env create -f pynlp_env.yml
+ 1931  gedit pynlp_env.yml
+ 1932  conda activate pynlp_env
+ 1933  conda env export > pynlp_EXACT.yml
+ 1934  gedit pynlp_EXACT.yml 
+ 1935  gedit pynlp_env.yml
+ 1936  conda list
+ 1937  rm pynlp_EXACT.yml 
+ 1938  ls
+ 1939  rm NEWPYNLP_env.yml~ pynlp_env.yml~
+ 1940  ls
+ 1941  conda deactivate
+ 1942  conda env remove --name pynlp_env
+ 1943  conda list --revisions
+ 1944  conda info -e
+ 1945  conda env create -f pynlp_env.yml 
+ 1946  pico pynlp_env.yml 
+ 1947  conda env create -f pynlp_env.yml 
+ 1948  gedit pynlp_env.yml 
+ 1949  conda info -e
+ 1950  conda activate pynlp_env
+ 1951  conda clean -tipsy
+ 1952  conda deactivate
+ 1953  conda env remove --name pynlp_env
+ 1954  cd ../
+ 1955  git add --all
+ 1956  git commit -m "trying to adjust pynlp_env to fit all required packages for the NLP books --- deleted old one, creating new one"
+ 1957  git push
+ 1958  cd env/
+ 1959  gedit pynlp_env.yml
+ 1960  cd ../
+ 1961  git add --all
+ 1962  git commit -m "updated with fastai book todos"
+ 1963  git push
+ 1964  echo $CONDA_HOME
+ 1965  echo $JAVA_HOME
+ 1966  echo $SBT_GLOBAL_SERVER_DIR 
+ 1967  echo $SHELL
+ 1968  echo $PATH
+ 1969  echo $GRADLE_HOME 
+ 1970  cd /development/projects/statisticallyfit/github/learningmathstat/PythonProbabilisticGraphicalModels/env/
+ 1971  ls
+ 1972  rm pybayesian_env.yml~
+ 1973  ls -la
+ 1974  gedit pybayesian_env.yml 
+ 1975  echo $PATH
+ 1976  echo $CONDA_HOME
+ 1977  conda -V
+ 1978  conda activate base
+ 1979  conda env export > baseenv.yml
+ 1980  conda deactivate
+ 1981  conda activate pybayesian_env
+ 1982  conda env export > pybayesenv.yml
+ 1983  conda list
+ 1984  conda list > pybayes.txt
+ 1985  gedit pybayes.txt 
+ 1986  conda info -e
+ 1987  conda clean -tipsy
+ 1988  conda deactivate
+ 1989  conda activate base
+ 1990  conda -V
+ 1991  conda info -e
+ 1992  conda list -r
+ 1993  ls
+ 1994  cd /development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP/env/
+ 1995  conda env create -f pynlp_env.yml
+ 1996  cd ../../PythonProbabilisticGraphicalModels/env/
+ 1997  conda env create -f pycausal_env.yml 
+ 1998  cd ../../PythonNeuralNetNLP/env/
+ 1999  ls
+ 2000  gedit pynlp_env.yml
+ 2001  cd /development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP/env/
+ 2002  ls
+ 2003  rm pynlp_env.yml~
+ 2004  cat pyflair_env_EXACT_START.yml 
+ 2005  ls
+ 2006  gedit pynlp_env.yml 
+ 2007  conda activate
+ 2008  conda info -e
+ 2009  conda activate pycausal_env
+ 2010  conda list
+ 2011  conda deactivate
+ 2012  conda clean -tipsy
+ 2013  conda activate pycausal_env
+ 2014  conda deactivate
+ 2015  conda clean -tipsy
+ 2016  conda env remove --name pycausal_env
+ 2017  conda activate pybayesian_env
+ 2018  conda list
+ 2019  conda info -e
+ 2020  conda deactivate
+ 2021  conda create --name pynlp_env
+ 2022  conda activate pynlp_env
+ 2023  conda deactivate
+ 2024  conda env remove --name pynlp_
+ 2025  conda env remove --name pynlp_env
+ 2026  conda info -e
+ 2027  conda list -r
+ 2028  conda env create -f pynlp_START_env.yml
+ 2029  conda info -e
+ 2030  conda clean -tipsy
+ 2031  conda list -r
+ 2032  conda env create -f pynlp_START_env.yml
+ 2033  conda activate pynlp_env
+ 2034  conda list
+ 2035  conda clean -tipsy
+ 2036  conda install -c pytorch pytorch
+ 2037  conda install -c conda-forge pytorch-pretrained-bert tensorflow>=1.14.0 tensorflow-probability tensorboard keras
+ 2038  conda install -c conda-forge pytorch-pretrained-bert
+ 2039  conda clean -tipsy
+ 2040  conda deactivate
+ 2041  conda env remove --name pynlp_env
+ 2042  conda info -e
+ 2043  conda list -r
+ 2044  conda env create -f pynlp_START_env.yml
+ 2045  conda activate pynlp_env
+ 2046  conda list
+ 2047  conda list -r
+ 2048  conda clean -tipsy
+ 2049  conda list -r
+ 2050  conda deactivate
+ 2051  conda list -r
+ 2052  conda list
+ 2053  conda activate pynlp_env.yml 
+ 2054  ls
+ 2055  ls -la
+ 2056  rm =1.14.0 
+ 2057  ls
+ 2058  rm pynlp_START_env.yml~
+ 2059  conda activate pynlp_env
+ 2060  conda install -c allennlp allennlp
+ 2061  conda install -c pytorch torchvision
+ 2062  conda install -c fastai fastai2>=0.0.11
+ 2063  conda install -c fastai fastai2
+ 2064  conda install -c conda-forge matplotlib seaborn plotly pygraphviz?=1.5
+ 2065  conda install -c conda-forge matplotlib seaborn plotly pygraphviz>=1.5
+ 2066  conda install -c conda-forge matplotlib
+ 2067  conda install -c conda-forge seaborn
+ 2068  conda install -c conda-forge plotly
+ 2069  conda install -c conda-forge pygraphviz>=1.5
+ 2070  conda install -c conda-forge pygraphviz
+ 2071  conda install -c conda-forge html2text
+ 2072  conda list
+ 2073  conda install -c conda-forge transformers
+ 2074  conda install -c powerai tensor2tensor
+ 2075  condal ist
+ 2076  conda list
+ 2077  pip --version
+ 2078  conda deactivate
+ 2079  pip --version
+ 2080  conda activate pynlp_env
+ 2081  pip install tensor2tensor
+ 2082  conda env export > pynlp_bad.yml
+ 2083  gedit pynlp_bad.yml 
+ 2084  conda clean -tipsy
+ 2085  conda deactivate
+ 2086  conda env remove --name pynlp_env.yml 
+ 2087  conda info -e
+ 2088  ls
+ 2089  conda env remove --name pynlp_env
+ 2090  conda info -e
+ 2091  conda env create -f pynlp_START_env.yml
+ 2092  conda info -e
+ 2093  conda clean -tipsy
+ 2094  conda env create -f pynlp_START_env.yml
+ 2095  ls
+ 2096  gedit ../../PythonProbabilisticGraphicalModels/env/pybayesian_EXACT.yml 
+ 2097  conda info -e
+ 2098  conda activate pynlp_env
+ 2099  conda env export > pynlp_NOW_EXACT.yml
+ 2100  gedit pynlp_NOW_EXACT.yml
+ 2101  conda deactivate
+ 2102  conda activate pynlp_env
+ 2103  conda clean -tipsy
+ 2104  conda deactivate
+ 2105  conda env remove --name pynlp_env
+ 2106  ls
+ 2107  rm pynlp_NOW_EXACT.yml pynlp_bad.yml pynlp_bad.yml~
+ 2108  ls
+ 2109  rm pynlp_START_env.yml~
+ 2110  conda env create -f pynlp_START_env.yml 
+ 2111  conda info -e
+ 2112  conda env create -f pynlp_START_env.yml 
+ 2113  conda list -r
+ 2114  conda clean -tipsy
+ 2115  conda info -e
+ 2116  conda env create -f pynlp_START_env.yml 
+ 2117  conda activate pynlp_env
+ 2118  conda install -c conda-forge torchvision
+ 2119  conda list
+ 2120  conda install -c conda-forge matplotlib
+ 2121  conda install -c conda-forge seaborn
+ 2122  conda install -c conda-forge plotly
+ 2123  conda install -c conda-forge pygraphviz
+ 2124  conda install -c conda-forge html2text
+ 2125  conda list
+ 2126  conda install -c conda-forge cython
+ 2127  conda install -c conda-forge argparse
+ 2128  conda install -c conda-forge cython
+ 2129  pip --version
+ 2130  history
+ 2131  conda list
+ 2132  conda install mxnet
+ 2133  conda clean -tipsy
+ 2134  history > progressOnPyNLP_env_today.txt

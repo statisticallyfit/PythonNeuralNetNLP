@@ -5,6 +5,8 @@ channels:
   - fastai
 dependencies:
 
+
+
   # ========================
   # Core
   # ========================
@@ -22,21 +24,25 @@ dependencies:
   # ========================
   # NLP
   # ========================
-  #### - tensorly>=0.4.5 
-  # - allennlp
+  # ///// - allennlp
   - pytorch>=1.4.0
   - pytorch-pretrained-bert
-  - torchvision
+  - torchvision # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   - tensorflow>=1.14.0
   - tensorboard
   - tensorflow-probability
   - keras
-  - fastai
-  - theano
+  ### ///// - fastai2>=0.0.11
+  ###  ///// - nbdev>=0.2.12
+  ###  ///// - sentencepiece
+  ###  ///// - theano
   - textblob
   - pattern>=3.6.0
   - textblob
   - python-annoy
+  - nltk
+  - scikit-learn
+  - gensim # includes word2vec
   - gym
   - numpy
   - scipy
@@ -45,11 +51,6 @@ dependencies:
   - statsmodels
   - patsy
   - pandas
-  - nltk
-  - scikit-learn
-  - gensim # includes word2vec
-
-
 
 
 
@@ -59,15 +60,17 @@ dependencies:
   - matplotlib
   - seaborn
   - plotly
+  - pygraphviz>=1.5 # also installs graphviz (the underlying package in the DOT language ?)
 
 
 
   # ========
   # Misc Core stuff for nlp books
   # ========
-  - cython 
+  #- cython 
   - tqdm 
   - html2text
+  #- argparse
 
 
 
@@ -75,25 +78,20 @@ dependencies:
   # ==============
   # Pip things
   # ============== 
-  - pip:
-      - transformers>=2.5.0
-      - tensor2tensor
-      - torchtext
-      - mxnet>=1.5.1,<1.6.0
-      - gluonnlp
-      - gluonts>=0.5.0
-      - allennlp
-      - pampy # a functional pattern matching for python (so easier readability in lambdas!)
-      # - requests # misc stuff here for nlp books
-      # - annoy
-      - gzip
-      # - os
-      # - pickle
-      # - time
-      # - json
-      - argparse
-      ## - codecs
-      ## - csv
+  #- pip:
+      #- transformers>=2.5.0
+      #- tensor2tensor
+      #- torchtext
+      #- mxnet>=1.5.1,<1.6.0
+      #- gluonnlp
+      #- gluonts>=0.5.0
+      #- allennlp
+      # - flair
+      ### ////// - azure-cognitiveservices-search-imagesearch
+      #- pampy # a functional pattern matching
+      # //// - gzip
+      ######## - codecs
+      ######## - csv
 
 prefix: /development/bin/python/conda3_ana/envs/pynlp_env
 

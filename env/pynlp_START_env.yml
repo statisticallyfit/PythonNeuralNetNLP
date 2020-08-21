@@ -24,18 +24,18 @@ dependencies:
   # ========================
   # NLP
   # ========================
-  ### - allennlp
+  # ///// - allennlp
   - pytorch>=1.4.0
   - pytorch-pretrained-bert
-  - torchvision
+  - torchvision # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   - tensorflow>=1.14.0
   - tensorboard
   - tensorflow-probability
   - keras
-  - fastai2>=0.0.11
-  - nbdev>=0.2.12
-  - sentencepiece
-  - theano
+  ### ///// - fastai2>=0.0.11
+  ###  ///// - nbdev>=0.2.12
+  ###  ///// - sentencepiece
+  ###  ///// - theano
   - textblob
   - pattern>=3.6.0
   - textblob
@@ -54,8 +54,6 @@ dependencies:
 
 
 
-
-
   # ==============
   # Plotting
   # ==============
@@ -69,9 +67,10 @@ dependencies:
   # ========
   # Misc Core stuff for nlp books
   # ========
-  - cython 
+  ##- cython  # already there
   - tqdm 
-  - html2text
+  - html2text # already there
+  #////- argparse # part of python when python >= 3.2
 
 
 
@@ -79,20 +78,20 @@ dependencies:
   # ==============
   # Pip things
   # ============== 
-  - pip:
-      - transformers>=2.5.0
-      - tensor2tensor
-      - torchtext
-      - mxnet>=1.5.1,<1.6.0
-      - gluonnlp
-      - gluonts>=0.5.0
-      - allennlp
-      - azure-cognitiveservices-search-imagesearch
-      - pampy # a functional pattern matching
-      - gzip
-      - argparse
-      ## - codecs
-      ## - csv
+  #- pip:
+      #- transformers>=2.5.0
+      #- tensor2tensor
+      #- torchtext
+      #- mxnet>=1.5.1,<1.6.0
+      #- gluonnlp
+      #- gluonts>=0.5.0
+      #- allennlp
+      # - flair
+      ### ////// - azure-cognitiveservices-search-imagesearch
+      #- pampy # a functional pattern matching
+      # //// - gzip
+      ######## - codecs
+      ######## - csv
 
 prefix: /development/bin/python/conda3_ana/envs/pynlp_env
 
