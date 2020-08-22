@@ -2,7 +2,6 @@ name: pynlp_env
 channels:
   - conda-forge
   - defaults
-  - fastai
 dependencies:
 
 
@@ -10,88 +9,108 @@ dependencies:
   # ========================
   # Core
   # ========================
-  - mypy
-  - typing 
-  - pip
-  - python
-  - jupytext
-  - jupyterlab
-  - ipywidgets
-  - python-language-server
-  - ipykernel
+  # ---- mypy # After pip mxnet(1)
+  # ----- typing # After pip mxnet (2)
+  #----- pip
+  #------ python
+  # ------ jupytext # After pip mxnet (3)
+  # ----- jupyterlab # After pip mxnet (4)
+  # ----- ipywidgets  # After pup mxnet (5)
+  # ----- python-language-server # After pip mxnet (6)
+  # ------- ipykernel
+
+# IMPORTANT FIRST: 
+#  (1) ------ tensorflow==1.14.0
+#  (2) ------ tensorflow-probability
+#  ------ tensorboard
 
 
-  # ========================
-  # NLP
-  # ========================
-  # ///// - allennlp
-  - pytorch>=1.4.0
-  - pytorch-pretrained-bert
-  - torchvision # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  - tensorflow>=1.14.0
-  - tensorboard
-  - tensorflow-probability
-  - keras
-  ### ///// - fastai2>=0.0.11
-  ###  ///// - nbdev>=0.2.12
-  ###  ///// - sentencepiece
-  ###  ///// - theano
-  - textblob
-  - pattern>=3.6.0
-  - textblob
-  - python-annoy
-  - nltk
-  - scikit-learn
-  - gensim # includes word2vec
-  - gym
-  - numpy
-  - scipy
-  - sympy
-  - spacy
-  - statsmodels
-  - patsy
-  - pandas
+#  (3)------ pytorch>=1.4.0
+#  (4)------ pytorch-pretrained-bert
+
+
+#  (5) ----- transformers>=2.5.0
+# ----- tokenizers
+# ----- sentencepiece
+# ----- sacremoses
+
+# (6) ------- torchtext
+# (7) ------- torchvision
+# (8) ------- keras
 
 
 
-  # ==============
-  # Plotting
-  # ==============
-  - matplotlib
-  - seaborn
-  - plotly
-  - pygraphviz>=1.5 # also installs graphviz (the underlying package in the DOT language ?)
+# PLOTTING
+#  (9) ------ matplotlib
+#  (10) ----- seaborn
+#  (11) ----- plotly
+#  (12) ----- pygraphviz>=1.5 # also installs graphviz (the underlying package in the DOT language ?)
 
+
+
+#  (13) ------ textblob
+#  (14) ----- pattern>=3.6.0
+#  (15) ----- scikit-learn
+#  (16) ----- python-annoy
+#  ------- nltk
+#  (17) ------ gensim # includes word2vec
+#  ------- numpy
+#  ------ scipy
+#  (18) ----- spacy
+#  (19) ----- sympy
+#  (20) ------- gym
+#  ------- statsmodels
+#  ------- patsy
+#  ------- pandas
 
 
   # ========
   # Misc Core stuff for nlp books
   # ========
-  ##- cython  # already there
-  - tqdm 
-  - html2text # already there
-  #////- argparse # part of python when python >= 3.2
+#  (21) ----- cython 
+#  (22) ----- html2text
+# ----- tqdm
+
+
+
+# ---------------------------------------------------------
+
+#### PIP THINGS (always last after other channels like conda / pytorch)
+#  (23) ---- mxnet>=1.5.1,<1.6.0
+#  (1) ------ gluonnlp #### After Core stuff with conda (1)
+#  (2) ------ gluonts>=0.5.0  #### After Core conda stuff (2) NOTE uninstalled pandas from conda (pandas 1.10) and installed pandas from pip (pandas 1.5)
+#  (3) ------ allennlp #### After core conda stuff (3) NOTE uninstalled: transformers | jsonnet | jsonpickle | overrides | py | pytest | spacy | tensorboardx | thinc | tokenizers | transformers
+#  (4) ----- flair  #### After core conds stuff (4) NOTE pip uninstalled: ffty | sentencepiece | tokenizers | transformers | 
+
+# GOT ERROR AFTER FLAIR: (allennlp | transformers | flair)
+
+# ERROR: After October 2020 you may experience errors when 
+# installing or updating packages. This is because pip will change 
+# the way that it resolves dependency conflicts.
+
+# We recommend you use --use-feature=2020-resolver to test your
+# packages with the new resolver before it becomes the default.
+
+# allennlp 1.0.0 requires transformers<2.12,>=2.9, but you'll have transformers 3.0.2 which is incompatible.
 
 
 
 
-  # ==============
-  # Pip things
-  # ============== 
-  #- pip:
-      #- transformers>=2.5.0
-      #- tensor2tensor
-      #- torchtext
-      #- mxnet>=1.5.1,<1.6.0
-      #- gluonnlp
-      #- gluonts>=0.5.0
-      #- allennlp
-      # - flair
-      ### ////// - azure-cognitiveservices-search-imagesearch
-      #- pampy # a functional pattern matching
-      # //// - gzip
-      ######## - codecs
-      ######## - csv
+#  (5) ---- tensor2tensor # PIP uninstalls / reinstalls: tensorflow-probability, hub and gan and medata and datasets and tensorboard .... etc. 
 
-prefix: /development/bin/python/conda3_ana/envs/pynlp_env
+
+### GOT ERROR AFTER tensor2tensor: 
+# ERROR: After October 2020 you may experience errors when installing or updating packages. This is because pip will change the way that it resolves dependency conflicts.
+
+# We recommend you use --use-feature=2020-resolver to test your packages with the new resolver before it becomes the default.
+
+# tensorflow 2.3.0 requires numpy<1.19.0,>=1.16.0, but you'll have numpy 1.19.1 which is incompatible.
+tensorflow 2.3.0 requires scipy==1.4.1, but you'll have scipy 1.5.2 which is incompatible.
+tensorflow-metadata 0.23.0 requires absl-py<0.9,>=0.7, but you'll have absl-py 0.9.0 which is incompatible.
+
+
+#  - pampy
+
+
+prefix: /development/bin/python/miniconda3/envs/pynlp_env
 
