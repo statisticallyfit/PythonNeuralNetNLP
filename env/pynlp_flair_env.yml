@@ -1,0 +1,100 @@
+name: pyflairNLP_env
+channels:
+  - conda-forge
+  - pytorch
+  - fastai
+  - defaults
+dependencies:
+
+
+### NOTE: the pyflairnlp_env was built using the command line approach, installing tensorflow (via conda) + flair (via pip) first , and then the rest. This yml file was not tested for problems (though packages are the same). Then the TEMP environment made by command line was CLONED and called pyflairnlp_env.
+
+
+  # ========================
+  # Core
+  # ========================
+  - mypy
+  - typing
+  - pip
+  - python
+  - jupytext
+  - jupyterlab
+  - ipywidgets
+  - python-language-server
+  - ipykernel 
+
+
+
+
+  # ========================
+  # NLP (important base nlp pckgs)
+  # ========================
+  - pytorch>=1.4.0
+  - pytorch-pretrained-bert
+
+  - tensorflow==1.14.0
+  - tensorflow-probability
+
+  - fastai2>=0.0.11
+  - nbdev>=0.2.12
+
+  - tensorboard
+  - torchtext
+  - keras
+  - sacremoses
+  - sacrebleu
+  - sentencepiece
+
+  - textblob
+  - python-annoy
+  - pattern>=3.6.0
+  - scikit-learn
+  - nltk
+  - gensim
+  - numpy
+  - scipy
+  - sympy
+  - spacy
+  - pandas
+  - patsy
+  - statsmodels
+  - gym
+
+
+
+
+  # ========================
+  # PLOTTING
+  # ========================
+  - matplotlib
+  - seaborn
+  - plotly
+  - pygraphviz>=1.5
+
+
+
+  # ========
+  # Misc Core stuff for nlp books
+  # ========
+  - cython
+  - html2text
+  - tqdm
+
+
+
+  # ==============
+  # Pip things
+  # ============== 
+  - pip:
+      - transformers>=2.5.0
+      - mxnet
+      - gluonnlp
+      - gluonts
+      - flair
+      - pampy
+
+
+
+prefix: /development/bin/python/miniconda3/envs/pyflairnlp_env
+
+

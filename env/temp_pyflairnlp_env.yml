@@ -1,0 +1,101 @@
+name: temp_pyflairnlp_env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+
+
+
+# IMPORTANT FIRST: 
+#  (1) ------ tensorflow==1.14.0
+#  (2) ------ flair #### Installed with PIP
+#  (3) ------ tensorflow-probability
+#  ------ tensorboard
+
+
+#  ------ pytorch>=1.4.0   ### was installed from pip, called "torch" not "pytorch"
+#  (4)------ pytorch-pretrained-bert
+
+
+#  ----- transformers>=2.5.0 # was installed from pip
+# ----- tokenizers # installed from pip
+# ----- sentencepiece # installed from pip
+# ----- sacremoses # done by pip
+
+
+
+# (5) ------- torchtext
+### ---> NOTE: torch 1.6 from pip here was ignored and "pytorch 1.4" from conda was also included in the package. 
+
+#  (6) ------- torchvision
+#  (7) ------ sacrebleu
+#  (8)------- keras
+
+#  (9) ------ textblob
+#  (10) ----- python-annoy
+#  (10) ----- pattern>=3.6.0
+#  ---- scikit-learn
+#  ------- nltk
+#  ------ gensim # includes word2vec
+#  ------- numpy
+#  ------ scipy
+#  (11)---- spacy
+#  (12) ---- sympy
+#  (13) ------- gym
+#  (14) --- statsmodels
+#  (14) ---- patsy
+#  (14) ---- pandas
+
+
+
+
+# PLOTTING
+#  (15) -- matplotlib
+#  (15) -- seaborn
+#  (15) -- plotly
+#  (15) -- pygraphviz>=1.5 # also installs graphviz (the underlying package in the DOT language ?)
+
+
+
+
+
+
+  # ========
+  # Misc Core stuff for nlp books
+  # ========
+#   (16) ----- cython 
+#   (16) ----- html2text
+# ----- tqdm
+
+
+
+
+
+
+  # ========================
+  # Core
+  # ========================
+  # (18) --- mypy
+  #- typing
+  #- pip
+  #- python
+  #- jupytext
+  #- jupyterlab
+  #- ipywidgets
+  #- python-language-server
+  #- ipykernel 
+
+# ---------------------------------------------------------
+
+#### PIP THINGS (always last after other channels like conda / pytorch)
+#  (19) --- mxnet
+#  (20) ------ gluonnlp
+#   (20) ------ gluonts>=0.5.0
+##### ---> just replaced conda's pandas (1.1.1) with pip's pandas (1.0.5)
+
+#  ----- flair # installed at top with tensorflow
+#  (21) ---- pampy
+
+
+prefix: /development/bin/python/miniconda3/envs/temp_pyflairnlp_env
+

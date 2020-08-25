@@ -1,4 +1,4 @@
-name: pynlp_env
+name: pynlp_OLD_env
 channels:
   - conda-forge
   - defaults
@@ -81,7 +81,6 @@ dependencies:
   # ============== 
   - pip:
       - transformers>=2.5.0
-      - tensor2tensor
       - torchtext
       - mxnet>=1.5.1,<1.6.0
       - gluonnlp
@@ -93,6 +92,7 @@ dependencies:
       - argparse
       ## - codecs
       ## - csv
+      ###### - tensor2tensor
 
-prefix: /development/bin/python/conda3_ana/envs/pynlp_env
+prefix: /development/bin/python/conda3_ana/envs/pynlp_OLD_env
 
