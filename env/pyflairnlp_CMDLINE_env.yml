@@ -1,4 +1,4 @@
-name: temp_pyflairnlp_env
+name: pyflairnlp_env
 channels:
   - conda-forge
   - defaults
@@ -97,5 +97,5 @@ dependencies:
 #  (21) ---- pampy
 
 
-prefix: /development/bin/python/miniconda3/envs/temp_pyflairnlp_env
+prefix: /development/bin/python/conda3_ana/envs/pyflairnlp_env
 
