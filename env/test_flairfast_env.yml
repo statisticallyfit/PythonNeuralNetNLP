@@ -1,0 +1,101 @@
+name: test_flairfast_env
+channels:
+  - conda-forge
+  - pytorch
+  - fastai
+  - defaults
+dependencies:
+
+
+
+  # ========================
+  # Core
+  # ========================
+  - mypy
+  - typing
+  - pip
+  - python
+  - jupytext
+  - jupyterlab
+  - ipywidgets
+  - python-language-server
+  - ipykernel 
+
+
+
+
+  # ========================
+  # NLP (important base nlp pckgs)
+  # ========================
+  - pytorch>=1.4.0
+  - pytorch-pretrained-bert
+
+  - tensorflow==1.14.0
+  - tensorflow-probability
+
+  #- fastai>=0.0.11
+  - nbdev>=0.2.12
+
+  - tensorboard
+  - torchtext
+  - keras
+  - sacremoses
+  - sacrebleu
+  # - sentencepiece # need to install using pip to get version 0.1.86 since otherwise errors between fastai and sentencepiece (minlog thingy in TrainerSpec)
+
+  - textblob
+  - python-annoy
+  - pattern>=3.6.0
+  - gym
+  - scikit-learn
+  - nltk
+  - gensim
+  - numpy
+  - scipy
+  - sympy
+  - spacy
+  - statsmodels
+  - pandas
+  - patsy
+
+
+
+  # ========================
+  # PLOTTING
+  # ========================
+  - matplotlib
+  - seaborn
+  - plotly
+  - pygraphviz #>=1.5
+
+
+
+
+
+  # ========
+  # Misc Core stuff for nlp books
+  # ========
+  - cython
+  - html2text
+  - tqdm
+
+
+
+
+  # ==============
+  # Pip things
+  # ============== 
+  - pip:
+      - sentencepiece==0.1.86 
+      - fastai==1.0.57
+      - flair
+      - transformers>=2.5.0
+      - mxnet
+      - gluonnlp
+      - gluonts
+      - azure-cognitiveservices-search-imagesearch
+      - pampy
+
+
+
+prefix: /development/bin/python/miniconda3/envs/test_flairfast_env

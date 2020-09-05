@@ -43,8 +43,11 @@
 # ### Basics: Named Dimensions
 # PyTorch allows `Tensor`s to have named dimensions; factory functions take a new *names* argument that associates a name with each dimension. This works with most factory functions such as: `tensor, empty, ones, zeros, randn, rand`. Here we construct a `Tensor` with names:
 # %% codecell
+
 import torch
 import torch.tensor as Tensor
+
+
 from typing import *
 
 tensor: Tensor = torch.randn(1, 2, 2, 3, names = ('N', 'C', 'H', 'W'))
@@ -71,6 +74,7 @@ tensor
 # %% markdown [markdown]
 # **Method 2:** Specify new names, changing the names out-of-place
 # %% codecell
+
 tensor: Tensor = tensor.rename(channel = 'C', width = 'W', height = 'H')
 
 assert tensor.names == ('batch', 'C', 'W', 'H')
@@ -480,7 +484,7 @@ assert tensorRemade2.names == ('N', 'C', 'H', 'W')
 # ### [Manipulating Dimensions](https://pytorch.org/docs/stable/named_tensor.html#explicit-alignment-by-names)
 #
 # # $\color{red}{\text{TODO: compare the effects of } \texttt{align_as, view, unflatten, flatten} \text{ to verify if  they are the same, and then compare the effects of } \texttt{align_to, permute} \text{to see if they are the same} }$
-# 
+#
 # **CASE: Permuting (unnamed) vs. Aligning (named)**
 #
 # Use [`align_to()`](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_to) to permute large amounts of dimensions without menionting all of them as in required by [`permute()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.permute).

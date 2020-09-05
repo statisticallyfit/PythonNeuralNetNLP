@@ -1,0 +1,93 @@
+name: pynlp_env
+channels:
+  - conda-forge
+  - pytorch
+  - fastai
+  - defaults
+dependencies:
+
+  # ========================
+  # Core
+  # ========================
+  - mypy
+  - typing
+  - pip
+  - python
+  - jupytext
+  - jupyterlab
+  - ipywidgets
+  - python-language-server
+  - ipykernel 
+
+
+
+
+  # ========================
+  # NLP (important base nlp pckgs)
+  # ========================
+  - pytorch>=1.4.0
+  - pytorch-pretrained-bert
+
+  - tensorflow==1.14.0
+  - tensorflow-probability
+
+  #- fastai2>=0.0.11
+  #- nbdev>=0.2.12
+
+  - tensorboard
+  - torchtext
+  - keras
+  - sacremoses
+  - sacrebleu
+  - sentencepiece
+
+  - textblob
+  - python-annoy
+  - pattern>=3.6.0
+  - gym
+  - scikit-learn
+  - nltk
+  - gensim
+  - numpy
+  - scipy
+  - sympy
+  - spacy
+  - statsmodels
+  - pandas
+  - patsy
+
+
+
+  # ========================
+  # PLOTTING
+  # ========================
+  - matplotlib
+  - seaborn
+  - plotly
+  - pygraphviz>=1.5
+
+
+
+  # ========
+  # Misc Core stuff for nlp books
+  # ========
+  - cython
+  - html2text
+  - tqdm
+
+
+
+  # ==============
+  # Pip things
+  # ============== 
+  - pip:
+      - transformers>=2.5.0
+      - mxnet
+      - gluonnlp
+      - gluonts
+      - pampy
+
+
+# WARNING: (update with how I made this file)
+
+prefix: /development/bin/python/miniconda3/envs/pynlp_env

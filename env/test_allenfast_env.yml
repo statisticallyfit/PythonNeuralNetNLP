@@ -1,0 +1,110 @@
+name: test_allenfast_env
+channels:
+  - conda-forge
+  - pytorch
+  - fastai
+  - defaults
+dependencies:
+
+
+
+  # ========================
+  # Core
+  # ========================
+  - mypy
+  - typing
+  - pip
+  - python
+  - jupytext
+  - jupyterlab
+  - ipywidgets
+  - python-language-server
+  - ipykernel 
+
+
+
+
+  # ========================
+  # NLP (important base nlp pckgs)
+  # ========================
+  - pytorch>=1.4.0
+  - pytorch-pretrained-bert
+
+  - tensorflow==1.14.0
+  - tensorflow-probability
+
+  #- fastai>=0.0.11 # installing using pip to get version 1.0.52 to have the module fastai.callbacks, according to https://ask.hellobi.com/blog/safa/36747. Before had version 2.0.0 and had no module callbacks
+  - nbdev>=0.2.12
+
+  - tensorboard
+  - torchtext
+  - keras
+  - sacremoses
+  - sacrebleu
+  # - sentencepiece 
+  # sentence piece with fastai was giving this error: https://forums.fast.ai/t/error-with-sentencepiece/72693 so I downgraded it to version 0.1.86 and via pip too. 
+
+
+  - textblob
+  - python-annoy
+  - pattern>=3.6.0
+  - gym
+  - scikit-learn
+  - nltk
+  - gensim
+  - numpy
+  - scipy
+  - sympy
+  - spacy
+  - statsmodels
+  - pandas
+  - patsy
+
+
+
+  # ========================
+  # PLOTTING
+  # ========================
+  - matplotlib
+  - seaborn
+  - plotly
+  - pygraphviz #>=1.5
+
+
+
+
+
+  # ========
+  # Misc Core stuff for nlp books
+  # ========
+  - cython
+  - html2text
+  - tqdm
+
+
+
+
+  # ==============
+  # Pip things
+  # ============== 
+  - pip:
+      - allennlp==0.9.0
+      - sentencepiece==0.1.86 
+      - fastai==1.0.52
+      - azure-cognitiveservices-search-imagesearch
+      - transformers>=2.5.0
+      - mxnet
+      - gluonnlp
+      - gluonts
+      - pampy
+
+
+# WARNING: packages were updated using a test environment, and then it was cloned to yield the pyallenlp_env here. 
+# STEP 1: created from yml
+# STEP 2: got errors between fastai and sentencepiece
+# STEP 3: downgraded sentencepiece from 0.1.90 to 0.1.86 using pip
+# STEP 4: cloned the resulting environment. 
+
+# WARNING 2: now building just from this yml file
+
+prefix: /development/bin/python/miniconda3/envs/test_allenfast_env
