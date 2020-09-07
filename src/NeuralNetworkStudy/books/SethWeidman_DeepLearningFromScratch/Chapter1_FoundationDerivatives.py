@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
 from numpy import ndarray
-%matplotlib inline
+#%matplotlib inline
 from typing import *
 
 import torch
@@ -27,8 +27,8 @@ sys.path.append(NEURALNET_PATH)
 assert NEURALNET_PATH in sys.path
 
 
-from FunctionUtil import *
-from TypeUtil import *
+from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.FunctionUtil import *
+from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.TypeUtil import *
 
 # %% markdown
 # ### Derivative Function:
@@ -108,7 +108,7 @@ def chainDerivTwo(chain: Chain,  inputRange: Tensor) -> Tensor:
 # Plot the results to show the chain rule works:
 # %% codecell
 
-def plotChain(ax, chain: Chain, inputRange: Tensor, length: int = 2) -> None:
+def plotChain(ax, chain: Chain, inputRange: Tensor) -> None:
      """
     Plots a chain function - a function made up of
     multiple consecutive ndarray -> ndarray mappings -
@@ -130,9 +130,9 @@ def plotChain(ax, chain: Chain, inputRange: Tensor, length: int = 2) -> None:
      """
      assert inputRange.ndim == 1, "Function requires a 1-dimensional tensor as inputRange"
 
-     if length == 2:
+     if len(chain) == 2:
           outputRange: Tensor = chainTwoFunctions(chain = chain, x = inputRange)
-     elif length == 3:
+     elif len(chain) == 3:
           outputRange: Tensor = chainThreeFunctions(chain = chain, x = inputRange)
 
 
@@ -158,7 +158,12 @@ def plotChainDeriv(ax, chain: Chain, inputRange: Tensor) -> None:
           Description of returned object.
 
      """
-     outputRange: Tensor = chainDerivTwo(chain = chain, inputRange = inputRange)
+     if len(chain) == 2:
+          outputRange: Tensor = chainDerivTwo(chain = chain, inputRange = inputRange)
+
+     elif len(chain) == 3:
+          outputRange: Tensor = chainDerivThree(chain = chain, inputRange = inputRange)
+
      ax.plot(inputRange, outputRange)
 
 
@@ -213,9 +218,9 @@ def chainThreeFunctions(chain: Chain, x: Tensor) -> Tensor:
      '''Evaluates three functions in a row (composition)'''
      assert len(chain) == 3, "Length of input 'chain' should be 3"
 
-     f: TensorFunction = chain[0]
-     g: TensorFunction = chain[1]
-     h: TensorFunction = chain[2]
+     f: TensorFunction = chain[0] # leaky relu
+     g: TensorFunction = chain[1] # square
+     h: TensorFunction = chain[2] # sigmoid
 
      return h(g(f(x)))
 
@@ -237,9 +242,9 @@ def chainDerivThree(chain: Chain, inputRange: Tensor) -> Tensor:
 
      assert(len(chain) == 3), "This function requires `Chain` objects to have length 3 (means 3 nested functions)"
 
-     f: TensorFunction = chain[0]
-     g: TensorFunction = chain[1]
-     h: TensorFunction = chain[2]
+     f: TensorFunction = chain[0] # leaky relu
+     g: TensorFunction = chain[1] # square
+     h: TensorFunction = chain[2] # sigmoid
 
 
      ### Forward Pass part (computing forward quantities, direct function application)
@@ -247,12 +252,12 @@ def chainDerivThree(chain: Chain, inputRange: Tensor) -> Tensor:
      f_x: Tensor = f(inputRange)
 
      # g(f(x))
-     g_x: Tensor = g(f_x)
+     g_f_x: Tensor = g(f_x)
 
 
      ### Backward pass (computing derivatives using quantities that make up the derivative)
      # dh / d(g o f) or dh / du where u = g o f
-     dh_dgf: Tensor = deriv(func = h, inputTensor = g_x)
+     dh_dgf: Tensor = deriv(func = h, inputTensor = g_f_x)
 
      # dg / df (or dg / du where u = f)
      dg_df: Tensor = deriv(g, f_x)
@@ -261,7 +266,8 @@ def chainDerivThree(chain: Chain, inputRange: Tensor) -> Tensor:
      df_dx: Tensor = deriv(f, inputRange)
 
      # Multiplying these quantities as specified by chain rule:
-     return df_dx * dg_df * dh_dgf # TODO what happens when reversing the order here?
+     # return df_dx * dg_df * dh_dgf # TODO what happens when reversing the order here?
+     return dh_dgf * dg_df * df_dx # same thing when different order because these are 1-dim tensors.
 
 
 
@@ -285,6 +291,7 @@ plotChainDeriv(ax = ax[0], chain = chainReluSquareSigmoid, inputRange = PLOT_RAN
 
 ax[0].legend(["$f(x)$", "$\\frac{df}{dx}$"])
 ax[0].set_title("Function and derivative for\n$f(x) = sigmoid(square(leakyRrelu(x)))$")
+
 # Second chain (second nesting is square inner, sigmoid outer)
 plotChain(ax = ax[1], chain = chainReluSigmoidSquare, inputRange = PLOT_RANGE)
 plotChainDeriv(ax = ax[1], chain = chainReluSigmoidSquare, inputRange = PLOT_RANGE)

@@ -44,26 +44,6 @@ from typing import Dict, List, Union, Tuple
 from src.HuggingfaceStudy.Util import *
 
 
-import annoy
-import requests
-import tqdm
-import gzip
-import os
-import pickle
-import time
-import gym
-import json
-import argparse
-import keras
-import codecs
-import csv
-import theano
-import pattern
-import cython
-import html2text
-
-
-
 
 #TokenizerTypes = Union[xlnetTokenizer, RobertaTokenizer, BertTokenizer, OpenAIGPTTokenizer, GPT2Tokenizer,
 # TransfoXLTokenizer, XLNetTokenizer, XLMTokenizer, CTRLTokenizer]
