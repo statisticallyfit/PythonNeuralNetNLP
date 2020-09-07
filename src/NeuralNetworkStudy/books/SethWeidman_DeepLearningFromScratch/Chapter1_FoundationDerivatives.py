@@ -68,7 +68,7 @@ def chainTwoFunctions(chain: Chain, x: Tensor) -> Tensor:
 # ### Chain Rule
 # Leibniz notation:
 # $$
-# \frac {d} {dx} (g(f(x))) = \frac {dg} {df} \frac {df}{dx}
+# \frac {d} {dx} (g(f(x))) = \frac {dg} {df} \cdot \frac {df}{dx}
 # $$
 # Prime notation:
 # $$
@@ -108,7 +108,7 @@ def chainDerivTwo(chain: Chain,  inputRange: Tensor) -> Tensor:
 # Plot the results to show the chain rule works:
 # %% codecell
 
-def plotChain(ax, chain: Chain, inputRange: Tensor) -> None:
+def plotChain(ax, chain: Chain, inputRange: Tensor, length: int = 2) -> None:
      """
     Plots a chain function - a function made up of
     multiple consecutive ndarray -> ndarray mappings -
@@ -130,14 +130,18 @@ def plotChain(ax, chain: Chain, inputRange: Tensor) -> None:
      """
      assert inputRange.ndim == 1, "Function requires a 1-dimensional tensor as inputRange"
 
+     if length == 2:
+          outputRange: Tensor = chainTwoFunctions(chain = chain, x = inputRange)
+     elif length == 3:
+          outputRange: Tensor = chainThreeFunctions(chain = chain, x = inputRange)
 
-     outputRange: Tensor = chainTwoFunctions(chain = chain, x = inputRange)
+
      ax.plot(inputRange, outputRange)
 
 
 
 def plotChainDeriv(ax, chain: Chain, inputRange: Tensor) -> None:
-     """Uses the chain rule to plot the derivative of a function consisting of two nested functions.
+     """Uses the chain rule to plot the derivative of a function consisting of two or three nested functions.
 
      Parameters
      ----------
@@ -165,21 +169,21 @@ def plotChainDeriv(ax, chain: Chain, inputRange: Tensor) -> None:
 # %% codecell
 PLOT_RANGE: Tensor = Tensor(np.arange(-3, 3, 0.01))
 
-chain1: Chain = [square, sigmoid]
-chain2: Chain = [sigmoid, square]
+chainSquareSigmoid: Chain = [square, sigmoid]
+chainSigmoidSquare: Chain = [sigmoid, square]
 
 fig, ax = plt.subplots(1, 2, sharey=True, figsize=(16, 8)) # 2 rows, 1 column
 
 # First chain (first nesting is sigmoid inner, square outer)
-plotChain(ax = ax[0], chain = chain1, inputRange = PLOT_RANGE)
-plotChainDeriv(ax = ax[0], chain = chain1, inputRange = PLOT_RANGE)
+plotChain(ax = ax[0], chain = chainSquareSigmoid, inputRange = PLOT_RANGE)
+plotChainDeriv(ax = ax[0], chain = chainSquareSigmoid, inputRange = PLOT_RANGE)
 
 ax[0].legend(["$f(x)$", "$\\frac{df}{dx}$"])
 ax[0].set_title("Function and derivative for\n$f(x) = sigmoid(square(x))$")
 
 # Second chain (second nesting is square inner, sigmoid outer)
-plotChain(ax = ax[1], chain = chain2, inputRange = PLOT_RANGE)
-plotChainDeriv(ax = ax[1], chain = chain2, inputRange = PLOT_RANGE)
+plotChain(ax = ax[1], chain = chainSigmoidSquare, inputRange = PLOT_RANGE)
+plotChainDeriv(ax = ax[1], chain = chainSigmoidSquare, inputRange = PLOT_RANGE)
 ax[1].legend(["$f(x)$", "$\\frac{df}{dx}$"])
 ax[1].set_title("Function and derivative for\n$f(x) = square(sigmoid(x))$");
 
@@ -196,21 +200,94 @@ ax[1].set_title("Function and derivative for\n$f(x) = square(sigmoid(x))$");
 #
 # Leibniz notation of chain rule:
 # $$
-# \frac{d}{dx}(h(g(f(x)))) = \frac{dh}{d(g \circ f)} \times \frac {}
+# \frac{d}{dx}(h(g(f(x)))) = \frac{dh}{d(g \circ f)} \cdot \frac {dg}{df} \cdot \frac {df}{dx}
 # $$
 #
 # Prime notation of chain rule:
 # $$
-#
+# (h(g(f(x))))' = h'(g(f(x))) \cdot g'(f(x)) \cdot f'(x)
 # $$
+
+# %% codecell
+def chainThreeFunctions(chain: Chain, x: Tensor) -> Tensor:
+     '''Evaluates three functions in a row (composition)'''
+     assert len(chain) == 3, "Length of input 'chain' should be 3"
+
+     f: TensorFunction = chain[0]
+     g: TensorFunction = chain[1]
+     h: TensorFunction = chain[2]
+
+     return h(g(f(x)))
+
+
+
+
+# %% codecell
+def chainDerivThree(chain: Chain, inputRange: Tensor) -> Tensor:
+     """Uses the chain rule to compute the derivative of three nested functions.
+
+     Parameters
+     ----------
+     chain : Chain
+         TODO
+     inputRange : Tensor
+          TODO
+
+     """
+
+     assert(len(chain) == 3), "This function requires `Chain` objects to have length 3 (means 3 nested functions)"
+
+     f: TensorFunction = chain[0]
+     g: TensorFunction = chain[1]
+     h: TensorFunction = chain[2]
+
+
+     ### Forward Pass part (computing forward quantities, direct function application)
+     # f(x)
+     f_x: Tensor = f(inputRange)
+
+     # g(f(x))
+     g_x: Tensor = g(f_x)
+
+
+     ### Backward pass (computing derivatives using quantities that make up the derivative)
+     # dh / d(g o f) or dh / du where u = g o f
+     dh_dgf: Tensor = deriv(func = h, inputTensor = g_x)
+
+     # dg / df (or dg / du where u = f)
+     dg_df: Tensor = deriv(g, f_x)
+
+     # df/dx
+     df_dx: Tensor = deriv(f, inputRange)
+
+     # Multiplying these quantities as specified by chain rule:
+     return df_dx * dg_df * dh_dgf # TODO what happens when reversing the order here?
+
+
+
 
 
 # %% markdown
-# Leibniz notation:
-# $$
-# \frac {d} {dx} (g(f(x))) = \frac {dg} {df} \frac {df}{dx}
-# $$
-# Prime notation:
-# $$
-# (g(f(x)))' = g'(f(x)) \cdot f'(x)
-# $$
+# Showing that the nested 3 derivative function works:
+
+
+# %% codecell
+PLOT_RANGE: Tensor = Tensor(np.arange(-3, 3, 0.01))
+
+chainReluSquareSigmoid: Chain = [leakyRelu, square, sigmoid]
+chainReluSigmoidSquare: Chain = [leakyRelu, sigmoid, square]
+
+fig, ax = plt.subplots(1, 2, sharey=True, figsize=(16, 8)) # 2 rows, 1 column
+
+# First chain (first nesting is sigmoid inner, square outer)
+plotChain(ax = ax[0], chain = chainReluSquareSigmoid, inputRange = PLOT_RANGE)
+plotChainDeriv(ax = ax[0], chain = chainReluSquareSigmoid, inputRange = PLOT_RANGE)
+
+ax[0].legend(["$f(x)$", "$\\frac{df}{dx}$"])
+ax[0].set_title("Function and derivative for\n$f(x) = sigmoid(square(leakyRrelu(x)))$")
+# Second chain (second nesting is square inner, sigmoid outer)
+plotChain(ax = ax[1], chain = chainReluSigmoidSquare, inputRange = PLOT_RANGE)
+plotChainDeriv(ax = ax[1], chain = chainReluSigmoidSquare, inputRange = PLOT_RANGE)
+
+ax[1].legend(["$f(x)$", "$\\frac{df}{dx}$"])
+ax[1].set_title("Function and derivative for\n$f(x) = square(sigmoid(leakyRelu(x)))$");
