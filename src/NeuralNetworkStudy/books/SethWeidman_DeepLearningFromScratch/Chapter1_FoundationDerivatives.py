@@ -224,6 +224,21 @@ def chainThreeFunctions(chain: Chain, x: Tensor) -> Tensor:
 
      return h(g(f(x)))
 
+# %% codecell
+def chainFunctions(chain: Chain, x: Tensor) -> Tensor:
+     '''Evaluates n functions in a row (composition'''
+
+     # Applying the innermost function in the chain (first) to the tensor argument, and then the outermost (last)  functions act on the result.
+
+     head, *tail = chain
+     acc: Tensor = head(x)
+
+     for i in range(0, len(tail)):
+         tensorFunction: TensorFunction = tail[i]
+         acc: Tensor = tensorFunction(acc)
+
+     return acc
+
 
 
 
@@ -298,3 +313,8 @@ plotChainDeriv(ax = ax[1], chain = chainReluSigmoidSquare, inputRange = PLOT_RAN
 
 ax[1].legend(["$f(x)$", "$\\frac{df}{dx}$"])
 ax[1].set_title("Function and derivative for\n$f(x) = square(sigmoid(leakyRelu(x)))$");
+
+
+# %% codecell
+print(chainFunctions(chainReluSigmoidSquare, Tensor(np.arange(-3, 7))))
+print(chainThreeFunctions(chainReluSigmoidSquare, Tensor(np.arange(-3, 7))))
