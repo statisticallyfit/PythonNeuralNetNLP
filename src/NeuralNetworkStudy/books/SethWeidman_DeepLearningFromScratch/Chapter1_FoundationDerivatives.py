@@ -746,27 +746,21 @@ matmulForward(X, W)
 
 
 # %% codecell
+#t1 = torch.arange(2*3*4).reshape(3,2,4); t1
+#t2 = torch.arange(2*3*4).reshape(3, 4, 2) -4; t2
+###
+#n1 = np.arange(2*3*4).reshape(3,2,4); n1
+#n2 = np.arange(2*3*4).reshape(3,4,2) - 4; n2
+
+
 t1 = torch.arange(2*3).reshape(3,2); t1
-t2 = torch.arange(2*4).reshape(2,4) + 4; t2
-torch.matmul(t1, t2)
-t1 @ t2
-torch.mm(t1, t2)
+t2 = torch.arange(2*4).reshape(2,4) -4; t2
 ###
 n1 = np.arange(2*3).reshape(3,2); n1
-n2 = np.arange(2*4).reshape(2,4) + 4; n2
-torch.matmul(t1, t2)
+n2 = np.arange(2*4).reshape(2,4) -4; n2
+
 np.matmul(n1, n2)
-np.dot(n1, n2)
-t1
-t2
-16 + 30 + 48 + 70
-torch.matmul(t1, t2)
-torch.bmm(t1, t2)
-t1 @ t2
-n1
-14 + 32 + 3*18
-n2
-np.dot(n1, n2)
+t1.matmul(t2)
 
 # %% markdown
 # ## Derivatives of Functions with Multiple Tensor Inputs
