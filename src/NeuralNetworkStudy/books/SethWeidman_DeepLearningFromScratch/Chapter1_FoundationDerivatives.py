@@ -752,14 +752,19 @@ matmulForward(X, W)
 #n1 = np.arange(2*3*4).reshape(3,2,4); n1
 #n2 = np.arange(2*3*4).reshape(3,4,2) - 4; n2
 
-
+# %% codecell
 t1 = torch.arange(2*3).reshape(3,2); t1
+# %% codecell
 t2 = torch.arange(2*4).reshape(2,4) -4; t2
-###
+# %% codecell
 n1 = np.arange(2*3).reshape(3,2); n1
+# %% codecell
 n2 = np.arange(2*4).reshape(2,4) -4; n2
-
+# %% codecell
 np.matmul(n1, n2)
+# %% codecell
+np.dot(n1, n2)
+# %% codecell
 t1.matmul(t2)
 
 # %% markdown
