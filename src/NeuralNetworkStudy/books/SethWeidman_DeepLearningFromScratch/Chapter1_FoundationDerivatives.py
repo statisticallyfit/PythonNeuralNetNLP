@@ -23,11 +23,15 @@ NEURALNET_PATH: str = PATH + '/src/NeuralNetworkStudy/books/SethWeidman_DeepLear
 os.chdir(NEURALNET_PATH)
 assert os.getcwd() == NEURALNET_PATH
 
+sys.path.append(PATH)
 sys.path.append(NEURALNET_PATH)
 assert NEURALNET_PATH in sys.path
 
 
+#from FunctionUtil import *
+
 from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.FunctionUtil import *
+
 from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.TypeUtil import *
 
 # %% markdown
@@ -108,7 +112,7 @@ def chainDerivTwo(chain: Chain,  inputRange: Tensor) -> Tensor:
 # Plot the results to show the chain rule works:
 # %% codecell
 
-def plotChain(ax, chain: Chain, inputRange: Tensor) -> None:
+def plotChain_2_3(ax, chain: Chain, inputRange: Tensor) -> None:
      """
     Plots a chain function - a function made up of
     multiple consecutive ndarray -> ndarray mappings -
@@ -140,7 +144,7 @@ def plotChain(ax, chain: Chain, inputRange: Tensor) -> None:
 
 
 
-def plotChainDeriv(ax, chain: Chain, inputRange: Tensor) -> None:
+def plotChainDeriv_2_3(ax, chain: Chain, inputRange: Tensor) -> None:
      """Uses the chain rule to plot the derivative of a function consisting of two or three nested functions.
 
      Parameters
@@ -180,15 +184,15 @@ chainSigmoidSquare: Chain = [sigmoid, square]
 fig, ax = plt.subplots(1, 2, sharey=True, figsize=(16, 8)) # 2 rows, 1 column
 
 # First chain (first nesting is sigmoid inner, square outer)
-plotChain(ax = ax[0], chain = chainSquareSigmoid, inputRange = PLOT_RANGE)
-plotChainDeriv(ax = ax[0], chain = chainSquareSigmoid, inputRange = PLOT_RANGE)
+plotChain_2_3(ax = ax[0], chain = chainSquareSigmoid, inputRange = PLOT_RANGE)
+plotChainDeriv_2_3(ax = ax[0], chain = chainSquareSigmoid, inputRange = PLOT_RANGE)
 
 ax[0].legend(["$f(x)$", "$\\frac{df}{dx}$"])
 ax[0].set_title("Function and derivative for\n$f(x) = sigmoid(square(x))$")
 
 # Second chain (second nesting is square inner, sigmoid outer)
-plotChain(ax = ax[1], chain = chainSigmoidSquare, inputRange = PLOT_RANGE)
-plotChainDeriv(ax = ax[1], chain = chainSigmoidSquare, inputRange = PLOT_RANGE)
+plotChain_2_3(ax = ax[1], chain = chainSigmoidSquare, inputRange = PLOT_RANGE)
+plotChainDeriv_2_3(ax = ax[1], chain = chainSigmoidSquare, inputRange = PLOT_RANGE)
 ax[1].legend(["$f(x)$", "$\\frac{df}{dx}$"])
 ax[1].set_title("Function and derivative for\n$f(x) = square(sigmoid(x))$");
 
@@ -224,6 +228,11 @@ def chainThreeFunctions(chain: Chain, x: Tensor) -> Tensor:
 
      return h(g(f(x)))
 
+
+
+# %% markdown
+# Creating functions to calculate compositions and chain rule for any-length chain:
+
 # %% codecell
 def chainFunctions(chain: Chain, x: Tensor) -> Tensor:
      '''Evaluates n functions in a row (composition'''
@@ -243,6 +252,7 @@ def chainFunctions(chain: Chain, x: Tensor) -> Tensor:
 
 
 # %% codecell
+
 def chainDerivThree(chain: Chain, inputRange: Tensor) -> Tensor:
      """Uses the chain rule to compute the derivative of three nested functions.
 
@@ -280,16 +290,116 @@ def chainDerivThree(chain: Chain, inputRange: Tensor) -> Tensor:
      # df/dx
      df_dx: Tensor = deriv(f, inputRange)
 
+
      # Multiplying these quantities as specified by chain rule:
      # return df_dx * dg_df * dh_dgf # TODO what happens when reversing the order here?
      return dh_dgf * dg_df * df_dx # same thing when different order because these are 1-dim tensors.
 
 
+# %% codecell
+def chainAccumulate(chain: Chain, x: Tensor)-> List[Tensor]:
+
+     head, *tail = chain
+     acc: Tensor = head(x)
+
+     accs: List[Tensor] = list()
+     accs.append(acc)
+
+     for i in range(0, len(tail)):
+         tensorFunction: TensorFunction = tail[i]
+         acc: Tensor = tensorFunction(acc)
+         accs.append(acc)
+
+     return accs
+
+# %% codecell
+
+from functools import reduce
+from operator import mul
+
+
+def forwardPass(chain: Chain, x:Tensor) -> List[Tensor]:
+     '''Forward pass: function composition calculations while keeping the results stored.'''
+     # Calculating function compositions, but not including the last function in the list.
+     forwardNestings: List[Tensor] = chainAccumulate(chain[0: len(chain) - 1], x)
+
+     # Add x on top so result is same length as chain, for backward pass's
+     # convenience.
+     return  [x] + forwardNestings
+
+
+def backwardPass(chain: Chain, forwards: List[Tensor]) -> List[Tensor]:
+
+     derivList: List[Tensor] = list()
+
+     for i in list(reversed(range(0, len(chain)))):
+
+          tensorFunc: TensorFunction = chain[i]
+          forwardResult: Tensor = forwards[i]
+
+          # Aply the chain rule
+          dTensorFunc_dResult: Tensor = deriv(func = tensorFunc, inputTensor = forwardResult)
+
+          derivList.append(dTensorFunc_dResult)
+
+     return reduce(mul, derivList)
+
+def chainDeriv(chain: Chain, x: Tensor) -> List[Tensor]:
+     # Result of the forward function composition: where n = length(chain), and:
+     # f_0 = chain[0]
+     # ...
+     # f_n-1 = chain[n-1]
+     # ... the last element in the forward compositions list tensor is f_n-1( f_n-2(... f_2 (f_1 (f_0 (x)))...))
+     forwardCompositions: List[Tensor] = forwardPass(chain, x)
+
+     # Apply the chain rule: calculate derivatives and multiply them as per chain rule to get the result tensor.
+     chainRuleResult: List[Tensor] = backwardPass(chain, forwardCompositions)
+
+     return chainRuleResult
+
+# %% markdown
+# Testing the abstract functions chainFunction and chainDeriv:
+# %% codecell
+x: Tensor = Tensor(np.arange(-3, 8)); x
+chain: List[TensorFunction] = [leakyRelu, sigmoid, square, cubic, quartic, quintic, sinT, cosT]
+
+# %% codecell
+
+assert torch.equal(chainDeriv(chain[0:3], x), chainDerivThree(chain[0:3], x))
+assert torch.equal(chainFunctions(chain[0:3], x), chainThreeFunctions(chain[0:3], x))
+
+# %% codecell
+chainDeriv(chain[0:3], x)
+# %% codecell
+chainDerivThree(chain[0:3], x)
 
 
 
 # %% markdown
 # Showing that the nested 3 derivative function works:
+
+# %% codecell
+
+# %% markdown
+# Plot the results to show the chain rule works:
+# %% codecell
+
+def plotChain(ax, chain: Chain, inputRange: Tensor) -> None:
+
+     assert inputRange.ndim == 1, "Function requires a 1-dimensional tensor as inputRange"
+
+     outputRange: Tensor = chainFunctions(chain = chain, x = inputRange)
+
+     ax.plot(inputRange, outputRange)
+
+
+
+def plotChainDeriv(ax, chain: Chain, inputRange: Tensor) -> None:
+     assert inputRange.ndim == 1, "Function requires a 1-dimensional tensor as inputRange"
+
+     outputRange: Tensor = chainDeriv(chain = chain, x = inputRange)
+
+     ax.plot(inputRange, outputRange)
 
 
 # %% codecell
@@ -316,5 +426,3 @@ ax[1].set_title("Function and derivative for\n$f(x) = square(sigmoid(leakyRelu(x
 
 
 # %% codecell
-print(chainFunctions(chainReluSigmoidSquare, Tensor(np.arange(-3, 7))))
-print(chainThreeFunctions(chainReluSigmoidSquare, Tensor(np.arange(-3, 7))))
