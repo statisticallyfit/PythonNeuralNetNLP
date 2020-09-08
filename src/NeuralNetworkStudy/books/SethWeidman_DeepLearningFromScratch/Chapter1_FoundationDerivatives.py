@@ -229,28 +229,6 @@ def chainThreeFunctions(chain: Chain, x: Tensor) -> Tensor:
      return h(g(f(x)))
 
 
-
-# %% markdown
-# Creating functions to calculate compositions and chain rule for any-length chain:
-
-# %% codecell
-def chainFunctions(chain: Chain, x: Tensor) -> Tensor:
-     '''Evaluates n functions in a row (composition'''
-
-     # Applying the innermost function in the chain (first) to the tensor argument, and then the outermost (last)  functions act on the result.
-
-     head, *tail = chain
-     acc: Tensor = head(x)
-
-     for i in range(0, len(tail)):
-         tensorFunction: TensorFunction = tail[i]
-         acc: Tensor = tensorFunction(acc)
-
-     return acc
-
-
-
-
 # %% codecell
 
 def chainDerivThree(chain: Chain, inputRange: Tensor) -> Tensor:
@@ -294,6 +272,49 @@ def chainDerivThree(chain: Chain, inputRange: Tensor) -> Tensor:
      # Multiplying these quantities as specified by chain rule:
      # return df_dx * dg_df * dh_dgf # TODO what happens when reversing the order here?
      return dh_dgf * dg_df * df_dx # same thing when different order because these are 1-dim tensors.
+
+
+
+
+
+
+# %% markdown
+# Creating functions to calculate compositions and chain rule for any-length chain:
+#
+# ### Chain Rule For Variable Number of Composed Functions:
+# The function:
+# $$
+# y = f_n(f_{n-1}(...f_2(f_1(f_0(x)))...))
+# $$
+#
+# Leibniz notation of chain rule:
+# $$
+# \frac{d}{dx}( f_n(f_{n-1}(...f_2(f_1(f_0(x)))...)) ) = \frac{df_n}{d(f_{n-1} \circ f_{n-2} \circ ... \circ f_0)} \cdot \frac {df_{n-1}}{df_{n-2}} \cdot ... \cdot \frac {df_2}{df_1} \cdot \frac{df_1}{df_0} \cdot \frac{df_0}{dx}
+# $$
+#
+# Prime notation of chain rule:
+# $$
+# (f_n(f_{n-1}(...f_2(f_1(f_0(x)))...)))' = f_n'(f_{n-1}(...f_1(f_0(x))...)) \cdot f_{n-1}'(f_{n-2}(...f_1(f_0(x))...)) \cdot... \cdot f_2'(f_1(f_0(x))) \cdot f_1'(f_0(x)) \cdot f_0'(x)
+# $$
+
+
+
+# %% codecell
+def chainFunctions(chain: Chain, x: Tensor) -> Tensor:
+     '''Evaluates n functions in a row (composition'''
+
+     # Applying the innermost function in the chain (first) to the tensor argument, and then the outermost (last)  functions act on the result.
+
+     head, *tail = chain
+     acc: Tensor = head(x)
+
+     for i in range(0, len(tail)):
+         tensorFunction: TensorFunction = tail[i]
+         acc: Tensor = tensorFunction(acc)
+
+     return acc
+
+
 
 
 # %% codecell
