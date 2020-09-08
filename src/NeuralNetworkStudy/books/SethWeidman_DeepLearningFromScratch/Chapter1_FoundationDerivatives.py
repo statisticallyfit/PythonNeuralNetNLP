@@ -34,7 +34,7 @@ from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.FunctionUt
 
 from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.TypeUtil import *
 
-# %% markdown
+# %% markdown [markdown]
 # ## Derivative Function:
 # $$
 # \frac{df}{du}(a) = \lim_{\Delta \leftarrow 0} \frac{f(a + \Delta) - f(a - \Delta)}{2 \times \Delta}
@@ -49,7 +49,7 @@ def deriv(func: TensorFunction, #Callable[[Tensor], Tensor],
      '''
      return (func(inputTensor + delta) - func(inputTensor - delta)) / (2 * delta)
 
-# %% markdown
+# %% markdown [markdown]
 # ## Nested (Composite) Functions:
 # $$
 # g(f(x)) = y
@@ -68,7 +68,7 @@ def chainTwoFunctions(chain: Chain, x: Tensor) -> Tensor:
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## Chain Rule
 # Leibniz notation:
 # $$
@@ -108,7 +108,7 @@ def chainDerivTwo(chain: Chain,  inputRange: Tensor) -> Tensor:
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # Plot the results to show the chain rule works:
 # %% codecell
 
@@ -200,7 +200,7 @@ ax[1].set_title("Function and derivative for\n$f(x) = square(sigmoid(x))$");
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Chain Rule For Three Composed Functions:
 # The function:
 # $$
@@ -278,7 +278,7 @@ def chainDerivThree(chain: Chain, inputRange: Tensor) -> Tensor:
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # Creating functions to calculate compositions and chain rule for any-length chain:
 #
 # ### Chain Rule An Arbitrary Number of Composed Functions:
@@ -378,7 +378,7 @@ def chainDeriv(chain: Chain, x: Tensor) -> List[Tensor]:
 
      return chainRuleResult
 
-# %% markdown
+# %% markdown [markdown]
 # Testing the abstract functions chainFunction and chainDeriv:
 # %% codecell
 x: Tensor = Tensor(np.arange(-3, 8)); x
@@ -397,7 +397,7 @@ chainDerivThree(chain[0:3], x)
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # Plot the results to show the chain rule works:
 # %% codecell
 
@@ -446,7 +446,7 @@ ax[1].set_title("Function and derivative for\n$f(x) = square(sigmoid(leakyRelu(x
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## Functions with Multiple Inputs (Case: Addition)
 # Defining the following function $\alpha(x,y)$ with inputs $x$ and $y$:
 # $$
@@ -467,14 +467,14 @@ def multipleInputsAdd(x: Tensor, y: Tensor, sigma: TensorFunction) -> float:
 
     return sigma(a)
 
-# %% markdown
+# %% markdown [markdown]
 # ## Derivatives of Functions with Multiple Inputs (Case: Addition)
 # Goal is to compute the derivative of each constituent function "going backward" through the computational graph and then multiply the result together to get the total derivative (as per chain rule).
 # Given the function from before (calling it `f` now instead of `s`):
 # $$
 # f(x,y) = \sigma(\alpha(x,y)) = \sigma(x + y)
 # $$
-# %% markdown
+# %% markdown [markdown]
 # 1. Derivative with respect to $x$ is:
 #
 # Leibniz (simple) Notation:
@@ -511,7 +511,7 @@ def multipleInputsAdd(x: Tensor, y: Tensor, sigma: TensorFunction) -> float:
 # $$
 # f'(x,y) = \sigma'(\alpha(x,y)) \times \alpha'(x,y)
 # $$
-# %% markdown
+# %% markdown [markdown]
 # #### Derivative of $\alpha$ function:
 # $$
 # \frac{\partial \alpha}{\partial x} = \frac{\partial}{\partial x}(x + y) = 1
@@ -557,7 +557,7 @@ sigma: TensorFunction = lambda tensor: tensor**3
 res: Tensor = multipleInputsAdd(x, y, sigma)
 assert torch.equal(res , Tensor([-512, -216,  -64,   -8,  0,8,   64,  216,  512, 1000, 1728]))
 
-# %% markdown
+# %% markdown [markdown]
 # Printing out value of the derivatives with respect to $x$ and $y$:
 
 # %% codecell
@@ -569,7 +569,7 @@ multipleInputsAddDeriv(x, y, sigma)
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## Functions with Multiple Inputs (Case: Multiplication)
 # Defining the following function $\alpha(x,y)$ with inputs $x$ and $y$:
 # $$
@@ -590,14 +590,14 @@ def multipleInputsMultiply(x: Tensor, y: Tensor, sigma: TensorFunction) -> float
 
     return sigma(beta)
 
-# %% markdown
+# %% markdown [markdown]
 # ## Derivatives of Functions with Multiple Inputs (Case: Multiplication)
 # Goal is to compute the derivative of each constituent function "going backward" through the computational graph and then multiply the result together to get the total derivative (as per chain rule).
 # Given the function from before (calling it `f` now instead of `s`):
 # $$
 # f(x,y) = \sigma(\beta(x,y)) = \sigma(x * y)
 # $$
-# %% markdown
+# %% markdown [markdown]
 # 1. Derivative with respect to $x$ is:
 #
 # Leibniz (simple) Notation:
@@ -634,7 +634,7 @@ def multipleInputsMultiply(x: Tensor, y: Tensor, sigma: TensorFunction) -> float
 # $$
 # f'(x,y) = \sigma'(\beta(x,y)) \times \beta'(x,y)
 # $$
-# %% markdown
+# %% markdown [markdown]
 # #### Derivative of $\beta$ function:
 # $$
 # \frac{\partial \beta}{\partial x} = \frac{\partial}{\partial x}(x * y) = y
@@ -685,7 +685,7 @@ multipleInputsMultiply(x, y, sigma)
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## Functions with Multiple Matrix Inputs
 # Here, inputs are multi-dimensional tensors, not just 1-dim tensors as in the above two examples.
 #
@@ -767,5 +767,5 @@ np.dot(n1, n2)
 # %% codecell
 t1.matmul(t2)
 
-# %% markdown
+# %% markdown [markdown]
 # ## Derivatives of Functions with Multiple Tensor Inputs
