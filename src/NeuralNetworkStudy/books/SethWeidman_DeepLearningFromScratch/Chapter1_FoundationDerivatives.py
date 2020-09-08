@@ -35,13 +35,13 @@ from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.FunctionUt
 from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.TypeUtil import *
 
 # %% markdown
-# ### Derivative Function:
+# ## Derivative Function:
 # $$
 # \frac{df}{du}(a) = \lim_{\Delta \leftarrow 0} \frac{f(a + \Delta) - f(a - \Delta)}{2 \times \Delta}
 # $$
 # %% codecell
 
-def deriv(func: Callable[[Tensor], Tensor],
+def deriv(func: TensorFunction, #Callable[[Tensor], Tensor],
      inputTensor: Tensor,
      delta: float = 0.001) -> Tensor:
      '''
@@ -50,7 +50,7 @@ def deriv(func: Callable[[Tensor], Tensor],
      return (func(inputTensor + delta) - func(inputTensor - delta)) / (2 * delta)
 
 # %% markdown
-# ### Nested (Composite) Functions:
+# ## Nested (Composite) Functions:
 # $$
 # g(f(x)) = y
 # $$
@@ -69,14 +69,14 @@ def chainTwoFunctions(chain: Chain, x: Tensor) -> Tensor:
 
 
 # %% markdown
-# ### Chain Rule
+# ## Chain Rule
 # Leibniz notation:
 # $$
-# \frac {d} {dx} (g(f(x))) = \frac {dg} {df} \cdot \frac {df}{dx}
+# \frac {d} {dx} (g(f(x))) = \frac {dg} {df} \times \frac {df}{dx}
 # $$
 # Prime notation:
 # $$
-# (g(f(x)))' = g'(f(x)) \cdot f'(x)
+# (g(f(x)))' = g'(f(x)) \times f'(x)
 # $$
 
 # %% codecell
@@ -209,12 +209,12 @@ ax[1].set_title("Function and derivative for\n$f(x) = square(sigmoid(x))$");
 #
 # Leibniz notation of chain rule:
 # $$
-# \frac{d}{dx}(h(g(f(x)))) = \frac{dh}{d(g \circ f)} \cdot \frac {dg}{df} \cdot \frac {df}{dx}
+# \frac{d}{dx}(h(g(f(x)))) = \frac{dh}{d(g \circ f)} \times \frac {dg}{df} \times \frac {df}{dx}
 # $$
 #
 # Prime notation of chain rule:
 # $$
-# (h(g(f(x))))' = h'(g(f(x))) \cdot g'(f(x)) \cdot f'(x)
+# (h(g(f(x))))' = h'(g(f(x))) \times g'(f(x)) \times f'(x)
 # $$
 
 # %% codecell
@@ -281,7 +281,7 @@ def chainDerivThree(chain: Chain, inputRange: Tensor) -> Tensor:
 # %% markdown
 # Creating functions to calculate compositions and chain rule for any-length chain:
 #
-# ### Chain Rule For Variable Number of Composed Functions:
+# ### Chain Rule An Arbitrary Number of Composed Functions:
 # The function:
 # $$
 # y = f_n(f_{n-1}(...f_2(f_1(f_0(x)))...))
@@ -289,12 +289,12 @@ def chainDerivThree(chain: Chain, inputRange: Tensor) -> Tensor:
 #
 # Leibniz notation of chain rule:
 # $$
-# \frac{d}{dx}( f_n(f_{n-1}(...f_2(f_1(f_0(x)))...)) ) = \frac{df_n}{d(f_{n-1} \circ f_{n-2} \circ ... \circ f_0)} \cdot \frac {df_{n-1}}{df_{n-2}} \cdot ... \cdot \frac {df_2}{df_1} \cdot \frac{df_1}{df_0} \cdot \frac{df_0}{dx}
+# \frac{d}{dx}( f_n(f_{n-1}(...f_2(f_1(f_0(x)))...)) ) = \frac{df_n}{d(f_{n-1} \circ f_{n-2} \circ ... \circ f_0)} \times \frac {df_{n-1}}{df_{n-2}} \times ... \times \frac {df_2}{df_1} \times \frac{df_1}{df_0} \times \frac{df_0}{dx}
 # $$
 #
 # Prime notation of chain rule:
 # $$
-# (f_n(f_{n-1}(...f_2(f_1(f_0(x)))...)))' = f_n'(f_{n-1}(...f_1(f_0(x))...)) \cdot f_{n-1}'(f_{n-2}(...f_1(f_0(x))...)) \cdot... \cdot f_2'(f_1(f_0(x))) \cdot f_1'(f_0(x)) \cdot f_0'(x)
+# (f_n(f_{n-1}(...f_2(f_1(f_0(x)))...)))' = f_n'(f_{n-1}(...f_1(f_0(x))...)) \times f_{n-1}'(f_{n-2}(...f_1(f_0(x))...)) \times... \times f_2'(f_1(f_0(x))) \times f_1'(f_0(x)) \times f_0'(x)
 # $$
 
 
@@ -396,10 +396,6 @@ chainDerivThree(chain[0:3], x)
 
 
 
-# %% markdown
-# Showing that the nested 3 derivative function works:
-
-# %% codecell
 
 # %% markdown
 # Plot the results to show the chain rule works:
@@ -446,4 +442,331 @@ ax[1].legend(["$f(x)$", "$\\frac{df}{dx}$"])
 ax[1].set_title("Function and derivative for\n$f(x) = square(sigmoid(leakyRelu(x)))$");
 
 
+
+
+
+
+# %% markdown
+# ## Functions with Multiple Inputs (Case: Addition)
+# Defining the following function $\alpha(x,y)$ with inputs $x$ and $y$:
+# $$
+# a = \alpha(x, y) = x + y
+# $$
+# Going to feed this function through another function `sigmoid` or $\sigma$:
+# $$
+# s = \sigma(a) = \sigma(\alpha(x,y)) = \sigma(x + y)
+# $$
+# * NOTE: whenever we deal with an operation that takes multiple Tensors as input, we have to check their shapes to ensure they meet whatever conditions are required by that operation.
+# * NOTE 2: below for the `multipleInputsAdd` function, all we need to check is that the shapes of `x` and `y` are identical so that addition can happen elementwise (since that is the only way it happens).
 # %% codecell
+def multipleInputsAdd(x: Tensor, y: Tensor, sigma: TensorFunction) -> float:
+    '''(Forward pass) Function with multiple inputs and addition'''
+    assert x.shape == y.shape
+
+    a: Tensor = x + y
+
+    return sigma(a)
+
+# %% markdown
+# ## Derivatives of Functions with Multiple Inputs (Case: Addition)
+# Goal is to compute the derivative of each constituent function "going backward" through the computational graph and then multiply the result together to get the total derivative (as per chain rule).
+# Given the function from before (calling it `f` now instead of `s`):
+# $$
+# f(x,y) = \sigma(\alpha(x,y)) = \sigma(x + y)
+# $$
+# %% markdown
+# 1. Derivative with respect to $x$ is:
+#
+# Leibniz (simple) Notation:
+# $$
+# \frac{\partial f}{\partial x} = \frac{\partial \sigma}{\partial \alpha} \times \frac{\partial \alpha}{\partial x}
+# $$
+#
+# Leibniz (longer) Notation:
+# $$
+# \frac{\partial }{\partial x}(f(x,y)) = \frac{\partial }{\partial \alpha}(\sigma(\alpha(x,y))) \times \frac{\partial }{\partial x}(\alpha(x,y))
+# $$
+#
+# Prime Notation:
+# $$
+# f'(x,y) = \sigma'(\alpha(x,y)) \times \alpha'(x,y)
+# $$
+#
+#
+#
+#
+# 2. Derivative with respect to $y$ is:
+#
+# Leibniz (simple) Notation:
+# $$
+# \frac{\partial f}{\partial y} = \frac{\partial \sigma}{\partial \alpha} \times \frac{\partial \alpha}{\partial y}
+# $$
+#
+# Leibniz (longer) Notation:
+# $$
+# \frac{\partial }{\partial y}(f(x,y)) = \frac{\partial }{\partial \alpha}(\sigma(\alpha(x,y))) \times \frac{\partial }{\partial y}(\alpha(x,y))
+# $$
+#
+# Prime Notation:
+# $$
+# f'(x,y) = \sigma'(\alpha(x,y)) \times \alpha'(x,y)
+# $$
+# %% markdown
+# #### Derivative of $\alpha$ function:
+# $$
+# \frac{\partial \alpha}{\partial x} = \frac{\partial}{\partial x}(x + y) = 1
+# $$
+# and same applies to the derivative with respect to $y$:
+#
+# $$
+# \frac{\partial \alpha}{\partial y} = \frac{\partial}{\partial y}(x + y) = 1
+# $$
+# %% codecell
+def multipleInputsAddDeriv(x: Tensor, y: Tensor,
+                           sigma: TensorFunction) -> Tuple[Tensor, Tensor]:
+
+    ''' Computes the derivative of the alpha function with respect to both inputs'''
+    ### Forward pass: the simple calculation / execution of the alpha function
+    a: Tensor = x + y
+
+    ### Backward pass: computing derivatives:
+    # NOTE: s = sigma = f
+    ds_da: Tensor = deriv(func = sigma, inputTensor = a)
+    da_dx: Tensor = 1 # same as replicating tensor 1
+    da_dy: Tensor = 1
+    #da_dx: Tensor = Tensor([1] * len(ds_da))
+
+    df_dx: Tensor = ds_da * da_dx
+    df_dy: Tensor = ds_da * da_dy
+
+    return df_dx, df_dy
+
+# %% codecell
+x = Tensor(np.arange(-3, 8))
+assert torch.equal(x, Tensor([-3, -2, -1,  0,  1,  2,  3,  4,  5,  6,  7]))
+
+
+y = Tensor(np.arange(-5,6));  y
+assert torch.equal(y, Tensor([-5, -4, -3, -2, -1,  0,  1,  2,  3,  4,  5]))
+
+assert x.shape == y.shape
+
+# Sigma is a cubing function
+sigma: TensorFunction = lambda tensor: tensor**3
+
+res: Tensor = multipleInputsAdd(x, y, sigma)
+assert torch.equal(res , Tensor([-512, -216,  -64,   -8,  0,8,   64,  216,  512, 1000, 1728]))
+
+# %% markdown
+# Printing out value of the derivatives with respect to $x$ and $y$:
+
+# %% codecell
+multipleInputsAddDeriv(x, y, sigma)
+
+
+
+
+
+
+
+# %% markdown
+# ## Functions with Multiple Inputs (Case: Multiplication)
+# Defining the following function $\alpha(x,y)$ with inputs $x$ and $y$:
+# $$
+# a = \beta(x, y) = x * y
+# $$
+# Going to feed this function through another function `sigmoid` or $\sigma$:
+# $$
+# s = \sigma(\beta) = \sigma(\beta(x,y)) = \sigma(x * y)
+# $$
+# * NOTE: whenever we deal with an operation that takes multiple Tensors as input, we have to check their shapes to ensure they meet whatever conditions are required by that operation.
+# * NOTE 2: below for the `multipleInputsMultiply` function, all we need to check is that the shapes of `x` and `y` are identical because for 1-dim tensors, multiplication happens elementwise.
+# %% codecell
+def multipleInputsMultiply(x: Tensor, y: Tensor, sigma: TensorFunction) -> float:
+    '''(Forward pass) Function with multiple inputs and addition'''
+    assert x.shape == y.shape
+
+    beta: Tensor = x * y
+
+    return sigma(beta)
+
+# %% markdown
+# ## Derivatives of Functions with Multiple Inputs (Case: Multiplication)
+# Goal is to compute the derivative of each constituent function "going backward" through the computational graph and then multiply the result together to get the total derivative (as per chain rule).
+# Given the function from before (calling it `f` now instead of `s`):
+# $$
+# f(x,y) = \sigma(\beta(x,y)) = \sigma(x * y)
+# $$
+# %% markdown
+# 1. Derivative with respect to $x$ is:
+#
+# Leibniz (simple) Notation:
+# $$
+# \frac{\partial f}{\partial x} = \frac{\partial \sigma}{\partial \beta} \times \frac{\partial \beta}{\partial x}
+# $$
+#
+# Leibniz (longer) Notation:
+# $$
+# \frac{\partial }{\partial x}(f(x,y)) = \frac{\partial }{\partial \beta}(\sigma(\beta(x,y))) \times \frac{\partial }{\partial x}(\beta(x,y))
+# $$
+#
+# Prime Notation:
+# $$
+# f'(x,y) = \sigma'(\beta(x,y)) \times \beta'(x,y)
+# $$
+#
+#
+#
+#
+# 2. Derivative with respect to $y$ is:
+#
+# Leibniz (simple) Notation:
+# $$
+# \frac{\partial f}{\partial y} = \frac{\partial \sigma}{\partial \beta} \times \frac{\partial \beta}{\partial y}
+# $$
+#
+# Leibniz (longer) Notation:
+# $$
+# \frac{\partial }{\partial y}(f(x,y)) = \frac{\partial }{\partial \beta}(\sigma(\beta(x,y))) \times \frac{\partial }{\partial y}(\beta(x,y))
+# $$
+#
+# Prime Notation:
+# $$
+# f'(x,y) = \sigma'(\beta(x,y)) \times \beta'(x,y)
+# $$
+# %% markdown
+# #### Derivative of $\beta$ function:
+# $$
+# \frac{\partial \beta}{\partial x} = \frac{\partial}{\partial x}(x * y) = y
+# $$
+# and same applies to the derivative with respect to $y$:
+#
+# $$
+# \frac{\partial \beta}{\partial y} = \frac{\partial}{\partial y}(x * y) = x
+# $$
+# %% codecell
+def multipleInputsMultiplyDeriv(x: Tensor, y: Tensor,
+                           sigma: TensorFunction) -> Tuple[Tensor, Tensor]:
+
+    ''' Computes the derivative of the beta function with respect to both inputs'''
+    ### Forward pass: the simple calculation / execution of the alpha function
+    beta: Tensor = x * y
+
+    ### Backward pass: computing derivatives:
+    # NOTE: s = sigma = f
+    ds_db: Tensor = deriv(func = sigma, inputTensor = beta)
+    db_dx: Tensor = y # same as replicating tensor 1
+    db_dy: Tensor = x
+
+    df_dx: Tensor = ds_db * db_dx
+    df_dy: Tensor = ds_db * db_dy
+
+    return df_dx, df_dy
+
+# %% codecell
+x = Tensor(np.arange(-3, 8))
+assert torch.equal(x, Tensor([-3, -2, -1,  0,  1,  2,  3,  4,  5,  6,  7]))
+
+
+y = Tensor(np.arange(-5,6));  y
+assert torch.equal(y, Tensor([-5, -4, -3, -2, -1,  0,  1,  2,  3,  4,  5]))
+
+assert x.shape == y.shape
+
+# Sigma is a cubing function
+sigma: TensorFunction = lambda tensor: tensor**3
+
+# %% codecell
+beta: Tensor = x*y; beta
+# %% codecell
+deriv(sigma, beta)
+# %% codecell
+multipleInputsMultiply(x, y, sigma)
+
+
+
+# %% markdown
+# ## Functions with Multiple Matrix Inputs
+# Here, inputs are multi-dimensional tensors, not just 1-dim tensors as in the above two examples.
+#
+# Define the following:
+# $$
+# X = \Big[ x_1 \;\; x_2 \;\; ... \;\; x_n \Big]
+# $$
+#
+# $$
+# \begin{align}
+#   W &=\begin{bmatrix}
+#       w_1 \\
+#       w_2 \\
+#       \vdots \\
+#       w_n
+#   \end{bmatrix}
+# \end{align}
+# $$
+# where $x_i, w_i \in \mathbf{R}^n$ so the elements of $X$ and $W$ themselves can also be tensors.
+#
+# Define a function to carry out the tensor multiplication between these tensors:
+# $$
+# \begin{align}
+# N &= \nu(X, W) \\
+#   &= X \times W \\
+#   &= \Big[ x_1 \;\; x_2 \;\; ... \;\; x_n \Big] \times \begin{bmatrix}  w_1 \\ w_2 \\  \vdots \\  w_n \end{bmatrix} \\
+#   &= x_1 \times w_1 + x_2 \times w_2 + ... + x_n \times w_n
+# \end{align}
+# $$
+
+# %% codecell
+def matmulForward(X: Tensor, W: Tensor) -> Tensor:
+    '''Computes the forward pass of a matrix multiplication'''
+
+    assert X.shape[1] == W.shape[0], \
+        '''For matrix multiplication, with X.shape == (m, n) and W.shape == (r, p), it is required that n == r. Instead, the number of columns in the first tensor X is n == {0} and the number of rows in the second tensor is r == {1}'''.format(X.shape[1], W.shape[0])
+
+    # matrix multiplication
+    #N: Tensor = np.dot(X, W) # same as torch.matmul
+    N: Tensor = torch.matmul(X, W)
+
+    assert torch.equal(Tensor(np.dot(X, W)), N)
+
+    return N
+
+# %% codecell
+X = Tensor([[1,2,3], [4,3,1],[5,6,8], [1,1,4]])
+X
+# %% codecell
+assert X.shape == (4, 3)
+# %% codecell
+W: Tensor = Tensor([[1,2,2,3,5], [5,7,1,-3,0], [4,-4,2,2,0]])
+W
+# %% codecell
+assert W.shape == (3, 5)
+# %% codecell
+matmulForward(X, W)
+
+
+# %% codecell
+t1 = torch.arange(2*3).reshape(3,2); t1
+t2 = torch.arange(2*4).reshape(2,4) + 4; t2
+torch.matmul(t1, t2)
+t1 @ t2
+torch.mm(t1, t2)
+###
+n1 = np.arange(2*3).reshape(3,2); n1
+n2 = np.arange(2*4).reshape(2,4) + 4; n2
+torch.matmul(t1, t2)
+np.matmul(n1, n2)
+np.dot(n1, n2)
+t1
+t2
+16 + 30 + 48 + 70
+torch.matmul(t1, t2)
+torch.bmm(t1, t2)
+t1 @ t2
+n1
+14 + 32 + 3*18
+n2
+np.dot(n1, n2)
+
+# %% markdown
+# ## Derivatives of Functions with Multiple Tensor Inputs
