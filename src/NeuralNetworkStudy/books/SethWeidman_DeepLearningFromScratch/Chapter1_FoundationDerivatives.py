@@ -318,7 +318,7 @@ def chainFunctions(chain: Chain, x: Tensor) -> Tensor:
 
 
 # %% codecell
-def chainAccumulate(chain: Chain, x: Tensor)-> List[Tensor]:
+def chainAcc_OneInputTensorFunc(chain: Chain, x: Tensor)-> List[Tensor]:
 
      head, *tail = chain
      acc: Tensor = head(x)
@@ -339,17 +339,17 @@ from functools import reduce
 from operator import mul
 
 
-def forwardPass(chain: Chain, x:Tensor) -> List[Tensor]:
+def forwardPass_OneInputTensorFunc(chain: Chain, x:Tensor) -> List[Tensor]:
      '''Forward pass: function composition calculations while keeping the results stored.'''
      # Calculating function compositions, but not including the last function in the list.
-     forwardNestings: List[Tensor] = chainAccumulate(chain[0: len(chain) - 1], x)
+     forwardNestings: List[Tensor] = chainAcc_OneInputTensorFunc(chain[0: len(chain) - 1], x)
 
      # Add x on top so result is same length as chain, for backward pass's
      # convenience.
      return  [x] + forwardNestings
 
 
-def backwardPass(chain: Chain, forwards: List[Tensor]) -> List[Tensor]:
+def backwardPass_OneInputTensorFunc(chain: Chain, forwards: List[Tensor]) -> List[Tensor]:
 
      derivList: List[Tensor] = list()
 
@@ -365,16 +365,16 @@ def backwardPass(chain: Chain, forwards: List[Tensor]) -> List[Tensor]:
 
      return reduce(mul, derivList)
 
-def chainDeriv(chain: Chain, x: Tensor) -> List[Tensor]:
+def chainDeriv_OneInputTensorFunc(chain: Chain, X: Tensor) -> List[Tensor]:
      # Result of the forward function composition: where n = length(chain), and:
      # f_0 = chain[0]
      # ...
      # f_n-1 = chain[n-1]
      # ... the last element in the forward compositions list tensor is f_n-1( f_n-2(... f_2 (f_1 (f_0 (x)))...))
-     forwardCompositions: List[Tensor] = forwardPass(chain, x)
+     forwardCompositions: List[Tensor] = forwardPass_OneInputTensorFunc(chain, X)
 
      # Apply the chain rule: calculate derivatives and multiply them as per chain rule to get the result tensor.
-     chainRuleResult: List[Tensor] = backwardPass(chain, forwardCompositions)
+     chainRuleResult: List[Tensor] = backwardPass_OneInputTensorFunc(chain, forwardCompositions)
 
      return chainRuleResult
 
@@ -386,11 +386,11 @@ chain: List[TensorFunction] = [leakyRelu, sigmoid, square, cubic, quartic, quint
 
 # %% codecell
 
-assert torch.equal(chainDeriv(chain[0:3], x), chainDerivThree(chain[0:3], x))
+assert torch.equal(chainDeriv_OneInputTensorFunc(chain[0:3], x), chainDerivThree(chain[0:3], x))
 assert torch.equal(chainFunctions(chain[0:3], x), chainThreeFunctions(chain[0:3], x))
 
 # %% codecell
-chainDeriv(chain[0:3], x)
+chainDeriv_OneInputTensorFunc(chain[0:3], x)
 # %% codecell
 chainDerivThree(chain[0:3], x)
 
@@ -414,7 +414,7 @@ def plotChain(ax, chain: Chain, inputRange: Tensor) -> None:
 def plotChainDeriv(ax, chain: Chain, inputRange: Tensor) -> None:
      assert inputRange.ndim == 1, "Function requires a 1-dimensional tensor as inputRange"
 
-     outputRange: Tensor = chainDeriv(chain = chain, x = inputRange)
+     outputRange: Tensor = chainDeriv_OneInputTensorFunc(chain = chain, X= inputRange)
 
      ax.plot(inputRange, outputRange)
 
@@ -690,17 +690,17 @@ multipleInputsMultiply(x, y, sigma)
 #
 # Define the following:
 # $$
-# X = \Big[ x_1 \;\; x_2 \;\; ... \;\; x_n \Big]
+# X = \begin{pmatrix} x_1 & x_2 & ... & x_n \end{pmatrix}
 # $$
 #
 # $$
 # \begin{align}
-#   W &=\begin{bmatrix}
+#   W &=\begin{pmatrix}
 #       w_1 \\
 #       w_2 \\
 #       \vdots \\
 #       w_n
-#   \end{bmatrix}
+#   \end{pmatrix}
 # \end{align}
 # $$
 # where $x_i, w_i \in \mathbf{R}^n$ so the elements of $X$ and $W$ themselves can also be > 0-dim tensors.
@@ -710,7 +710,7 @@ multipleInputsMultiply(x, y, sigma)
 # \begin{align}
 # N &= \nu(X, W) \\
 #   &= X \times W \\
-#   &= \Big[ x_1 \;\; x_2 \;\; ... \;\; x_n \Big] \times \begin{bmatrix}  w_1 \\ w_2 \\  \vdots \\  w_n \end{bmatrix} \\
+#   &= \begin{pmatrix} x_1 & x_2 & ... & x_n \end{pmatrix} \times \begin{pmatrix}  w_1 \\ w_2 \\  \vdots \\  w_n \end{pmatrix} \\
 #   &= x_1 \times w_1 + x_2 \times w_2 + ... + x_n \times w_n
 # \end{align}
 # $$
@@ -720,7 +720,7 @@ multipleInputsMultiply(x, y, sigma)
 #
 # * np.dot: https://hyp.is/S3p4evJoEeqQlvsyite7fg/numpy.org/doc/stable/reference/generated/numpy.dot.html
 # %% codecell
-def matmulForward(X: Tensor, W: Tensor) -> Tensor:
+def matrixForward(X: Tensor, W: Tensor) -> Tensor:
     '''Computes the forward pass of a matrix multiplication'''
 
     assert X.shape[1] == W.shape[0], \
@@ -734,16 +734,284 @@ def matmulForward(X: Tensor, W: Tensor) -> Tensor:
 
     return N
 
-
-#
-#
 # %% markdown [markdown]
-# ## Derivatives of Functions with Multiple Tensor Inputs
-# Doing derivatives of tensors and matrices (2-dim tensors). Define:
+# ## Derivatives of Functions with Multiple Tensor Inputs (Gradient)
+# Doing derivatives of tensors and matrices (2-dim tensors).
+#
+# Define:
+# $$
+# X = \begin{pmatrix} x_1 & x_2 & ... & x_n \end{pmatrix}
+# $$
 #
 # $$
-# N = \nu(X, W)
+# \begin{align}
+#   W &=\begin{pmatrix}
+#       w_1 \\
+#       w_2 \\
+#       \vdots \\
+#       w_n
+#   \end{pmatrix}
+# \end{align}
 # $$
-# as in the above example.
+# where $x_i, w_i \in \mathbf{R}^n$ so the elements of $X$ and $W$ themselves can also be > 0-dim tensors.
+#
+# Define a function to carry out the tensor multiplication between these tensors:
+# $$
+# \begin{align}
+# N &= \nu(X, W) \\
+#   &= X \times W \\
+#   &= \begin{pmatrix} x_1 & x_2 & ... & x_n \end{pmatrix} \times \begin{pmatrix}  w_1 \\ w_2 \\  \vdots \\  w_n \end{pmatrix} \\
+#   &= x_1 \times w_1 + x_2 \times w_2 + ... + x_n \times w_n
+# \end{align}
+# $$
+
+# %% markdown [markdown]
+# #### Calculating Derivative with Respect to a Matrix (Gradient):
+# Since each $\frac {\partial \nu} {\partial x_i} = \frac{\partial}{\partial x_i}(\nu(X, W)) = \frac{\partial}{\partial x_i} (x_1 \times w_1 + x_2 \times w_2 + ... + x_i \times w_i + ... + x_n \times w_n) = w_i$,
+#
+# we have that $\frac{\partial \nu}{\partial X}$ is:
+#
+# $$
+# \begin{align}
+# \frac{\partial \nu}{\partial X}
+#   &= {\large \begin{pmatrix} \frac{\partial \nu}{\partial x_1} & \frac{\partial \nu}{\partial x_2} & ... & \frac{\partial \nu}{\partial x_n}  \end{pmatrix} } \\
+#   &= \begin{pmatrix} w_1 & w_2 & ... & w_n \end{pmatrix} \\
+#   &= W^T
+# \end{align}
+# $$
+# Similarly:
+# $$
+# \frac{\partial \nu}{\partial W}
+#   = {\large \begin{pmatrix} \frac{\partial \nu}{\partial w_1} \\ \frac{\partial \nu}{\partial w_2} \\ \vdots \\ \frac{\partial \nu}{\partial w_n}  \end{pmatrix} }
+#   = \begin{pmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{pmatrix}
+#   = X^T
+# $$
+# Therefore,
+# $$
+# \frac{\partial \nu}{\partial X} = W^T
+# $$
+#
+# $$
+# \frac{\partial \nu}{\partial W} = X^T
+# $$
+# %% codecell
+def matrixBackward_X(X: Tensor, W: Tensor) -> Tensor:
+    '''Computes the backward pass of a matrix multiplication with respect to the first argument.'''
+
+    ### Backward pass
+    dN_dX: Tensor = torch.transpose(W, 1, 0)
+
+    return dN_dX
+# %% markdown
+# Checking the numpy transpose correspondence with torch transpose:
+# %% codecell
+X: Tensor = torch.arange(2*3*4).reshape(3,2,4)
+W: Tensor = torch.arange(5*3*2).reshape(5,3,2)
+dN_dX: Tensor = matrixBackward_X(X, W)
+dN_dX.shape
 
 # %% codecell
+# Assert: No matter which order we specify dimensions in (1,0) or (0,1) since they jsut refer to the dimensions, no order necessary.
+assert torch.equal(dN_dX, torch.transpose(W, 0, 1))
+# Assert: numpy transpose equals torch transpose
+### NOTE: in numpy transpose, we need to specify ALL dimension IDs (1,0,2) even when just transposing through
+# some of the  dimensions (1,0).
+assert torch.equal(Tensor(dN_dX.numpy().transpose((1,0,2))), torch.transpose(dN_dX,1,0))
+
+
+# %% markdown
+# ## Vector Functions with Multiple Tensor Inputs (Extra Output Function)
+# Using $N = \nu(X, W)$ from previously, define the following function $s = f(X, W)$ which passes $\nu$ through an extra function $\sigma$::
+# $$
+# s = f(X, W) = \sigma(\nu(X, W)) = \sigma(x_1 \times w_1 + ... + x_n \times w_n)
+# $$
+
+# %% codecell
+
+def matrixForwardExtra(X: Tensor, W: Tensor, sigma: TensorFunction) -> Tensor:
+    ''' Computes the forward pass of a function involving matrix multiplication and one extra output function'''
+    # assert X.shape[1] == W.shape[0] # NOTE: this is only for vector inputs, if we want higher-dim inputs then the second-to last dim of W should equal the first dim of X.
+    isFirstPartEqualShape: bool = X.shape[:len(X.shape)-2] == W.shape[0:len(W.shape)-2]
+    canDoMatMul: bool = X.shape[-1] == W.shape[-2]
+
+    assert isFirstPartEqualShape and canDoMatMul
+
+    # Matrix multiplication:
+    N: Tensor = torch.matmul(X, W)
+
+    # Feeding the output of the matrix multiplication through sigma:
+    S: Tensor = sigma(N)
+
+    return S
+
+# %% codecell
+# Testing requirements for matrx multiplication: need all the dimensions the same, except the second last one of X and last one of W:
+X = torch.arange(7*8*2*4*5).reshape(2,8,5,7,4)
+W = torch.arange(3*8*2*4*5).reshape(2,8,5,4,3)
+sigma: TensorFunction = lambda t: t**3 + t
+
+
+assert matrixForwardExtra(X, W, sigma).shape == (2, 8, 5, 7, 3)
+
+X: Tensor = torch.arange(3*4*2*2).reshape(3,2,4,2)
+W: Tensor = torch.arange(3*4*2*2).reshape(3,2,2,4)
+sigma: TensorFunction = lambda t: t**3 + t
+
+
+assert matrixForwardExtra(X, W, sigma).shape == (3, 2, 4, 4)
+
+
+
+# %% markdown
+# ## Derivative of Functions with Multiple Tensor Inputs (Extra Function)
+# #### Abstract Calculation:
+# Since $s = f(X, W) = \sigma(\nu(X, Y))$, we apply the chain rule to find $\frac{\partial f}{\partial X}$:
+#
+# $$
+# \frac{\partial f}{\partial X}
+#   = \frac{\partial \sigma}{\partial \nu} \times \frac{\partial \nu}{\partial X}
+#   = \frac{\partial \sigma}{\partial \nu} \times W^T
+# $$
+#
+# #### Evaluation Calculation:
+# $$
+# \begin{align}
+# \frac{\partial f}{\partial X} \bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n}
+#   &= \frac{\partial \sigma}{\partial \nu} \bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n} \times \frac{\partial \nu}{\partial X}  \\
+#   &= \frac{\partial \sigma}{\partial \nu}\bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n} \times W^T \\
+#   &= \frac{\partial}{\partial \nu}(\sigma(\nu(X,W))) \bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n} \times W^T \\
+#   &= \frac{\partial}{\partial \nu}(\sigma(x_1 \times w_1 + ... + x_n \times w_n)) \times W^T
+# \end{align}
+# $$
+
+# %% codecell
+def matrixBackwardExtra_X(X: Tensor, W: Tensor, sigma: TensorFunction) -> Tensor:
+    '''Computes derivative of matrix function with respect to the first element X'''
+
+    isFirstPartEqualShape: bool = X.shape[:len(X.shape)-2] == W.shape[0:len(W.shape)-2]
+    canDoMatMul: bool = X.shape[-1] == W.shape[-2]
+
+    assert isFirstPartEqualShape and canDoMatMul
+
+    ### Forward pass: Matrix multiplication:
+    # X.shape = (...,n, m)
+    # W.shape = (...,m, p)
+    N: Tensor = torch.matmul(X, W)
+    # N.shape = (...,n, p)
+
+    # Feeding the output of the matrix multiplication through sigma:
+    S: Tensor = sigma(N)
+    # S.shape = N.shape = (...,n, p)
+
+
+
+    ### Backward pass: chain rule for matrix (df/dX) or (dS/dX)
+    dS_dN: Tensor = deriv(sigma, N)
+    # dS_dN.shape = N.shape = (...,n, p)
+
+    # Transpose along first two dimensions (this example assumes we are
+    # using 2-dim tensors which are matrices)
+    lastDimIndex: int = W.ndim - 1
+    secLastDimIndex: int = W.ndim - 2
+
+    # NOTE: need to convert to float tensor because dS_dN is a float tensor, after the approx derivative calculation,
+    # while W is just a long tensor and if we don't convert, we get runtime error. .
+    dN_dX: Tensor = torch.transpose(W, secLastDimIndex, lastDimIndex).type(torch.FloatTensor)
+    # torch.transpose(W, 1, 0)
+    ## dN_dX.shape = W^T.shape = (...,p,m)
+
+
+    # TODO: is the chain rule here always matrix multiplication or is it dot product (np.dot) as in the book (page 37)?
+    dS_dX: Tensor = torch.matmul(dS_dN, dN_dX)
+
+    assert dS_dX.shape == X.shape
+
+    return dS_dX ## shape == (...,n,m)
+
+
+# %% codecell
+
+X: Tensor = torch.arange(3*4*2*7).reshape(3,2,4,7)
+W: Tensor = torch.arange(3*5*2*7).reshape(3,2,7,5)
+sigma: TensorFunction = lambda t: t**3 + t
+
+
+assert matrixBackwardExtra_X(X, W, sigma).shape == (3,2,4,7)
+
+# %% codecell
+x: Tensor = torch.rand(2,10)
+w: Tensor = torch.rand(10,2)
+
+matrixBackwardExtra_X(x, w, sigmoid)
+# %% markdown
+# #### Testing if the derivatives computed are correct:
+# A simple test is to perturb the array and observe the resulting change in output. If we increase $x_{2,1,3}$ by 0.01 from -1.726 to -1.716 we should see an increase in the value porduced by the forward function of the *gradient of the output with respect to $x_{2,1,3}$*.
+# %% codecell
+
+def forwardTest(X: Tensor, W: Tensor, sigma: TensorFunction, indices: Tuple[int], increment: float) -> Tensor:
+
+    X[indices] = -1.726 # setting the starting value for sake of example
+    X_ = X.clone()
+
+    # Increasing the value at that point by 0.01
+    X_[indices] = X[indices] + increment
+
+    assert X[indices] == -1.726
+    assert X_[indices] == X[indices] + increment
+
+    return matrixForwardExtra(X_, W, sigma)
+
+
+# %% markdown
+# Testing with 2-dim tensors:
+# %% codecell
+X: Tensor = torch.arange(5*4).reshape(5,4).type(torch.FloatTensor)
+W: Tensor = torch.rand(4,5)
+
+indices = (2,1)
+increment = 0.01
+inc: Tensor = forwardTest(X, W, sigma, indices = indices, increment = increment)
+incNot: Tensor = forwardTest(X, W, sigma, indices = indices, increment = 0)
+
+print(sum(sum((inc - incNot)/increment)))
+#sum(sum(sum((inc - incNot)/0.01))) + 0.01
+
+print(matrixBackwardExtra_X(X, W, sigma)[indices])
+# %% markdown
+# Testing with 3-dim tensors:
+
+# %% codecell
+X: Tensor = torch.arange(5*4*3).reshape(5,4,3).type(torch.FloatTensor)
+W: Tensor = torch.rand(5,3,4)
+
+indices = (2,1,2)
+increment = 0.01
+inc: Tensor = forwardTest(X, W, sigma, indices = indices, increment = increment)
+incNot: Tensor = forwardTest(X, W, sigma, indices = indices, increment = 0)
+
+#sum(sum((inc - incNot)/0.01))
+print(sum(sum(sum((inc - incNot)/increment))) )
+
+print(matrixBackwardExtra_X(X, W, sigma)[indices])
+#matrixBackwardExtra_X(X, W, sigma)[2,1,3]
+# %% markdown
+# Testing with 4-dim tensors:
+
+# %% codecell
+X: Tensor = torch.arange(5*4*3*2).reshape(5,2,4,3).type(torch.FloatTensor)
+W: Tensor = torch.rand(5,2,3,1)
+
+indices = (2,1,2,0)
+increment = 0.01
+inc: Tensor = forwardTest(X, W, sigma, indices = indices, increment = increment)
+incNot: Tensor = forwardTest(X, W, sigma, indices = indices, increment = 0)
+
+#sum(sum((inc - incNot)/0.01))
+print(sum(sum(sum(sum((inc - incNot)/increment))) ))
+
+print(matrixBackwardExtra_X(X, W, sigma)[indices])
+
+
+
+# %% markdown
+# ## Computation Graph with 2D Matrix Inputs
