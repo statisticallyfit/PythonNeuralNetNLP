@@ -1014,7 +1014,7 @@ print(matrixBackwardExtra_X(X, W, sigma)[indices])
 
 ## Computation Graph with 2D Matrix Inputs
 # %% markdown
-# ## Functions with Multiple Matrix Inputs:
+# ## Functions with Multiple Matrix Inputs: (Forward Pass) Lambda Sum
 # Define the following, where $X$ and $W$ are now 2D matrices instead of higher-dim tensors (letting $X$ be $n \times m$ and $W$ be $m \times p$):
 # $$
 # \begin{align}
@@ -1109,9 +1109,8 @@ print(matrixBackwardExtra_X(X, W, sigma)[indices])
 # \end{pmatrix}
 # \end{align}
 # $$
-
-# %% markdown
-# 3. Defining a $\lambda$ function to sum up the elements in the matrix to find the total effect of changing each element of a matrix:
+#
+# 3. Defining a $\Lambda$ function to sum up the elements in the matrix to find the total effect of changing each element of a matrix:
 #
 # $$
 # \begin{align}
@@ -1128,9 +1127,40 @@ print(matrixBackwardExtra_X(X, W, sigma)[indices])
 # &= \sigma(XW_{11}) + ... + \sigma(XW_{1p}) + \sigma(XW_{21}) + ... + \sigma(XW_{2p}) + ... ... ... + \sigma(XW_{n1}) + ... + \sigma(XW_{np})
 # \end{align}
 # $$
+# %% codecell
+def matrixForwardSum(X: Tensor, W: Tensor, sigma: TensorFunction) -> float:
+     '''Computes the result of the forward pass of the function L with input tensors X and W and function sigma
+
+     X.shape == (..., n, m)
+     W.shape == (..., m, p)
+     '''
+
+     isFirstPartEqualShape: bool = X.shape[:len(X.shape)-2] == W.shape[0:len(W.shape)-2]
+     canDoMatMul: bool = X.shape[-1] == W.shape[-2]
+
+     assert isFirstPartEqualShape and canDoMatMul
+
+     # Matrix multiplication:
+     N: Tensor = torch.matmul(X, W)
+     ## N.shape == (..., n,p)
+
+     # Feeding the output of the matrix multiplication through sigma:
+     S: Tensor = sigma(N)
+     ## S.shape == (..., n, p)
+
+     # Sum all the elements : L = lambda(S(N(X,Y)))
+     L: Tensor = torch.sum(S)
+     ## L.shape == (1,1) (0 - dim tensor or constant)
+
+     return L # shape 1x1
+
+
+
 # %% markdown
-# ## Derivative of Functions with Multiple Matrix Inputs
-# We have a number $L$ and we want to find out the gradient of $L$ with respect to $X$ and $W$; how much changing *each element* of these input matrices (so each $x_{ij}$ and each $w_{ij}$) would change $L$. We can write this as:
+# ## Derivative of Functions with Multiple Matrix Inputs: (Backward Pass) Lambda Sum
+# We have a number $L$ and we want to find out the gradient of $L$ with respect to $X$ and $W$; how much changing *each element* of these input matrices (so each $x_{ij}$ and each $w_{ij}$) would change $L$.
+#
+# **Direct way:**
 #
 # $$
 # \large
@@ -1141,3 +1171,154 @@ print(matrixBackwardExtra_X(X, W, sigma)[indices])
 #   \frac{\partial \Lambda}{\partial x_{n1}} & \frac{\partial \Lambda}{\partial x_{n2}} & ... & \frac{\partial \Lambda}{\partial x_{nm}}
 # \end{pmatrix}
 # $$
+#
+# **Chain Rule way (Backward pass):**
+# $$
+# \frac{\partial \Lambda}{\partial X} = \frac{\partial N}{\}
+# $$
+
+# TODO: continue from medium article + waterloo bit (tabs recorded in snagit) to explain starting from Jacobian concept.
+
+
+
+
+# %% codecell
+
+# TODO: equivalent for the matrix W (understand why dot first then matmul in the chain rule)
+def matrixBackwardSum_X(X: Tensor, W: Tensor, sigma: TensorFunction) -> Tensor:
+    '''Computes derivative of matrix function with respect to the first element X'''
+
+    isFirstPartEqualShape: bool = X.shape[:len(X.shape)-2] == W.shape[0:len(W.shape)-2]
+    canDoMatMul: bool = X.shape[-1] == W.shape[-2]
+
+    assert isFirstPartEqualShape and canDoMatMul
+
+    ### Forward pass: Matrix multiplication:
+    # X.shape = (...,n, m)
+    # W.shape = (...,m, p)
+    N: Tensor = torch.matmul(X, W)
+    # N.shape = (...,n, p)
+
+    # Feeding the output of the matrix multiplication through sigma:
+    S: Tensor = sigma(N)
+    # S.shape = N.shape = (...,n, p)
+
+    # Sum all the elements:
+    L: Tensor = torch.sum(S)
+    # L.shape == (1 x 1)
+
+
+
+    ### Backward pass: chain rule for matrix (df/dX) or (dS/dX)
+    dL_dS: Tensor = torch.ones(S.shape)
+    # dL_dS.shape == S.shape == (...,n, p)
+
+    dS_dN: Tensor = deriv(sigma, N)
+    # dS_dN.shape = N.shape = (...,n, p)
+
+    # TODO FIGURE OUT why we have element-wise multiplication here:
+    dL_dN: Tensor = dL_dS * dS_dN
+    # dL_dN.shape == (...,n, p)
+
+    # Transpose along first two dimensions (this example assumes we are
+    # using 2-dim tensors which are matrices)
+
+    # NOTE: need to convert to float tensor because dS_dN is a float tensor, after the approx derivative calculation,
+    # while W is just a long tensor and if we don't convert, we get runtime error. .
+    dN_dX: Tensor = torch.transpose(W, W.ndim - 2, W.ndim - 1).type(torch.FloatTensor)
+    # torch.transpose(W, 1, 0)
+    ## dN_dX.shape = W^T.shape = (...,p,m)
+
+
+    # TODO: why matrix multiplication here and why element wise multiply above?
+    dL_dX: Tensor = torch.matmul(dS_dN, dN_dX)
+    # dL_dX.shape == (..., n,m)
+
+    assert dL_dX.shape == X.shape
+
+    return dL_dX ## shape == (...,n,m)
+
+
+# %% codecell
+
+####### TODO here -------------------------------------------------------------
+
+X: Tensor = torch.arange(3*4*2*7).reshape(3,2,4,7)
+W: Tensor = torch.arange(3*5*2*7).reshape(3,2,7,5)
+sigma: TensorFunction = lambda t: t**3 + t
+
+
+assert matrixBackwardExtra_X(X, W, sigma).shape == (3,2,4,7)
+
+# %% codecell
+x: Tensor = torch.rand(2,10)
+w: Tensor = torch.rand(10,2)
+
+matrixBackwardExtra_X(x, w, sigmoid)
+# %% markdown
+# #### Testing if the derivatives computed are correct:
+# A simple test is to perturb the array and observe the resulting change in output. If we increase $x_{2,1,3}$ by 0.01 from -1.726 to -1.716 we should see an increase in the value porduced by the forward function of the *gradient of the output with respect to $x_{2,1,3}$*.
+# %% codecell
+
+def forwardTest(X: Tensor, W: Tensor, sigma: TensorFunction, indices: Tuple[int], increment: float) -> Tensor:
+
+    X[indices] = -1.726 # setting the starting value for sake of example
+    X_ = X.clone()
+
+    # Increasing the value at that point by 0.01
+    X_[indices] = X[indices] + increment
+
+    assert X[indices] == -1.726
+    assert X_[indices] == X[indices] + increment
+
+    return matrixForwardExtra(X_, W, sigma)
+
+
+# %% markdown
+# Testing with 2-dim tensors:
+# %% codecell
+X: Tensor = torch.arange(5*4).reshape(5,4).type(torch.FloatTensor)
+W: Tensor = torch.rand(4,5)
+
+indices = (2,1)
+increment = 0.01
+inc: Tensor = forwardTest(X, W, sigma, indices = indices, increment = increment)
+incNot: Tensor = forwardTest(X, W, sigma, indices = indices, increment = 0)
+
+print(sum(sum((inc - incNot)/increment)))
+#sum(sum(sum((inc - incNot)/0.01))) + 0.01
+print(((inc - incNot)/increment).sum())
+print(matrixBackwardExtra_X(X, W, sigma)[indices])
+# %% markdown
+# Testing with 3-dim tensors:
+
+# %% codecell
+X: Tensor = torch.arange(5*4*3).reshape(5,4,3).type(torch.FloatTensor)
+W: Tensor = torch.rand(5,3,4)
+
+indices = (2,1,2)
+increment = 0.01
+inc: Tensor = forwardTest(X, W, sigma, indices = indices, increment = increment)
+incNot: Tensor = forwardTest(X, W, sigma, indices = indices, increment = 0)
+
+#sum(sum((inc - incNot)/0.01))
+print(sum(sum(sum((inc - incNot)/increment))) )
+
+print(matrixBackwardExtra_X(X, W, sigma)[indices])
+#matrixBackwardExtra_X(X, W, sigma)[2,1,3]
+# %% markdown
+# Testing with 4-dim tensors:
+
+# %% codecell
+X: Tensor = torch.arange(5*4*3*2).reshape(5,2,4,3).type(torch.FloatTensor)
+W: Tensor = torch.rand(5,2,3,1)
+
+indices = (2,1,2,0)
+increment = 0.01
+inc: Tensor = forwardTest(X, W, sigma, indices = indices, increment = increment)
+incNot: Tensor = forwardTest(X, W, sigma, indices = indices, increment = 0)
+
+#sum(sum((inc - incNot)/0.01))
+print(sum(sum(sum(sum((inc - incNot)/increment))) ))
+
+print(matrixBackwardExtra_X(X, W, sigma)[indices])
