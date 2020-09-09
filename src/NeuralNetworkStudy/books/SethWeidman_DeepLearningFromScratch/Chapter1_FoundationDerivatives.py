@@ -597,7 +597,7 @@ def multipleInputsMultiply(x: Tensor, y: Tensor, sigma: TensorFunction) -> float
 # $$
 # f(x,y) = \sigma(\beta(x,y)) = \sigma(x * y)
 # $$
-# %% markdown [markdown]
+#
 # 1. Derivative with respect to $x$ is:
 #
 # Leibniz (simple) Notation:
@@ -684,7 +684,6 @@ deriv(sigma, beta)
 multipleInputsMultiply(x, y, sigma)
 
 
-
 # %% markdown [markdown]
 # ## Functions with Multiple Matrix Inputs
 # Here, inputs are multi-dimensional tensors, not just 1-dim tensors as in the above two examples.
@@ -704,7 +703,7 @@ multipleInputsMultiply(x, y, sigma)
 #   \end{bmatrix}
 # \end{align}
 # $$
-# where $x_i, w_i \in \mathbf{R}^n$ so the elements of $X$ and $W$ themselves can also be tensors.
+# where $x_i, w_i \in \mathbf{R}^n$ so the elements of $X$ and $W$ themselves can also be > 0-dim tensors.
 #
 # Define a function to carry out the tensor multiplication between these tensors:
 # $$
@@ -715,7 +714,11 @@ multipleInputsMultiply(x, y, sigma)
 #   &= x_1 \times w_1 + x_2 \times w_2 + ... + x_n \times w_n
 # \end{align}
 # $$
-
+#
+# NOTE: difference between np.matmul and np.dot:
+# * np.matmul: https://hyp.is/YXQQAPJoEeq_U1-RXfLGDQ/numpy.org/doc/stable/reference/generated/numpy.matmul.html
+#
+# * np.dot: https://hyp.is/S3p4evJoEeqQlvsyite7fg/numpy.org/doc/stable/reference/generated/numpy.dot.html
 # %% codecell
 def matmulForward(X: Tensor, W: Tensor) -> Tensor:
     '''Computes the forward pass of a matrix multiplication'''
@@ -731,10 +734,16 @@ def matmulForward(X: Tensor, W: Tensor) -> Tensor:
 
     return N
 
-# NOTE: difference between np.matmul and np.dot:
-# * np.matmul: https://hyp.is/YXQQAPJoEeq_U1-RXfLGDQ/numpy.org/doc/stable/reference/generated/numpy.matmul.html
-# * np.dot: https://hyp.is/S3p4evJoEeqQlvsyite7fg/numpy.org/doc/stable/reference/generated/numpy.dot.html
+
 #
 #
 # %% markdown [markdown]
 # ## Derivatives of Functions with Multiple Tensor Inputs
+# Doing derivatives of tensors and matrices (2-dim tensors). Define:
+#
+# $$
+# N = \nu(X, W)
+# $$
+# as in the above example.
+
+# %% codecell
