@@ -1012,6 +1012,132 @@ print(sum(sum(sum(sum((inc - incNot)/increment))) ))
 print(matrixBackwardExtra_X(X, W, sigma)[indices])
 
 
+## Computation Graph with 2D Matrix Inputs
+# %% markdown
+# ## Functions with Multiple Matrix Inputs:
+# Define the following, where $X$ and $W$ are now 2D matrices instead of higher-dim tensors (letting $X$ be $n \times m$ and $W$ be $m \times p$):
+# $$
+# \begin{align}
+# X &= \begin{pmatrix}
+# x_{11} & x_{12} & ... & x_{1m} \\
+# x_{21} & x_{22} & ... & x_{2m} \\
+# \vdots & \vdots & ... & \vdots \\
+# x_{n1} & x_{n2} & ... & x_{nm}
+# \end{pmatrix}
+# \end{align}
+# $$
+#
+# $$
+# \begin{align}
+# W &= \begin{pmatrix}
+# w_{11} & w_{12} & ... & w_{1p} \\
+# w_{21} & w_{22} & ... & w_{2p} \\
+# \vdots & \vdots & ... & \vdots \\
+# w_{m1} & w_{m2} & ... & w_{mp}
+# \end{pmatrix}
+# \end{align}
+# $$
+# %% markdown
+# Define some straightforward operations on these matrices:
+#
+# 1. Multiply these matrices together using $N = \nu(X, W)$ and denoting the row $i$ and column $j$ in the resulting matrix as $(XW)_{ij}$:
+#
+# $$
+# \begin{align}
+# N &= \nu(X,W) \\
+# &= X \times W \\
+# &= \begin{pmatrix}
+#   x_{11} \cdot w_{11} + x_{12} \cdot w_{21} + ... + x_{1m} \cdot w_{m1} &
+#   x_{11} \cdot w_{12} + x_{12} \cdot w_{22} + ... + x_{1m} \cdot w_{m2} &
+#   ... &
+#   x_{11} \cdot w_{1p} + x_{12} \cdot w_{2p} + ... + x_{1m} \cdot w_{mp} \\
+#
+#   x_{21} \cdot w_{11} + x_{22} \cdot w_{21} + ... + x_{2m} \cdot w_{m1} &
+#   x_{21} \cdot w_{12} + x_{22} \cdot w_{22} + ... + x_{2m} \cdot w_{m2} &
+#   ... &
+#   x_{21} \cdot w_{1p} + x_{22} \cdot w_{2p} + ... + x_{2m} \cdot w_{mp} \\
+#
+#   \vdots & \vdots & \vdots & \vdots \\
+#
+#   x_{n1} \cdot w_{11} + x_{n2} \cdot w_{21} + ... + x_{nm} \cdot w_{m1} &
+#   x_{n1} \cdot w_{12} + x_{n2} \cdot w_{22} + ... + x_{nm} \cdot w_{m2} &
+#   ... &
+#   x_{n1} \cdot w_{1p} + x_{n2} \cdot w_{2p} + ... + x_{nm} \cdot w_{mp} \\
+# \end{pmatrix} \\
+#
+# &= \begin{pmatrix}
+#   (XW)_{11} &   (XW)_{12} & ... & (XW)_{1p} \\
+#   (XW)_{21} &   (XW)_{22} & ... & (XW)_{2p} \\
+#   \vdots & \vdots & \vdots & \vdots \\
+#   (XW)_{n1} &   (XW)_{n2} & ... & (XW)_{np}
+# \end{pmatrix}
+# \end{align}
+# $$
+#
+#
+# 2. Feed $N$ through some differentiable function $\sigma$ and define $S = \sigma(N)$ (just applying $\sigma$ to every element of the matrix operation defined by $N$):
+#
+# $$
+# \begin{align}
+# S &= \sigma(N) \\
+#  &= \sigma(\nu(X, W)) \\
+#  &= \sigma(X \times W) \\
+#  &= \begin{pmatrix}
+#   \sigma \Big( x_{11} \cdot w_{11} + x_{12} \cdot w_{21} + ... + x_{1m} \cdot w_{m1} \Big) &
+#   \sigma \Big( x_{11} \cdot w_{12} + x_{12} \cdot w_{22} + ... + x_{1m} \cdot w_{m2} \Big) &
+#   ... &
+#   \sigma \Big( x_{11} \cdot w_{1p} + x_{12} \cdot w_{2p} + ... + x_{1m} \cdot w_{mp} \Big) \\
+#
+#   \sigma \Big( x_{21} \cdot w_{11} + x_{22} \cdot w_{21} + ... + x_{2m} \cdot w_{m1} \Big) &
+#   \sigma \Big( x_{21} \cdot w_{12} + x_{22} \cdot w_{22} + ... + x_{2m} \cdot w_{m2} \Big) &
+#   ... &
+#   \sigma \Big( x_{21} \cdot w_{1p} + x_{22} \cdot w_{2p} + ... + x_{2m} \cdot w_{mp} \Big) \\
+#
+#   \vdots & \vdots & \vdots & \vdots \\
+#
+#   \sigma \Big( x_{n1} \cdot w_{11} + x_{n2} \cdot w_{21} + ... + x_{nm} \cdot w_{m1} \Big) &
+#   \sigma \Big( x_{n1} \cdot w_{12} + x_{n2} \cdot w_{22} + ... + x_{nm} \cdot w_{m2} \Big) &
+#   ... &
+#   \sigma \Big( x_{n1} \cdot w_{1p} + x_{n2} \cdot w_{2p} + ... + x_{nm} \cdot w_{mp} \Big) \\
+# \end{pmatrix} \\
+#
+# &= \begin{pmatrix}
+#   \sigma \Big( (XW)_{11} \Big) &   \sigma \Big( (XW)_{12} \Big) & ... & \sigma \Big( (XW)_{1p} \Big) \\
+#   \sigma \Big( (XW)_{21} \Big) &   \sigma \Big( (XW)_{22} \Big) & ... & \sigma \Big( (XW)_{2p} \Big) \\
+#   \vdots & \vdots & \vdots & \vdots \\
+#   \sigma \Big( (XW)_{n1} \Big) &   \sigma \Big( (XW)_{n2} \Big) & ... & \sigma \Big( (XW)_{np} \Big)
+# \end{pmatrix}
+# \end{align}
+# $$
 
 # %% markdown
-# ## Computation Graph with 2D Matrix Inputs
+# 3. Defining a $\lambda$ function to sum up the elements in the matrix to find the total effect of changing each element of a matrix:
+#
+# $$
+# \begin{align}
+# L &= \Lambda(\sigma(N(X, W))) \\
+#   &= \Lambda \begin{pmatrix}
+# \begin{pmatrix}
+#   \sigma \Big( (XW)_{11} \Big) &   \sigma \Big( (XW)_{12} \Big) & ... & \sigma \Big( (XW)_{1p} \Big) \\
+#   \sigma \Big( (XW)_{21} \Big) &   \sigma \Big( (XW)_{22} \Big) & ... & \sigma \Big( (XW)_{2p} \Big) \\
+#   \vdots & \vdots & \vdots & \vdots \\
+#   \sigma \Big( (XW)_{n1} \Big) &   \sigma \Big( (XW)_{n2} \Big) & ... & \sigma \Big( (XW)_{np} \Big)
+# \end{pmatrix}
+# \end{pmatrix} \\
+#
+# &= \sigma(XW_{11}) + ... + \sigma(XW_{1p}) + \sigma(XW_{21}) + ... + \sigma(XW_{2p}) + ... ... ... + \sigma(XW_{n1}) + ... + \sigma(XW_{np})
+# \end{align}
+# $$
+# %% markdown
+# ## Derivative of Functions with Multiple Matrix Inputs
+# We have a number $L$ and we want to find out the gradient of $L$ with respect to $X$ and $W$; how much changing *each element* of these input matrices (so each $x_{ij}$ and each $w_{ij}$) would change $L$. We can write this as:
+#
+# $$
+# \large
+# \frac{\partial \Lambda}{\partial X} = \begin{pmatrix}
+#   \frac{\partial \Lambda}{\partial x_{11}} & \frac{\partial \Lambda}{\partial x_{12}} & ... & \frac{\partial \Lambda}{\partial x_{1m}} \\
+#   \frac{\partial \Lambda}{\partial x_{21}} & \frac{\partial \Lambda}{\partial x_{22}} & ... & \frac{\partial \Lambda}{\partial x_{2m}} \\
+#   \vdots & \vdots & \vdots & \vdots \\
+#   \frac{\partial \Lambda}{\partial x_{n1}} & \frac{\partial \Lambda}{\partial x_{n2}} & ... & \frac{\partial \Lambda}{\partial x_{nm}}
+# \end{pmatrix}
+# $$
