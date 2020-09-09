@@ -731,41 +731,10 @@ def matmulForward(X: Tensor, W: Tensor) -> Tensor:
 
     return N
 
-# %% codecell
-X = Tensor([[1,2,3], [4,3,1],[5,6,8], [1,1,4]])
-X
-# %% codecell
-assert X.shape == (4, 3)
-# %% codecell
-W: Tensor = Tensor([[1,2,2,3,5], [5,7,1,-3,0], [4,-4,2,2,0]])
-W
-# %% codecell
-assert W.shape == (3, 5)
-# %% codecell
-matmulForward(X, W)
-
-
-# %% codecell
-#t1 = torch.arange(2*3*4).reshape(3,2,4); t1
-#t2 = torch.arange(2*3*4).reshape(3, 4, 2) -4; t2
-###
-#n1 = np.arange(2*3*4).reshape(3,2,4); n1
-#n2 = np.arange(2*3*4).reshape(3,4,2) - 4; n2
-
-# %% codecell
-t1 = torch.arange(2*3).reshape(3,2); t1
-# %% codecell
-t2 = torch.arange(2*4).reshape(2,4) -4; t2
-# %% codecell
-n1 = np.arange(2*3).reshape(3,2); n1
-# %% codecell
-n2 = np.arange(2*4).reshape(2,4) -4; n2
-# %% codecell
-np.matmul(n1, n2)
-# %% codecell
-np.dot(n1, n2)
-# %% codecell
-t1.matmul(t2)
-
+# NOTE: difference between np.matmul and np.dot:
+# * np.matmul: https://hyp.is/YXQQAPJoEeq_U1-RXfLGDQ/numpy.org/doc/stable/reference/generated/numpy.matmul.html
+# * np.dot: https://hyp.is/S3p4evJoEeqQlvsyite7fg/numpy.org/doc/stable/reference/generated/numpy.dot.html
+#
+#
 # %% markdown [markdown]
 # ## Derivatives of Functions with Multiple Tensor Inputs
