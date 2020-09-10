@@ -1189,21 +1189,142 @@ def matrixForwardSum(X: Tensor, W: Tensor, sigma: TensorFunction) -> float:
 # $$
 # \mathbf{y} = \mathbf{f}(\mathbf{x})
 # $$
-# Information about the rate of change of $\mathbf{y}$ with respect to $\mathbf{x}$ is contained in the various partial derivatives $\frac{\partial y_i}{\partial x_j}$ for $1 \leq i \leq m, 1 \leq j \leq n$ and is conveniently organized into an $m \times n$ matrix $\frac{\partial \mathbf{y}}{\partial \mathbf{x}}$ called the **Jacobian matrix** of the transformation $\mathbf{f}$:
+# Information about the rate of change of $\mathbf{y}$ with respect to $\mathbf{x}$ is contained in the various partial derivatives $\frac{\partial y_i}{\partial x_j}$ for $1 \leq i \leq m, 1 \leq j \leq n$ and is conveniently organized into an $m \times n$ matrix $\frac{\partial \mathbf{y}}{\partial \mathbf{x}}$ called the **Jacobian matrix** of the transformation $\mathbf{f}$. The Jacobian matrix is the collection of all $m \times n$ possible partial derivatives ($m$ rows and $n$ columns), which is the stack of $m$ gradients with respect to $\mathbf{x}$:
 # $$
-# \begin{align}
 # \Large
-# \frac{\partial \mathbf{f}}{\partial \mathbf{x}} = \begin{pmatrix}
-#   \frac{\partial y_1}{\partial x_1} & \frac{\partial y_1}{\partial x_2} & ... & \frac{\partial y_1}{\partial x_n} \\
-#   \frac{\partial y_2}{\partial x_1} & \frac{\partial y_2}{\partial x_2} & ... & \frac{\partial y_2}{\partial x_n} \\
+# \begin{align}
+# \frac{\partial \mathbf{y}}{\partial \mathbf{x}} &= \begin{pmatrix}
+#    \nabla f_1(\mathbf{x}) \\
+#    \nabla f_2(\mathbf{x}) \\
+#    \vdots \\
+#    \nabla f_m(\mathbf{x})
+# \end{pmatrix}
+#
+# = \begin{pmatrix}
+#    \frac{\partial}{\partial \mathbf{x}} f_1(\mathbf{x}) \\
+#    \frac{\partial}{\partial \mathbf{x}} f_2(\mathbf{x}) \\
+#    \vdots \\
+#    \frac{\partial}{\partial \mathbf{x}} f_m(\mathbf{x})
+# \end{pmatrix}
+#
+# = \begin{pmatrix}
+#   \frac{\partial}{\partial x_1} f_1(\mathbf{x}) & \frac{\partial}{\partial x_2} f_1(\mathbf{x}) & ... & \frac{\partial}{\partial x_n} f_1(\mathbf{x}) \\
+#   \frac{\partial}{\partial x_1} f_2(\mathbf{x}) & \frac{\partial}{\partial x_2} f_2(\mathbf{x}) & ... & \frac{\partial}{\partial x_n} f_2(\mathbf{x}) \\
 #   \vdots & \vdots &  & \vdots \\
-#   \frac{\partial y_m}{\partial x_1} & \frac{\partial y_m}{\partial x_2} & ... & \frac{\partial y_m}{\partial x_n}
+#   \frac{\partial}{\partial x_1} f_m(\mathbf{x}) & \frac{\partial}{\partial x_2} f_m(\mathbf{x}) & ... & \frac{\partial}{\partial x_n} f_m(\mathbf{x})
+# \end{pmatrix} \\
+#
+# \frac{\partial \mathbf{y}}{\partial \mathbf{x}} &= \begin{pmatrix}
+#   \frac{\partial f_1}{\partial x_1} & \frac{\partial f_1}{\partial x_2} & ... & \frac{\partial f_1}{\partial x_n} \\
+#   \frac{\partial f_2}{\partial x_1} & \frac{\partial f_2}{\partial x_2} & ... & \frac{\partial f_2}{\partial x_n} \\
+#   \vdots & \vdots &  & \vdots \\
+#   \frac{\partial f_m}{\partial x_1} & \frac{\partial f_m}{\partial x_2} & ... & \frac{\partial f_m}{\partial x_n}
 # \end{pmatrix}
 # \end{align}
 # $$
 # This linear transformation represented by the Jacobian matrix is called **the derivative** of the transformation $\mathbf{f}$.
 #
+# Each $\frac{\partial f_i}{\partial \mathbf{x}} is a horizontal $n$-vector because the partial derivative is with respect to a vector $\mathbf{x}$ whose length is $n = |\mathbf{x}|$, making the width of the Jacobian $n$ (there are $n$ parameters that are variable, each potentially changing the function's value).
+#
+
+# %% markdown
 # ### Background: Chain Rule for Matrices
+# In general the Jacobian matrix of the composition of two vector-valued functions of a vector variable is the matrix product of their Jacobian matrices.
+#
+# To see this let $\mathbf{z} = \mathbf{f}(\mathbf{y})$ be a transformation from $\mathbb{R}^k$ to $\mathbb{R}^m$ given by:
+# $$
+# z_1 = f_1 \big(y_1,y_2,...,y_k \big) \\
+# z_2 = f_2 \big(y_1,y_2,...,y_k \big) \\
+# \vdots \\
+# z_k = f_m \big(y_1,y_2,...,y_k \big)
+# $$
+# which has the $m \times k$ Jacobian matrix:
+# $$
+# \Large
+# \frac{\partial \mathbf{f}}{\partial \mathbf{y}} = \begin{pmatrix}
+#   \frac{\partial f_1}{\partial y_1} & \frac{\partial f_1}{\partial y_2} & ... & \frac{\partial f_1}{\partial y_k} \\
+#   \frac{\partial f_2}{\partial y_1} & \frac{\partial f_2}{\partial y_2} & ... & \frac{\partial f_2}{\partial y_k} \\
+#   \vdots & \vdots &  & \vdots \\
+#   \frac{\partial f_m}{\partial y_1} & \frac{\partial f_m}{\partial y_2} & ... & \frac{\partial f_m}{\partial y_k}
+# \end{pmatrix}
+# $$
+#
+
+# and let $\mathbf{y} = \mathbf{g}(\mathbf{x})$ be another such transformation from $\mathbb{R}^n$ to $\mathbb{R}^k$ given by:
+#
+# $$
+# y_1 = g_1 \big(x_1,x_2,...,x_n \big) \\
+# y_2 = g_2 \big(x_1,x_2,...,x_n \big) \\
+# \vdots \\
+# y_k = g_k \big(x_1,x_2,...,x_n \big)
+# $$
+# which has the $k \times n$ Jacobian matrix:
+# $$
+# \Large
+# \frac{\partial \mathbf{g}}{\partial \mathbf{x}} = \begin{pmatrix}
+#   \frac{\partial g_1}{\partial x_1} & \frac{\partial g_1}{\partial x_2} & ... & \frac{\partial g_1}{\partial x_n} \\
+#   \frac{\partial g_2}{\partial x_1} & \frac{\partial g_2}{\partial x_2} & ... & \frac{\partial g_2}{\partial x_n} \\
+#   \vdots & \vdots &  & \vdots \\
+#   \frac{\partial g_k}{\partial x_1} & \frac{\partial g_k}{\partial x_2} & ... & \frac{\partial g_k}{\partial x_n}
+# \end{pmatrix}
+# $$
+#
+# Then the composition $\mathbf{z} = (\mathbf{f} \circ \mathbf{g})(\mathbf{x}) = \mathbf{f}(\mathbf{g}(\mathbf{x}))$ given by :
+# $$
+# z_1 = f_1 \big( g_1 \big( x_1,...,x_n \big),..., g_k \big( x_1,...,x_n \big) \big) \\
+# z_2 = f_2 \big( g_1 \big( x_1,...,x_n \big),..., g_k \big( x_1,...,x_n \big) \big) \\
+# \vdots \\
+# z_k = f_m \big( g_1 \big( x_1,...,x_n \big),..., g_k \big( x_1,...,x_n \big) \big)
+# $$
+#
+# has, according to the Chain Rule, the $m \times n$ Jacobian matrix
+#
+# $$
+# \Large
+# \begin{align}
+#
+# \frac{\partial}{\partial \mathbf{x}} \mathbf{f} \big( \mathbf{g}(\mathbf{x}) \big) &= \frac{\partial \mathbf{f}}{\partial \mathbf{g}} \times \frac{\partial \mathbf{g}}{\partial \mathbf{x}} \\
+#
+# \begin{pmatrix}
+# \frac{\partial f_1}{\partial x_1} & \frac{\partial f_1}{\partial x_2} & ... & \frac{\partial f_1}{\partial x_n} \\
+# \frac{\partial f_2}{\partial x_1} & \frac{\partial f_2}{\partial x_2} & ... & \frac{\partial f_2}{\partial x_n} \\
+# \vdots & \vdots & & \vdots \\
+# \frac{\partial f_m}{\partial x_1} & \frac{\partial f_m}{\partial x_2} & ... & \frac{\partial f_m}{\partial x_n}
+# \end{pmatrix}
+#
+# &= \begin{pmatrix}
+# \frac{\partial f_1}{\partial g_1} & \frac{\partial f_1}{\partial g_2} & ... & \frac{\partial f_1}{\partial g_k} \\
+# \frac{\partial f_2}{\partial g_1} & \frac{\partial f_2}{\partial g_2} & ... & \frac{\partial f_2}{\partial g_k} \\
+# \vdots & \vdots & & \vdots \\
+# \frac{\partial f_m}{\partial g_1} & \frac{\partial f_m}{\partial g_2} & ... & \frac{\partial f_m}{\partial g_k}
+# \end{pmatrix}
+#
+# \times
+#
+# \begin{pmatrix}
+# \frac{\partial g_1}{\partial x_1} & \frac{\partial g_1}{\partial x_2} & ... & \frac{\partial g_1}{\partial x_n} \\
+# \frac{\partial g_2}{\partial x_1} & \frac{\partial g_2}{\partial x_2} & ... & \frac{\partial g_2}{\partial x_n} \\
+# \vdots & \vdots & & \vdots \\
+# \frac{\partial g_k}{\partial x_1} & \frac{\partial g_k}{\partial x_2} & ... & \frac{\partial g_k}{\partial x_n}
+# \end{pmatrix}
+#
+# \end{align}
+# $$
+# where $\times$ denotes matrix multiplication, and $m = |\mathbf{f}|, n = |\mathbf{x}|$ and $k = |\mathbf{g}|$.
+#
+#
+# **SOURCES:**
+# * R.A Adams - Calculus: A Complete Course (sections 12.5 and 12.6)
+# * Thomas Weir - Calculus (section 14.4)
+# * [Medium's blog post on "The Matrix Calculus you Need for Deep Learning"](https://medium.com/@rohitrpatil/the-matrix-calculus-you-need-for-deep-learning-notes-from-a-paper-by-terence-parr-and-jeremy-4f4263b7bb8)
+
+
+
+
+
+
+# %% markdown
+# ### Background: Chain Rule for Matrices (from Adams)
 # In general the Jacobian matrix of the composition of two vector-valued functions of a vector variable is the matrix product of their Jacobian matrices.
 #
 # To see this let $\mathbf{y} = \mathbf{f}(\mathbf{x})$ be a transformation from $\mathbb{R}^n$ to $\mathbb{R}^m$ as above and let $\mathbf{z} = \mathbf{g}(\mathbf{y})$ be another such transformation from $\mathbb{R}^m$ to $\mathbb{R}^k$ given by:
@@ -1227,11 +1348,53 @@ def matrixForwardSum(X: Tensor, W: Tensor, sigma: TensorFunction) -> float:
 # $$
 # Then the composition $\mathbf{z} = (\mathbf{g} \circ \mathbf{f})(\mathbf{x}) = \mathbf{g}(\mathbf{f}(\mathbf{x}))$ given by :
 # $$
-#
+# z_1 = g_1 \big( f_1 \big( x_1,...,x_n \big),..., f_m \big( x_1,...,x_n \big) \big) \\
+# z_2 = g_2 \big( f_1 \big( x_1,...,x_n \big),..., f_m \big( x_1,...,x_n \big) \big) \\
+# \vdots \\
+# z_k = g_k \big( f_1 \big( x_1,...,x_n \big),..., f_m \big( x_1,...,x_n \big) \big)
 # $$
 #
+# has, according to the Chain Rule, the $k \times n$ Jacobian matrix
+#
+# $$
+# \Large
+# \begin{align}
+#
+# \frac{\partial}{\partial \mathbf{x}} \mathbf{g} \big( \mathbf{f}(\mathbf{x}) \big) &= \frac{\partial \mathbf{g}}{\partial \mathbf{f}} \times \frac{\partial \mathbf{f}}{\partial \mathbf{x}} \\
 #
 #
+# \begin{pmatrix}
+# \frac{\partial z_1}{\partial x_1} & \frac{\partial z_1}{\partial x_2} & ... & \frac{\partial z_1}{\partial x_n} \\
+# \frac{\partial z_2}{\partial x_1} & \frac{\partial z_2}{\partial x_2} & ... & \frac{\partial z_2}{\partial x_n} \\
+# \vdots & \vdots & & \vdots \\
+# \frac{\partial z_k}{\partial x_1} & \frac{\partial z_k}{\partial x_2} & ... & \frac{\partial z_k}{\partial x_n}
+# \end{pmatrix}
+#
+# &= \begin{pmatrix}
+# \frac{\partial z_1}{\partial y_1} & \frac{\partial z_1}{\partial y_2} & ... & \frac{\partial z_1}{\partial y_m} \\
+# \frac{\partial z_2}{\partial y_1} & \frac{\partial z_2}{\partial y_2} & ... & \frac{\partial z_2}{\partial y_m} \\
+# \vdots & \vdots & & \vdots \\
+# \frac{\partial z_k}{\partial y_1} & \frac{\partial z_k}{\partial y_2} & ... & \frac{\partial z_k}{\partial y_m}
+# \end{pmatrix}
+#
+# \times
+#
+# \begin{pmatrix}
+# \frac{\partial y_1}{\partial x_1} & \frac{\partial y_1}{\partial x_2} & ... & \frac{\partial y_1}{\partial x_n} \\
+# \frac{\partial y_2}{\partial x_1} & \frac{\partial y_2}{\partial x_2} & ... & \frac{\partial y_2}{\partial x_n} \\
+# \vdots & \vdots & & \vdots \\
+# \frac{\partial y_m}{\partial x_1} & \frac{\partial y_m}{\partial x_2} & ... & \frac{\partial y_m}{\partial x_n}
+# \end{pmatrix}
+#
+# \end{align}
+# $$
+# where $\times$ denotes matrix multiplication.
+#
+#
+# **SOURCES:**
+# * R.A Adams - Calculus: A Complete Course (sections 12.5 and 12.6)
+# * Thomas Weir - Calculus (section 14.4)
+# * [Medium's blog post on "The Matrix Calculus you Need for Deep Learning"](https://medium.com/@rohitrpatil/the-matrix-calculus-you-need-for-deep-learning-notes-from-a-paper-by-terence-parr-and-jeremy-4f4263b7bb8)
 # %% markdown
 # -----------------------------------------------------------------------------------
 # We have a number $L$ and we want to find out the gradient of $L$ with respect to $X$ and $W$; how much changing *each element* of these input matrices (so each $x_{ij}$ and each $w_{ij}$) would change $L$.
