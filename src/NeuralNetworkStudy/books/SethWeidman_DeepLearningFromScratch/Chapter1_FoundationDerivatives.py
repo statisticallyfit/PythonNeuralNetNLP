@@ -828,7 +828,7 @@ assert torch.equal(Tensor(dN_dX.numpy().transpose((1,0,2))), torch.transpose(dN_
 
 # %% codecell
 
-def matrixForwardExtra(X: Tensor, W: Tensor, sigma: TensorFunction) -> Tensor:
+def matrixForwardSigma(X: Tensor, W: Tensor, sigma: TensorFunction) -> Tensor:
     ''' Computes the forward pass of a function involving matrix multiplication and one extra output function'''
     # assert X.shape[1] == W.shape[0] # NOTE: this is only for vector inputs, if we want higher-dim inputs then the second-to last dim of W should equal the first dim of X.
     isFirstPartEqualShape: bool = X.shape[:len(X.shape)-2] == W.shape[0:len(W.shape)-2]
@@ -851,14 +851,14 @@ W = torch.arange(3*8*2*4*5).reshape(2,8,5,4,3)
 sigma: TensorFunction = lambda t: t**3 + t
 
 
-assert matrixForwardExtra(X, W, sigma).shape == (2, 8, 5, 7, 3)
+assert matrixForwardSigma(X, W, sigma).shape == (2, 8, 5, 7, 3)
 
 X: Tensor = torch.arange(3*4*2*2).reshape(3,2,4,2)
 W: Tensor = torch.arange(3*4*2*2).reshape(3,2,2,4)
 sigma: TensorFunction = lambda t: t**3 + t
 
 
-assert matrixForwardExtra(X, W, sigma).shape == (3, 2, 4, 4)
+assert matrixForwardSigma(X, W, sigma).shape == (3, 2, 4, 4)
 
 
 
@@ -885,7 +885,7 @@ assert matrixForwardExtra(X, W, sigma).shape == (3, 2, 4, 4)
 # $$
 
 # %% codecell
-def matrixBackwardExtra_X(X: Tensor, W: Tensor, sigma: TensorFunction) -> Tensor:
+def matrixBackwardSigma_X(X: Tensor, W: Tensor, sigma: TensorFunction) -> Tensor:
     '''Computes derivative of matrix function with respect to the first element X'''
 
     isFirstPartEqualShape: bool = X.shape[:len(X.shape)-2] == W.shape[0:len(W.shape)-2]
@@ -936,19 +936,19 @@ W: Tensor = torch.arange(3*5*2*7).reshape(3,2,7,5)
 sigma: TensorFunction = lambda t: t**3 + t
 
 
-assert matrixBackwardExtra_X(X, W, sigma).shape == (3,2,4,7)
+assert matrixBackwardSigma_X(X, W, sigma).shape == (3, 2, 4, 7)
 
 # %% codecell
 x: Tensor = torch.rand(2,10)
 w: Tensor = torch.rand(10,2)
 
-matrixBackwardExtra_X(x, w, sigmoid)
+matrixBackwardSigma_X(x, w, sigmoid)
 # %% markdown
 # #### Testing if the derivatives computed are correct:
 # A simple test is to perturb the array and observe the resulting change in output. If we increase $x_{2,1,3}$ by 0.01 from -1.726 to -1.716 we should see an increase in the value porduced by the forward function of the *gradient of the output with respect to $x_{2,1,3}$*.
 # %% codecell
 
-def forwardTest(X: Tensor, W: Tensor, sigma: TensorFunction, indices: Tuple[int], increment: float) -> Tensor:
+def doForwardSigmaIncr(X: Tensor, W: Tensor, sigma: TensorFunction, indices: Tuple[int], increment: float) -> Tensor:
 
     X[indices] = -1.726 # setting the starting value for sake of example
     X_ = X.clone()
@@ -959,7 +959,7 @@ def forwardTest(X: Tensor, W: Tensor, sigma: TensorFunction, indices: Tuple[int]
     assert X[indices] == -1.726
     assert X_[indices] == X[indices] + increment
 
-    return matrixForwardExtra(X_, W, sigma)
+    return matrixForwardSigma(X_, W, sigma)
 
 
 # %% markdown
@@ -970,13 +970,12 @@ W: Tensor = torch.rand(4,5)
 
 indices = (2,1)
 increment = 0.01
-inc: Tensor = forwardTest(X, W, sigma, indices = indices, increment = increment)
-incNot: Tensor = forwardTest(X, W, sigma, indices = indices, increment = 0)
+inc: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = increment)
+incNot: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = 0)
 
-print(sum(sum((inc - incNot)/increment)))
-#sum(sum(sum((inc - incNot)/0.01))) + 0.01
+print(torch.sum((inc - incNot) / increment))
 
-print(matrixBackwardExtra_X(X, W, sigma)[indices])
+print(matrixBackwardSigma_X(X, W, sigma)[indices])
 # %% markdown
 # Testing with 3-dim tensors:
 
@@ -986,14 +985,14 @@ W: Tensor = torch.rand(5,3,4)
 
 indices = (2,1,2)
 increment = 0.01
-inc: Tensor = forwardTest(X, W, sigma, indices = indices, increment = increment)
-incNot: Tensor = forwardTest(X, W, sigma, indices = indices, increment = 0)
+inc: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = increment)
+incNot: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = 0)
 
-#sum(sum((inc - incNot)/0.01))
-print(sum(sum(sum((inc - incNot)/increment))) )
+print(torch.sum((inc - incNot) / increment))
 
-print(matrixBackwardExtra_X(X, W, sigma)[indices])
-#matrixBackwardExtra_X(X, W, sigma)[2,1,3]
+print(matrixBackwardSigma_X(X, W, sigma)[indices])
+
+
 # %% markdown
 # Testing with 4-dim tensors:
 
@@ -1003,13 +1002,12 @@ W: Tensor = torch.rand(5,2,3,1)
 
 indices = (2,1,2,0)
 increment = 0.01
-inc: Tensor = forwardTest(X, W, sigma, indices = indices, increment = increment)
-incNot: Tensor = forwardTest(X, W, sigma, indices = indices, increment = 0)
+inc: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = increment)
+incNot: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = 0)
 
-#sum(sum((inc - incNot)/0.01))
-print(sum(sum(sum(sum((inc - incNot)/increment))) ))
+print(torch.sum((inc - incNot) / increment))
 
-print(matrixBackwardExtra_X(X, W, sigma)[indices])
+print(matrixBackwardSigma_X(X, W, sigma)[indices])
 
 
 ## Computation Graph with 2D Matrix Inputs
@@ -1040,7 +1038,8 @@ print(matrixBackwardExtra_X(X, W, sigma)[indices])
 # %% markdown
 # Define some straightforward operations on these matrices:
 #
-# 1. Multiply these matrices together using $N = \nu(X, W)$ and denoting the row $i$ and column $j$ in the resulting matrix as $(XW)_{ij}$:
+# ### STEP 1:
+# Multiply these matrices together using $N = \nu(X, W)$ and denoting the row $i$ and column $j$ in the resulting matrix as $(XW)_{ij}$:
 #
 # $$
 # \begin{align}
@@ -1073,9 +1072,10 @@ print(matrixBackwardExtra_X(X, W, sigma)[indices])
 # \end{pmatrix}
 # \end{align}
 # $$
+# where `X.shape == (n, m)`, and `W.shape == (m, p)`, and `N.shape == (n, p)`.
 #
-#
-# 2. Feed $N$ through some differentiable function $\sigma$ and define $S = \sigma(N)$ (just applying $\sigma$ to every element of the matrix operation defined by $N$):
+# ### STEP 2:
+# Feed $N$ through some differentiable function $\sigma$ and define $S = \sigma(N)$ (just applying $\sigma$ to every element of the matrix operation defined by $N$):
 #
 # $$
 # \begin{align}
@@ -1109,8 +1109,10 @@ print(matrixBackwardExtra_X(X, W, sigma)[indices])
 # \end{pmatrix}
 # \end{align}
 # $$
+# where `S.shape == N.shape == (n, p)`.
 #
-# 3. Defining a $\Lambda$ function to sum up the elements in the matrix to find the total effect of changing each element of a matrix:
+# ### STEP 3:
+# Defining a $\Lambda$ function to sum up the elements in the matrix to find the total effect of changing each element of a matrix:
 #
 # $$
 # \begin{align}
@@ -1127,6 +1129,22 @@ print(matrixBackwardExtra_X(X, W, sigma)[indices])
 # &= \sigma(XW_{11}) + ... + \sigma(XW_{1p}) + \sigma(XW_{21}) + ... + \sigma(XW_{2p}) + ... ... ... + \sigma(XW_{n1}) + ... + \sigma(XW_{np})
 # \end{align}
 # $$
+#  where $\Lambda$.`shape == (1,1)` so $\Lambda$ is a constant
+#
+# * NOTE: the code can handle higher-dim tensors while the formulas above handle only 2-dim tensors (matrices). So in the code, we have:
+#   * `X.shape == (..., n, m)`
+#   * `W.shape == (..., m, p)`
+#   * `N.shape == (..., n, p)`
+#   * `S.shape == (..., n, p)`
+#   * $\Lambda$`.shape == (1,1)`
+# * and in the formulas we have:
+#   * `X.shape == (n, m)`
+#   * `W.shape == (m, p)`
+#   * `N.shape == (n, p)`
+#   * `S.shape == (n, p)`
+#   * $\Lambda$`.shape == (1,1)`
+
+# * NOTE: the '...' is set to mean that all dimensions before the last two are the same for all tensors in these calculations.
 # %% codecell
 def matrixForwardSum(X: Tensor, W: Tensor, sigma: TensorFunction) -> float:
      '''Computes the result of the forward pass of the function L with input tensors X and W and function sigma
@@ -1158,6 +1176,64 @@ def matrixForwardSum(X: Tensor, W: Tensor, sigma: TensorFunction) -> float:
 
 # %% markdown
 # ## Derivative of Functions with Multiple Matrix Inputs: (Backward Pass) Lambda Sum
+
+# ### Background: Jacobian Matrix and Multivariable Functions
+# A vector $\mathbf{f} = \big( f_1, f_2, ..., f_m \big)$ of $m$ functions, each depending on $n$ variables $\mathbf{x} = \big(x_1, x_2, ..., x_n \big)$ defines a transformation or function from $\mathbb{R}^n$ to $\mathbb{R}^m$. Specifically, if $\mathbf{x} \in \mathbb{R}^n$ and if:
+# $$
+# y_1 = f_1 \big(x_1,x_2,...,x_n \big) \\
+# y_2 = f_2 \big(x_1,x_2,...,x_n \big) \\
+# \vdots \\
+# y_m = f_m \big(x_1,x_2,...,x_n \big)
+# $$
+# then $\mathbf{y} = \big(y_1, y_2, ..., y_m \big)$ is the point in $\mathbb{R}^m$ that corresponds to $\mathbf{x}$ under the transformation $\mathbf{f}$. We can write these equations more compactly as:
+# $$
+# \mathbf{y} = \mathbf{f}(\mathbf{x})
+# $$
+# Information about the rate of change of $\mathbf{y}$ with respect to $\mathbf{x}$ is contained in the various partial derivatives $\frac{\partial y_i}{\partial x_j}$ for $1 \leq i \leq m, 1 \leq j \leq n$ and is conveniently organized into an $m \times n$ matrix $\frac{\partial \mathbf{y}}{\partial \mathbf{x}}$ called the **Jacobian matrix** of the transformation $\mathbf{f}$:
+# $$
+# \begin{align}
+# \Large
+# \frac{\partial \mathbf{f}}{\partial \mathbf{x}} = \begin{pmatrix}
+#   \frac{\partial y_1}{\partial x_1} & \frac{\partial y_1}{\partial x_2} & ... & \frac{\partial y_1}{\partial x_n} \\
+#   \frac{\partial y_2}{\partial x_1} & \frac{\partial y_2}{\partial x_2} & ... & \frac{\partial y_2}{\partial x_n} \\
+#   \vdots & \vdots &  & \vdots \\
+#   \frac{\partial y_m}{\partial x_1} & \frac{\partial y_m}{\partial x_2} & ... & \frac{\partial y_m}{\partial x_n}
+# \end{pmatrix}
+# \end{align}
+# $$
+# This linear transformation represented by the Jacobian matrix is called **the derivative** of the transformation $\mathbf{f}$.
+#
+# ### Background: Chain Rule for Matrices
+# In general the Jacobian matrix of the composition of two vector-valued functions of a vector variable is the matrix product of their Jacobian matrices.
+#
+# To see this let $\mathbf{y} = \mathbf{f}(\mathbf{x})$ be a transformation from $\mathbb{R}^n$ to $\mathbb{R}^m$ as above and let $\mathbf{z} = \mathbf{g}(\mathbf{y})$ be another such transformation from $\mathbb{R}^m$ to $\mathbb{R}^k$ given by:
+# $$
+# z_1 = g_1 \big(y_1,y_2,...,y_m \big) \\
+# z_2 = g_2 \big(y_1,y_2,...,y_m \big) \\
+# \vdots \\
+# z_k = g_k \big(y_1,y_2,...,y_m \big)
+# $$
+# which has the $k \times m$ Jacobian matrix:
+# $$
+# \begin{align}
+# \Large
+# \frac{\partial \mathbf{g}}{\partial \mathbf{y}} = \begin{pmatrix}
+#   \frac{\partial z_1}{\partial y_1} & \frac{\partial z_1}{\partial y_2} & ... & \frac{\partial z_1}{\partial y_m} \\
+#   \frac{\partial z_2}{\partial y_1} & \frac{\partial z_2}{\partial y_2} & ... & \frac{\partial z_2}{\partial y_m} \\
+#   \vdots & \vdots &  & \vdots \\
+#   \frac{\partial z_k}{\partial y_1} & \frac{\partial z_k}{\partial y_2} & ... & \frac{\partial z_k}{\partial y_m}
+# \end{pmatrix}
+# \end{align}
+# $$
+# Then the composition $\mathbf{z} = (\mathbf{g} \circ \mathbf{f})(\mathbf{x}) = \mathbf{g}(\mathbf{f}(\mathbf{x}))$ given by :
+# $$
+#
+# $$
+#
+#
+#
+# %% markdown
+# -----------------------------------------------------------------------------------
 # We have a number $L$ and we want to find out the gradient of $L$ with respect to $X$ and $W$; how much changing *each element* of these input matrices (so each $x_{ij}$ and each $w_{ij}$) would change $L$.
 #
 # **Direct way:**
@@ -1248,19 +1324,19 @@ W: Tensor = torch.arange(3*5*2*7).reshape(3,2,7,5)
 sigma: TensorFunction = lambda t: t**3 + t
 
 
-assert matrixBackwardExtra_X(X, W, sigma).shape == (3,2,4,7)
+assert matrixBackwardSigma_X(X, W, sigma).shape == (3, 2, 4, 7)
 
 # %% codecell
 x: Tensor = torch.rand(2,10)
 w: Tensor = torch.rand(10,2)
 
-matrixBackwardExtra_X(x, w, sigmoid)
+matrixBackwardSigma_X(x, w, sigmoid)
 # %% markdown
 # #### Testing if the derivatives computed are correct:
 # A simple test is to perturb the array and observe the resulting change in output. If we increase $x_{2,1,3}$ by 0.01 from -1.726 to -1.716 we should see an increase in the value porduced by the forward function of the *gradient of the output with respect to $x_{2,1,3}$*.
 # %% codecell
 
-def forwardTest(X: Tensor, W: Tensor, sigma: TensorFunction, indices: Tuple[int], increment: float) -> Tensor:
+def doForwardSigmaIncr(X: Tensor, W: Tensor, sigma: TensorFunction, indices: Tuple[int], increment: float) -> Tensor:
 
     X[indices] = -1.726 # setting the starting value for sake of example
     X_ = X.clone()
@@ -1271,7 +1347,7 @@ def forwardTest(X: Tensor, W: Tensor, sigma: TensorFunction, indices: Tuple[int]
     assert X[indices] == -1.726
     assert X_[indices] == X[indices] + increment
 
-    return matrixForwardExtra(X_, W, sigma)
+    return matrixForwardSigma(X_, W, sigma)
 
 
 # %% markdown
@@ -1282,13 +1358,13 @@ W: Tensor = torch.rand(4,5)
 
 indices = (2,1)
 increment = 0.01
-inc: Tensor = forwardTest(X, W, sigma, indices = indices, increment = increment)
-incNot: Tensor = forwardTest(X, W, sigma, indices = indices, increment = 0)
+inc: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = increment)
+incNot: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = 0)
 
-print(sum(sum((inc - incNot)/increment)))
-#sum(sum(sum((inc - incNot)/0.01))) + 0.01
+
 print(((inc - incNot)/increment).sum())
-print(matrixBackwardExtra_X(X, W, sigma)[indices])
+
+print(matrixBackwardSigma_X(X, W, sigma)[indices])
 # %% markdown
 # Testing with 3-dim tensors:
 
@@ -1298,13 +1374,12 @@ W: Tensor = torch.rand(5,3,4)
 
 indices = (2,1,2)
 increment = 0.01
-inc: Tensor = forwardTest(X, W, sigma, indices = indices, increment = increment)
-incNot: Tensor = forwardTest(X, W, sigma, indices = indices, increment = 0)
+inc: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = increment)
+incNot: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = 0)
 
-#sum(sum((inc - incNot)/0.01))
-print(sum(sum(sum((inc - incNot)/increment))) )
+print(torch.sum((inc - incNot) / increment))
 
-print(matrixBackwardExtra_X(X, W, sigma)[indices])
+print(matrixBackwardSigma_X(X, W, sigma)[indices])
 #matrixBackwardExtra_X(X, W, sigma)[2,1,3]
 # %% markdown
 # Testing with 4-dim tensors:
@@ -1315,10 +1390,9 @@ W: Tensor = torch.rand(5,2,3,1)
 
 indices = (2,1,2,0)
 increment = 0.01
-inc: Tensor = forwardTest(X, W, sigma, indices = indices, increment = increment)
-incNot: Tensor = forwardTest(X, W, sigma, indices = indices, increment = 0)
+inc: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = increment)
+incNot: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = 0)
 
-#sum(sum((inc - incNot)/0.01))
-print(sum(sum(sum(sum((inc - incNot)/increment))) ))
+print(torch.sum((inc - incNot) / increment))
 
-print(matrixBackwardExtra_X(X, W, sigma)[indices])
+print(matrixBackwardSigma_X(X, W, sigma)[indices])
