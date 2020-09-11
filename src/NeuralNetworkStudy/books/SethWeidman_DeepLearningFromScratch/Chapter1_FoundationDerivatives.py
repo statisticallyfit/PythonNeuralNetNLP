@@ -1174,9 +1174,40 @@ def matrixForwardSum(X: Tensor, W: Tensor, sigma: TensorFunction) -> float:
 
 
 
-# %% markdown
-# ## Derivative of Functions with Multiple Matrix Inputs: (Backward Pass) Lambda Sum
 
+
+
+
+# %% markdown
+#
+# ### Background: Gradients
+# The **gradient** of a multivariable function $f(\mathbf{x}) = f(x_1,x_2,...,x_n)$ from $\mathbb{R}^n \longrightarrow \mathbb{R}$ is defined as:
+#
+# * Notation 1:
+# $$
+# \nabla f(\mathbf{x}) = \frac{\partial}{\partial \mathbf{x}} f(\mathbf{x})
+# {\Large
+# = \begin{pmatrix}
+#         \frac{\partial }{\partial x_1} f(\mathbf{x}) &
+#         \frac{\partial }{\partial x_2} f(\mathbf{x}) & ... &
+#         \frac{\partial }{\partial x_n} f(\mathbf{x})
+# \end{pmatrix} }
+# $$
+#
+# * Notation 2:
+# $$
+# \nabla f(x_1,...,x_n) = \frac{\partial f}{\partial \mathbf{x}}
+# {\Large
+# = \begin{pmatrix}
+#         \frac{\partial f}{\partial x_1} &
+#         \frac{\partial f}{\partial x_2} & ... &
+#         \frac{\partial f}{\partial x_n}
+# \end{pmatrix} }
+# $$
+
+
+
+# %% markdown
 # ### Background: Jacobian Matrix and Multivariable Functions
 # A vector $\mathbf{f} = \big( f_1, f_2, ..., f_m \big)$ of $m$ functions, each depending on $n$ variables $\mathbf{x} = \big(x_1, x_2, ..., x_n \big)$ defines a transformation or function from $\mathbb{R}^n$ to $\mathbb{R}^m$. Specifically, if $\mathbf{x} \in \mathbb{R}^n$ and if:
 # $$
@@ -1224,7 +1255,7 @@ def matrixForwardSum(X: Tensor, W: Tensor, sigma: TensorFunction) -> float:
 # $$
 # This linear transformation represented by the Jacobian matrix is called **the derivative** of the transformation $\mathbf{f}$.
 #
-# Each $\frac{\partial f_i}{\partial \mathbf{x}} is a horizontal $n$-vector because the partial derivative is with respect to a vector $\mathbf{x}$ whose length is $n = |\mathbf{x}|$, making the width of the Jacobian $n$ (there are $n$ parameters that are variable, each potentially changing the function's value).
+# Each $\frac{\partial f_i}{\partial \mathbf{x}}$ is a horizontal $n$-vector because the partial derivative is with respect to a vector $\mathbf{x}$ whose length is $n = |\mathbf{x}|$, making the width of the Jacobian $n$ (there are $n$ parameters that are variable, each potentially changing the function's value).
 #
 
 # %% markdown
@@ -1324,82 +1355,13 @@ def matrixForwardSum(X: Tensor, W: Tensor, sigma: TensorFunction) -> float:
 
 
 # %% markdown
-# ### Background: Chain Rule for Matrices (from Adams)
-# In general the Jacobian matrix of the composition of two vector-valued functions of a vector variable is the matrix product of their Jacobian matrices.
+# ## Derivative of Functions with Multiple Matrix Inputs: (Backward Pass) Lambda Sum
 #
-# To see this let $\mathbf{y} = \mathbf{f}(\mathbf{x})$ be a transformation from $\mathbb{R}^n$ to $\mathbb{R}^m$ as above and let $\mathbf{z} = \mathbf{g}(\mathbf{y})$ be another such transformation from $\mathbb{R}^m$ to $\mathbb{R}^k$ given by:
-# $$
-# z_1 = g_1 \big(y_1,y_2,...,y_m \big) \\
-# z_2 = g_2 \big(y_1,y_2,...,y_m \big) \\
-# \vdots \\
-# z_k = g_k \big(y_1,y_2,...,y_m \big)
-# $$
-# which has the $k \times m$ Jacobian matrix:
-# $$
-# \begin{align}
-# \Large
-# \frac{\partial \mathbf{g}}{\partial \mathbf{y}} = \begin{pmatrix}
-#   \frac{\partial z_1}{\partial y_1} & \frac{\partial z_1}{\partial y_2} & ... & \frac{\partial z_1}{\partial y_m} \\
-#   \frac{\partial z_2}{\partial y_1} & \frac{\partial z_2}{\partial y_2} & ... & \frac{\partial z_2}{\partial y_m} \\
-#   \vdots & \vdots &  & \vdots \\
-#   \frac{\partial z_k}{\partial y_1} & \frac{\partial z_k}{\partial y_2} & ... & \frac{\partial z_k}{\partial y_m}
-# \end{pmatrix}
-# \end{align}
-# $$
-# Then the composition $\mathbf{z} = (\mathbf{g} \circ \mathbf{f})(\mathbf{x}) = \mathbf{g}(\mathbf{f}(\mathbf{x}))$ given by :
-# $$
-# z_1 = g_1 \big( f_1 \big( x_1,...,x_n \big),..., f_m \big( x_1,...,x_n \big) \big) \\
-# z_2 = g_2 \big( f_1 \big( x_1,...,x_n \big),..., f_m \big( x_1,...,x_n \big) \big) \\
-# \vdots \\
-# z_k = g_k \big( f_1 \big( x_1,...,x_n \big),..., f_m \big( x_1,...,x_n \big) \big)
-# $$
+# We have a number $L$ and we want to find out the gradient of $L$ with respect to $X$ and $W$; how much changing *each element* of these input matrices (so each $x_{ij}$ and each $w_{ij}$) would change $L$. This is written as:
 #
-# has, according to the Chain Rule, the $k \times n$ Jacobian matrix
+# $\color{red}{\text{TODO: find out of thi sis the jacobian? w.r. variable X is a matrix not a vector so is this called jacobian or not? }}$
 #
-# $$
-# \Large
-# \begin{align}
-#
-# \frac{\partial}{\partial \mathbf{x}} \mathbf{g} \big( \mathbf{f}(\mathbf{x}) \big) &= \frac{\partial \mathbf{g}}{\partial \mathbf{f}} \times \frac{\partial \mathbf{f}}{\partial \mathbf{x}} \\
-#
-#
-# \begin{pmatrix}
-# \frac{\partial z_1}{\partial x_1} & \frac{\partial z_1}{\partial x_2} & ... & \frac{\partial z_1}{\partial x_n} \\
-# \frac{\partial z_2}{\partial x_1} & \frac{\partial z_2}{\partial x_2} & ... & \frac{\partial z_2}{\partial x_n} \\
-# \vdots & \vdots & & \vdots \\
-# \frac{\partial z_k}{\partial x_1} & \frac{\partial z_k}{\partial x_2} & ... & \frac{\partial z_k}{\partial x_n}
-# \end{pmatrix}
-#
-# &= \begin{pmatrix}
-# \frac{\partial z_1}{\partial y_1} & \frac{\partial z_1}{\partial y_2} & ... & \frac{\partial z_1}{\partial y_m} \\
-# \frac{\partial z_2}{\partial y_1} & \frac{\partial z_2}{\partial y_2} & ... & \frac{\partial z_2}{\partial y_m} \\
-# \vdots & \vdots & & \vdots \\
-# \frac{\partial z_k}{\partial y_1} & \frac{\partial z_k}{\partial y_2} & ... & \frac{\partial z_k}{\partial y_m}
-# \end{pmatrix}
-#
-# \times
-#
-# \begin{pmatrix}
-# \frac{\partial y_1}{\partial x_1} & \frac{\partial y_1}{\partial x_2} & ... & \frac{\partial y_1}{\partial x_n} \\
-# \frac{\partial y_2}{\partial x_1} & \frac{\partial y_2}{\partial x_2} & ... & \frac{\partial y_2}{\partial x_n} \\
-# \vdots & \vdots & & \vdots \\
-# \frac{\partial y_m}{\partial x_1} & \frac{\partial y_m}{\partial x_2} & ... & \frac{\partial y_m}{\partial x_n}
-# \end{pmatrix}
-#
-# \end{align}
-# $$
-# where $\times$ denotes matrix multiplication.
-#
-#
-# **SOURCES:**
-# * R.A Adams - Calculus: A Complete Course (sections 12.5 and 12.6)
-# * Thomas Weir - Calculus (section 14.4)
-# * [Medium's blog post on "The Matrix Calculus you Need for Deep Learning"](https://medium.com/@rohitrpatil/the-matrix-calculus-you-need-for-deep-learning-notes-from-a-paper-by-terence-parr-and-jeremy-4f4263b7bb8)
-# %% markdown
-# -----------------------------------------------------------------------------------
-# We have a number $L$ and we want to find out the gradient of $L$ with respect to $X$ and $W$; how much changing *each element* of these input matrices (so each $x_{ij}$ and each $w_{ij}$) would change $L$.
-#
-# **Direct way:**
+# **Direct Way:**
 #
 # $$
 # \large
@@ -1411,7 +1373,9 @@ def matrixForwardSum(X: Tensor, W: Tensor, sigma: TensorFunction) -> float:
 # \end{pmatrix}
 # $$
 #
+#
 # **Chain Rule way (Backward pass):**
+# The chain rule gives the same result as the direct way above but is simpler for the user to calculate:
 # $$
 # \frac{\partial \Lambda}{\partial X} = \frac{\partial N}{\}
 # $$
