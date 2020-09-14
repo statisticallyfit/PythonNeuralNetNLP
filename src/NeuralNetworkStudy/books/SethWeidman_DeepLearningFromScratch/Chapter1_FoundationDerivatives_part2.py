@@ -373,7 +373,7 @@ def matrixForwardSum(X: Tensor, W: Tensor, sigma: TensorFunction) -> float:
 #
 #
 # **SOURCES:**
-# * R.A Adams - Calculus: A Complete Course (sections 12.5 and 12.6)
+# * R.A Adams - Calculus: A Complete Course (sections 12.5 and 12.6) 
 # * Thomas Weir - Calculus (section 14.4)
 # * [Medium's blog post on "The Matrix Calculus you Need for Deep Learning"](https://medium.com/@rohitrpatil/the-matrix-calculus-you-need-for-deep-learning-notes-from-a-paper-by-terence-parr-and-jeremy-4f4263b7bb8)
 
