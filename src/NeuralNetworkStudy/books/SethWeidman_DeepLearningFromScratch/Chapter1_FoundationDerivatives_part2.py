@@ -373,7 +373,7 @@ def matrixForwardSum(X: Tensor, W: Tensor, sigma: TensorFunction) -> float:
 #
 #
 # **SOURCES:**
-# * R.A Adams - Calculus: A Complete Course (sections 12.5 and 12.6) 
+# * R.A Adams - Calculus: A Complete Course (sections 12.5 and 12.6)
 # * Thomas Weir - Calculus (section 14.4)
 # * [Medium's blog post on "The Matrix Calculus you Need for Deep Learning"](https://medium.com/@rohitrpatil/the-matrix-calculus-you-need-for-deep-learning-notes-from-a-paper-by-terence-parr-and-jeremy-4f4263b7bb8)
 
@@ -386,8 +386,6 @@ def matrixForwardSum(X: Tensor, W: Tensor, sigma: TensorFunction) -> float:
 # ## Derivative of Functions with Multiple Matrix Inputs: (Backward Pass) Lambda Sum
 #
 # We have a number $L$ and we want to find out the gradient of $L$ with respect to $X$ and $W$; how much changing *each element* of these input matrices (so each $x_{ij}$ and each $w_{ij}$) would change $L$. This is written as:
-#
-# $\color{red}{\text{TODO: find out of thi sis the jacobian? w.r. variable X is a matrix not a vector so is this called jacobian or not? }}$
 #
 # **Direct Way:**
 #
@@ -408,7 +406,6 @@ def matrixForwardSum(X: Tensor, W: Tensor, sigma: TensorFunction) -> float:
 # \frac{\partial \Lambda}{\partial X} = \frac{\partial N}{\}
 # $$
 
-# TODO: continue from medium article + waterloo bit (tabs recorded in snagit) to explain starting from Jacobian concept.
 
 
 
@@ -416,8 +413,12 @@ def matrixForwardSum(X: Tensor, W: Tensor, sigma: TensorFunction) -> float:
 # %% codecell
 
 # TODO: equivalent for the matrix W (understand why dot first then matmul in the chain rule)
-def matrixBackwardSum_X(X: Tensor, W: Tensor, sigma: TensorFunction) -> Tensor:
+def matrixBackwardSum_X(Xa: Tensor, W: Tensor, sigma: TensorFunction) -> Tensor:
     '''Computes derivative of matrix function with respect to the first element X'''
+
+    # NOTE: cast to float in case X or W is float else error   gets thrown
+    X: Tensor = Xa.clone().type(torch.FloatTensor)
+    #W: Tensor = Wa.clone().type(torch.FloatTensor)
 
     isFirstPartEqualShape: bool = X.shape[:len(X.shape)-2] == W.shape[0:len(W.shape)-2]
     canDoMatMul: bool = X.shape[-1] == W.shape[-2]
@@ -435,7 +436,7 @@ def matrixBackwardSum_X(X: Tensor, W: Tensor, sigma: TensorFunction) -> Tensor:
     # S.shape = N.shape = (...,n, p)
 
     # Sum all the elements:
-    L: Tensor = torch.sum(S)
+    #L: Tensor = torch.sum(S)
     # L.shape == (1 x 1)
 
 
@@ -472,82 +473,93 @@ def matrixBackwardSum_X(X: Tensor, W: Tensor, sigma: TensorFunction) -> Tensor:
 
 # %% codecell
 
-####### TODO here -------------------------------------------------------------
-
 X: Tensor = torch.arange(3*4*2*7).reshape(3,2,4,7)
 W: Tensor = torch.arange(3*5*2*7).reshape(3,2,7,5)
 sigma: TensorFunction = lambda t: t**3 + t
 
 
-assert matrixBackwardSigma_X(X, W, sigma).shape == (3, 2, 4, 7)
+assert matrixBackwardSum_X(X, W, sigma).shape == (3, 2, 4, 7)
 
 # %% codecell
 x: Tensor = torch.rand(2,10)
 w: Tensor = torch.rand(10,2)
 
-matrixBackwardSigma_X(x, w, sigmoid)
+matrixBackwardSum_X(x, w, sigmoid)
 # %% markdown
 # #### Testing if the derivatives computed are correct:
 # A simple test is to perturb the array and observe the resulting change in output. If we increase $x_{2,1,3}$ by 0.01 from -1.726 to -1.716 we should see an increase in the value porduced by the forward function of the *gradient of the output with respect to $x_{2,1,3}$*.
 # %% codecell
 
-def doForwardSigmaIncr(X: Tensor, W: Tensor, sigma: TensorFunction, indices: Tuple[int], increment: float) -> Tensor:
+def doForwardSumIncr_X(Xa: Tensor, W: Tensor, sigma: TensorFunction, indices: Tuple[int], increment: float) -> Tensor:
 
-    X[indices] = -1.726 # setting the starting value for sake of example
-    X_ = X.clone()
+     ## WARNING: the X must be FloatType tensors or else the later assertions here will fail! (only integer part of decimal gets copied)
 
-    # Increasing the value at that point by 0.01
-    X_[indices] = X[indices] + increment
+     X: Tensor = Xa.clone().type(torch.FloatTensor)
+     #W: Tensor = Wa.clone().type(torch.FloatTensor)
 
-    assert X[indices] == -1.726
-    assert X_[indices] == X[indices] + increment
+     ##
+     FLAG_NUM: int = -1.726
 
-    return matrixForwardSigma(X_, W, sigma)
+
+     print("BEFORE: {}".format(X[indices]))
+     X[indices] = FLAG_NUM # setting the starting value for sake of example
+     X_ = X.clone()
+
+     # Increasing the value at that point by 0.01
+     X_[indices] = X[indices] + increment
+
+     print("AFTER: {}".format(X_[indices]))
+     assert X[indices] == FLAG_NUM
+     assert X_[indices] == X[indices] + increment
+
+     return matrixForwardSum(X_, W, sigma)
 
 
 # %% markdown
 # Testing with 2-dim tensors:
 # %% codecell
-X: Tensor = torch.arange(5*4).reshape(5,4).type(torch.FloatTensor)
+X: Tensor = torch.arange(5*4).reshape(5,4)
 W: Tensor = torch.rand(4,5)
+Xc: Tensor = X.clone()
 
 indices = (2,1)
 increment = 0.01
-inc: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = increment)
-incNot: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = 0)
+inc: Tensor = doForwardSumIncr_X(Xc, W, sigma, indices = indices, increment = increment)
+incNot: Tensor = doForwardSumIncr_X(Xc, W, sigma, indices = indices, increment = 0)
 
 
 print(((inc - incNot)/increment).sum())
 
-print(matrixBackwardSigma_X(X, W, sigma)[indices])
+print(matrixBackwardSum_X(Xc, W, sigma)[indices])
 # %% markdown
 # Testing with 3-dim tensors:
 
 # %% codecell
-X: Tensor = torch.arange(5*4*3).reshape(5,4,3).type(torch.FloatTensor)
+X: Tensor = torch.arange(5*4*3).reshape(5,4,3)
 W: Tensor = torch.rand(5,3,4)
 
 indices = (2,1,2)
 increment = 0.01
-inc: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = increment)
-incNot: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = 0)
+inc: Tensor = doForwardSumIncr_X(X, W, sigma, indices = indices, increment = increment)
+incNot: Tensor = doForwardSumIncr_X(X, W, sigma, indices = indices, increment = 0)
 
 print(torch.sum((inc - incNot) / increment))
 
-print(matrixBackwardSigma_X(X, W, sigma)[indices])
+print(matrixBackwardSum_X(X, W, sigma)[indices])
 #matrixBackwardExtra_X(X, W, sigma)[2,1,3]
 # %% markdown
 # Testing with 4-dim tensors:
 
 # %% codecell
-X: Tensor = torch.arange(5*4*3*2).reshape(5,2,4,3).type(torch.FloatTensor)
-W: Tensor = torch.rand(5,2,3,1)
+X: Tensor = torch.arange(5*4*3*2).reshape(5,2,4,3)
+W: Tensor = torch.rand(5,2,3,1) #.type(torch.FloatTensor)
+
 
 indices = (2,1,2,0)
 increment = 0.01
-inc: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = increment)
-incNot: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = 0)
+inc: Tensor = doForwardSumIncr_X(X, W, sigma, indices = indices, increment = increment)
+incNot: Tensor = doForwardSumIncr_X(X, W, sigma, indices = indices, increment = 0)
 
 print(torch.sum((inc - incNot) / increment))
 
-print(matrixBackwardSigma_X(X, W, sigma)[indices])
+print(matrixBackwardSum_X(X, W, sigma)[indices])
