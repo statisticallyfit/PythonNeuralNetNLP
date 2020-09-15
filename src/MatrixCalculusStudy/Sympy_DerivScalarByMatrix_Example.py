@@ -34,7 +34,12 @@ f(X).subs({X: m})
 f(Matrix(X)).diff(Matrix(X))
 
 # %% codecell
-
+from sympy import Derivative
+M = Matrix(X)
+Derivative(f(X), M)
+# %% codecell
+#diff(f(X), X) # NOT RUN THIS LINE TOO SLOW
+# %% codecell
 derive_by_array(f(Matrix(X)), Matrix(X))
 
 
