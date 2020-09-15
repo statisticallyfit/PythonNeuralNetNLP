@@ -1,0 +1,59 @@
+name: pymatrix_env
+channels:
+  - conda-forge
+  - pytorch
+  - defaults
+dependencies:
+
+
+  # ========================
+  # Core
+  # ========================
+  - mypy
+  - typing
+  - pip
+  - python
+  - jupytext
+  - jupyterlab
+  - ipywidgets
+  - python-language-server
+  - ipykernel 
+
+
+  # ========================
+  # Matrix Diff Tools
+  # ========================
+  - jax
+  - numdifftools
+  - xarray
+  - numpy
+  - mpmath #dependency for sympy https://docs.sympy.org/latest/install.html#mpmath
+  - sympy
+  - scipy
+  - spacy
+  - statsmodels
+  - pandas
+  - patsy
+
+
+  # ========================
+  # NLP (important base nlp pckgs)
+  # ========================
+  - pytorch>=1.4.0
+
+  - tensorflow==1.14.0
+  - tensorflow-probability
+
+
+
+
+  # ========================
+  # PLOTTING
+  # ========================
+  - matplotlib
+  - seaborn
+  - plotly
+
+prefix: /development/bin/python/conda3_ana/envs/pymatrix_env
+
+
