@@ -1,56 +1,10 @@
+
 # %% codecell
 from sympy import diff, sin, exp, symbols, Function, Matrix, MatrixSymbol, FunctionMatrix, derive_by_array
 
 
-
-x, y, z = symbols('x y z')
-f, g, h = list(map(Function, 'fgh'))
-
-xv = x,y,z
-#f(xv).subs({x:1, y:2,z:3})
-yv = [f(*xv), g(*xv), h(*xv)]; yv
-# %% codecell
-Matrix(yv)
-# %% codecell
-Matrix(xv)
-
-# %% codecell
-n,m,p = 3,3,2
-X = MatrixSymbol('x', n, m)
-Matrix(X)
-# %% codecell
-m = Matrix([[1,0,2],[3,4,5],[3,3,2]]); m
-# %% codecell
-X.subs({X: m})
-# %% codecell
-f(X)
-# %% codecell
-f(Matrix(X))
-# %% codecell
-f(X).subs({X: m})
-# %% codecell
-#f(X).diff(Matrix(X)) # Error non commutative elements in matrix
-
-f(Matrix(X)).diff(Matrix(X))
-
-# %% codecell
-from sympy import Derivative
-M = Matrix(X)
-Derivative(f(X), M)
-# %% codecell
-#diff(f(X), X) # NOT RUN THIS LINE TOO SLOW
-# %% codecell
-derive_by_array(f(Matrix(X)), Matrix(X))
-
-
-
-
-
-
-
-
-# %% codecell
 from sympy import Symbol
+
 
 def var(letter: str, i: int, j: int) -> Symbol:
      letter_ij = Symbol('{}_{}{}'.format(letter, i+1, j+1), is_commutative=True)
@@ -71,55 +25,6 @@ X = Matrix(n, m, lambda i, j: var('x', i, j)); X
 
 Y = Matrix(m, p, lambda i,j:  func(i, j)); Y
 
-# %% markdown
-# ### Derivative of Scalar Function of a Matrix with Respect to the Matrix
-# Let $X = \{ x_{ij} \}$ be a matrix of order $m \times n$ and let
-# $$
-# y = f(X)
-# $$
-# be a scalar function of $X$, so $y \in \mathbb{R}$ and $f: \mathbb{R}^{m \times n} \rightarrow \mathbb{R}$,
-# Then we can define the **derivative of y with respect to $X$** as the following matrix of order $m \times n$:
-# $$
-# \Large
-# \frac{\partial y}{\partial X} = \begin{pmatrix}
-#    \frac{\partial y}{\partial x_{11}} & \frac{\partial y}{\partial x_{12}} & ... & \frac{\partial y}{\partial x_{1n}} \\
-#    \frac{\partial y}{\partial x_{21}} & \frac{\partial y}{\partial x_{22}} & ... & \frac{\partial y}{\partial x_{2n}} \\
-#    \vdots & \vdots & & \vdots \\
-#    \frac{\partial y}{\partial x_{m1}} & \frac{\partial y}{\partial x_{m2}} & ... & \frac{\partial y}{\partial x_{mn}} \\
-# \end{pmatrix}
-#
-# = \Bigg\{ \frac{\partial y}{\partial x_{ij}} \Bigg\}
-# $$
-# The matrix $\frac{\partial y}{\partial X}$ is called the **gradient matrix**.
-# %% codecell
-derive_by_array(Y[0,0], X)
-
-
-
-# %% markdown
-# ### Derivative of Matrix With Respect to Scalar Element of Matrix
-# Let $X = \{ x_{ij} \}$ be a matrix of order $m \times n$ and let
-# $$
-# y = f(X)
-# $$
-# be a scalar function of $X$, so $y \in \mathbb{R}$ and $f: \mathbb{R}^{m \times n} \rightarrow \mathbb{R}$,
-#
-# Also let the matrix $Y = \{y_{ij}(X) \}$ be of size $p \times q$.
-#
-# Then we can define the **derivative of $Y$ with respect to an element $x$ in $X$** as the following matrix of order $p \times q$:
-# $$
-# \Large
-# \frac{\partial Y}{\partial x} = \begin{pmatrix}
-#    \frac{\partial Y}{\partial x} & \frac{\partial Y}{\partial x} & ... & \frac{\partial Y}{\partial x} \\
-#    \frac{\partial Y}{\partial x} & \frac{\partial Y}{\partial x} & ... & \frac{\partial Y}{\partial x} \\
-#    \vdots & \vdots & & \vdots \\
-#    \frac{\partial Y}{\partial x} & \frac{\partial Y}{\partial x} & ... & \frac{\partial Y}{\partial x} \\
-# \end{pmatrix}
-#
-# = \Bigg\{ \frac{\partial y_{ij}}{\partial x} \Bigg\}
-# $$
-# %% codecell
-derive_by_array(Y, X[1-1,2-1])
 
 
 # %% markdown
@@ -137,12 +42,12 @@ derive_by_array(Y, X[1-1,2-1])
 # \Large
 # \frac{\partial Y}{\partial X} = \begin{pmatrix}
 #    \frac{\partial Y}{\partial x_{11}} & \frac{\partial Y}{\partial x_{12}} & ... & \frac{\partial Y}{\partial x_{1n}} \\
-#    \frac{\partial Y}{\partial x} & \frac{\partial Y}{\partial x} & ... & \frac{\partial Y}{\partial x} \\
+#    \frac{\partial Y}{\partial x_{21}} & \frac{\partial Y}{\partial x_{22}} & ... & \frac{\partial Y}{\partial x_{23}} \\
 #    \vdots & \vdots & & \vdots \\
-#    \frac{\partial Y}{\partial x} & \frac{\partial Y}{\partial x} & ... & \frac{\partial Y}{\partial x} \\
+#    \frac{\partial Y}{\partial x_{m1}} & \frac{\partial Y}{\partial x_{m2}} & ... & \frac{\partial Y}{\partial x_{mn}} \\
 # \end{pmatrix}
 #
-# = \Bigg\{ \frac{\partial y_{ij}}{\partial x} \Bigg\}
+# = \Bigg\{ \frac{\partial y_{ij}}{\partial x_{lk}} \Bigg\}
 # $$
 
 # %% codecell
