@@ -73,12 +73,12 @@ Y = Matrix(m, p, lambda i,j:  func(i, j)); Y
 
 # %% markdown
 # ### Derivative of Scalar Function of a Matrix with Respect to the Matrix
-# Let $X = \{ x_{ij} \}$ be a matrix of order $m \times n$ and let 
+# Let $X = \{ x_{ij} \}$ be a matrix of order $m \times n$ and let
 # $$
 # y = f(X)
-# $$ 
-# be a scalar function of $X$, so $y \in \mathbb{R}$ and $f: \mathbb{R}^{m \times n} \rightarrow \mathbb{R}$, 
-# Then we can define the **derivative of y with respect to $X$** as the following matrix of order $m \times n$: 
+# $$
+# be a scalar function of $X$, so $y \in \mathbb{R}$ and $f: \mathbb{R}^{m \times n} \rightarrow \mathbb{R}$,
+# Then we can define the **derivative of y with respect to $X$** as the following matrix of order $m \times n$:
 # $$
 # \Large
 # \frac{\partial y}{\partial X} = \begin{pmatrix}
@@ -87,10 +87,10 @@ Y = Matrix(m, p, lambda i,j:  func(i, j)); Y
 #    \vdots & \vdots & & \vdots \\
 #    \frac{\partial y}{\partial x_{m1}} & \frac{\partial y}{\partial x_{m2}} & ... & \frac{\partial y}{\partial x_{mn}} \\
 # \end{pmatrix}
-# 
+#
 # = \Bigg\{ \frac{\partial y}{\partial x_{ij}} \Bigg\}
 # $$
-# The matrix $\frac{\partial y}{\partial X}$ is called the **gradient matrix**. 
+# The matrix $\frac{\partial y}{\partial X}$ is called the **gradient matrix**.
 # %% codecell
 derive_by_array(Y[0,0], X)
 
@@ -98,15 +98,15 @@ derive_by_array(Y[0,0], X)
 
 # %% markdown
 # ### Derivative of Matrix With Respect to Scalar Element of Matrix
-# Let $X = \{ x_{ij} \}$ be a matrix of order $m \times n$ and let 
+# Let $X = \{ x_{ij} \}$ be a matrix of order $m \times n$ and let
 # $$
 # y = f(X)
-# $$ 
-# be a scalar function of $X$, so $y \in \mathbb{R}$ and $f: \mathbb{R}^{m \times n} \rightarrow \mathbb{R}$, 
-# 
-# Also let the matrix $Y = \{y_{ij}(X) \}$ be of size $p \times q$. 
-# 
-# Then we can define the **derivative of $Y$ with respect to an element $x$ in $X$** as the following matrix of order $p \times q$: 
+# $$
+# be a scalar function of $X$, so $y \in \mathbb{R}$ and $f: \mathbb{R}^{m \times n} \rightarrow \mathbb{R}$,
+#
+# Also let the matrix $Y = \{y_{ij}(X) \}$ be of size $p \times q$.
+#
+# Then we can define the **derivative of $Y$ with respect to an element $x$ in $X$** as the following matrix of order $p \times q$:
 # $$
 # \Large
 # \frac{\partial Y}{\partial x} = \begin{pmatrix}
@@ -115,14 +115,35 @@ derive_by_array(Y[0,0], X)
 #    \vdots & \vdots & & \vdots \\
 #    \frac{\partial Y}{\partial x} & \frac{\partial Y}{\partial x} & ... & \frac{\partial Y}{\partial x} \\
 # \end{pmatrix}
-# 
+#
 # = \Bigg\{ \frac{\partial y_{ij}}{\partial x} \Bigg\}
 # $$
 # %% codecell
 derive_by_array(Y, X[1-1,2-1])
 
 
-
+# %% markdown
+# ### Derivative of Matrix With Respect a Matrix
+# Let $X = \{ x_{ij} \}$ be a matrix of order $m \times n$ and let
+# $$
+# y = f(X)
+# $$
+# be a scalar function of $X$, so $y \in \mathbb{R}$ and $f: \mathbb{R}^{m \times n} \rightarrow \mathbb{R}$,
+#
+# Also let the matrix $Y = \{y_{ij}(X) \}$ be of size $p \times q$.
+#
+# Then we can define the **derivative of $Y$ with respect to $X$** as the following matrix of order $mp \times nq$:
+# $$
+# \Large
+# \frac{\partial Y}{\partial X} = \begin{pmatrix}
+#    \frac{\partial Y}{\partial x_{11}} & \frac{\partial Y}{\partial x_{12}} & ... & \frac{\partial Y}{\partial x_{1n}} \\
+#    \frac{\partial Y}{\partial x} & \frac{\partial Y}{\partial x} & ... & \frac{\partial Y}{\partial x} \\
+#    \vdots & \vdots & & \vdots \\
+#    \frac{\partial Y}{\partial x} & \frac{\partial Y}{\partial x} & ... & \frac{\partial Y}{\partial x} \\
+# \end{pmatrix}
+#
+# = \Bigg\{ \frac{\partial y_{ij}}{\partial x} \Bigg\}
+# $$
 
 # %% codecell
 # GOT IT this is the definition of gradient matrix (matrix of partial derivatives or dY/dX)
