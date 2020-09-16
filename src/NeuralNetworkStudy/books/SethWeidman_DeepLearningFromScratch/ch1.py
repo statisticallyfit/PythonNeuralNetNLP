@@ -112,9 +112,59 @@ f(N[0,0]).diff(X[0,0])
 # %% codecell
 n = v(X,W); n
 n11 = Function('{}'.format(n[0,0]))
-S[0,0]
+n11
+
+s_ij = Function('s_ij')
+sig = Function('sig')(x)
+
+
+# %% codecell
+
+# KEY: got not expecting UndefinedFunction error again here too
+#S_ij = Matrix(3, 2, lambda i,j: Function('s_{}{}'.format(i+1,j+1))(Function('{}'.format(N[i,j]))))
+
+
+
+# %% codecell
+#S_ij[0,0](sympify(N[0,0])).diff(sympify(N[0,0]))
+F = 3*x*y
+
+xy = Symbol('{}'.format(F))
+xy.subs({x:3})
+sympify(xy).subs({x:3})
+
+# %% codecell
+from sympy.abc import t
+
+F = Function('F')
+f = Function('f')
+U = f(t)
+V = U.diff(t)
+
+direct = F(t, U, V).diff(U); direct
+
+# %% codecell
+F(t,U,V)
+F(t,U,V).subs(U,x)
+F(t,U,V).subs(U,x).diff(x)
+F(t,U,V).subs(U,x).diff(x).subs(x, U)
+indirect = F(t,U,V).subs(U, x).diff(x).subs(x,U); indirect
+# %% codecell
+F = Lambda((x,y), 3*x* y)
+F(1,2)
+U = x*y
+G = 3*x*y
+xy
+F.diff(xy)
+# %% codecell
+# derive_by_array(S, N) # ERROR
+
+# %% codecell
+f  = sigma(n11) # KEY POINT: cannot take undefined function of undefined function. ERROR thrown
+# %% codecell
 s11 = S[0,0]
 s11.diff(n11)
+
 # %% codecell
 makeFunc = lambda matElem: Function('{}'.format(matElem))
 makeFuncOfMatElems = lambda mat: mat.applyfunc(makeFunc)
@@ -122,6 +172,7 @@ NN = makeFuncOfMatElems(N)
 NN
 # %% codecell
 SS = sigmaApply(NN); SS
+
 # %% codecell
 S[0,0].arg
 L = lambdaF(SS)
@@ -132,9 +183,74 @@ from sympy import symbols
 x, y, r, t = symbols('x y r t') # r (radius), t (angle theta)
 f, g, h = symbols('f g h', cls=Function)
 h = g(f(x))
-Derivative(h, x).doit()
+Derivative(h, f(x)).doit()
+# %% codecell
+nf11 = Function('{}'.format(N[0,0]))
+sigma(N[0,0]).diff(nf11(N[0,0])) # NOT WORKING GIVE UP ??
+# %% codecell
+h.args[0]
+h.diff(h.args[0])
+# %% codecell
+S = sigmaApply(v(X,W)); S
+# %% codecell
+from sympy.abc import n
+
+n11 = (X*W)[0,0]
+m = lambda mat1, mat2: sympify(Symbol('{}'.format((mat1 * mat2)[0,0] )))
+s = sigma(m(X,W)); s
+# %% codecell
+s.subs({W[0,0]: 14})
+# %% codecell
+Derivative(s, m(X,W)).doit()
+# %% codecell
+
+#s11 = Function('s_{11}')(n11); s11
+#sigma(n11).diff(n11)
+
+#s11.diff(n11)
+sigma(n11)
+# ERROR HERE TOO UNBELIEVABLE
+type(sigma(n11).args[0])
+type(n11)
+sigma(n11).diff(sigma(n11).args[0])
+
+# %% codecell
+b = Symbol('{}'.format(n11))
+ns_11 = Function(b, real=True)
+ns_11
+
+
+# ERROR cannot diff wi.r. to undefinedfunction
+# sigma(n11).diff(ns_11)
+
+
+#
+#sigma(b).diff(b).subs({b:1})
+
+
+# %% codecell
+f, g = symbols('f g', cls=Function)
+xy = Symbol('x*y'); xy
+#sympify(xy).subs({x:2, y:4})
+f(g(x,y)).diff(xy)
+# %% codecell
+# TODO SEEM to have got the expression but it is not working since can't substitute anything .... ???
+f(xy).diff(xy).subs({x:2})
+# %% codecell
+Function("x*y")(x,y)
+xyf = lambdify([x,y],xy)
+xyf(3,4)
+f(g(xy)).diff(xy)
+#
+
+# %% codecell
+xyd = Derivative(x*y, x*y,0).doit();xyd
+
+Derivative(3*xyd, xyd, 1).doit()
+
 # %% codecell
 derive_by_array(S, N)
+
 
 
 
