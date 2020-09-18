@@ -154,13 +154,6 @@ Selem.diff(Nelem)
 # %% codecell
 Selem.diff(Nelem).subs(elemToSpecFunc)
 # %% codecell
-
-first = list(elemToSpecFunc.values())[0]
-
-#Selem[0,0].diff()
-#Selem[0,0].subs({Nelem[0,0] : first}).diff(X[0,0])
-
-# %% codecell
 # CAN even replace elements after have done an operation on them!!! replacing n_21 * 2 with the number 4.
 Sspec.subs({Nspec[0, 0]: 3}).replace(sigma, lambda x: 2 * x).replace(Nspec[2, 1] * 2, 4)
 
@@ -192,10 +185,10 @@ L.replace(n, v).replace(sigmaApply, sigmaApply_)
 # %% codecell
 L.subs({A:X, B:W}).replace(n, vL).replace(sigmaApply, sigmaApply_)
 # %% codecell
-L.subs({n: v, A:X, B:W}).replace(sigmaApply, sigmaApply_).subs({Nspec[0, 1]: 34})
+L.replace(n, vv)
 
 # %% codecell
-L.subs({n: v, A:X, B:W}).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)
+L.replace(n, vv).subs({A:X, B:W}).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)
 
 
 
@@ -208,10 +201,13 @@ from sympy import symbols, Derivative
 
 x, y, r, t = symbols('x y r t') # r (radius), t (angle theta)
 f, g, h = symbols('f g h', cls=Function)
-h = g(f(x))
-Derivative(h, f(x)).doit()
+h = g(f(A)); h
+Derivative(h, A).doit()
 
-
+# %% codecell
+myL = lambd(sigmaApply(n(A,B)))
+myL
+#Derivative(myL, A).doit()
 # %% codecell
 
 # %% codecell
