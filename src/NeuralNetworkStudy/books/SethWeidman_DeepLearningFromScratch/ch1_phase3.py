@@ -76,7 +76,7 @@ N
 # way 2 of declaring S (better way)
 sigma = Function('sigma')
 
-sigmaApply = Function("sigma_{apply}") #lambda matrix:  matrix.applyfunc(sigma)
+sigmaApply = Function("sigma_apply") #lambda matrix:  matrix.applyfunc(sigma)
 
 sigmaApply_ = lambda matrix: matrix.applyfunc(sigma)
 
@@ -93,30 +93,37 @@ Selem
 # %% codecell
 import itertools
 
-elemToSpec = dict(itertools.chain(*[[(Nelem[i, j], Nspec[i, j]) for i in range(3)] for j in range(2)]))
-Matrix(list(elemToSpec.items()))
-# %% codecell
-elemToSpecFunc = dict(itertools.chain(*[[(Nelem[i, j], Function("n_{}{}".format(i + 1, j + 1))(Nspec[i, j])) for i in range(3)] for j in range(2)]))
+elemToSpecD = dict(itertools.chain(*[[(Nelem[i, j], Nspec[i, j]) for j in range(2)] for i in range(3)]))
 
-Matrix(list(elemToSpecFunc.items()))
+elemToSpec = list(elemToSpecD.items())
+
+Matrix(elemToSpec)
+# %% codecell
+elemToSpecFuncD = dict(itertools.chain(*[[(Nelem[i, j], Function("n_{}{}".format(i + 1, j + 1))(Nspec[i, j])) for j in range(2)] for i in range(3)]))
+
+elemToSpecFunc = list(elemToSpecFuncD.items())
+
+Matrix(elemToSpecFunc)
 
 # %% codecell
-Selem.subs(elemToSpec)
+Selem.subs(elemToSpecD)
 # %% codecell
 Selem[0,1].diff(Nelem[0,1])
 # %% codecell
-Selem[0,1].diff(Nelem[0,1]).subs(elemToSpec[1])
+Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]})
+#Selem[0,1].diff(Nelem[0,1]).subs(dict([{Nelem[0,1] : Nspec[0,1]}]))
+
 # %% codecell
-Selem[0,1].diff(Nelem[0,1]).subs(elemToSpec[1]).subs({Nspec[0,1] : 23})
+Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]}).subs({Nspec[0,1] : 23})
 # %% codecell
-Selem[0,1].diff(Nelem[0,1]).subs(elemToSpec[1]}).replace(sigma, lambda x: 8*x**3)
+Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]}).replace(sigma, lambda x: 8*x**3)
 # %% codecell
 Selem[0,1].diff(Nelem[0,1]).replace(sigma, lambda x: 8*x**3)
 # %% codecell
 Selem[0,1].diff(Nelem[0,1]).replace(sigma, lambda x: 8*x**3).doit()
 # %% codecell
 # ### GOT IT: can replace now with expression and do derivative with respect to that expression.
-Selem[0,1].diff(Nelem[0,1]).subs(elemToSpec[1]).replace(sigma, lambda x: 8*x**3).doit()
+Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]}).replace(sigma, lambda x: 8*x**3).doit()
 
 # %% codecell
 Selem
@@ -154,145 +161,7 @@ Sspec.subs({Nspec[0, 0]: 3}).replace(sigma, lambda x: 2 * x).replace(Nspec[2, 1]
 lambd = Function("lambda")
 lambd_ = lambda matrix : sum(matrix)
 
-
-vN(X, W)
-# %% codecell
-vN(A, B)
-# %% codecell
 L = lambd(S); L
-# %% codecell
-Nelem
-# %% codecell
-L.replace(n, vN)
-# %% codecell
-L.replace(n, vN).replace(sigmaApply, sigmaApply_)
-# %% codecell
-L.replace(n, v)
-# %% codecell
-
-L.replace(n, v).replace(sigmaApply, sigmaApply_)
-
-# %% codecell
-L.subs({A:X, B:W}).replace(n, vL).replace(sigmaApply, sigmaApply_)
-# %% codecell
-L.subs({n: v, A:X, B:W}).replace(sigmaApply, sigmaApply_).subs({Nspec[0, 1]: 34})
-
-# %% codecell
-L.subs({n: v, A:X, B:W}).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)
-
-
-
-
-
-
-
-# %% codecell
-from sympy import symbols, Derivative
-
-x, y, r, t = symbols('x y r t') # r (radius), t (angle theta)
-f, g, h = symbols('f g h', cls=Function)
-h = g(f(x))
-Derivative(h, f(x)).doit()
-
-
-# %% codecell
-
-# %% codecell
-# ### WAY 1: of substituting to differentiate with respect to expression:
-n_ij = Function('n_ij')
-n_ij(A,B) # (N[0,0]); n_ij
-
-# %% codecell
-n_ij(A,B).args
-
-# %% codecell
-# sigma(n_ij).diff(n_ij).replace(n_ij, N[0,0]) # ERROR cannot deriv wi.r.t to the expression w11*x11 + ...
-
-sigma(n_ij(A,B)).diff(n_ij(A,B))
-# %% codecell
-sigma(n_ij(*X,*W)).diff(X[0,0])
-# %% codecell
-nab_ij = n_ij(A,B)
-sigma(nab_ij).diff(nab_ij)#.subs({nab_ij : Nspec[0, 0]})
-# %% codecell
-sigma(nab_ij).diff(nab_ij).subs({nab_ij : Nspec[2, 1]})
-
-# %% codecell
-sigma(nab_ij).diff(nab_ij).subs({nab_ij : Nspec[2,1]}).subs({X[2,1]:77777})
-# %% codecell
-sigma(nab_ij).diff(nab_ij).subs({nab_ij : 23}) # ERROR if using replace() since it says can't calc derivs w.r.t to the x_11*w_11 + ...
-
-# %% codecell
-sigma(nab_ij).diff(nab_ij).subs({nab_ij : Nspec[2,1]}).doit()
-# %% codecell
-sigma(nab_ij).subs({nab_ij : Nspec[2,1]})#.diff(X[2,1])
-# %% codecell
-# Substituting the value of the function n_ij first, and THEN differentiating with respect to something in that substitution. (X_21)
-sigma(nab_ij).subs({nab_ij : Nspec[2,1]}).diff(X[2,1])
-
-
-# %% codecell
-Selem[2,1].subs({Nelem[2,1] : Nspec[2,1]}).diff(X[2,1])
-
-
-
-
-# %% codecell
-# ### WAY 2:
-n_11 = Function('n_11')(Nspec[0, 0]); n_11
-
-# %% codecell
-sigma(n_11)
-# %% codecell
-assert Nspec[0,0] == n_11.args[0]
-
-sigma(n_11).subs({n_11 : n_11.args[0]})
-# %% codecell
-sigma(n_11).diff(n_11) #.replace(n_ij, n_ij.args[0])
-# %% codecell
-sigma(n_11).diff(n_11).subs({n_11 : n_11.args[0]}).subs({X[0,0]:77777})
-# %% codecell
-sigma(n_11).diff(n_11).subs({n_11 : n_11.args[0]}).replace(n_11.args[0], 23) # same as subs in this case
-
-# %% codecell
-sigma(n_11).diff(X[0,0])
-# %% codecell
-id = Lambda(x, x)
-
-sigma(n_11).diff(X[0,0]).subs({n_11 : id})
-
-# %% codecell
-# NOTE: so I don't think WAY 2 is correct because here it doesn't simplify the derivative d n11 / d eps11, since this should equal 1 because now n11 = eps11. Correct one is below (repeated from above)
-sigma(n_11).diff(X[0,0]).subs({n_11 : Nspec[0,0]})
-# %% codecell
-# CORRECT WAY 1
-sigma(n_11).subs({n_11 : Nspec[0,0]}).diff(X[0,0])
-# %% codecell
-# CORRECT WAY 2
-
-sigma(nab_ij).subs({nab_ij : Nspec[0,0]}).diff(X[0,0])
-# %% codecell
-# CORRECT WAY 3
-Selem[2,1].subs({Nelem[2,1] : Nspec[2,1]}).diff(X[2,1])
-
-# %%codecell
-sigma(n_11) # WAY 1: sigma argument is already hardcoded
-# %%codecell
-sigma(nab_ij) # Way 2: sigma argument is function of matrixsymbol (better than 1)
-# %% codecell
-Selem[2,1] # WAY 3: sigma argument is just symbol and we replace it as function with argument hardcoded only later. (better than 2)
-
-
-
-
-# %% codecell
-L
-
-# %% codecell
-assert Selem == S.replace(n, vN).replace(sigmaApply, sigmaApply_)
-
-Selem
-
 # %% codecell
 L.replace(n, vN).replace(sigmaApply, sigmaApply_)
 # %% codecell
@@ -309,6 +178,34 @@ Lsum.subs(elemToSpec)#.diff(X[2,1])
 Lsum.subs(elemToSpec).diff(X)
 # %% codecell
 
-specToElem = {v : k for k, v in elemToSpec.items()}
+specToElemD = {v : k for k, v in elemToSpecD.items()}
 
-Lsum.subs(elemToSpec).diff(X).subs(specToElem)
+Lsum.subs(elemToSpecD).diff(X).subs(specToElemD)
+
+
+
+# %% codecell
+#### NOW DOING THE MATRIX SYMBOL DIFF EXPRESSION
+Selem
+# %% codecell
+F = lambd(Selem)
+F
+# %% codecell
+from sympy import diff
+
+diff(F, Nelem)
+# %% codecell
+L
+# %% codecell
+__ = lambda matrixSym: matrixSym.T
+
+LT = lambd(sigmaApply(n(__(A)))); LT
+# %% codecell
+d = diff(LT, A).replace(__(A),A)
+d
+# %% codecell
+#diff(LT, A).replace(A.T, A)
+#d.replace(n(A), n(A,B)).replace(n, v)
+
+# %% codecell
+# %% codecell

@@ -1,5 +1,5 @@
 # %% codecell
-from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol
+from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Derivative, diff, symbols
 from sympy import var
 from sympy.abc import x, i, j, a, b
 
@@ -29,9 +29,9 @@ vL = Lambda((a,b), a*b)
 
 n = Function('v') #, Lambda((a,b), a*b))
 
-vv = lambda mat1, mat2: Matrix(mat1.shape[0], mat2.shape[1], lambda i, j: Symbol("n_{}{}".format(i+1, j+1))); vv
+vN = lambda mat1, mat2: Matrix(mat1.shape[0], mat2.shape[1], lambda i, j: Symbol("n_{}{}".format(i+1, j+1))); vN
 
-Nelem = vv(X, W); Nelem
+Nelem = vN(X, W); Nelem
 
 # %% codecell
 n(X,W)
@@ -77,15 +77,15 @@ N.diff(X)
 # way 2 of declaring S (better way)
 sigma = Function('sigma')
 
-sigmaApply = Function("sigma_{apply}") #lambda matrix:  matrix.applyfunc(sigma)
+sigmaApply = Function("sigma_apply") #lambda matrix:  matrix.applyfunc(sigma)
 
 sigmaApply_ = lambda matrix: matrix.applyfunc(sigma)
 
 sigmaApply(A)
 # %% codecell
-sigmaApply_(A)
+sigmaApply(A).subs({A: X})
 # %% codecell
-sigmaApply_(X)
+sigmaApply_(A)
 
 # %% codecell
 sigmaApply(A).subs({A: X}).replace(sigmaApply, sigmaApply_) # NOTE: subs of functions doesn't work, replace actually evaluates the replaced function!
@@ -94,6 +94,22 @@ sigmaApply(A).subs({A: X}).replace(sigmaApply, sigmaApply_) # NOTE: subs of func
 # %% codecell
 S = sigmaApply(N); S
 # %% codecell
+Derivative(S, S)
+# %% codecell
+Derivative(S, S).doit()
+# %% codecell
+Derivative(S, n(A,B)).doit()
+# %% codecell
+#lambd = Function("lambda")
+#Lagain = lambd(sigmaApply(n(A))); Lagain
+
+
+
+# diff(Lagain, A) # never execute
+#
+
+
+# %% codecell
 S.replace(A,X).replace(B,W)
 
 # %% codecell
@@ -101,28 +117,12 @@ S.replace(n, v)
 # %% codecell
 S.subs({A:X, B:W}).replace(n, v)
 # %% codecell
-Sspec = S.subs({A:X, B:W}).replace(n, v).replace(sigmaApply, sigmaApply_); Sspec
+Sspec = S.subs({A:X, B:W}).replace(n, v).replace(sigmaApply, sigmaApply_)
+Sspec
 # %% codecell
-S.replace(n, vv) #.replace(sigmaApply, sigmaApply_)
+S.replace(n, vN) #.replace(sigmaApply, sigmaApply_)
 # %% codecell
-Selem = S.replace(n, vv).replace(sigmaApply, sigmaApply_); Selem
-# %% codecell
-Selem.subs({Nelem[0,0]: Nspec[0,0], Nelem[2,1]:Nspec[2,1]})
-# %% codecell
-Selem[0,1].diff(Nelem[0,1])
-# %% codecell
-Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1]: Nspec[0,1]})
-# %% codecell
-Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1]: Nspec[0,1]}).subs({Nspec[0,1] : 23})
-# %% codecell
-Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]}).replace(sigma, lambda x: 8*x**3)
-# %% codecell
-Selem[0,1].diff(Nelem[0,1]).replace(sigma, lambda x: 8*x**3)
-# %% codecell
-Selem[0,1].diff(Nelem[0,1]).replace(sigma, lambda x: 8*x**3).doit()
-# %% codecell
-# ### GOT IT: can replace now with expression and do derivative with respect to that expression.
-Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]}).replace(sigma, lambda x: 8*x**3).doit()
+Selem = S.replace(n, vN).replace(sigmaApply, sigmaApply_); Selem
 
 # %% codecell
 import itertools
@@ -133,7 +133,25 @@ Matrix(list(elemToSpec.items()))
 elemToSpecFunc = dict(itertools.chain(*[[(Nelem[i, j], Function("n_{}{}".format(i + 1, j + 1))(Nspec[i, j])) for i in range(3)] for j in range(2)]))
 
 Matrix(list(elemToSpecFunc.items()))
-#subsMap = dict(itertools.chain(*[[(Nelem[i,j], Nspec[i,j]) for i in range(3)] for j in range(2)])); subsMap
+
+# %% codecell
+Selem.subs(elemToSpec)
+# %% codecell
+Selem[0,1].diff(Nelem[0,1])
+# %% codecell
+Selem[0,1].diff(Nelem[0,1]).subs(elemToSpec[1])
+# %% codecell
+Selem[0,1].diff(Nelem[0,1]).subs(elemToSpec[1]).subs({Nspec[0,1] : 23})
+# %% codecell
+Selem[0,1].diff(Nelem[0,1]).subs(elemToSpec[1]}).replace(sigma, lambda x: 8*x**3)
+# %% codecell
+Selem[0,1].diff(Nelem[0,1]).replace(sigma, lambda x: 8*x**3)
+# %% codecell
+Selem[0,1].diff(Nelem[0,1]).replace(sigma, lambda x: 8*x**3).doit()
+# %% codecell
+# ### GOT IT: can replace now with expression and do derivative with respect to that expression.
+Selem[0,1].diff(Nelem[0,1]).subs(elemToSpec[1]).replace(sigma, lambda x: 8*x**3).doit()
+
 # %% codecell
 Selem
 
@@ -165,17 +183,17 @@ lambd = Function("lambda")
 lambd_ = lambda matrix : sum(matrix)
 
 
-vv(X, W)
+vN(X, W)
 # %% codecell
-vv(A, B)
+vN(A, B)
 # %% codecell
 L = lambd(S); L
 # %% codecell
 Nelem
 # %% codecell
-L.replace(n, vv)
+L.replace(n, vN)
 # %% codecell
-L.replace(n, vv).replace(sigmaApply, sigmaApply_)
+L.replace(n, vN).replace(sigmaApply, sigmaApply_)
 # %% codecell
 L.replace(n, v)
 # %% codecell
@@ -185,10 +203,10 @@ L.replace(n, v).replace(sigmaApply, sigmaApply_)
 # %% codecell
 L.subs({A:X, B:W}).replace(n, vL).replace(sigmaApply, sigmaApply_)
 # %% codecell
-L.replace(n, vv)
+L.replace(n, vN)
 
 # %% codecell
-L.replace(n, vv).subs({A:X, B:W}).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)
+L.replace(n, vN).subs({A:X, B:W}).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)
 
 
 
@@ -201,13 +219,25 @@ from sympy import symbols, Derivative
 
 x, y, r, t = symbols('x y r t') # r (radius), t (angle theta)
 f, g, h = symbols('f g h', cls=Function)
-h = g(f(A)); h
-Derivative(h, A).doit()
+h = g(f(x))
+
+Derivative(h, f(x)).doit()
 
 # %% codecell
-myL = lambd(sigmaApply(n(A,B)))
-myL
-#Derivative(myL, A).doit()
+# Never do this gives recursion ERROR (max depth exceeded)
+# h = g(f(A))
+# Derivative(h, A).doit()
+
+# %% codecell
+
+
+# %% codecell
+from sympy.abc import a, b
+
+Llower = lambd(sigmaApply(n(a, b)))
+Llower
+# %% codecell
+Derivative(Llower, a).doit()
 # %% codecell
 
 # %% codecell
@@ -302,17 +332,17 @@ Selem[2,1] # WAY 3: sigma argument is just symbol and we replace it as function 
 L
 
 # %% codecell
-assert Selem == S.replace(n, vv).replace(sigmaApply, sigmaApply_)
+assert Selem == S.replace(n, vN).replace(sigmaApply, sigmaApply_)
 
 Selem
 
 # %% codecell
-L.replace(n, vv).replace(sigmaApply, sigmaApply_)
+L.replace(n, vN).replace(sigmaApply, sigmaApply_)
 # %% codecell
-#L.replace(n, vv).replace(sigmaApply, sigmaApply_).diff(Nelem[0,0])
+#L.replace(n, vN).replace(sigmaApply, sigmaApply_).diff(Nelem[0,0])
 
 # %% codecell
-Lsum = L.replace(n, vv).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)
+Lsum = L.replace(n, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)
 Lsum
 # %% codecell
 Lsum.diff(Nelem)
