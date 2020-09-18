@@ -127,31 +127,46 @@ Selem = S.replace(n, vN).replace(sigmaApply, sigmaApply_); Selem
 # %% codecell
 import itertools
 
-elemToSpec = dict(itertools.chain(*[[(Nelem[i, j], Nspec[i, j]) for i in range(3)] for j in range(2)]))
-Matrix(list(elemToSpec.items()))
-# %% codecell
-elemToSpecFunc = dict(itertools.chain(*[[(Nelem[i, j], Function("n_{}{}".format(i + 1, j + 1))(Nspec[i, j])) for i in range(3)] for j in range(2)]))
+elemToSpecD = dict(itertools.chain(*[[(Nelem[i, j], Nspec[i, j]) for j in range(2)] for i in range(3)]))
 
-Matrix(list(elemToSpecFunc.items()))
+elemToSpec = list(elemToSpecD.items())
 
+Matrix(elemToSpec)
 # %% codecell
-Selem.subs(elemToSpec)
+elemToSpecFuncD = dict(itertools.chain(*[[(Nelem[i, j], Function("n_{}{}".format(i + 1, j + 1))(Nspec[i, j])) for j in range(2)] for i in range(3)]))
+
+elemToSpecFunc = list(elemToSpecFuncD.items())
+
+Matrix(elemToSpecFunc)
+# %% codecell
+elemToSpecFuncArgsD = dict(itertools.chain(*[[(Nelem[i, j], Function("n_{}{}".format(i + 1, j + 1))(*X,*W)) for j in range(2)] for i in range(3)]))
+
+elemToSpecFuncArgs = list(elemToSpecFuncArgsD.items())
+
+Matrix(elemToSpecFuncArgs)
+# %% codecell
+Selem
+# %% codecell
+Selem.subs(elemToSpecD)
 # %% codecell
 Selem[0,1].diff(Nelem[0,1])
 # %% codecell
-Selem[0,1].diff(Nelem[0,1]).subs(elemToSpec[1])
+Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]})
+#Selem[0,1].diff(Nelem[0,1]).subs(dict([{Nelem[0,1] : Nspec[0,1]}]))
+
 # %% codecell
-Selem[0,1].diff(Nelem[0,1]).subs(elemToSpec[1]).subs({Nspec[0,1] : 23})
+Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]}).subs({Nspec[0,1] : 23})
 # %% codecell
-Selem[0,1].diff(Nelem[0,1]).subs(elemToSpec[1]}).replace(sigma, lambda x: 8*x**3)
+Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]}).replace(sigma, lambda x: 8*x**3)
 # %% codecell
 Selem[0,1].diff(Nelem[0,1]).replace(sigma, lambda x: 8*x**3)
 # %% codecell
 Selem[0,1].diff(Nelem[0,1]).replace(sigma, lambda x: 8*x**3).doit()
 # %% codecell
 # ### GOT IT: can replace now with expression and do derivative with respect to that expression.
-Selem[0,1].diff(Nelem[0,1]).subs(elemToSpec[1]).replace(sigma, lambda x: 8*x**3).doit()
-
+Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]}).replace(sigma, lambda x: 8*x**3).doit()
+# %% codecell
+Selem[0,1].subs({Nelem[0,1] : Nspec[0,1]}).diff(X[0,1])#.subs({Nelem[0,1] : Nspec[0,1]})
 # %% codecell
 Selem
 

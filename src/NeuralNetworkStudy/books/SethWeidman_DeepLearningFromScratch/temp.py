@@ -1,5 +1,5 @@
 # %% codecell
-
+# SOURCE = https://www.kannon.link/free/2019/10/30/symbolic-matrix-differentiation-with-sympy/
 from sympy import diff, symbols, MatrixSymbol, Transpose, Trace, Matrix
 
 
@@ -39,6 +39,7 @@ h = g(f(sq.args[0]))
 h
 # %% codecell
 diff(h, B)
+
 # %% codecell
 from sympy import Derivative
 
@@ -81,12 +82,14 @@ assert type(A.T) != type(A.T.T)
 #D = MatrixSymbol('D', 3,4)
 
 #ad = A+D
-h = g(f(__(A)))
+from sympy.abc import i,j,x,a,b,c
+
+h = g(f(A.T))
 
 h
 # %% codecell
 
-diff(h, A).replace(__(A),A)
+diff(h, A).replace(A.T,A)
 # %% codecell
 diff(A.T, A).replace(A.T, A)
 
@@ -97,21 +100,37 @@ diff(A.T, A).replace(A, Matrix(A)).doit()
 
 
 # %% codecell
-from sympy import Symbol 
+from sympy import Symbol
 from sympy.abc import b
 
 #A = MatrixSymbol('A', 3,4)
 M = Matrix(3,4, lambda i,j : Symbol('x_{}{}'.format(i+1,j+1)))
+Matrix(M)
+# %% codecell
+Matrix(A)
+# %% codecell
 g, f = symbols('g f', cls = Function)
 
-__ = lambda mat: mat.T # transposes matrix symbol
+#__ = lambda mat: mat.T # transposes matrix symbol
 
-h = g(f(A,b))
-h
-# %% codecell
-
+diff( g(f(M,b)), b)
 
 # %% codecell
+diff( g(f(M,b)), b).replace(M, A)
+# %% codecell
+Ms = MatrixSymbol('M',2,2)
+Ds = MatrixSymbol('D',2,2)
+M = Matrix(2,2, lambda i,j: Symbol("m_{}{}".format(i+1,j+1)))
+D = Matrix(2,2, lambda i,j: Symbol("d_{}{}".format(i+1,j+1)))
+
+diff( g(f(M, D)), D )
+# %% codecell
+diff( g(f(M, D)), D ).replace(D, Ds).replace(M, Ms)
+# %% codecell
+dd = diff(Ds,Ds).replace(Ds,D).doit(); dd
+
+# %% codecell
+#diff( g(f(Ms, Ds.T)), Ds )#.replace(Ds.T, Ds)
 # %% codecell
 # %% codecell
 # %% codecell
