@@ -28,6 +28,52 @@ diff(squared_frobenius_norm(A*B - C), B)
 # %% codecell
 sq.args[0]
 # %% codecell
+from sympy import srepr, expand, simplify, collect, factor, cancel, apart
+
+#srepr(sq.args[0])
+expand(sq.args[0])
+# %% codecell
+#diff(sq.args[0], B)
+#diff(expand(sq.args[0]), B).doit()
+from sympy import Symbol
+Xm = Matrix(3,3, lambda i,j : Symbol("x_{}{}".format(i+1,j+1), commutative=True))
+Wm = Matrix(3,2, lambda i,j : Symbol("w_{}{}".format(i+1,j+1), commutative=True))
+
+X = MatrixSymbol('X',3,3)
+W = MatrixSymbol('W', 3,2);
+
+# %% codecell
+diff(X*W, X)
+# %% codecell
+diff(X*W, X).subs({X:Xm})
+# %% codecell
+diff(X*W, X).subs({X:Xm}).doit()
+# %% codecell
+diff(X*W, X).subs({X:Xm}).doit().subs({W:Wm})
+
+# %% codecell
+# expand(diff(X*W, X).subs({X:Xm}).doit().subs({W:Wm}))# STUCK doesn't work to expand out from here
+#diff(X*W, X).replace(X,Xm)# ERROR so I must use subs instead (noncommutatitve scalars in matrix multiplication not supported)
+diff(X*W, X).subs({X:Xm, W:Wm}).doit()
+
+# %% codecell
+g,f = symbols('g f', cls = Function)
+f(X).replace(X, X.T).diff(X).replace(X.T, X)
+# %% codecell
+g(f(X)).replace(X, X.T).diff(X).replace(X.T, X)
+# %% codecell
+f(X,W).replace(X,X.T).diff(X)
+2+2
+# %% codecell
+# %% codecell
+# %% codecell
+# %% codecell
+# %% codecell
+
+
+
+
+# %% codecell
 type(sq.args[0])
 # %% codecell
 from sympy import symbols, Function

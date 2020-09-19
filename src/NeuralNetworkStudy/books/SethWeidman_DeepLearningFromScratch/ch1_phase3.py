@@ -13,14 +13,16 @@ def myvar(letter: str, i: int, j: int) -> Symbol:
     return letter_ij
 
 
-n,m,p = 3,3,2
+ns,ms,ps = 3,3,2
 
-X = Matrix(n, m, lambda i,j : myvar('x', i, j)); X
+X = Matrix(ns, ms, lambda i,j : myvar('x', i, j)); X
 # %% codecell
-W = Matrix(m, p, lambda i,j : myvar('w', i, j)); W
+W = Matrix(ms, ps, lambda i,j : myvar('w', i, j)); W
 # %% codecell
-A = MatrixSymbol('X',3,3); Matrix(A)
-B = MatrixSymbol('W',3,2)
+#TODO how to make matrix symbols commutative?
+# A = MatrixSymbol('X',ns,ms, is_commutative=True); Matrix(A)
+A = MatrixSymbol('X',ns,ms); Matrix(A)
+B = MatrixSymbol('W',ms,ps)
 
 
 
@@ -190,30 +192,206 @@ Lsum
 # %% codecell
 Lsum.diff(Nelem)
 # %% codecell
-Lsum.subs(elemToSpec)#.diff(X[2,1])
+Lsum.subs(elemToSpecD)#.diff(X[2,1])
 # %% codecell
 Lsum.subs(elemToSpecD).diff(X)
 # %% codecell
+# METHOD 1: direct matrix diff
+#
+### END RESULT ACHIEVED HERE (this is the end result and the most specific form of the result of the  matrix differentiation, when sigma is unknown)
 specToElemD = {v:k for k,v in elemToSpecD.items()}
+
+assert Lsum == L.replace(n, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)
 Lsum.subs(elemToSpecD).diff(X).subs(specToElemD)
 
 
 
 # %% codecell
-#### NOW DOING THE MATRIX SYMBOL DIFF EXPRESSION
+# METHOD 2: doing matrix symbol diff
+#
+#### NOW DOING THE MATRIX SYMBOL DIFF EXPRESSION (trying to achieve a form that shows the chain rule w.r.t to matrix symbol)
 Selem
 # %% codecell
 L
+# %% codecell
+#L.replace(A, A.T).diff(A) #ERROR: fatal python error ... why??
 
+# %% codecell
+#L.replace(n,v).diff(A).replace(sigmaApply, sigmaApply_) # ERROR
+#L.replace(n,vN).subs(elemToSpecFuncD).replace(sigmaApply, sigmaApply_).diff(X) # why the zero matrix?
+
+# %% codecell
+L.replace(n,v).diff(A)
+# %% codecell
+L.replace(n,vL).diff(A)
+
+# %% codecell
+#L.replace(n,v).diff(A).replace(lambd,lambd_) ### ERROR sigma object is not iterable
+#L.replace(n,vL).diff(A).replace(sigmaApply, sigmaApply_)### ERROR
+#L.replace(n,v).diff(A).replace(sigmaApply, sigmaApply_) ### ERROR dummy object has no attribute applyfunc
+# %% codecell
+#L.replace(sigmaApply, sigmaApply_).diff(A) # ERROR
+# L.replace(lambd, lambd_) # ERROR
+
+
+### METHOD 0: (prepare by substituting n --> v, then sigmaApply --> sigma)
+L.replace(n, v).replace(sigmaApply, sigmaApply_)#.replace(lambd, lambd_)
+# %% codecell
+### METHOD 0: the matrix diff rule in the most abstract form possible
+L.replace(n,vL).replace(sigmaApply, sigmaApply_).diff(A)
+# %% codecell
+### SUCCESS! We see now that the matrix chain rule indeed makes the X transpose factor out on the left!!! (while compared to the above, the matrix transpose W^T factors out on the right, just like the book says (page 45 in the NOTE section of Seth Weidman book))
+L.replace(n,v).replace(sigmaApply, sigmaApply_).diff(B)
+
+# %% codecell
+#L.replace(n,v).replace(sigmaApply, sigmaApply_).diff(B).replace(B,W).replace(A,X) # ## ERROR non commutative scalars in matrix
+# L.replace(n,v).replace(sigmaApply, sigmaApply_).diff(B).replace(lambd, lambd_).replace(B,W).replace(A,X)# ## ERROR dummy object not iterable
+# %% codecell
+
+#L.replace(n,vL).replace(sigmaApply, sigmaApply_).diff(A).replace(lambd, lambd_) ### ERROR: dummy object not iterable (probably means when in the above expression we have epsilon = sigmaApply(XW) that we cannot iterate over this expression)
+# %% codecell
+# Replacing lambda first: BAD
+#L.replace(n, v).replace(lambd, lambd_) ## ERROR sigma apply object not ieterable
+# Replacing sigma first: BAD
+# L.replace(sigmaApply, sigmaApply_)### ERROR v object has no attribute applyfunc
+# %% codecell
+# Replacing n first: GOOD (need to go from inner nesting to outermost function, never any other way)
+L.replace(n, v).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)
+# %% codecell
+# ### END RESULT of METHOD 2:
+L.replace(n, v).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).diff(Matrix(A))
+# %% codecell
+# COmpare the above matrix symbol way with the Lsum way:
+#
+# ### END RESULT of METHOD 1:
+#Lsum = L.replace(n, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)
+
+L.replace(n, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(X)#.subs(specToElemD)
+# %% codecell
+
+
+# %% codecell
+## COMPARING METHOD 0 (abstract way) with METHOD 2 (direct way) when differentiating .w.r.t to X vs. w.r.t to W
+
+### With respect to X (abstract)
+L.replace(n,vL).replace(sigmaApply, sigmaApply_).diff(A)
+# %% codecell
+### With respect to X (direct)
+L.replace(n, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(X).subs(specToElemD)
+# %% codecell
+### With respect to W (abstract)
+L.replace(n,vL).replace(sigmaApply, sigmaApply_).diff(B)
+# %% codecell
+### With respect to W (direct)
+
+L.replace(n, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(W).subs(specToElemD)
+# %% codecell
+# %% codecell
+# %% codecell
+# %% codecell
+### NEXT: try to substitute the X, W matrices step by step to see if you can come to the same result as the direct forms above (from method 2 or 1)
+from sympy import simplify, expand
+
+#simplify(L.replace(n,vL).replace(sigmaApply, sigmaApply_).diff(B).subs({A:X, B:W})) ### ERROR max recursion depth exceeded
+L.replace(n,vL).replace(sigmaApply, sigmaApply_).diff(B).subs({A:X, B:W})
+# %% codecell
+L.replace(n,v).replace(sigmaApply, sigmaApply_).diff(B)#.subs({A:X, B:W})
+
+
+# %% codecell
+L.replace(n,v).replace(sigmaApply, sigmaApply_).diff(B)
+# %% codecell
+#L.replace(n,v).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)
+
+# %% codecell
+#L.replace(n,v).replace(sigmaApply, sigmaApply_).diff(B).subs({A:X, B:W}).replace(lambd, lambd_) ### ERROR dummy object not iterable
+L.replace(n,v).diff(A)
+# %% codecell
+#L.replace(n,v).replace(sigmaApply, sigmaApply_).diff(A).replace(A,Matrix(A))##ERROR noncommutative matrix scalars
+# WANT: to be able to do diff and have the expression come out as above with X^T on left and W^T on right, when using just this form, with abstract form v:
+L.replace(A,A.T).replace(B,B.T)
+# %% codecell
+# Error if applying sigma to the v function because it sais v has no attribute applyfunc to trying now to making it have the attriute applyfunc.
+y = Function('y', applyfunc=True, real=True)
+
+
+
+from sympy.utilities.lambdify import lambdify, implemented_function
+z = implemented_function('z', y)
+lam_z = lambdify([A,B], z(A,B)); lam_z
+# %% codecell
+lam_z(A,B)
+# %% codecell
+Lz = lambd(sigmaApply(lam_z(A,B)))
+Lz
+# %% codecell
+Ly = lambd(sigmaApply(y(A,B)))
+Ly
+# %% codecell
+
+Ly.replace(A,A.T).replace(B,B.T)#.replace(sigmaApply, sigmaApply_)
+# %% codecell
+# TODO next step: to apply the sigma to get that applied functor expression but here get error saying bol object not callable ...??
+Ly.replace(A,A.T).replace(B,B.T)#.replace(sigmaApply, sigmaApply_)
+
+# %% codecell
+# TODO always get fatal python error here, as if it can't deal with two matrix args!!
+#Ly.replace(A,A.T).replace(B,B.T).diff(A)
+def siga(mat: Matrix) -> Matrix:
+     #lst = mat.tolist()
+     nr, nc = mat.shape
+
+     applied = [[sigma(mat[i,j]) for j in range(0, nc)] for i in range(0, nr)]
+
+     return Matrix(applied)
+sigmaApply_(Nelem)
+siga(Nelem)
+#siga2 = Lambda(a, siga(a))
+# %% codecell
+Ly.replace(A, A.T).replace(B, b).diff(b)#.replace(sigmaApply, siga)
+# %% codecell
+b = Symbol('b', commutative=True)
+#Lz.replace(A,A.T).replace(B,b).diff(A)
+# TODO still problem with bool object here even though the y-function is lambdified.
+#sig = lambda mat: mat.applyfunc(lambda)
+sigma.__dict__
+#Lz.replace(sigmaApply, sigmaApply_)
+
+# %% codecell
+# Ly.replace(B, b).diff(A)#.replace(sigmaApply, siga)### ERROR noncommutative matrix scalars not supported
+Ly.replace(A, A.T).replace(B, b).diff(b).replace(b, B).replace(A.T, A)#.replace(sigmaApply, siga)
+# %% codecell
+# NEXT: try to replace the sigma apply, not working
+n.__dict__
+# %% codecell
+y.__dict__
+# TODO HERE
+#https://stackoverflow.com/questions/12614334/typeerror-bool-object-is-not-callable
+# %% codecell
+# %% codecell
 # %% codecell
 from sympy import diff
 # ### WARNING: this only works when size(X) == size(Y) else since size(W) != size(X) cannot subst B with W, so this operation won't work in my case.
 
-Y = Matrix(3,3, lambda i,j: Symbol("y_{}{}".format(i+1,j+1)))
+#X = Matrix(3,3, lambda i,j: Symbol("x_{}{}".format(i+1,j+1))); Matrix(X)
+# Create another matrix instead of W so that it matches size of X during diff(X) operation, since otherwise the diff by X doesn't work, says X and W need to be same size.
 
+Wtemp = Matrix(*X.shape, lambda i,j: Symbol("t_{}{}".format(i+1,j+1))); Matrix(Wtemp)
+# %% codecell
+#L.subs({A:X, B:Wtemp}).diff(X)[0,0][0,0].replace(n,vN).replace(sigmaApply, sigmaApply_)#.doit()
 #diff(L.replace(A,A.T), A) # ERROR max recursion depth exceeded
-#2+2
-Lmat = L.subs({A:X, B:Y}).diff(X).replace(X, A).replace(Y,B); Lmat
+
+# %% codecell
+#Lmat = L.subs({A:X, B:Wtemp}).diff(X).subs({X:A, Wtemp: B}); Lmat #replace(X, A).replace(Y,B); Lmat
+# NOTE need to do replace at the end (instead of subs) else it says unhasable type mutabledensematrix.
+Lmat = L.subs({A:X, B:Wtemp}).diff(X).replace(X, A).replace(Wtemp,B); Lmat
+#L.diff(A) # HELL ON THE EDITOR NEVER TRY THIS AGAIN
+# %% codecell
+#L.replace(A,X).replace(B,W)
+
+# %% codecell
+# Method 2 approach for comparison:
+#L.replace(n, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(X)#.subs(specToElemD)
 # %% codecell
 elem = Lmat[0,0][0,0];elem
 # %% codecell
