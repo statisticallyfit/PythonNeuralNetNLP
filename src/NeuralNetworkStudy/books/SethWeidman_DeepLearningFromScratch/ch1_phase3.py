@@ -5,8 +5,7 @@ from sympy.abc import x, i, j, a, b
 
 
 
-# %% markdown
-# Defining myvariable-element matrices $X \in \mathbb{R}^{n \times m}$ and $W \in \mathbb{R}^{m \times p}$:
+
 # %% codecell
 def myvar(letter: str, i: int, j: int) -> Symbol:
     letter_ij = Symbol('{}_{}{}'.format(letter, i+1, j+1), is_commutative=True)
@@ -29,11 +28,7 @@ B = MatrixSymbol('W',ms,ps)
 
 
 
-# %% markdown
-# Defining $N = \nu(X, W) = X \times W$
-#
-# * $\nu : \mathbb{R}^{(n \times m) \times (m \times p)} \rightarrow \mathbb{R}^{n \times p}$
-# * $N \in \mathbb{R}^{n \times p}$
+
 # %% codecell
 v = lambda a,b: a*b
 
@@ -63,18 +58,17 @@ N
 
 
 
-# %% markdown
-#
-# Defining $S = \sigma_{\text{apply}}(N) = \sigma_{\text{apply}}(\nu(X,W)) = \sigma_\text{apply}(X \times W) = \Big \{ \sigma(XW_{ij}) \Big\}$.
-#
-
-# Assume that $\sigma_{\text{apply}} : \mathbb{R}^{n \times p} \rightarrow \mathbb{R}^{n \times p}$ while $\sigma : \mathbb{R} \rightarrow \mathbb{R}$, so the function $\sigma_{\text{apply}}$ takes in a matrix and returns a matrix while the simple $\sigma$ acts on the individual elements $N_{ij} = XW_{ij}$ in the matrix argument $N$ of $\sigma_{\text{apply}}$.
-#
-# * $\sigma : \mathbb{R} \rightarrow \mathbb{R}$
-# * $\sigma_\text{apply} : \mathbb{R}^{n \times p} \rightarrow \mathbb{R}^{n \times p}$
-# * $S \in \mathbb{R}^{n \times p}$
-
 # %% codecell
+
+def siga(mat: Matrix) -> Matrix:
+     #lst = mat.tolist()
+     nr, nc = mat.shape
+
+     applied = [[sigma(mat[i,j]) for j in range(0, nc)] for i in range(0, nr)]
+
+     return Matrix(applied)
+
+
 # way 2 of declaring S (better way)
 sigma = Function('sigma')
 
@@ -82,7 +76,15 @@ sigmaApply = Function("sigma_apply") #lambda matrix:  matrix.applyfunc(sigma)
 
 sigmaApply_ = lambda matrix: matrix.applyfunc(sigma)
 
+sigmaApply_2 = lambda matrix: siga(matrix)
+
 S = sigmaApply(N); S
+# %% codecell
+sigmaApply_(Nelem)
+# %% codecell
+sigmaApply_2(Nelem)
+# %% codecell
+#sigmaApply_2(A*B).diff(Matrix(A))
 
 # %% codecell
 Sspec = S.subs({A:X, B:W}).replace(n, v).replace(sigmaApply, sigmaApply_)
@@ -112,6 +114,23 @@ elemToSpecFuncArgsD = dict(itertools.chain(*[[(Nelem[i, j], Function("n_{}{}".fo
 elemToSpecFuncArgs = list(elemToSpecFuncArgsD.items())
 
 Matrix(elemToSpecFuncArgs)
+
+
+# %% codecell
+elemToMatArgD = dict(itertools.chain(*[[(Nelem[i, j], Function("n_{}{}".format(i+1,j+1))(A,B) ) for j in range(2)] for i in range(3)]))
+
+elemToMatArg = list(elemToMatArgD.items())
+
+Matrix(elemToMatArg)
+
+# %% codecell
+matargToSpecD = dict(zip(elemToMatArgD.values(), elemToSpecD.values()))
+
+matargToSpec = list(matargToSpecD.items())
+
+Matrix(matargToSpec)
+
+
 # %% codecell
 Selem
 # %% codecell
@@ -233,9 +252,36 @@ L.replace(n,vL).diff(A)
 #L.replace(sigmaApply, sigmaApply_).diff(A) # ERROR
 # L.replace(lambd, lambd_) # ERROR
 
-
+#L.replace(n, v).replace(sigmaApply, sigmaApply_2)# shows matrix results, too specific, want the function composition notation as below but just applied to the function v(X,W) in abstract way
 ### METHOD 0: (prepare by substituting n --> v, then sigmaApply --> sigma)
 L.replace(n, v).replace(sigmaApply, sigmaApply_)#.replace(lambd, lambd_)
+# %% codecell
+
+A.applyfunc(sigma)
+# %% codecell
+
+vSym = Symbol('v', applyfunc=True)
+L.replace(n(A,B), vSym)
+# %% codecell
+#L.replace(n(A,B), vSym).replace(sigmaApply, sigmaApply_)# ERROR because Symbol has no atttribute applyfunc (that is the one we want though so must use matrix symbol which for some reason works instead of just an ordinary symbol v
+#V = MatrixSymbol()
+# Takes in the symbols A and B matrices and returns the matrix symbol with the shape that is supposed to result after A*B
+V = lambda matA, matB: MatrixSymbol('V', matA.shape[0], matB.shape[1])
+V(A,B).shape
+# %% codecell
+L.replace(n, V).replace(sigmaApply, sigmaApply_)
+# %% codecell
+L.replace(n, V).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)
+# %% codecell
+#x.applyfunc(sigma) # ERROR since x has no attribute applyfunc
+
+#y.applyfunc(sigma) # ERROR bool object not callable
+A.applyfunc(sigma) # seems that only this works.
+#x.replace(x, lambda m: m.applyfunc(m))
+
+#L.replace(n, V).replace(sigmaApply, sigmaApply_).replace(V , lambda V: V)### ERROR
+# %% codecell
+# %% codecell
 # %% codecell
 ### METHOD 0: the matrix diff rule in the most abstract form possible
 L.replace(n,vL).replace(sigmaApply, sigmaApply_).diff(A)
@@ -260,36 +306,44 @@ L.replace(n, v).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)
 # %% codecell
 # ### END RESULT of METHOD 2:
 L.replace(n, v).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).diff(Matrix(A))
-# %% codecell
-# COmpare the above matrix symbol way with the Lsum way:
+# %% markdown [markdown]
+# Compare the above matrix symbol way with the Lsum way:
 #
 # ### END RESULT of METHOD 1:
+# %% codecell
 #Lsum = L.replace(n, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)
 
 L.replace(n, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(X)#.subs(specToElemD)
 # %% codecell
 
 
+# %% markdown [markdown]
+# COMPARING METHOD 0 (abstract way) with METHOD 2 (direct way) when differentiating .w.r.t to X vs. w.r.t to W
+# ### With respect to X (abstract)
 # %% codecell
-## COMPARING METHOD 0 (abstract way) with METHOD 2 (direct way) when differentiating .w.r.t to X vs. w.r.t to W
-
-### With respect to X (abstract)
 L.replace(n,vL).replace(sigmaApply, sigmaApply_).diff(A)
-# %% codecell
-### With respect to X (direct)
-L.replace(n, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(X).subs(specToElemD)
-# %% codecell
-### With respect to W (abstract)
-L.replace(n,vL).replace(sigmaApply, sigmaApply_).diff(B)
-# %% codecell
-### With respect to W (direct)
 
+# %% markdown [markdown]
+# ### With respect to X (direct)
+# %% codecell
+L.replace(n, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(X).subs(specToElemD)
+
+# %% markdown [markdown]
+# ### With respect to W (abstract)
+# %% codecell
+L.replace(n,vL).replace(sigmaApply, sigmaApply_).diff(B)
+
+# %% markdown [markdown]
+# ### With respect to W (direct)
+# %% codecell
 L.replace(n, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(W).subs(specToElemD)
 # %% codecell
 # %% codecell
 # %% codecell
 # %% codecell
-### NEXT: try to substitute the X, W matrices step by step to see if you can come to the same result as the direct forms above (from method 2 or 1)
+# %% markdown [markdown]
+# ### NEXT: try to substitute the X, W matrices step by step to see if you can come to the same result as the direct forms above (from method 2 or 1)
+# %% codecell
 from sympy import simplify, expand
 
 #simplify(L.replace(n,vL).replace(sigmaApply, sigmaApply_).diff(B).subs({A:X, B:W})) ### ERROR max recursion depth exceeded
@@ -337,29 +391,56 @@ Ly.replace(A,A.T).replace(B,B.T)#.replace(sigmaApply, sigmaApply_)
 # %% codecell
 # TODO always get fatal python error here, as if it can't deal with two matrix args!!
 #Ly.replace(A,A.T).replace(B,B.T).diff(A)
-def siga(mat: Matrix) -> Matrix:
-     #lst = mat.tolist()
-     nr, nc = mat.shape
 
-     applied = [[sigma(mat[i,j]) for j in range(0, nc)] for i in range(0, nr)]
-
-     return Matrix(applied)
-sigmaApply_(Nelem)
-siga(Nelem)
 #siga2 = Lambda(a, siga(a))
 # %% codecell
 Ly.replace(A, A.T).replace(B, b).diff(b)#.replace(sigmaApply, siga)
 # %% codecell
-b = Symbol('b', commutative=True)
-#Lz.replace(A,A.T).replace(B,b).diff(A)
-# TODO still problem with bool object here even though the y-function is lambdified.
-#sig = lambda mat: mat.applyfunc(lambda)
-sigma.__dict__
-#Lz.replace(sigmaApply, sigmaApply_)
+L.replace(n, vN).replace(sigmaApply, sigmaApply_).subs(elemToMatArgD)
+# %% codecell
+#L.replace(n, vN).replace(sigmaApply, sigmaApply_).subs(elemToMatArgD).diff(A)## ERROR: max recursion depth eceeded
 
+L.replace(n, vN).replace(sigmaApply, sigmaApply_).subs(elemToMatArgD).diff(Matrix(3,2,list(elemToMatArgD.values())))
+# %% codecell
+A.applyfunc(sigma)
+# %% codecell
+sigma = Function("sigma", applyfunc=True, bool=False)
+# %% codecell
+sigma.__dict__
+# %% codecell
+Ly = lambd(sigmaApply(y(A,B))); Ly
+# %% codecell
+(X*W).applyfunc(sigma)
+# %% codecell
+(A*B).applyfunc(sigma)
+# %% codecell
+siga(A)
+#A.applyfunc(siga) ### ERROR dumy object has no attribute shape
+# %% codecell
+y = Function("y", applyfunc = True, bool=False, shape=(3,3))
+y.shape
+# %% codecell
+# siga(y(A,B))### ERROR: function y is not subscriptable
+# %% codecell
+# %% codecell
+# %% codecell
+# %% codecell
+# %% codecell
+Ly.subs({A:a,B:b}).diff(b).subs({a:A, b:B})#.replace(sigmaApply, sigmaApply_)
+# %% codecell
+Ly.replace(A,a).replace(B,b).diff(b).subs({a:A,b:B})#.replace(sigmaApply, sigmaApply_)#.diff(b)
+# %% codecell
+#m = Symbol("m", shape=(3,2))
+#m.shape
+
+#sigmaApply_3 = Lambda(m, siga(m))
+
+#L.replace(A,a).replace(B,b).diff(b).replace(b,B).replace(a,A).subs({n:vL}).replace(sigmaApply, sigmaApply_2) ### ERROR: Dummy object has no attribute shape
 # %% codecell
 # Ly.replace(B, b).diff(A)#.replace(sigmaApply, siga)### ERROR noncommutative matrix scalars not supported
 Ly.replace(A, A.T).replace(B, b).diff(b).replace(b, B).replace(A.T, A)#.replace(sigmaApply, siga)
+# %% codecell
+#Ly.replace(B,b).diff(b).replace(b,B) ### ERROR
 # %% codecell
 # NEXT: try to replace the sigma apply, not working
 n.__dict__
@@ -508,19 +589,6 @@ elem2
 # ERROR this has to work though! Then can simply replace n_ijs with lambda
 
 
-# %% codecell
-elemToMatArgD = dict(itertools.chain(*[[(Nelem[i, j], Function("n_{}{}".format(i+1,j+1))(A,B) ) for j in range(2)] for i in range(3)]))
-
-elemToMatArg = list(elemToMatArgD.items())
-
-Matrix(elemToMatArg)
-
-# %% codecell
-matargToSpecD = dict(zip(elemToMatArgD.values(), elemToSpecD.values()))
-
-matargToSpec = list(matargToSpecD.items())
-
-Matrix(matargToSpec)
 
 # %% codecell
 #elem2.subs(elemToMatArgD).doit()#ERROR max recursion depth exceeeded
