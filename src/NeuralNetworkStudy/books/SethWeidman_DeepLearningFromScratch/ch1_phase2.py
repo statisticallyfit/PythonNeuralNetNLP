@@ -3,8 +3,7 @@ from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbo
 from sympy import var
 from sympy.abc import x, i, j, a, b
 
-# %% markdown
-# Defining myvariable-element matrices $X \in \mathbb{R}^{n \times m}$ and $W \in \mathbb{R}^{m \times p}$:
+
 # %% codecell
 def myvar(letter: str, i: int, j: int) -> Symbol:
     letter_ij = Symbol('{}_{}{}'.format(letter, i+1, j+1), is_commutative=True)

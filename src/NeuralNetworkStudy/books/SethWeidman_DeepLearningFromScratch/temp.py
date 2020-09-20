@@ -1,6 +1,6 @@
 # %% codecell
 # SOURCE = https://www.kannon.link/free/2019/10/30/symbolic-matrix-differentiation-with-sympy/
-from sympy import diff, symbols, MatrixSymbol, Transpose, Trace, Matrix
+from sympy import diff, symbols, MatrixSymbol, Transpose, Trace, Matrix, Function
 
 
 def squared_frobenius_norm(expr):
@@ -110,11 +110,17 @@ diff(h, A)
 from sympy import ZeroMatrix
 Z = ZeroMatrix(3,4); Z
 Matrix(Z)
+# %% codecell
 type(A.T)
+# %% codecell
 type(Z + A)
+# %% codecell
 type(A*1)
+# %% codecell
 type(A)
+# %% codecell
 type(A*B)
+# %% codecell
 from sympy.matrices.expressions.matexpr import MatrixExpr
 
 #Matrix(MatrixExpr(A)) # ERROR
@@ -173,7 +179,7 @@ diff( g(f(M, D)), D )
 # %% codecell
 diff( g(f(M, D)), D ).replace(D, Ds).replace(M, Ms)
 # %% codecell
-dd = diff(Ds,Ds).replace(Ds,D).doit(); dd
+diff(Ds,Ds).replace(Ds,D).doit()
 
 # %% codecell
 #diff( g(f(Ms, Ds.T)), Ds )#.replace(Ds.T, Ds)

@@ -267,20 +267,122 @@ L.replace(n(A,B), vSym)
 #V = MatrixSymbol()
 # Takes in the symbols A and B matrices and returns the matrix symbol with the shape that is supposed to result after A*B
 V = lambda matA, matB: MatrixSymbol('V', matA.shape[0], matB.shape[1])
-V(A,B).shape
+V
+V(A,B)#.shape
 # %% codecell
-L.replace(n, V).replace(sigmaApply, sigmaApply_)
+from sympy import symbols
+#V = MatrixSymbol('V', X.shape[0], W.shape[1])
+i, j = symbols('i j')
+M = MatrixSymbol('M', i, j)# abstract shape
+sigmaApply_L = Lambda(M, M.applyfunc(sigma))
+lambda_L = Lambda(M, sum(M))
 # %% codecell
-L.replace(n, V).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)
+sigmaApply_L(A)
 # %% codecell
-#x.applyfunc(sigma) # ERROR since x has no attribute applyfunc
+# TODO: trying to figure out how to write L so that it is in terms of lambdas so get the form (d ---> sigma(d) COMPOAED ((X,W) -> V)) instead of (sigmaApply(v(X,W)))
+Vs = MatrixSymbol("Vs", A.shape[0], B.shape[1])
+VL = Lambda((A,B), MatrixSymbol('V', A.shape[0], B.shape[1]))
+VL
+# %% codecell
+L.replace(n, VL)#.replace(sigmaApply, sigmaApply_L).subs({V:VL})
 
-#y.applyfunc(sigma) # ERROR bool object not callable
-A.applyfunc(sigma) # seems that only this works.
-#x.replace(x, lambda m: m.applyfunc(m))
-
-#L.replace(n, V).replace(sigmaApply, sigmaApply_).replace(V , lambda V: V)### ERROR
 # %% codecell
+L.replace(n, VL).replace(sigmaApply, sigmaApply_)#.subs({VL(A,B) : n(A,B)}) ### ERROR
+# This is v(X,W) in Lambda form:
+VL
+# %% codecell
+VL(A,B)
+#L.subs({n: V})
+
+# %% codecell
+L.replace(n(A,B), VL(A,B))#.replace(sigmaApply, sigmaApply_).subs({V(A,B) : n})
+# %% codecell
+lambd(sigmaApply(VL))
+# %% codecell
+lambd(sigmaApply(V)).replace(V, n(A,B))
+# %% codecell
+lambd(sigmaApply(V)).diff(A)
+# %% codecell
+lambd(sigmaApply(V)).diff(A).replace(V, n(A,B))
+# %% codecell
+lambd(sigmaApply(V))#.replace(sigmaApply, sigmaApply_)#replace(V, n(A,B)).replace(sigmaApply, sigmaApply_)
+# %% codecell
+# GOAL: want both sigma_apply to be in ---> form composed with the above x,w ---> V form
+#lambd(sigmaApply(V)).replace(V, Vs).replace(sigmaApply, sigmaApply_).replace(Vs, V(A,B))### ERROR
+lambd(sigmaApply(n(A,B))).replace(n(A,B), V)
+sigmaApply_(A)
+sigmaApply_L(A)
+# %% codecell
+sigmaApply(Vs).replace(sigmaApply, sigmaApply_)
+# %% codecell
+sigmaApply(V(A,B)).replace(sigmaApply, sigmaApply_)#.replace(V(A,B), V)#.subs({sigmaApply: sigmaApply_L})
+
+# %% codecell
+#sigmaApply(Vs).subs({Vs : V, sigmaApply: sigmaApply_L}) ### ERROR must be matrix instance
+#sigmaApply(Vs).replace(sigmaApply , sigmaApply_L).subs({Vs : V})
+#sigmaApply(V).replace(sigmaApply, sigmaApply_L)
+
+# %% codecell
+
+sa = Lambda((A,B), V)
+sa
+# %% codecell
+### ALTERNATE try of declaring a sigma-apply kind of function
+#sas = Lambda((A,B), Vs.applyfunc(sigma))
+# %% codecell
+Lambda((A,B), sigma(V))
+# %% codecell
+Lambda((A,B), sigma(V)).diff(A) # nothing useful with this format, and weird-wrong since doesn't do chain rule wi.r. to sigma
+
+# %% codecell
+Lambda((A,B), sigma(V(A,B)))
+# %% codecell
+sas = Lambda((A,B), V(A,B).applyfunc(sigma))
+
+sas
+
+# %% codecell
+sas(A,B)
+# %% codecell
+#sas(A,B).replace(V, V(A,B))
+
+# %% codecell
+sigmaApply_L
+
+# %% codecell
+sigmaApply_L(M)
+# %% codecell
+sigmaApply_L(M).diff(M)
+# %% codecell
+# %% codecell
+# %% codecell
+sigma(V)#.replace(V, V(A,B))
+# %% codecell
+sigma(V).replace(V, V(A,B))
+# %% codecell
+#sigma(V).replace(V, VL)
+
+# %% codecell
+# %% codecell
+
+# %% codecell
+f = Function('f')
+xtoxL = Lambda(a, a)
+xtox = lambda a: a
+
+f(x).subs({x : xtoxL})
+# %% codecell
+# f(x).replace(x, xtox)### ERROR xtox expects one positional argument ( I think replace only replaces the same kind of thing, never for instance a matrix symbol for a function or vice versa. the replacement needs to be of the same type / kind. But Lambda seems to work (as above))
+f(x).replace(x, xtoxL)
+# %% codecell
+# %% codecell
+# %% codecell
+#lambd(sigmaApply(n(A,B))).replace(n(A,B), Vs).replace(sigmaApply, sigmaApply_).replace(Vs, V)# ### ERROR rec replace must be matrix instance ....
+
+
+# %% codecell
+# %% codecell
+
 # %% codecell
 # %% codecell
 ### METHOD 0: the matrix diff rule in the most abstract form possible
@@ -370,14 +472,6 @@ y = Function('y', applyfunc=True, real=True)
 
 
 
-from sympy.utilities.lambdify import lambdify, implemented_function
-z = implemented_function('z', y)
-lam_z = lambdify([A,B], z(A,B)); lam_z
-# %% codecell
-lam_z(A,B)
-# %% codecell
-Lz = lambd(sigmaApply(lam_z(A,B)))
-Lz
 # %% codecell
 Ly = lambd(sigmaApply(y(A,B)))
 Ly
