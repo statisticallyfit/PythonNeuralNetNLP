@@ -1,7 +1,7 @@
 # %% codecell
 from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Derivative
 from sympy import var
-from sympy.abc import x, i, j, a, b
+from sympy.abc import x, i, j, a, b, c, d
 
 
 
@@ -245,6 +245,11 @@ L.replace(n,v).diff(A)
 L.replace(n,vL).diff(A)
 
 # %% codecell
+
+# %% codecell
+# %% codecell
+# %% codecell
+# %% codecell
 #L.replace(n,v).diff(A).replace(lambd,lambd_) ### ERROR sigma object is not iterable
 #L.replace(n,vL).diff(A).replace(sigmaApply, sigmaApply_)### ERROR
 #L.replace(n,v).diff(A).replace(sigmaApply, sigmaApply_) ### ERROR dummy object has no attribute applyfunc
@@ -257,7 +262,8 @@ L.replace(n,vL).diff(A)
 L.replace(n, v).replace(sigmaApply, sigmaApply_)#.replace(lambd, lambd_)
 # %% codecell
 
-A.applyfunc(sigma)
+# NOTE: the point here is that even replacing with a sympy Lambda doesn't give same result as above since above uses the V.applyfunc(sigma) within the Lambda.
+L.replace(sigmaApply, Lambda(d, sigma(d)))
 # %% codecell
 
 vSym = Symbol('v', applyfunc=True)
@@ -299,23 +305,23 @@ L.replace(n(A,B), VL(A,B))#.replace(sigmaApply, sigmaApply_).subs({V(A,B) : n})
 # %% codecell
 lambd(sigmaApply(VL))
 # %% codecell
-lambd(sigmaApply(V)).replace(V, n(A,B))
+lambd(sigmaApply(VL)).replace(VL, n(A,B))
 # %% codecell
-lambd(sigmaApply(V)).diff(A)
+lambd(sigmaApply(VL)).diff(A)
 # %% codecell
-lambd(sigmaApply(V)).diff(A).replace(V, n(A,B))
+lambd(sigmaApply(VL)).diff(A).replace(VL, n(A,B))
 # %% codecell
-lambd(sigmaApply(V))#.replace(sigmaApply, sigmaApply_)#replace(V, n(A,B)).replace(sigmaApply, sigmaApply_)
+lambd(sigmaApply(VL))#.replace(sigmaApply, sigmaApply_)#replace(V, n(A,B)).replace(sigmaApply, sigmaApply_)
 # %% codecell
 # GOAL: want both sigma_apply to be in ---> form composed with the above x,w ---> V form
 #lambd(sigmaApply(V)).replace(V, Vs).replace(sigmaApply, sigmaApply_).replace(Vs, V(A,B))### ERROR
-lambd(sigmaApply(n(A,B))).replace(n(A,B), V)
+lambd(sigmaApply(n(A,B))).replace(n(A,B), VL)
 sigmaApply_(A)
 sigmaApply_L(A)
 # %% codecell
 sigmaApply(Vs).replace(sigmaApply, sigmaApply_)
 # %% codecell
-sigmaApply(V(A,B)).replace(sigmaApply, sigmaApply_)#.replace(V(A,B), V)#.subs({sigmaApply: sigmaApply_L})
+sigmaApply(VL(A,B)).replace(sigmaApply, sigmaApply_)#.replace(V(A,B), V)#.subs({sigmaApply: sigmaApply_L})
 
 # %% codecell
 #sigmaApply(Vs).subs({Vs : V, sigmaApply: sigmaApply_L}) ### ERROR must be matrix instance
@@ -324,20 +330,20 @@ sigmaApply(V(A,B)).replace(sigmaApply, sigmaApply_)#.replace(V(A,B), V)#.subs({s
 
 # %% codecell
 
-sa = Lambda((A,B), V)
+sa = Lambda((A,B), VL)
 sa
 # %% codecell
 ### ALTERNATE try of declaring a sigma-apply kind of function
 #sas = Lambda((A,B), Vs.applyfunc(sigma))
 # %% codecell
-Lambda((A,B), sigma(V))
+Lambda((A,B), sigma(VL))
 # %% codecell
-Lambda((A,B), sigma(V)).diff(A) # nothing useful with this format, and weird-wrong since doesn't do chain rule wi.r. to sigma
+Lambda((A,B), sigma(VL)).diff(A) # nothing useful with this format, and weird-wrong since doesn't do chain rule wi.r. to sigma
 
 # %% codecell
-Lambda((A,B), sigma(V(A,B)))
+Lambda((A,B), sigma(VL(A,B)))
 # %% codecell
-sas = Lambda((A,B), V(A,B).applyfunc(sigma))
+sas = Lambda((A,B), VL(A,B).applyfunc(sigma))
 
 sas
 
@@ -356,9 +362,9 @@ sigmaApply_L(M).diff(M)
 # %% codecell
 # %% codecell
 # %% codecell
-sigma(V)#.replace(V, V(A,B))
+sigma(VL)#.replace(V, V(A,B))
 # %% codecell
-sigma(V).replace(V, V(A,B))
+sigma(VL).replace(VL, VL(A,B))
 # %% codecell
 #sigma(V).replace(V, VL)
 

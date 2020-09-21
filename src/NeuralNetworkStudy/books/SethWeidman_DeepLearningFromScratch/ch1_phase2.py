@@ -332,9 +332,9 @@ sigma(nab_ij).subs({nab_ij : Nspec[0,0]}).diff(X[0,0])
 # CORRECT WAY 3
 Selem[2,1].subs({Nelem[2,1] : Nspec[2,1]}).diff(X[2,1])
 
-# %%codecell
+# %% codecell
 sigma(n_11) # WAY 1: sigma argument is already hardcoded
-# %%codecell
+# %% codecell
 sigma(nab_ij) # Way 2: sigma argument is function of matrixsymbol (better than 1)
 # %% codecell
 Selem[2,1] # WAY 3: sigma argument is just symbol and we replace it as function with argument hardcoded only later. (better than 2)
@@ -366,6 +366,6 @@ Lsum.subs(elemToSpec)#.diff(X[2,1])
 Lsum.subs(elemToSpec).diff(X)
 # %% codecell
 
-specToElem = {v : k for k, v in elemToSpec.items()}
+specToElemD = {v : k for k, v in elemToSpecD.items()}
 
-Lsum.subs(elemToSpec).diff(X).subs(specToElem)
+Lsum.subs(elemToSpecD).diff(X).subs(specToElemD)

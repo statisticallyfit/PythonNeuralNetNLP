@@ -62,8 +62,8 @@ f(X).replace(X, X.T).diff(X).replace(X.T, X)
 # %% codecell
 g(f(X)).replace(X, X.T).diff(X).replace(X.T, X)
 # %% codecell
-f(X,W).replace(X,X.T).diff(X)
-2+2
+# f(X,W).replace(X,X.T).diff(X)### CRASHES
+
 # %% codecell
 # %% codecell
 # %% codecell
