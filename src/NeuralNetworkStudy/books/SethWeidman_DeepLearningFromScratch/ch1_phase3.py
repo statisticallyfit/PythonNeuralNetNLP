@@ -346,9 +346,15 @@ Lambda((A,B), sigma(VL(A,B)))
 sas = Lambda((A,B), VL(A,B).applyfunc(sigma))
 
 sas
-
+# %% codecell
+# YAY this works now I can replace MATRIX SYMBOLS with ordinary sympy LAMBDAS (replace cano only replace same kind of thing / type)
+sigma(Vs).subs(Vs, VL)
+#
 # %% codecell
 sas(A,B)
+# %% codecell
+# A.applyfunc(sigma).subs(A, VL)# subs method doesn't work here with applyfunc
+L
 # %% codecell
 #sas(A,B).replace(V, V(A,B))
 
@@ -357,6 +363,38 @@ sigmaApply_L
 
 # %% codecell
 sigmaApply_L(M)
+# %% codecell
+#sigmaApply_LFake = Lambda(M, M.applyfunc(sigma))
+sigmaApply(M).replace(sigmaApply, sigmaApply_L)
+# %% codecell
+#sigmaApply(M).replace(sigmaApply, sigmaApply_).subs(M, n(A,B))
+n = Function("v", applyfunc=True)
+#sigmaApply_(Vs.subs(Vs, Lambda((A,B), n(A,B))))
+from sympy import lambdify
+sigma(lambdify([A,B], n(A,B)))
+
+inner = Lambda((A,B), n(A,B)); inner
+
+#sigmaApply_(n(A,B))
+sigmaApply(inner).replace(sigmaApply, Lambda(A, sigma(A)))
+# %% codecell
+#sigmaApply_L(M).subs(M, inner)
+Lambda(d, sigma(d))
+# %% codecell
+### CLOSEST ever gotten to function composition (?) with sympy ....
+Lambda(d, sigma(inner))
+
+
+# %% codecell
+Lambda(d, sigma(inner)).diff(A)
+# %% codecell
+#Lambda(d, sigma(inner)).replace(inner, vL(A,B)).diff(A)
+
+# %% codecell
+# %% codecell
+# %% codecell
+# sigmaApply_L(M).subs(M, VL)# new subs method fails here too
+#sigmaApply_(M).subs(M, VL)
 # %% codecell
 sigmaApply_L(M).diff(M)
 # %% codecell
@@ -378,6 +416,8 @@ xtox = lambda a: a
 
 f(x).subs({x : xtoxL})
 # %% codecell
+f(x).subs(x, xtox)# works but below one with replace doesn't. When replacing arg with function uses SUBS without dictionary (instead of replace)
+# %% codecell
 # f(x).replace(x, xtox)### ERROR xtox expects one positional argument ( I think replace only replaces the same kind of thing, never for instance a matrix symbol for a function or vice versa. the replacement needs to be of the same type / kind. But Lambda seems to work (as above))
 f(x).replace(x, xtoxL)
 # %% codecell
@@ -392,11 +432,23 @@ f(x).replace(x, xtoxL)
 # %% codecell
 # %% codecell
 ### METHOD 0: the matrix diff rule in the most abstract form possible
+n = Function("v", applyfunc=True) # necessary
+L = lambd(sigmaApply(n(A,B)))
+
+lambd_L = Lambda(A, sum(A))
+
+lambd_L(A)
+# %% codecell
+lambd_L(sigmaApply(n(A,B)))#.replace(n, vL).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_L)
+
+# %% codecell
 L.replace(n,vL).replace(sigmaApply, sigmaApply_).diff(A)
 # %% codecell
 ### SUCCESS! We see now that the matrix chain rule indeed makes the X transpose factor out on the left!!! (while compared to the above, the matrix transpose W^T factors out on the right, just like the book says (page 45 in the NOTE section of Seth Weidman book))
 L.replace(n,v).replace(sigmaApply, sigmaApply_).diff(B)
-
+# %% codecell
+# Not showing ???
+L.replace(n,v).replace(sigmaApply, sigmaApply_).diff(B).replace(lambd, lambd_L)
 # %% codecell
 #L.replace(n,v).replace(sigmaApply, sigmaApply_).diff(B).replace(B,W).replace(A,X) # ## ERROR non commutative scalars in matrix
 # L.replace(n,v).replace(sigmaApply, sigmaApply_).diff(B).replace(lambd, lambd_).replace(B,W).replace(A,X)# ## ERROR dummy object not iterable
@@ -469,6 +521,8 @@ L.replace(n,v).replace(sigmaApply, sigmaApply_).diff(B)
 #L.replace(n,v).replace(sigmaApply, sigmaApply_).diff(B).subs({A:X, B:W}).replace(lambd, lambd_) ### ERROR dummy object not iterable
 L.replace(n,v).diff(A)
 # %% codecell
+
+# %% codecell
 #L.replace(n,v).replace(sigmaApply, sigmaApply_).diff(A).replace(A,Matrix(A))##ERROR noncommutative matrix scalars
 # WANT: to be able to do diff and have the expression come out as above with X^T on left and W^T on right, when using just this form, with abstract form v:
 L.replace(A,A.T).replace(B,B.T)
@@ -528,14 +582,21 @@ y.shape
 # %% codecell
 Ly.subs({A:a,B:b}).diff(b).subs({a:A, b:B})#.replace(sigmaApply, sigmaApply_)
 # %% codecell
-Ly.replace(A,a).replace(B,b).diff(b).subs({a:A,b:B})#.replace(sigmaApply, sigmaApply_)#.diff(b)
+L.replace(A,a).replace(B,b).diff(b).subs({a:A,b:B})#.replace(sigmaApply, sigmaApply_)#.diff(b)
 # %% codecell
+sigma = Function("sigma", applyfunc=True, real=True)
+sigmaApply_ = lambda mat: mat.applyfunc(sigma)
+L = lambd(sigmaApply(n(A,B)))
+
+#L.replace(A,a).replace(B,b).diff(b).subs({a:A,b:B}).replace(sigmaApply, sigmaApply_)
+L.replace(n, v).replace(sigmaApply, sigmaApply_).diff(A)
 #m = Symbol("m", shape=(3,2))
 #m.shape
 
 #sigmaApply_3 = Lambda(m, siga(m))
 
 #L.replace(A,a).replace(B,b).diff(b).replace(b,B).replace(a,A).subs({n:vL}).replace(sigmaApply, sigmaApply_2) ### ERROR: Dummy object has no attribute shape
+
 # %% codecell
 # Ly.replace(B, b).diff(A)#.replace(sigmaApply, siga)### ERROR noncommutative matrix scalars not supported
 Ly.replace(A, A.T).replace(B, b).diff(b).replace(b, B).replace(A.T, A)#.replace(sigmaApply, siga)
