@@ -282,8 +282,11 @@ symb.subs({A*B : vN(A,B)}).doit() # the dummy variable for lambda still stays un
 # %% codecell
 symb.subs({A*B : vN(A,B)}).subs({A:X}).doit() # two doits are equivalent to the last one at the end
 # %% codecell
+# Creating a special symbol just for the lambda_L function that has the appropriate shape after multiplying A*B. Supposed to represent a matrix R s.t. R == A * B (so that the indices after applying lambda_L are correct)
 ABres = MatrixSymbol("R", A.shape[0], B.shape[1])
 lambd_L = Lambda(ABres, sum(ABres))
+
+
 symb.subs({A*B : vN(A,B)}).subs({A:X}).doit()#subs({lambd: lambd_L}).doit()
 
 # %% codecell
