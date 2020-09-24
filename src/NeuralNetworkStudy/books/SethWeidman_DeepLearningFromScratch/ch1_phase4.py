@@ -129,6 +129,7 @@ Sspec.subs({Nspec[0, 0]: 3}).replace(sigma, lambda x: 2 * x).replace(Nspec[2, 1]
 # %% codecell
 lambd = Function("lambda")
 lambd_ = lambda matrix : sum(matrix)
+lambda_L = Lambda(M, sum(M))
 
 n = Function("nu",applyfunc=True)
 
