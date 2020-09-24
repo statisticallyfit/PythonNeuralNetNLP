@@ -371,22 +371,23 @@ sigmaApply(M).replace(sigmaApply, sigmaApply_L)
 n = Function("v", applyfunc=True)
 #sigmaApply_(Vs.subs(Vs, Lambda((A,B), n(A,B))))
 from sympy import lambdify
-sigma(lambdify([A,B], n(A,B)))
+#sigma(lambdify([A,B], n(A,B)))
 
-inner = Lambda((A,B), n(A,B)); inner
+#inner = Lambda((A,B), n(A,B)); inner
 
 #sigmaApply_(n(A,B))
-sigmaApply(inner).replace(sigmaApply, Lambda(A, sigma(A)))
+#sigmaApply(inner).replace(sigmaApply, Lambda(A, sigma(A)))
+
 # %% codecell
 #sigmaApply_L(M).subs(M, inner)
 Lambda(d, sigma(d))
 # %% codecell
 ### CLOSEST ever gotten to function composition (?) with sympy ....
-Lambda(d, sigma(inner))
+#Lambda(d, sigma(inner))
 
 
 # %% codecell
-Lambda(d, sigma(inner)).diff(A)
+#Lambda(d, sigma(inner)).diff(A)
 # %% codecell
 #Lambda(d, sigma(inner)).replace(inner, vL(A,B)).diff(A)
 
