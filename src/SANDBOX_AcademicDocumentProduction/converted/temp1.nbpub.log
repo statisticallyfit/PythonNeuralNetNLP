@@ -1,0 +1,14 @@
+INFO:ipypublish:started ipypublish v0.10.12 at Sun Sep 27 17:46:48 2020
+INFO:ipypublish:logging to: /development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP/src/SANDBOX_AcademicDocumentProduction/converted/temp1.nbpub.log
+INFO:ipypublish:running for ipynb(s) at: temp1.ipynb
+INFO:ipypublish:with conversion configuration: latex_ipypublish_main
+INFO:nbmerge:Reading notebook
+INFO:ipypublish:finding conversion configuration: latex_ipypublish_main
+INFO:ipypublish:loading conversion configuration
+INFO:ipypublish:creating exporter
+INFO:ipypublish:creating template and loading filters
+INFO:ipypublish:creating process configuration
+INFO:ipypublish:running nbconvert
+INFO:root:splitting outputs into separate cells
+INFO:resolve_links:resolving external file paths in ipub metadata to: temp1.ipynb
+INFO:captions:extracting caption cells
