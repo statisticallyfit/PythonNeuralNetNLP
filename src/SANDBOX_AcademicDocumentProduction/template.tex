@@ -224,9 +224,21 @@ $endif$
 $if(verbatim-in-note)$
 \VerbatimFootnotes % allows verbatim text in footnotes
 $endif$
-$if(geometry)$
-\usepackage[$for(geometry)$$geometry$$sep$,$endfor$]{geometry}
-$endif$
+
+
+%$if(geometry)$
+%\usepackage[$for(geometry)$$geometry$$sep$,$endfor$]{geometry}
+%$endif$
+
+% NEW Margin setting for guessing larger code cell outputs (a2 paper is wider).
+\usepackage[left=2cm, % left margin
+right=2cm,% right margin
+top=3cm, % top margin
+bottom=3cm,% bottom margin
+a2paper% other options: a0paper, a1paper, a2paper, a3paper, a4paper, a5paper, a6paper, and many more.
+]{geometry}
+
+
 $if(beamer)$
 \newif\ifbibliography
 $endif$

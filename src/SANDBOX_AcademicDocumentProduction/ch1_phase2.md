@@ -1,7 +1,11 @@
 ```python
+from sympy.interactive import init_printing
 from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Derivative, diff, symbols
 from sympy import var
 from sympy.abc import x, i, j, a, b
+
+
+init_printing(pretty_print=True, wrap_line=True, num_columns=60)
 ```
 
 
@@ -967,7 +971,7 @@ n_ij(A,B).args
 
 
 
-    (X, W)
+$\displaystyle \left( X, \  W\right)$
 
 
 

@@ -4,6 +4,11 @@ from sympy import var
 from sympy.abc import x, i, j, a, b
 
 
+from sympy.interactive import init_printing
+
+init_printing(pretty_print=True, wrap_line=True, num_columns=60)
+
+
 # %% codecell
 def myvar(letter: str, i: int, j: int) -> Symbol:
     letter_ij = Symbol('{}_{}{}'.format(letter, i+1, j+1), is_commutative=True)
@@ -174,6 +179,12 @@ nt = Nelem.subs(elemToSpecFunc); nt
 # %% codecell
 st = Selem.subs(elemToSpecFunc); st
 # %% codecell
+
+init_printing(num_columns=10, wrap_line=True, pretty_print=True)#
+
+
+
+
 st.diff(nt)
 # %% codecell
 st[0,0].diff(st[0,0].args[0])

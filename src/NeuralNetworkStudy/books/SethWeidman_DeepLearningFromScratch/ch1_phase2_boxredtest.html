@@ -1,0 +1,4225 @@
+None<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" />
+
+<title>ch1_phase2</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+
+<style type="text/css">
+    pre { line-height: 125%; margin: 0; }
+td.linenos pre { color: #000000; background-color: #f0f0f0; padding: 0 5px 0 5px; }
+span.linenos { color: #000000; background-color: #f0f0f0; padding: 0 5px 0 5px; }
+td.linenos pre.special { color: #000000; background-color: #ffffc0; padding: 0 5px 0 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding: 0 5px 0 5px; }
+.highlight .hll { background-color: var(--jp-cell-editor-active-background) }
+.highlight { background: var(--jp-cell-editor-background); color: var(--jp-mirror-editor-variable-color) }
+.highlight .c { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment */
+.highlight .err { color: var(--jp-mirror-editor-error-color) } /* Error */
+.highlight .k { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword */
+.highlight .o { color: var(--jp-mirror-editor-operator-color); font-weight: bold } /* Operator */
+.highlight .p { color: var(--jp-mirror-editor-punctuation-color) } /* Punctuation */
+.highlight .ch { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Hashbang */
+.highlight .cm { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Preproc */
+.highlight .cpf { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.PreprocFile */
+.highlight .c1 { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Single */
+.highlight .cs { color: var(--jp-mirror-editor-comment-color); font-style: italic } /* Comment.Special */
+.highlight .kc { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Constant */
+.highlight .kd { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Declaration */
+.highlight .kn { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Namespace */
+.highlight .kp { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Pseudo */
+.highlight .kr { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Reserved */
+.highlight .kt { color: var(--jp-mirror-editor-keyword-color); font-weight: bold } /* Keyword.Type */
+.highlight .m { color: var(--jp-mirror-editor-number-color) } /* Literal.Number */
+.highlight .s { color: var(--jp-mirror-editor-string-color) } /* Literal.String */
+.highlight .ow { color: var(--jp-mirror-editor-operator-color); font-weight: bold } /* Operator.Word */
+.highlight .w { color: var(--jp-mirror-editor-variable-color) } /* Text.Whitespace */
+.highlight .mb { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Bin */
+.highlight .mf { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Float */
+.highlight .mh { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Hex */
+.highlight .mi { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Integer */
+.highlight .mo { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Oct */
+.highlight .sa { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Affix */
+.highlight .sb { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Backtick */
+.highlight .sc { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Char */
+.highlight .dl { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Delimiter */
+.highlight .sd { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Doc */
+.highlight .s2 { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Double */
+.highlight .se { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Escape */
+.highlight .sh { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Heredoc */
+.highlight .si { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Interpol */
+.highlight .sx { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Other */
+.highlight .sr { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Regex */
+.highlight .s1 { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Single */
+.highlight .ss { color: var(--jp-mirror-editor-string-color) } /* Literal.String.Symbol */
+.highlight .il { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Integer.Long */
+    </style>
+
+
+<style type="text/css">
+/* Overrides of notebook CSS for static HTML export */
+body {
+  overflow: visible;
+  padding: 8px;
+}
+div#notebook {
+  overflow: visible;
+  border-top: none;
+}@media print {
+  div.cell {
+    display: block;
+    page-break-inside: avoid;
+  } 
+  div.output_wrapper { 
+    display: block;
+    page-break-inside: avoid; 
+  }
+  div.output { 
+    display: block;
+    page-break-inside: avoid; 
+  }
+}
+</style>
+
+<!-- Custom stylesheet, it must be in the same directory as the html file -->
+<link rel="stylesheet" href="custom.css">
+
+<!-- Loading mathjax macro -->
+<!-- Load mathjax -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS_HTML"></script>
+    <!-- MathJax configuration -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+            processEscapes: true,
+            processEnvironments: true
+        },
+        // Center justify equations in code and markdown cells. Elsewhere
+        // we use CSS to left justify single line equations in code cells.
+        displayAlign: 'center',
+        "HTML-CSS": {
+            styles: {'.MathJax_Display': {"margin": 0}},
+            linebreaks: { automatic: true }
+        }
+    });
+    </script>
+    <!-- End of mathjax configuration --></head>
+<body>
+  <div tabindex="-1" id="notebook" class="border-box-sizing">
+    <div class="container" id="notebook-container">
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">Matrix</span><span class="p">,</span> <span class="n">Symbol</span><span class="p">,</span> <span class="n">derive_by_array</span><span class="p">,</span> <span class="n">Lambda</span><span class="p">,</span> <span class="n">Function</span><span class="p">,</span> <span class="n">MatrixSymbol</span><span class="p">,</span> <span class="n">Derivative</span><span class="p">,</span> <span class="n">diff</span><span class="p">,</span> <span class="n">symbols</span>
+<span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">var</span>
+<span class="kn">from</span> <span class="nn">sympy.abc</span> <span class="kn">import</span> <span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">myvar</span><span class="p">(</span><span class="n">letter</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Symbol</span><span class="p">:</span>
+    <span class="n">letter_ij</span> <span class="o">=</span> <span class="n">Symbol</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">letter</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">is_commutative</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">letter_ij</span>
+
+
+<span class="n">n</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">Matrix</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span> <span class="p">:</span> <span class="n">myvar</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">));</span> <span class="n">X</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[2]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">W</span> <span class="o">=</span> <span class="n">Matrix</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span> <span class="p">:</span> <span class="n">myvar</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">));</span> <span class="n">W</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[3]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}w_{11} & w_{12}\\w_{21} & w_{22}\\w_{31} & w_{32}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">MatrixSymbol</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">);</span> <span class="n">Matrix</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">MatrixSymbol</span><span class="p">(</span><span class="s1">&#39;W&#39;</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">v</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">:</span> <span class="n">a</span><span class="o">*</span><span class="n">b</span>
+
+<span class="n">vL</span> <span class="o">=</span> <span class="n">Lambda</span><span class="p">((</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">),</span> <span class="n">a</span><span class="o">*</span><span class="n">b</span><span class="p">)</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">)</span> <span class="c1">#, Lambda((a,b), a*b))</span>
+
+<span class="n">vN</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">mat1</span><span class="p">,</span> <span class="n">mat2</span><span class="p">:</span> <span class="n">Matrix</span><span class="p">(</span><span class="n">mat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mat2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="n">Symbol</span><span class="p">(</span><span class="s2">&quot;n_</span><span class="si">{}{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)));</span> <span class="n">vN</span>
+
+<span class="n">Nelem</span> <span class="o">=</span> <span class="n">vN</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">W</span><span class="p">);</span> <span class="n">Nelem</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[5]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[6]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle v{\left(\left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right],\left[\begin{matrix}w_{11} & w_{12}\\w_{21} & w_{22}\\w_{31} & w_{32}\end{matrix}\right] \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[7]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle v{\left(X,W \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="c1"># replace works when v = python lambda</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[8]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n</span><span class="p">:</span> <span class="n">vL</span><span class="p">})</span> <span class="c1"># subs works when v = sympy lambda</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[9]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vL</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[10]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n</span><span class="p">:</span> <span class="n">v</span><span class="p">})</span><span class="c1"># subs() doesn&#39;t work when v is python lambda</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[11]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle v{\left(\left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right],\left[\begin{matrix}w_{11} & w_{12}\\w_{21} & w_{22}\\w_{31} & w_{32}\end{matrix}\right] \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Matrix</span><span class="p">(</span><span class="n">n</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n</span><span class="p">:</span> <span class="n">vL</span><span class="p">}))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[12]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{array}{cc}W_{0, 0} X_{0, 0} + W_{1, 0} X_{0, 1} + W_{2, 0} X_{0, 2} & W_{0, 1} X_{0, 0} + W_{1, 1} X_{0, 1} + W_{2, 1} X_{0, 2}\\W_{0, 0} X_{1, 0} + W_{1, 0} X_{1, 1} + W_{2, 0} X_{1, 2} & W_{0, 1} X_{1, 0} + W_{1, 1} X_{1, 1} + W_{2, 1} X_{1, 2}\\W_{0, 0} X_{2, 0} + W_{1, 0} X_{2, 1} + W_{2, 0} X_{2, 2} & W_{0, 1} X_{2, 0} + W_{1, 1} X_{2, 1} + W_{2, 1} X_{2, 2}\end{array}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#N = v(X, W); N</span>
+<span class="n">N</span> <span class="o">=</span> <span class="n">n</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">);</span> <span class="n">N</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[13]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle v{\left(X,W \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">N</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[14]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle X W$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">N</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">A</span><span class="p">:</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span><span class="n">W</span><span class="p">})</span> <span class="c1"># replacing ariable values after doing function doesn&#39;t make the function apply directly on the values (matrices), need to replace values before the function is replaced, so that the function can act on them while they are given/alive.</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[15]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right] \left[\begin{matrix}w_{11} & w_{12}\\w_{21} & w_{22}\\w_{31} & w_{32}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">N</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n</span><span class="p">:</span> <span class="n">vL</span><span class="p">,</span> <span class="n">A</span><span class="p">:</span><span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span><span class="n">W</span><span class="p">})</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[16]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Nspec</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">A</span><span class="p">:</span><span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span><span class="n">W</span><span class="p">})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span> <span class="n">Nspec</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[17]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">N</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[18]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle 1$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">N</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[19]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}0 & 0 & 0\\0 & 0 & 0\\0 & 0 & 0\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># way 2 of declaring S (better way)</span>
+<span class="n">sigma</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="s1">&#39;sigma&#39;</span><span class="p">)</span>
+
+<span class="n">sigmaApply</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="s2">&quot;sigma_apply&quot;</span><span class="p">)</span> <span class="c1">#lambda matrix:  matrix.applyfunc(sigma)</span>
+
+<span class="n">sigmaApply_</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">matrix</span><span class="p">:</span> <span class="n">matrix</span><span class="o">.</span><span class="n">applyfunc</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
+
+<span class="n">sigmaApply</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[20]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \sigma_{apply}{\left(X \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sigmaApply</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">A</span><span class="p">:</span> <span class="n">X</span><span class="p">})</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[21]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \sigma_{apply}{\left(\left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right] \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sigmaApply_</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[22]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle {\left( d \mapsto \sigma{\left(d \right)} \right)}_{\circ}\left({X}\right)$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[23]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sigmaApply</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">A</span><span class="p">:</span> <span class="n">X</span><span class="p">})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span> <span class="c1"># NOTE: subs of functions doesn&#39;t work, replace actually evaluates the replaced function!</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[23]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}\sigma{\left(x_{11} \right)} & \sigma{\left(x_{12} \right)} & \sigma{\left(x_{13} \right)}\\\sigma{\left(x_{21} \right)} & \sigma{\left(x_{22} \right)} & \sigma{\left(x_{23} \right)}\\\sigma{\left(x_{31} \right)} & \sigma{\left(x_{32} \right)} & \sigma{\left(x_{33} \right)}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">S</span> <span class="o">=</span> <span class="n">sigmaApply</span><span class="p">(</span><span class="n">N</span><span class="p">);</span> <span class="n">S</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[24]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \sigma_{apply}{\left(v{\left(X,W \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[25]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Derivative</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">S</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[25]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \frac{\partial}{\partial \sigma_{apply}{\left(v{\left(X,W \right)} \right)}} \sigma_{apply}{\left(v{\left(X,W \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[26]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Derivative</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">S</span><span class="p">)</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[26]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle 1$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[27]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Derivative</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">))</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[27]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \frac{\partial}{\partial v{\left(X,W \right)}} \sigma_{apply}{\left(v{\left(X,W \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[28]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#lambd = Function(&quot;lambda&quot;)</span>
+<span class="c1">#Lagain = lambd(sigmaApply(n(A))); Lagain</span>
+
+
+
+<span class="c1"># diff(Lagain, A) # never execute</span>
+<span class="c1">#</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[29]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">S</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">W</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[29]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \sigma_{apply}{\left(v{\left(\left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right],\left[\begin{matrix}w_{11} & w_{12}\\w_{21} & w_{22}\\w_{31} & w_{32}\end{matrix}\right] \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[30]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">S</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[30]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \sigma_{apply}{\left(X W \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[31]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">S</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">A</span><span class="p">:</span><span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span><span class="n">W</span><span class="p">})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[31]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \sigma_{apply}{\left(\left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right] \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[32]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Sspec</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">A</span><span class="p">:</span><span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span><span class="n">W</span><span class="p">})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span>
+<span class="n">Sspec</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[32]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}\sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} & \sigma{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\\sigma{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} & \sigma{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\\sigma{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} & \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[33]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">S</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span> <span class="c1">#.replace(sigmaApply, sigmaApply_)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[33]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \sigma_{apply}{\left(\left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right] \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[34]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Selem</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">);</span> <span class="n">Selem</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[34]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[35]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="n">elemToSpecD</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="p">[[(</span><span class="n">Nelem</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">Nspec</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]))</span>
+
+<span class="n">elemToSpec</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">elemToSpecD</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+<span class="n">Matrix</span><span class="p">(</span><span class="n">elemToSpec</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[35]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}n_{11} & w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13}\\n_{12} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\n_{21} & w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23}\\n_{22} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\n_{31} & w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33}\\n_{32} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[36]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">elemToSpecFuncD</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="p">[[(</span><span class="n">Nelem</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">Function</span><span class="p">(</span><span class="s2">&quot;n_</span><span class="si">{}{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))(</span><span class="n">Nspec</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]))</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]))</span>
+
+<span class="n">elemToSpecFunc</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">elemToSpecFuncD</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+<span class="n">Matrix</span><span class="p">(</span><span class="n">elemToSpecFunc</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[36]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}n_{11} & \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}\\n_{12} & \operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\n_{21} & \operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)}\\n_{22} & \operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\n_{31} & \operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)}\\n_{32} & \operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[37]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">elemToSpecFuncArgsD</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="p">[[(</span><span class="n">Nelem</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">Function</span><span class="p">(</span><span class="s2">&quot;n_</span><span class="si">{}{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))(</span><span class="o">*</span><span class="n">X</span><span class="p">,</span><span class="o">*</span><span class="n">W</span><span class="p">))</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]))</span>
+
+<span class="n">elemToSpecFuncArgs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">elemToSpecFuncArgsD</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+<span class="n">Matrix</span><span class="p">(</span><span class="n">elemToSpecFuncArgs</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[37]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}n_{11} & \operatorname{n_{11}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{12} & \operatorname{n_{12}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{21} & \operatorname{n_{21}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{22} & \operatorname{n_{22}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{31} & \operatorname{n_{31}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{32} & \operatorname{n_{32}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[38]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Selem</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[38]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[39]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Selem</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">elemToSpecD</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[39]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}\sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} & \sigma{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\\sigma{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} & \sigma{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\\sigma{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} & \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[40]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[40]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[41]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span>
+<span class="c1">#Selem[0,1].diff(Nelem[0,1]).subs(dict([{Nelem[0,1] : Nspec[0,1]}]))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[41]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left. \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)} \right|_{\substack{ n_{12}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[42]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="mi">23</span><span class="p">})</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[42]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left. \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)} \right|_{\substack{ n_{12}=23 }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[43]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">8</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[43]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left. \frac{d}{d n_{12}} 8 n_{12}^{3} \right|_{\substack{ n_{12}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[44]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">8</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[44]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \frac{d}{d n_{12}} 8 n_{12}^{3}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[45]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">8</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[45]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle 24 n_{12}^{2}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[46]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># ### GOT IT: can replace now with expression and do derivative with respect to that expression.</span>
+<span class="n">Selem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">8</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[46]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle 24 \left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\right)^{2}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[47]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="c1">#.subs({Nelem[0,1] : Nspec[0,1]})</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[47]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[48]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Selem</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[48]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[49]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">nt</span> <span class="o">=</span> <span class="n">Nelem</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">elemToSpecFunc</span><span class="p">);</span> <span class="n">nt</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[49]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} & \operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\\operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} & \operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\\operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} & \operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[50]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">st</span> <span class="o">=</span> <span class="n">Selem</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">elemToSpecFunc</span><span class="p">);</span> <span class="n">st</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[50]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}\sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} & \sigma{\left(\operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)} \right)}\\\sigma{\left(\operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} \right)} & \sigma{\left(\operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)} \right)}\\\sigma{\left(\operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} \right)} & \sigma{\left(\operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)} \right)}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[51]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">st</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">nt</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[51]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}\left[\begin{matrix}\frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} & 0\\0 & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & \frac{\partial}{\partial \operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}} \sigma{\left(\operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)} \right)}\\0 & 0\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\\frac{\partial}{\partial \operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)}} \sigma{\left(\operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} \right)} & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & \frac{\partial}{\partial \operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}} \sigma{\left(\operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)} \right)}\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\0 & 0\\\frac{\partial}{\partial \operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)}} \sigma{\left(\operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} \right)} & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & 0\\0 & \frac{\partial}{\partial \operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}} \sigma{\left(\operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)} \right)}\end{matrix}\right]\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[52]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[52]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[53]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[53]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle w_{11} \frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} \left. \frac{d}{d \xi_{1}} \operatorname{n_{11}}{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[54]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">st</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[54]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle 0$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[55]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Selem</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[55]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}\left[\begin{matrix}\frac{d}{d n_{11}} \sigma{\left(n_{11} \right)} & 0\\0 & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)}\\0 & 0\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\\frac{d}{d n_{21}} \sigma{\left(n_{21} \right)} & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & \frac{d}{d n_{22}} \sigma{\left(n_{22} \right)}\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\0 & 0\\\frac{d}{d n_{31}} \sigma{\left(n_{31} \right)} & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & 0\\0 & \frac{d}{d n_{32}} \sigma{\left(n_{32} \right)}\end{matrix}\right]\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[56]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Selem</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">elemToSpecFunc</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[56]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}\left[\begin{matrix}\frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} & 0\\0 & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & \frac{\partial}{\partial \operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}} \sigma{\left(\operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)} \right)}\\0 & 0\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\\frac{\partial}{\partial \operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)}} \sigma{\left(\operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} \right)} & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & \frac{\partial}{\partial \operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}} \sigma{\left(\operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)} \right)}\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\0 & 0\\\frac{\partial}{\partial \operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)}} \sigma{\left(\operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} \right)} & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & 0\\0 & \frac{\partial}{\partial \operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}} \sigma{\left(\operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)} \right)}\end{matrix}\right]\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[57]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># CAN even replace elements after have done an operation on them!!! replacing n_21 * 2 with the number 4.</span>
+<span class="n">Sspec</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]:</span> <span class="mi">3</span><span class="p">})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">Nspec</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[57]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}6 & 2 w_{12} x_{11} + 2 w_{22} x_{12} + 2 w_{32} x_{13}\\2 w_{11} x_{21} + 2 w_{21} x_{22} + 2 w_{31} x_{23} & 2 w_{12} x_{21} + 2 w_{22} x_{22} + 2 w_{32} x_{23}\\2 w_{11} x_{31} + 2 w_{21} x_{32} + 2 w_{31} x_{33} & 4\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[58]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">lambd</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="s2">&quot;lambda&quot;</span><span class="p">)</span>
+<span class="n">lambd_</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">matrix</span> <span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+
+
+<span class="n">vN</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[58]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[59]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">vN</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[59]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[60]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">L</span> <span class="o">=</span> <span class="n">lambd</span><span class="p">(</span><span class="n">S</span><span class="p">);</span> <span class="n">L</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[60]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(v{\left(X,W \right)} \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[61]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Nelem</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[61]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[62]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">L</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[62]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(\left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right] \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[63]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">L</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[63]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \lambda{\left(\left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right] \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[64]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">L</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[64]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(X W \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[65]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">L</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[65]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \lambda{\left({\left( d \mapsto \sigma{\left(d \right)} \right)}_{\circ}\left({X W}\right) \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[66]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">L</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">A</span><span class="p">:</span><span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span><span class="n">W</span><span class="p">})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vL</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[66]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \lambda{\left(\left[\begin{matrix}\sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} & \sigma{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\\sigma{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} & \sigma{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\\sigma{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} & \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right] \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[67]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">L</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[67]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(\left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right] \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[68]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">L</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">A</span><span class="p">:</span><span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span><span class="n">W</span><span class="p">})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">lambd</span><span class="p">,</span> <span class="n">lambd_</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[68]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \sigma{\left(n_{11} \right)} + \sigma{\left(n_{12} \right)} + \sigma{\left(n_{21} \right)} + \sigma{\left(n_{22} \right)} + \sigma{\left(n_{31} \right)} + \sigma{\left(n_{32} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[69]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">Derivative</span>
+
+<span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;x y r t&#39;</span><span class="p">)</span> <span class="c1"># r (radius), t (angle theta)</span>
+<span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;f g h&#39;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">Function</span><span class="p">)</span>
+<span class="n">h</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+<span class="n">Derivative</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[69]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \frac{d}{d f{\left(x \right)}} g{\left(f{\left(x \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[70]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Never do this gives recursion ERROR (max depth exceeded)</span>
+<span class="c1"># h = g(f(A))</span>
+<span class="c1"># Derivative(h, A).doit()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[71]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[71]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sympy.abc</span> <span class="kn">import</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span>
+
+<span class="n">Llower</span> <span class="o">=</span> <span class="n">lambd</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">(</span><span class="n">n</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)))</span>
+<span class="n">Llower</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[71]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(v{\left(a,b \right)} \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[72]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Derivative</span><span class="p">(</span><span class="n">Llower</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[72]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \frac{\partial}{\partial \sigma_{apply}{\left(v{\left(a,b \right)} \right)}} \lambda{\left(\sigma_{apply}{\left(v{\left(a,b \right)} \right)} \right)} \frac{\partial}{\partial v{\left(a,b \right)}} \sigma_{apply}{\left(v{\left(a,b \right)} \right)} \frac{\partial}{\partial a} v{\left(a,b \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[73]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[73]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># ### WAY 1: of substituting to differentiate with respect to expression:</span>
+<span class="n">n_ij</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="s1">&#39;n_ij&#39;</span><span class="p">)</span>
+<span class="n">n_ij</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">)</span> <span class="c1"># (N[0,0]); n_ij</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[73]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \operatorname{n_{ij}}{\left(X,W \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[74]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n_ij</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">)</span><span class="o">.</span><span class="n">args</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[74]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(X, W)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[75]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># sigma(n_ij).diff(n_ij).replace(n_ij, N[0,0]) # ERROR cannot deriv wi.r.t to the expression w11*x11 + ...</span>
+
+<span class="n">sigma</span><span class="p">(</span><span class="n">n_ij</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">))</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">n_ij</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[75]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \frac{\partial}{\partial \operatorname{n_{ij}}{\left(X,W \right)}} \sigma{\left(\operatorname{n_{ij}}{\left(X,W \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[76]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sigma</span><span class="p">(</span><span class="n">n_ij</span><span class="p">(</span><span class="o">*</span><span class="n">X</span><span class="p">,</span><span class="o">*</span><span class="n">W</span><span class="p">))</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[76]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \frac{\partial}{\partial x_{11}} \operatorname{n_{ij}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)} \frac{\partial}{\partial \operatorname{n_{ij}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}} \sigma{\left(\operatorname{n_{ij}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[77]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">nab_ij</span> <span class="o">=</span> <span class="n">n_ij</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">)</span>
+<span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="c1">#.subs({nab_ij : Nspec[0, 0]})</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[77]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \frac{\partial}{\partial \operatorname{n_{ij}}{\left(X,W \right)}} \sigma{\left(\operatorname{n_{ij}}{\left(X,W \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[78]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">nab_ij</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]})</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[78]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[79]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">nab_ij</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">X</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]:</span><span class="mi">77777</span><span class="p">})</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[79]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=w_{12} x_{31} + 77777 w_{22} + w_{32} x_{33} }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[80]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">nab_ij</span> <span class="p">:</span> <span class="mi">23</span><span class="p">})</span> <span class="c1"># ERROR if using replace() since it says can&#39;t calc derivs w.r.t to the x_11*w_11 + ...</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[80]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=23 }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[81]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">nab_ij</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[81]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[82]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">nab_ij</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="c1">#.diff(X[2,1])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[82]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[83]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Substituting the value of the function n_ij first, and THEN differentiating with respect to something in that substitution. (X_21)</span>
+<span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">nab_ij</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[83]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[84]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[84]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[85]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># ### WAY 2:</span>
+<span class="n">n_11</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="s1">&#39;n_11&#39;</span><span class="p">)(</span><span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]);</span> <span class="n">n_11</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[85]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[86]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[86]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[87]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_11</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n_11</span> <span class="p">:</span> <span class="n">n_11</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]})</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[87]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[88]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span> <span class="c1">#.replace(n_ij, n_ij.args[0])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[88]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[89]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n_11</span> <span class="p">:</span> <span class="n">n_11</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]})</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]:</span><span class="mi">77777</span><span class="p">})</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[89]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=77777 w_{11} + w_{21} x_{12} + w_{31} x_{13} }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[90]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n_11</span> <span class="p">:</span> <span class="n">n_11</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n_11</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">23</span><span class="p">)</span> <span class="c1"># same as subs in this case</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[90]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=23 }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[91]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[91]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle w_{11} \frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} \left. \frac{d}{d \xi_{1}} \operatorname{n_{11}}{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[92]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">id</span> <span class="o">=</span> <span class="n">Lambda</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+<span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n_11</span> <span class="p">:</span> <span class="nb">id</span><span class="p">})</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[92]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle w_{11} \left. \frac{d}{d \xi_{1}} \operatorname{n_{11}}{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=\left( x \mapsto x \right) }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[93]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># NOTE: so I don&#39;t think WAY 2 is correct because here it doesn&#39;t simplify the derivative d n11 / d eps11, since this should equal 1 because now n11 = eps11. Correct one is below (repeated from above)</span>
+<span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n_11</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]})</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[93]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle w_{11} \left. \frac{d}{d \xi_{1}} \operatorname{n_{11}}{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[94]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># CORRECT WAY 1</span>
+<span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n_11</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]})</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[94]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[95]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># CORRECT WAY 2</span>
+
+<span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">nab_ij</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]})</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[95]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[96]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># CORRECT WAY 3</span>
+<span class="n">Selem</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[96]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[97]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span> <span class="c1"># WAY 1: sigma argument is already hardcoded</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[97]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[98]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span> <span class="c1"># Way 2: sigma argument is function of matrixsymbol (better than 1)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[98]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \sigma{\left(\operatorname{n_{ij}}{\left(X,W \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[99]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># WAY 3: sigma argument is just symbol and we replace it as function with argument hardcoded only later. (better than 2)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[99]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \sigma{\left(n_{32} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[100]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">L</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[100]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(v{\left(X,W \right)} \right)} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[101]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="n">Selem</span> <span class="o">==</span> <span class="n">S</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span>
+
+<span class="n">Selem</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[101]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[102]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">L</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[102]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \lambda{\left(\left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right] \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[103]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#L.replace(n, vN).replace(sigmaApply, sigmaApply_).diff(Nelem[0,0])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[104]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Lsum</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">lambd</span><span class="p">,</span> <span class="n">lambd_</span><span class="p">)</span>
+<span class="n">Lsum</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[104]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \sigma{\left(n_{11} \right)} + \sigma{\left(n_{12} \right)} + \sigma{\left(n_{21} \right)} + \sigma{\left(n_{22} \right)} + \sigma{\left(n_{31} \right)} + \sigma{\left(n_{32} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[105]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Lsum</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[105]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}\frac{d}{d n_{11}} \sigma{\left(n_{11} \right)} & \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)}\\\frac{d}{d n_{21}} \sigma{\left(n_{21} \right)} & \frac{d}{d n_{22}} \sigma{\left(n_{22} \right)}\\\frac{d}{d n_{31}} \sigma{\left(n_{31} \right)} & \frac{d}{d n_{32}} \sigma{\left(n_{32} \right)}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[106]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Lsum</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">elemToSpec</span><span class="p">)</span><span class="c1">#.diff(X[2,1])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[106]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} + \sigma{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} + \sigma{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} + \sigma{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)} + \sigma{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)} + \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[107]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Lsum</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">elemToSpec</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[107]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}\\w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} }}\\w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    <div style="border:thin solid red">
+        
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[108]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">specToElemD</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span> <span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">elemToSpecD</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+<span class="n">Lsum</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">elemToSpecD</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">specToElemD</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[108]:</div>
+
+
+
+
+<div class="output_latex output_subarea output_execute_result">
+$\displaystyle \left[\begin{matrix}w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{11} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{12} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{11} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{12} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{11} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{12} }}\\w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{21} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{22} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{21} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{22} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{21} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{22} }}\\w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{31} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{32} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{31} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{32} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{31} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{32} }}\end{matrix}\right]$
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+
+    </div>
+  </div>
+</body>
+
+ 
+
+
+</html>

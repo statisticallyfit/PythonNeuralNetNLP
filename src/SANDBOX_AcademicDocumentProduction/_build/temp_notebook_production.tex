@@ -66,9 +66,10 @@
 % Set up styles of URL: it should be placed after hyperref.
 \urlstyle{same}
 
+\addto\captionsenglish{\renewcommand{\contentsname}{Contents:}}
 
 \usepackage{sphinxmessages}
-
+\setcounter{tocdepth}{1}
 
 
 % Jupyter Notebook code cell colors
@@ -214,7 +215,7 @@
 
 
 \title{TEMP\_NOTEBOOK\_PRODUCTION}
-\date{Sep 27, 2020}
+\date{Sep 28, 2020}
 \release{1}
 \author{statisticallyfit}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -229,6 +230,2067 @@
 \pagestyle{normal}
 \phantomsection\label{\detokenize{index::doc}}
 
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[ ]:\,\hspace{\fboxrule}\hspace{\fboxsep}}
+\end{sphinxVerbatim}
+}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[1]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{mylist} \PYG{o}{=} \PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{,}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{3}\PYG{p}{,}\PYG{l+m+mi}{4}\PYG{p}{]}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{mylist}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+{
+
+\kern-\sphinxverbatimsmallskipamount\kern-\baselineskip
+\kern+\FrameHeightAdjust\kern-\fboxrule
+\vspace{\nbsphinxcodecellspacing}
+
+\sphinxsetup{VerbatimColor={named}{white}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+[1, 2, 3, 4]
+\end{sphinxVerbatim}
+}
+
+This is a formula here:
+\begin{equation*}
+\begin{split}x^2 + y^3 + 4*zyx\end{split}
+\end{equation*}
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[2]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{mylist}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{l+m+mi}{5}\PYG{p}{)}
+\PYG{n}{mylist}
+\end{sphinxVerbatim}
+}
+
+{
+
+\kern-\sphinxverbatimsmallskipamount\kern-\baselineskip
+\kern+\FrameHeightAdjust\kern-\fboxrule
+\vspace{\nbsphinxcodecellspacing}
+
+\sphinxsetup{VerbatimColor={named}{white}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxout}[2]:\,\hspace{\fboxrule}\hspace{\fboxsep}}[1, 2, 3, 4, 5]
+\end{sphinxVerbatim}
+}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[3]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{hi my name is giraffe i like to pirouette during nutracker ballet}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+{
+
+\kern-\sphinxverbatimsmallskipamount\kern-\baselineskip
+\kern+\FrameHeightAdjust\kern-\fboxrule
+\vspace{\nbsphinxcodecellspacing}
+
+\sphinxsetup{VerbatimColor={named}{white}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+hi my name is giraffe i like to pirouette during nutracker ballet
+\end{sphinxVerbatim}
+}
+\begin{equation*}
+\begin{split}\sum_{n = 0}^{\infty} \frac {x^n} {n!}\end{split}
+\end{equation*}
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[1]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{k+kn}{from} \PYG{n+nn}{sympy}\PYG{n+nn}{.}\PYG{n+nn}{interactive} \PYG{k+kn}{import} \PYG{n}{init\PYGZus{}printing}
+\PYG{k+kn}{from} \PYG{n+nn}{sympy} \PYG{k+kn}{import} \PYG{n}{Matrix}\PYG{p}{,} \PYG{n}{Symbol}\PYG{p}{,} \PYG{n}{derive\PYGZus{}by\PYGZus{}array}\PYG{p}{,} \PYG{n}{Lambda}\PYG{p}{,} \PYG{n}{Function}\PYG{p}{,} \PYG{n}{MatrixSymbol}\PYG{p}{,} \PYG{n}{Derivative}\PYG{p}{,} \PYG{n}{diff}\PYG{p}{,} \PYG{n}{symbols}
+\PYG{k+kn}{from} \PYG{n+nn}{sympy} \PYG{k+kn}{import} \PYG{n}{var}
+\PYG{k+kn}{from} \PYG{n+nn}{sympy}\PYG{n+nn}{.}\PYG{n+nn}{abc} \PYG{k+kn}{import} \PYG{n}{x}\PYG{p}{,} \PYG{n}{i}\PYG{p}{,} \PYG{n}{j}\PYG{p}{,} \PYG{n}{a}\PYG{p}{,} \PYG{n}{b}
+
+
+\PYG{n}{init\PYGZus{}printing}\PYG{p}{(}\PYG{n}{pretty\PYGZus{}print}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{,} \PYG{n}{wrap\PYGZus{}line}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{,} \PYG{n}{num\PYGZus{}columns}\PYG{o}{=}\PYG{l+m+mi}{60}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[2]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{k}{def} \PYG{n+nf}{myvar}\PYG{p}{(}\PYG{n}{letter}\PYG{p}{:} \PYG{n+nb}{str}\PYG{p}{,} \PYG{n}{i}\PYG{p}{:} \PYG{n+nb}{int}\PYG{p}{,} \PYG{n}{j}\PYG{p}{:} \PYG{n+nb}{int}\PYG{p}{)} \PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}} \PYG{n}{Symbol}\PYG{p}{:}
+    \PYG{n}{letter\PYGZus{}ij} \PYG{o}{=} \PYG{n}{Symbol}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+si}{\PYGZob{}\PYGZcb{}}\PYG{l+s+s1}{\PYGZus{}}\PYG{l+s+si}{\PYGZob{}\PYGZcb{}}\PYG{l+s+si}{\PYGZob{}\PYGZcb{}}\PYG{l+s+s1}{\PYGZsq{}}\PYG{o}{.}\PYG{n}{format}\PYG{p}{(}\PYG{n}{letter}\PYG{p}{,} \PYG{n}{i}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{j}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{,} \PYG{n}{is\PYGZus{}commutative}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+    \PYG{k}{return} \PYG{n}{letter\PYGZus{}ij}
+
+
+\PYG{n}{n}\PYG{p}{,}\PYG{n}{m}\PYG{p}{,}\PYG{n}{p} \PYG{o}{=} \PYG{l+m+mi}{3}\PYG{p}{,}\PYG{l+m+mi}{3}\PYG{p}{,}\PYG{l+m+mi}{2}
+
+\PYG{n}{X} \PYG{o}{=} \PYG{n}{Matrix}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{m}\PYG{p}{,} \PYG{k}{lambda} \PYG{n}{i}\PYG{p}{,}\PYG{n}{j} \PYG{p}{:} \PYG{n}{myvar}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{x}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{i}\PYG{p}{,} \PYG{n}{j}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;} \PYG{n}{X}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[2]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[3]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{W} \PYG{o}{=} \PYG{n}{Matrix}\PYG{p}{(}\PYG{n}{m}\PYG{p}{,} \PYG{n}{p}\PYG{p}{,} \PYG{k}{lambda} \PYG{n}{i}\PYG{p}{,}\PYG{n}{j} \PYG{p}{:} \PYG{n}{myvar}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{w}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{i}\PYG{p}{,} \PYG{n}{j}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;} \PYG{n}{W}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[3]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}w_{11} & w_{12}\\w_{21} & w_{22}\\w_{31} & w_{32}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[4]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{A} \PYG{o}{=} \PYG{n}{MatrixSymbol}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{X}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,}\PYG{l+m+mi}{3}\PYG{p}{,}\PYG{l+m+mi}{3}\PYG{p}{)}\PYG{p}{;} \PYG{n}{Matrix}\PYG{p}{(}\PYG{n}{A}\PYG{p}{)}
+\PYG{n}{B} \PYG{o}{=} \PYG{n}{MatrixSymbol}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{W}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,}\PYG{l+m+mi}{3}\PYG{p}{,}\PYG{l+m+mi}{2}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[5]:\,\hspace{\fboxrule}\hspace{\fboxsep}}
+\end{sphinxVerbatim}
+}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[5]:\,\hspace{\fboxrule}\hspace{\fboxsep}}
+\end{sphinxVerbatim}
+}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[5]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{v} \PYG{o}{=} \PYG{k}{lambda} \PYG{n}{a}\PYG{p}{,}\PYG{n}{b}\PYG{p}{:} \PYG{n}{a}\PYG{o}{*}\PYG{n}{b}
+
+\PYG{n}{vL} \PYG{o}{=} \PYG{n}{Lambda}\PYG{p}{(}\PYG{p}{(}\PYG{n}{a}\PYG{p}{,}\PYG{n}{b}\PYG{p}{)}\PYG{p}{,} \PYG{n}{a}\PYG{o}{*}\PYG{n}{b}\PYG{p}{)}
+
+\PYG{n}{n} \PYG{o}{=} \PYG{n}{Function}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{v}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{}, Lambda((a,b), a*b))}
+
+\PYG{n}{vN} \PYG{o}{=} \PYG{k}{lambda} \PYG{n}{mat1}\PYG{p}{,} \PYG{n}{mat2}\PYG{p}{:} \PYG{n}{Matrix}\PYG{p}{(}\PYG{n}{mat1}\PYG{o}{.}\PYG{n}{shape}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{,} \PYG{n}{mat2}\PYG{o}{.}\PYG{n}{shape}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{,} \PYG{k}{lambda} \PYG{n}{i}\PYG{p}{,} \PYG{n}{j}\PYG{p}{:} \PYG{n}{Symbol}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{n\PYGZus{}}\PYG{l+s+si}{\PYGZob{}\PYGZcb{}}\PYG{l+s+si}{\PYGZob{}\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{o}{.}\PYG{n}{format}\PYG{p}{(}\PYG{n}{i}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{j}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;} \PYG{n}{vN}
+
+\PYG{n}{Nelem} \PYG{o}{=} \PYG{n}{vN}\PYG{p}{(}\PYG{n}{X}\PYG{p}{,} \PYG{n}{W}\PYG{p}{)}\PYG{p}{;} \PYG{n}{Nelem}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[5]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[6]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{n}\PYG{p}{(}\PYG{n}{X}\PYG{p}{,}\PYG{n}{W}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[6]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle v{\left(\left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right],\left[\begin{matrix}w_{11} & w_{12}\\w_{21} & w_{22}\\w_{31} & w_{32}\end{matrix}\right] \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[7]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{n}\PYG{p}{(}\PYG{n}{A}\PYG{p}{,}\PYG{n}{B}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[7]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle v{\left(X,W \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[8]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{n}\PYG{p}{(}\PYG{n}{X}\PYG{p}{,}\PYG{n}{W}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{v}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} replace works when v = python lambda}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[8]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[9]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{n}\PYG{p}{(}\PYG{n}{X}\PYG{p}{,}\PYG{n}{W}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{n}\PYG{p}{:} \PYG{n}{vL}\PYG{p}{\PYGZcb{}}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} subs works when v = sympy lambda}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[9]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[10]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{n}\PYG{p}{(}\PYG{n}{X}\PYG{p}{,}\PYG{n}{W}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{vL}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[10]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[11]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{n}\PYG{p}{(}\PYG{n}{X}\PYG{p}{,}\PYG{n}{W}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{n}\PYG{p}{:} \PYG{n}{v}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{c+c1}{\PYGZsh{} subs() doesn\PYGZsq{}t work when v is python lambda}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[11]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle v{\left(\left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right],\left[\begin{matrix}w_{11} & w_{12}\\w_{21} & w_{22}\\w_{31} & w_{32}\end{matrix}\right] \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[12]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Matrix}\PYG{p}{(}\PYG{n}{n}\PYG{p}{(}\PYG{n}{A}\PYG{p}{,}\PYG{n}{B}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{n}\PYG{p}{:} \PYG{n}{vL}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[12]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{array}{cc}W_{0, 0} X_{0, 0} + W_{1, 0} X_{0, 1} + W_{2, 0} X_{0, 2} & W_{0, 1} X_{0, 0} + W_{1, 1} X_{0, 1} + W_{2, 1} X_{0, 2}\\W_{0, 0} X_{1, 0} + W_{1, 0} X_{1, 1} + W_{2, 0} X_{1, 2} & W_{0, 1} X_{1, 0} + W_{1, 1} X_{1, 1} + W_{2, 1} X_{1, 2}\\W_{0, 0} X_{2, 0} + W_{1, 0} X_{2, 1} + W_{2, 0} X_{2, 2} & W_{0, 1} X_{2, 0} + W_{1, 1} X_{2, 1} + W_{2, 1} X_{2, 2}\end{array}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[13]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{c+c1}{\PYGZsh{}N = v(X, W); N}
+\PYG{n}{N} \PYG{o}{=} \PYG{n}{n}\PYG{p}{(}\PYG{n}{A}\PYG{p}{,}\PYG{n}{B}\PYG{p}{)}\PYG{p}{;} \PYG{n}{N}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[13]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle v{\left(X,W \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[14]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{N}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{v}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[14]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle X W$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[15]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{N}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{v}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{A}\PYG{p}{:} \PYG{n}{X}\PYG{p}{,} \PYG{n}{B}\PYG{p}{:}\PYG{n}{W}\PYG{p}{\PYGZcb{}}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} replacing ariable values after doing function doesn\PYGZsq{}t make the function apply directly on the values (matrices), need to replace values before the function is replaced, so that the function can act on them while they are given/alive.}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[15]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right] \left[\begin{matrix}w_{11} & w_{12}\\w_{21} & w_{22}\\w_{31} & w_{32}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[16]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{N}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{n}\PYG{p}{:} \PYG{n}{vL}\PYG{p}{,} \PYG{n}{A}\PYG{p}{:}\PYG{n}{X}\PYG{p}{,} \PYG{n}{B}\PYG{p}{:}\PYG{n}{W}\PYG{p}{\PYGZcb{}}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[16]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[17]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Nspec} \PYG{o}{=} \PYG{n}{N}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{A}\PYG{p}{:}\PYG{n}{X}\PYG{p}{,} \PYG{n}{B}\PYG{p}{:}\PYG{n}{W}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{v}\PYG{p}{)}\PYG{p}{;} \PYG{n}{Nspec}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[17]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[18]:\,\hspace{\fboxrule}\hspace{\fboxsep}}
+\end{sphinxVerbatim}
+}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[18]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{N}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{N}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[18]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle 1$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[19]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{N}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{X}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[19]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}0 & 0 & 0\\0 & 0 & 0\\0 & 0 & 0\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[20]:\,\hspace{\fboxrule}\hspace{\fboxsep}}
+\end{sphinxVerbatim}
+}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[20]:\,\hspace{\fboxrule}\hspace{\fboxsep}}
+
+
+\end{sphinxVerbatim}
+}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[20]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{c+c1}{\PYGZsh{} way 2 of declaring S (better way)}
+\PYG{n}{sigma} \PYG{o}{=} \PYG{n}{Function}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{sigma}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+
+\PYG{n}{sigmaApply} \PYG{o}{=} \PYG{n}{Function}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{sigma\PYGZus{}apply}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{}lambda matrix:  matrix.applyfunc(sigma)}
+
+\PYG{n}{sigmaApply\PYGZus{}} \PYG{o}{=} \PYG{k}{lambda} \PYG{n}{matrix}\PYG{p}{:} \PYG{n}{matrix}\PYG{o}{.}\PYG{n}{applyfunc}\PYG{p}{(}\PYG{n}{sigma}\PYG{p}{)}
+
+\PYG{n}{sigmaApply}\PYG{p}{(}\PYG{n}{A}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[20]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \sigma_{apply}{\left(X \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[21]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{sigmaApply}\PYG{p}{(}\PYG{n}{A}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{A}\PYG{p}{:} \PYG{n}{X}\PYG{p}{\PYGZcb{}}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[21]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \sigma_{apply}{\left(\left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right] \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[22]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{sigmaApply\PYGZus{}}\PYG{p}{(}\PYG{n}{A}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[22]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle {\left( d \mapsto \sigma{\left(d \right)} \right)}_{\circ}\left({X}\right)$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[23]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{sigmaApply}\PYG{p}{(}\PYG{n}{A}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{A}\PYG{p}{:} \PYG{n}{X}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{sigmaApply}\PYG{p}{,} \PYG{n}{sigmaApply\PYGZus{}}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} NOTE: subs of functions doesn\PYGZsq{}t work, replace actually evaluates the replaced function!}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[23]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}\sigma{\left(x_{11} \right)} & \sigma{\left(x_{12} \right)} & \sigma{\left(x_{13} \right)}\\\sigma{\left(x_{21} \right)} & \sigma{\left(x_{22} \right)} & \sigma{\left(x_{23} \right)}\\\sigma{\left(x_{31} \right)} & \sigma{\left(x_{32} \right)} & \sigma{\left(x_{33} \right)}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[24]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{S} \PYG{o}{=} \PYG{n}{sigmaApply}\PYG{p}{(}\PYG{n}{N}\PYG{p}{)}\PYG{p}{;} \PYG{n}{S}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[24]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \sigma_{apply}{\left(v{\left(X,W \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[25]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Derivative}\PYG{p}{(}\PYG{n}{S}\PYG{p}{,} \PYG{n}{S}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[25]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \frac{\partial}{\partial \sigma_{apply}{\left(v{\left(X,W \right)} \right)}} \sigma_{apply}{\left(v{\left(X,W \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[26]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Derivative}\PYG{p}{(}\PYG{n}{S}\PYG{p}{,} \PYG{n}{S}\PYG{p}{)}\PYG{o}{.}\PYG{n}{doit}\PYG{p}{(}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[26]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle 1$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[27]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Derivative}\PYG{p}{(}\PYG{n}{S}\PYG{p}{,} \PYG{n}{n}\PYG{p}{(}\PYG{n}{A}\PYG{p}{,}\PYG{n}{B}\PYG{p}{)}\PYG{p}{)}\PYG{o}{.}\PYG{n}{doit}\PYG{p}{(}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[27]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \frac{\partial}{\partial v{\left(X,W \right)}} \sigma_{apply}{\left(v{\left(X,W \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[28]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{c+c1}{\PYGZsh{}lambd = Function(\PYGZdq{}lambda\PYGZdq{})}
+\PYG{c+c1}{\PYGZsh{}Lagain = lambd(sigmaApply(n(A))); Lagain}
+
+
+
+\PYG{c+c1}{\PYGZsh{} diff(Lagain, A) \PYGZsh{} never execute}
+\PYG{c+c1}{\PYGZsh{}}
+\end{sphinxVerbatim}
+}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[29]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{S}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{A}\PYG{p}{,}\PYG{n}{X}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{B}\PYG{p}{,}\PYG{n}{W}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[29]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \sigma_{apply}{\left(v{\left(\left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right],\left[\begin{matrix}w_{11} & w_{12}\\w_{21} & w_{22}\\w_{31} & w_{32}\end{matrix}\right] \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[30]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{S}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{v}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[30]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \sigma_{apply}{\left(X W \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[31]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{S}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{A}\PYG{p}{:}\PYG{n}{X}\PYG{p}{,} \PYG{n}{B}\PYG{p}{:}\PYG{n}{W}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{v}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[31]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \sigma_{apply}{\left(\left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right] \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[32]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Sspec} \PYG{o}{=} \PYG{n}{S}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{A}\PYG{p}{:}\PYG{n}{X}\PYG{p}{,} \PYG{n}{B}\PYG{p}{:}\PYG{n}{W}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{v}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{sigmaApply}\PYG{p}{,} \PYG{n}{sigmaApply\PYGZus{}}\PYG{p}{)}
+\PYG{n}{Sspec}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[32]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}\sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} & \sigma{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\\sigma{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} & \sigma{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\\sigma{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} & \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[33]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{S}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{vN}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{}.replace(sigmaApply, sigmaApply\PYGZus{})}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[33]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \sigma_{apply}{\left(\left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right] \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[34]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Selem} \PYG{o}{=} \PYG{n}{S}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{vN}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{sigmaApply}\PYG{p}{,} \PYG{n}{sigmaApply\PYGZus{}}\PYG{p}{)}\PYG{p}{;} \PYG{n}{Selem}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[34]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[35]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{k+kn}{import} \PYG{n+nn}{itertools}
+
+\PYG{n}{elemToSpecD} \PYG{o}{=} \PYG{n+nb}{dict}\PYG{p}{(}\PYG{n}{itertools}\PYG{o}{.}\PYG{n}{chain}\PYG{p}{(}\PYG{o}{*}\PYG{p}{[}\PYG{p}{[}\PYG{p}{(}\PYG{n}{Nelem}\PYG{p}{[}\PYG{n}{i}\PYG{p}{,} \PYG{n}{j}\PYG{p}{]}\PYG{p}{,} \PYG{n}{Nspec}\PYG{p}{[}\PYG{n}{i}\PYG{p}{,} \PYG{n}{j}\PYG{p}{]}\PYG{p}{)} \PYG{k}{for} \PYG{n}{j} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{)}\PYG{p}{]} \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{3}\PYG{p}{)}\PYG{p}{]}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{n}{elemToSpec} \PYG{o}{=} \PYG{n+nb}{list}\PYG{p}{(}\PYG{n}{elemToSpecD}\PYG{o}{.}\PYG{n}{items}\PYG{p}{(}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{n}{Matrix}\PYG{p}{(}\PYG{n}{elemToSpec}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[35]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}n_{11} & w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13}\\n_{12} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\n_{21} & w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23}\\n_{22} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\n_{31} & w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33}\\n_{32} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[36]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{elemToSpecFuncD} \PYG{o}{=} \PYG{n+nb}{dict}\PYG{p}{(}\PYG{n}{itertools}\PYG{o}{.}\PYG{n}{chain}\PYG{p}{(}\PYG{o}{*}\PYG{p}{[}\PYG{p}{[}\PYG{p}{(}\PYG{n}{Nelem}\PYG{p}{[}\PYG{n}{i}\PYG{p}{,} \PYG{n}{j}\PYG{p}{]}\PYG{p}{,} \PYG{n}{Function}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{n\PYGZus{}}\PYG{l+s+si}{\PYGZob{}\PYGZcb{}}\PYG{l+s+si}{\PYGZob{}\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{o}{.}\PYG{n}{format}\PYG{p}{(}\PYG{n}{i} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{j} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{)}\PYG{p}{(}\PYG{n}{Nspec}\PYG{p}{[}\PYG{n}{i}\PYG{p}{,} \PYG{n}{j}\PYG{p}{]}\PYG{p}{)}\PYG{p}{)} \PYG{k}{for} \PYG{n}{j} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{)}\PYG{p}{]} \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{3}\PYG{p}{)}\PYG{p}{]}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{n}{elemToSpecFunc} \PYG{o}{=} \PYG{n+nb}{list}\PYG{p}{(}\PYG{n}{elemToSpecFuncD}\PYG{o}{.}\PYG{n}{items}\PYG{p}{(}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{n}{Matrix}\PYG{p}{(}\PYG{n}{elemToSpecFunc}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[36]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}n_{11} & \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}\\n_{12} & \operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\n_{21} & \operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)}\\n_{22} & \operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\n_{31} & \operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)}\\n_{32} & \operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[37]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{elemToSpecFuncArgsD} \PYG{o}{=} \PYG{n+nb}{dict}\PYG{p}{(}\PYG{n}{itertools}\PYG{o}{.}\PYG{n}{chain}\PYG{p}{(}\PYG{o}{*}\PYG{p}{[}\PYG{p}{[}\PYG{p}{(}\PYG{n}{Nelem}\PYG{p}{[}\PYG{n}{i}\PYG{p}{,} \PYG{n}{j}\PYG{p}{]}\PYG{p}{,} \PYG{n}{Function}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{n\PYGZus{}}\PYG{l+s+si}{\PYGZob{}\PYGZcb{}}\PYG{l+s+si}{\PYGZob{}\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{o}{.}\PYG{n}{format}\PYG{p}{(}\PYG{n}{i} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{j} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{)}\PYG{p}{(}\PYG{o}{*}\PYG{n}{X}\PYG{p}{,}\PYG{o}{*}\PYG{n}{W}\PYG{p}{)}\PYG{p}{)} \PYG{k}{for} \PYG{n}{j} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{)}\PYG{p}{]} \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{3}\PYG{p}{)}\PYG{p}{]}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{n}{elemToSpecFuncArgs} \PYG{o}{=} \PYG{n+nb}{list}\PYG{p}{(}\PYG{n}{elemToSpecFuncArgsD}\PYG{o}{.}\PYG{n}{items}\PYG{p}{(}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{n}{Matrix}\PYG{p}{(}\PYG{n}{elemToSpecFuncArgs}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[37]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}n_{11} & \operatorname{n_{11}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{12} & \operatorname{n_{12}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{21} & \operatorname{n_{21}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{22} & \operatorname{n_{22}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{31} & \operatorname{n_{31}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{32} & \operatorname{n_{32}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[38]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Selem}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[38]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[39]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Selem}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{n}{elemToSpecD}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[39]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}\sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} & \sigma{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\\sigma{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} & \sigma{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\\sigma{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} & \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[40]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Selem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{Nelem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[40]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[41]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Selem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{Nelem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{Nelem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{p}{:} \PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{}Selem[0,1].diff(Nelem[0,1]).subs(dict([\PYGZob{}Nelem[0,1] : Nspec[0,1]\PYGZcb{}]))}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[41]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left. \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)} \right|_{\substack{ n_{12}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[42]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Selem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{Nelem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{Nelem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{p}{:} \PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{p}{:} \PYG{l+m+mi}{23}\PYG{p}{\PYGZcb{}}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[42]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left. \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)} \right|_{\substack{ n_{12}=23 }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[43]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Selem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{Nelem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{Nelem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{p}{:} \PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{sigma}\PYG{p}{,} \PYG{k}{lambda} \PYG{n}{x}\PYG{p}{:} \PYG{l+m+mi}{8}\PYG{o}{*}\PYG{n}{x}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{3}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[43]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left. \frac{d}{d n_{12}} 8 n_{12}^{3} \right|_{\substack{ n_{12}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[44]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Selem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{Nelem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{sigma}\PYG{p}{,} \PYG{k}{lambda} \PYG{n}{x}\PYG{p}{:} \PYG{l+m+mi}{8}\PYG{o}{*}\PYG{n}{x}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{3}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[44]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \frac{d}{d n_{12}} 8 n_{12}^{3}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[45]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Selem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{Nelem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{sigma}\PYG{p}{,} \PYG{k}{lambda} \PYG{n}{x}\PYG{p}{:} \PYG{l+m+mi}{8}\PYG{o}{*}\PYG{n}{x}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{3}\PYG{p}{)}\PYG{o}{.}\PYG{n}{doit}\PYG{p}{(}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[45]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle 24 n_{12}^{2}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[46]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{c+c1}{\PYGZsh{} \PYGZsh{}\PYGZsh{}\PYGZsh{} GOT IT: can replace now with expression and do derivative with respect to that expression.}
+\PYG{n}{Selem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{Nelem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{Nelem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{p}{:} \PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{sigma}\PYG{p}{,} \PYG{k}{lambda} \PYG{n}{x}\PYG{p}{:} \PYG{l+m+mi}{8}\PYG{o}{*}\PYG{n}{x}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{3}\PYG{p}{)}\PYG{o}{.}\PYG{n}{doit}\PYG{p}{(}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[46]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle 24 \left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\right)^{2}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[47]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Selem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{Nelem}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{p}{:} \PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{)}\PYG{c+c1}{\PYGZsh{}.subs(\PYGZob{}Nelem[0,1] : Nspec[0,1]\PYGZcb{})}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[47]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[48]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Selem}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[48]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[49]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{nt} \PYG{o}{=} \PYG{n}{Nelem}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{n}{elemToSpecFunc}\PYG{p}{)}\PYG{p}{;} \PYG{n}{nt}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[49]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} & \operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\\operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} & \operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\\operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} & \operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[50]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{st} \PYG{o}{=} \PYG{n}{Selem}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{n}{elemToSpecFunc}\PYG{p}{)}\PYG{p}{;} \PYG{n}{st}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[50]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}\sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} & \sigma{\left(\operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)} \right)}\\\sigma{\left(\operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} \right)} & \sigma{\left(\operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)} \right)}\\\sigma{\left(\operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} \right)} & \sigma{\left(\operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)} \right)}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[51]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{st}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{nt}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[51]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}\left[\begin{matrix}\frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} & 0\\0 & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & \frac{\partial}{\partial \operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}} \sigma{\left(\operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)} \right)}\\0 & 0\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\\frac{\partial}{\partial \operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)}} \sigma{\left(\operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} \right)} & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & \frac{\partial}{\partial \operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}} \sigma{\left(\operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)} \right)}\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\0 & 0\\\frac{\partial}{\partial \operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)}} \sigma{\left(\operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} \right)} & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & 0\\0 & \frac{\partial}{\partial \operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}} \sigma{\left(\operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)} \right)}\end{matrix}\right]\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[52]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{st}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{st}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{.}\PYG{n}{args}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[52]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[53]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{st}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[53]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle w_{11} \frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} \left. \frac{d}{d \xi_{1}} \operatorname{n_{11}}{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[54]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{st}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{st}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{.}\PYG{n}{args}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[54]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle 0$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[55]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Selem}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{Nelem}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[55]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}\left[\begin{matrix}\frac{d}{d n_{11}} \sigma{\left(n_{11} \right)} & 0\\0 & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)}\\0 & 0\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\\frac{d}{d n_{21}} \sigma{\left(n_{21} \right)} & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & \frac{d}{d n_{22}} \sigma{\left(n_{22} \right)}\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\0 & 0\\\frac{d}{d n_{31}} \sigma{\left(n_{31} \right)} & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & 0\\0 & \frac{d}{d n_{32}} \sigma{\left(n_{32} \right)}\end{matrix}\right]\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[56]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Selem}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{Nelem}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{n}{elemToSpecFunc}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[56]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}\left[\begin{matrix}\frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} & 0\\0 & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & \frac{\partial}{\partial \operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}} \sigma{\left(\operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)} \right)}\\0 & 0\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\\frac{\partial}{\partial \operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)}} \sigma{\left(\operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} \right)} & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & \frac{\partial}{\partial \operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}} \sigma{\left(\operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)} \right)}\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\0 & 0\\\frac{\partial}{\partial \operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)}} \sigma{\left(\operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} \right)} & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & 0\\0 & \frac{\partial}{\partial \operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}} \sigma{\left(\operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)} \right)}\end{matrix}\right]\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[57]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{c+c1}{\PYGZsh{} CAN even replace elements after have done an operation on them!!! replacing n\PYGZus{}21 * 2 with the number 4.}
+\PYG{n}{Sspec}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{:} \PYG{l+m+mi}{3}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{sigma}\PYG{p}{,} \PYG{k}{lambda} \PYG{n}{x}\PYG{p}{:} \PYG{l+m+mi}{2} \PYG{o}{*} \PYG{n}{x}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{*} \PYG{l+m+mi}{2}\PYG{p}{,} \PYG{l+m+mi}{4}\PYG{p}{)}
+
+
+
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[57]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}6 & 2 w_{12} x_{11} + 2 w_{22} x_{12} + 2 w_{32} x_{13}\\2 w_{11} x_{21} + 2 w_{21} x_{22} + 2 w_{31} x_{23} & 2 w_{12} x_{21} + 2 w_{22} x_{22} + 2 w_{32} x_{23}\\2 w_{11} x_{31} + 2 w_{21} x_{32} + 2 w_{31} x_{33} & 4\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[58]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{lambd} \PYG{o}{=} \PYG{n}{Function}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{lambda}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{lambd\PYGZus{}} \PYG{o}{=} \PYG{k}{lambda} \PYG{n}{matrix} \PYG{p}{:} \PYG{n+nb}{sum}\PYG{p}{(}\PYG{n}{matrix}\PYG{p}{)}
+
+
+\PYG{n}{vN}\PYG{p}{(}\PYG{n}{X}\PYG{p}{,} \PYG{n}{W}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[58]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[59]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{vN}\PYG{p}{(}\PYG{n}{A}\PYG{p}{,} \PYG{n}{B}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[59]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[60]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{L} \PYG{o}{=} \PYG{n}{lambd}\PYG{p}{(}\PYG{n}{S}\PYG{p}{)}\PYG{p}{;} \PYG{n}{L}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[60]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(v{\left(X,W \right)} \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[61]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Nelem}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[61]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[62]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{L}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{vN}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[62]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(\left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right] \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[63]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{L}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{vN}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{sigmaApply}\PYG{p}{,} \PYG{n}{sigmaApply\PYGZus{}}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[63]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \lambda{\left(\left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right] \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[64]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{L}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{v}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[64]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(X W \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[65]:\,\hspace{\fboxrule}\hspace{\fboxsep}}
+\PYG{n}{L}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{v}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{sigmaApply}\PYG{p}{,} \PYG{n}{sigmaApply\PYGZus{}}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[65]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \lambda{\left({\left( d \mapsto \sigma{\left(d \right)} \right)}_{\circ}\left({X W}\right) \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[66]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{L}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{A}\PYG{p}{:}\PYG{n}{X}\PYG{p}{,} \PYG{n}{B}\PYG{p}{:}\PYG{n}{W}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{vL}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{sigmaApply}\PYG{p}{,} \PYG{n}{sigmaApply\PYGZus{}}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[66]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \lambda{\left(\left[\begin{matrix}\sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} & \sigma{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\\sigma{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} & \sigma{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\\sigma{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} & \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right] \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[67]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{L}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{vN}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[67]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(\left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right] \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[68]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{L}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{vN}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{A}\PYG{p}{:}\PYG{n}{X}\PYG{p}{,} \PYG{n}{B}\PYG{p}{:}\PYG{n}{W}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{sigmaApply}\PYG{p}{,} \PYG{n}{sigmaApply\PYGZus{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{lambd}\PYG{p}{,} \PYG{n}{lambd\PYGZus{}}\PYG{p}{)}
+
+
+
+
+
+
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[68]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \sigma{\left(n_{11} \right)} + \sigma{\left(n_{12} \right)} + \sigma{\left(n_{21} \right)} + \sigma{\left(n_{22} \right)} + \sigma{\left(n_{31} \right)} + \sigma{\left(n_{32} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[69]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{k+kn}{from} \PYG{n+nn}{sympy} \PYG{k+kn}{import} \PYG{n}{symbols}\PYG{p}{,} \PYG{n}{Derivative}
+
+\PYG{n}{x}\PYG{p}{,} \PYG{n}{y}\PYG{p}{,} \PYG{n}{r}\PYG{p}{,} \PYG{n}{t} \PYG{o}{=} \PYG{n}{symbols}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{x y r t}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} r (radius), t (angle theta)}
+\PYG{n}{f}\PYG{p}{,} \PYG{n}{g}\PYG{p}{,} \PYG{n}{h} \PYG{o}{=} \PYG{n}{symbols}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{f g h}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n+nb+bp}{cls}\PYG{o}{=}\PYG{n}{Function}\PYG{p}{)}
+\PYG{n}{h} \PYG{o}{=} \PYG{n}{g}\PYG{p}{(}\PYG{n}{f}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{n}{Derivative}\PYG{p}{(}\PYG{n}{h}\PYG{p}{,} \PYG{n}{f}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)}\PYG{p}{)}\PYG{o}{.}\PYG{n}{doit}\PYG{p}{(}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[69]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \frac{d}{d f{\left(x \right)}} g{\left(f{\left(x \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[70]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{c+c1}{\PYGZsh{} Never do this gives recursion ERROR (max depth exceeded)}
+\PYG{c+c1}{\PYGZsh{} h = g(f(A))}
+\PYG{c+c1}{\PYGZsh{} Derivative(h, A).doit()}
+\end{sphinxVerbatim}
+}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[71]:\,\hspace{\fboxrule}\hspace{\fboxsep}}
+\end{sphinxVerbatim}
+}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[71]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{k+kn}{from} \PYG{n+nn}{sympy}\PYG{n+nn}{.}\PYG{n+nn}{abc} \PYG{k+kn}{import} \PYG{n}{a}\PYG{p}{,} \PYG{n}{b}
+
+\PYG{n}{Llower} \PYG{o}{=} \PYG{n}{lambd}\PYG{p}{(}\PYG{n}{sigmaApply}\PYG{p}{(}\PYG{n}{n}\PYG{p}{(}\PYG{n}{a}\PYG{p}{,} \PYG{n}{b}\PYG{p}{)}\PYG{p}{)}\PYG{p}{)}
+\PYG{n}{Llower}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[71]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(v{\left(a,b \right)} \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[72]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Derivative}\PYG{p}{(}\PYG{n}{Llower}\PYG{p}{,} \PYG{n}{a}\PYG{p}{)}\PYG{o}{.}\PYG{n}{doit}\PYG{p}{(}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[72]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \frac{\partial}{\partial \sigma_{apply}{\left(v{\left(a,b \right)} \right)}} \lambda{\left(\sigma_{apply}{\left(v{\left(a,b \right)} \right)} \right)} \frac{\partial}{\partial v{\left(a,b \right)}} \sigma_{apply}{\left(v{\left(a,b \right)} \right)} \frac{\partial}{\partial a} v{\left(a,b \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[73]:\,\hspace{\fboxrule}\hspace{\fboxsep}}
+\end{sphinxVerbatim}
+}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[73]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{c+c1}{\PYGZsh{} \PYGZsh{}\PYGZsh{}\PYGZsh{} WAY 1: of substituting to differentiate with respect to expression:}
+\PYG{n}{n\PYGZus{}ij} \PYG{o}{=} \PYG{n}{Function}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{n\PYGZus{}ij}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{n\PYGZus{}ij}\PYG{p}{(}\PYG{n}{A}\PYG{p}{,}\PYG{n}{B}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} (N[0,0]); n\PYGZus{}ij}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[73]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \operatorname{n_{ij}}{\left(X,W \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[74]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{n\PYGZus{}ij}\PYG{p}{(}\PYG{n}{A}\PYG{p}{,}\PYG{n}{B}\PYG{p}{)}\PYG{o}{.}\PYG{n}{args}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[74]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left( X, \  W\right)$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[75]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{c+c1}{\PYGZsh{} sigma(n\PYGZus{}ij).diff(n\PYGZus{}ij).replace(n\PYGZus{}ij, N[0,0]) \PYGZsh{} ERROR cannot deriv wi.r.t to the expression w11*x11 + ...}
+
+\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{n\PYGZus{}ij}\PYG{p}{(}\PYG{n}{A}\PYG{p}{,}\PYG{n}{B}\PYG{p}{)}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{n\PYGZus{}ij}\PYG{p}{(}\PYG{n}{A}\PYG{p}{,}\PYG{n}{B}\PYG{p}{)}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[75]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \frac{\partial}{\partial \operatorname{n_{ij}}{\left(X,W \right)}} \sigma{\left(\operatorname{n_{ij}}{\left(X,W \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[76]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{n\PYGZus{}ij}\PYG{p}{(}\PYG{o}{*}\PYG{n}{X}\PYG{p}{,}\PYG{o}{*}\PYG{n}{W}\PYG{p}{)}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[76]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \frac{\partial}{\partial x_{11}} \operatorname{n_{ij}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)} \frac{\partial}{\partial \operatorname{n_{ij}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}} \sigma{\left(\operatorname{n_{ij}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[77]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{nab\PYGZus{}ij} \PYG{o}{=} \PYG{n}{n\PYGZus{}ij}\PYG{p}{(}\PYG{n}{A}\PYG{p}{,}\PYG{n}{B}\PYG{p}{)}
+\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{nab\PYGZus{}ij}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{nab\PYGZus{}ij}\PYG{p}{)}\PYG{c+c1}{\PYGZsh{}.subs(\PYGZob{}nab\PYGZus{}ij : Nspec[0, 0]\PYGZcb{})}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[77]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \frac{\partial}{\partial \operatorname{n_{ij}}{\left(X,W \right)}} \sigma{\left(\operatorname{n_{ij}}{\left(X,W \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[78]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{nab\PYGZus{}ij}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{nab\PYGZus{}ij}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{nab\PYGZus{}ij} \PYG{p}{:} \PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[78]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[79]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{nab\PYGZus{}ij}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{nab\PYGZus{}ij}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{nab\PYGZus{}ij} \PYG{p}{:} \PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{:}\PYG{l+m+mi}{77777}\PYG{p}{\PYGZcb{}}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[79]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=w_{12} x_{31} + 77777 w_{22} + w_{32} x_{33} }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[80]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{nab\PYGZus{}ij}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{nab\PYGZus{}ij}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{nab\PYGZus{}ij} \PYG{p}{:} \PYG{l+m+mi}{23}\PYG{p}{\PYGZcb{}}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} ERROR if using replace() since it says can\PYGZsq{}t calc derivs w.r.t to the x\PYGZus{}11*w\PYGZus{}11 + ...}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[80]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=23 }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[81]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{nab\PYGZus{}ij}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{nab\PYGZus{}ij}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{nab\PYGZus{}ij} \PYG{p}{:} \PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{doit}\PYG{p}{(}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[81]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[82]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{nab\PYGZus{}ij}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{nab\PYGZus{}ij} \PYG{p}{:} \PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{c+c1}{\PYGZsh{}.diff(X[2,1])}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[82]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[83]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{c+c1}{\PYGZsh{} Substituting the value of the function n\PYGZus{}ij first, and THEN differentiating with respect to something in that substitution. (X\PYGZus{}21)}
+\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{nab\PYGZus{}ij}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{nab\PYGZus{}ij} \PYG{p}{:} \PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[83]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[84]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Selem}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{Nelem}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{p}{:} \PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{)}
+
+
+
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[84]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[85]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{c+c1}{\PYGZsh{} \PYGZsh{}\PYGZsh{}\PYGZsh{} WAY 2:}
+\PYG{n}{n\PYGZus{}11} \PYG{o}{=} \PYG{n}{Function}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{n\PYGZus{}11}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}\PYG{p}{(}\PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{)}\PYG{p}{;} \PYG{n}{n\PYGZus{}11}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[85]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[86]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{n\PYGZus{}11}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[86]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[87]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{k}{assert} \PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{==} \PYG{n}{n\PYGZus{}11}\PYG{o}{.}\PYG{n}{args}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}
+
+\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{n\PYGZus{}11}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{n\PYGZus{}11} \PYG{p}{:} \PYG{n}{n\PYGZus{}11}\PYG{o}{.}\PYG{n}{args}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[87]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[88]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{n\PYGZus{}11}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{n\PYGZus{}11}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{}.replace(n\PYGZus{}ij, n\PYGZus{}ij.args[0])}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[88]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[89]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{n\PYGZus{}11}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{n\PYGZus{}11}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{n\PYGZus{}11} \PYG{p}{:} \PYG{n}{n\PYGZus{}11}\PYG{o}{.}\PYG{n}{args}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{:}\PYG{l+m+mi}{77777}\PYG{p}{\PYGZcb{}}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[89]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=77777 w_{11} + w_{21} x_{12} + w_{31} x_{13} }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[90]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{n\PYGZus{}11}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{n\PYGZus{}11}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{n\PYGZus{}11} \PYG{p}{:} \PYG{n}{n\PYGZus{}11}\PYG{o}{.}\PYG{n}{args}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n\PYGZus{}11}\PYG{o}{.}\PYG{n}{args}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{,} \PYG{l+m+mi}{23}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} same as subs in this case}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[90]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=23 }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[91]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{n\PYGZus{}11}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[91]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle w_{11} \frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} \left. \frac{d}{d \xi_{1}} \operatorname{n_{11}}{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[92]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n+nb}{id} \PYG{o}{=} \PYG{n}{Lambda}\PYG{p}{(}\PYG{n}{x}\PYG{p}{,} \PYG{n}{x}\PYG{p}{)}
+
+\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{n\PYGZus{}11}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{n\PYGZus{}11} \PYG{p}{:} \PYG{n+nb}{id}\PYG{p}{\PYGZcb{}}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[92]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle w_{11} \left. \frac{d}{d \xi_{1}} \operatorname{n_{11}}{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=\left( x \mapsto x \right) }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[93]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{c+c1}{\PYGZsh{} NOTE: so I don\PYGZsq{}t think WAY 2 is correct because here it doesn\PYGZsq{}t simplify the derivative d n11 / d eps11, since this should equal 1 because now n11 = eps11. Correct one is below (repeated from above)}
+\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{n\PYGZus{}11}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{n\PYGZus{}11} \PYG{p}{:} \PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[93]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle w_{11} \left. \frac{d}{d \xi_{1}} \operatorname{n_{11}}{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[94]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{c+c1}{\PYGZsh{} CORRECT WAY 1}
+\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{n\PYGZus{}11}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{n\PYGZus{}11} \PYG{p}{:} \PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[94]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[95]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{c+c1}{\PYGZsh{} CORRECT WAY 2}
+
+\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{nab\PYGZus{}ij}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{nab\PYGZus{}ij} \PYG{p}{:} \PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[95]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[96]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{c+c1}{\PYGZsh{} CORRECT WAY 3}
+\PYG{n}{Selem}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{n}{Nelem}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{p}{:} \PYG{n}{Nspec}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[96]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[97]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{n\PYGZus{}11}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} WAY 1: sigma argument is already hardcoded}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[97]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[98]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{sigma}\PYG{p}{(}\PYG{n}{nab\PYGZus{}ij}\PYG{p}{)} \PYG{c+c1}{\PYGZsh{} Way 2: sigma argument is function of matrixsymbol (better than 1)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[98]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \sigma{\left(\operatorname{n_{ij}}{\left(X,W \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[99]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Selem}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{,}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{c+c1}{\PYGZsh{} WAY 3: sigma argument is just symbol and we replace it as function with argument hardcoded only later. (better than 2)}
+
+
+
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[99]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \sigma{\left(n_{32} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[100]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{L}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[100]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(v{\left(X,W \right)} \right)} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[101]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{k}{assert} \PYG{n}{Selem} \PYG{o}{==} \PYG{n}{S}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{vN}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{sigmaApply}\PYG{p}{,} \PYG{n}{sigmaApply\PYGZus{}}\PYG{p}{)}
+
+\PYG{n}{Selem}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[101]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[102]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{L}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{vN}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{sigmaApply}\PYG{p}{,} \PYG{n}{sigmaApply\PYGZus{}}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[102]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \lambda{\left(\left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right] \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[103]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{c+c1}{\PYGZsh{}L.replace(n, vN).replace(sigmaApply, sigmaApply\PYGZus{}).diff(Nelem[0,0])}
+\end{sphinxVerbatim}
+}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[104]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Lsum} \PYG{o}{=} \PYG{n}{L}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{vN}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{sigmaApply}\PYG{p}{,} \PYG{n}{sigmaApply\PYGZus{}}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{n}{lambd}\PYG{p}{,} \PYG{n}{lambd\PYGZus{}}\PYG{p}{)}
+\PYG{n}{Lsum}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[104]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \sigma{\left(n_{11} \right)} + \sigma{\left(n_{12} \right)} + \sigma{\left(n_{21} \right)} + \sigma{\left(n_{22} \right)} + \sigma{\left(n_{31} \right)} + \sigma{\left(n_{32} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[105]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Lsum}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{Nelem}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[105]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}\frac{d}{d n_{11}} \sigma{\left(n_{11} \right)} & \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)}\\\frac{d}{d n_{21}} \sigma{\left(n_{21} \right)} & \frac{d}{d n_{22}} \sigma{\left(n_{22} \right)}\\\frac{d}{d n_{31}} \sigma{\left(n_{31} \right)} & \frac{d}{d n_{32}} \sigma{\left(n_{32} \right)}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[106]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Lsum}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{n}{elemToSpec}\PYG{p}{)}\PYG{c+c1}{\PYGZsh{}.diff(X[2,1])}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[106]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} + \sigma{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} + \sigma{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} + \sigma{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)} + \sigma{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)} + \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[107]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{n}{Lsum}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{n}{elemToSpec}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{X}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[107]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}\\w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} }}\\w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[108]:\,\hspace{\fboxrule}\hspace{\fboxsep}}
+\PYG{n}{specToElemD} \PYG{o}{=} \PYG{p}{\PYGZob{}}\PYG{n}{v} \PYG{p}{:} \PYG{n}{k} \PYG{k}{for} \PYG{n}{k}\PYG{p}{,} \PYG{n}{v} \PYG{o+ow}{in} \PYG{n}{elemToSpecD}\PYG{o}{.}\PYG{n}{items}\PYG{p}{(}\PYG{p}{)}\PYG{p}{\PYGZcb{}}
+
+\PYG{n}{Lsum}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{n}{elemToSpecD}\PYG{p}{)}\PYG{o}{.}\PYG{n}{diff}\PYG{p}{(}\PYG{n}{X}\PYG{p}{)}\PYG{o}{.}\PYG{n}{subs}\PYG{p}{(}\PYG{n}{specToElemD}\PYG{p}{)}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[108]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle \left[\begin{matrix}w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{11} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{12} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{11} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{12} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{11} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{12} }}\\w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{21} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{22} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{21} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{22} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{21} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{22} }}\\w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{31} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{32} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{31} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{32} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{31} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{32} }}\end{matrix}\right]$
+\end{nbsphinxfancyoutput}
+
+{
+\sphinxsetup{VerbatimColor={named}{nbsphinx-code-bg}}
+\sphinxsetup{VerbatimBorderColor={named}{nbsphinx-code-border}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\llap{\color{nbsphinxin}[1]:\,\hspace{\fboxrule}\hspace{\fboxsep}}\PYG{c+c1}{\PYGZsh{}from IPython.display import display, Math, Latex}
+\PYG{c+c1}{\PYGZsh{}from IPython.core.display import display\PYGZus{}html}
+\PYG{k+kn}{from} \PYG{n+nn}{sympy} \PYG{k+kn}{import} \PYG{o}{*}
+\PYG{c+c1}{\PYGZsh{}init\PYGZus{}session(quiet=True)}
+\PYG{c+c1}{\PYGZsh{}init\PYGZus{}printing()}
+\PYG{n}{x} \PYG{o}{=} \PYG{n}{symbols}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{x}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{arg} \PYG{o}{=} \PYG{n}{x}
+\PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{120}\PYG{p}{)}\PYG{p}{:}
+    \PYG{n}{arg} \PYG{o}{+}\PYG{o}{=} \PYG{n}{x}\PYG{o}{*}\PYG{o}{*}\PYG{n}{i}
+\PYG{n}{arg}
+\end{sphinxVerbatim}
+}
+
+\hrule height -\fboxrule\relax
+\vspace{\nbsphinxcodecellspacing}
+
+\savebox\nbsphinxpromptbox[0pt][r]{\color{nbsphinxout}\Verb|\strut{[1]:}\,|}
+
+\begin{nbsphinxfancyoutput}
+$\displaystyle x^{119} + x^{118} + x^{117} + x^{116} + x^{115} + x^{114} + x^{113} + x^{112} + x^{111} + x^{110} + x^{109} + x^{108} + x^{107} + x^{106} + x^{105} + x^{104} + x^{103} + x^{102} + x^{101} + x^{100} + x^{99} + x^{98} + x^{97} + x^{96} + x^{95} + x^{94} + x^{93} + x^{92} + x^{91} + x^{90} + x^{89} + x^{88} + x^{87} + x^{86} + x^{85} + x^{84} + x^{83} + x^{82} + x^{81} + x^{80} + x^{79} + x^{78} + x^{77} + x^{76} + x^{75} + x^{74} + x^{73} + x^{72} + x^{71} + x^{70} + x^{69} + x^{68} + x^{67} + x^{66} + x^{65} + x^{64} + x^{63} + x^{62} + x^{61} + x^{60} + x^{59} + x^{58} + x^{57} + x^{56} + x^{55} + x^{54} + x^{53} + x^{52} + x^{51} + x^{50} + x^{49} + x^{48} + x^{47} + x^{46} + x^{45} + x^{44} + x^{43} + x^{42} + x^{41} + x^{40} + x^{39} + x^{38} + x^{37} + x^{36} + x^{35} + x^{34} + x^{33} + x^{32} + x^{31} + x^{30} + x^{29} + x^{28} + x^{27} + x^{26} + x^{25} + x^{24} + x^{23} + x^{22} + x^{21} + x^{20} + x^{19} + x^{18} + x^{17} + x^{16} + x^{15} + x^{14} + x^{13} + x^{12} + x^{11} + x^{10} + x^{9} + x^{8} + x^{7} + x^{6} + x^{5} + x^{4} + x^{3} + x^{2} + 2 x + 1$
+\end{nbsphinxfancyoutput}
 
 
 \chapter{Indices and tables}

@@ -1,0 +1,2301 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>&lt;no title&gt; &#8212; TEMP_NOTEBOOK_PRODUCTION 1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="temp1.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container,
+div.nbinput.container div.prompt,
+div.nbinput.container div.input_area,
+div.nbinput.container div[class*=highlight],
+div.nbinput.container div[class*=highlight] pre,
+div.nboutput.container,
+div.nboutput.container div.prompt,
+div.nboutput.container div.output_area,
+div.nboutput.container div[class*=highlight],
+div.nboutput.container div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">Matrix</span><span class="p">,</span> <span class="n">Symbol</span><span class="p">,</span> <span class="n">derive_by_array</span><span class="p">,</span> <span class="n">Lambda</span><span class="p">,</span> <span class="n">Function</span><span class="p">,</span> <span class="n">MatrixSymbol</span><span class="p">,</span> <span class="n">Derivative</span><span class="p">,</span> <span class="n">diff</span><span class="p">,</span> <span class="n">symbols</span>
+<span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">var</span>
+<span class="kn">from</span> <span class="nn">sympy.abc</span> <span class="kn">import</span> <span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">myvar</span><span class="p">(</span><span class="n">letter</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Symbol</span><span class="p">:</span>
+    <span class="n">letter_ij</span> <span class="o">=</span> <span class="n">Symbol</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">letter</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">is_commutative</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">letter_ij</span>
+
+
+<span class="n">n</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">Matrix</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span> <span class="p">:</span> <span class="n">myvar</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">));</span> <span class="n">X</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}x_{11} &amp; x_{12} &amp; x_{13}\\x_{21} &amp; x_{22} &amp; x_{23}\\x_{31} &amp; x_{32} &amp; x_{33}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">W</span> <span class="o">=</span> <span class="n">Matrix</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span> <span class="p">:</span> <span class="n">myvar</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">));</span> <span class="n">W</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}w_{11} &amp; w_{12}\\w_{21} &amp; w_{22}\\w_{31} &amp; w_{32}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">A</span> <span class="o">=</span> <span class="n">MatrixSymbol</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">);</span> <span class="n">Matrix</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">MatrixSymbol</span><span class="p">(</span><span class="s1">&#39;W&#39;</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">v</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">:</span> <span class="n">a</span><span class="o">*</span><span class="n">b</span>
+
+<span class="n">vL</span> <span class="o">=</span> <span class="n">Lambda</span><span class="p">((</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">),</span> <span class="n">a</span><span class="o">*</span><span class="n">b</span><span class="p">)</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">)</span> <span class="c1">#, Lambda((a,b), a*b))</span>
+
+<span class="n">vN</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">mat1</span><span class="p">,</span> <span class="n">mat2</span><span class="p">:</span> <span class="n">Matrix</span><span class="p">(</span><span class="n">mat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mat2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="n">Symbol</span><span class="p">(</span><span class="s2">&quot;n_</span><span class="si">{}{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)));</span> <span class="n">vN</span>
+
+<span class="n">Nelem</span> <span class="o">=</span> <span class="n">vN</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">W</span><span class="p">);</span> <span class="n">Nelem</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}n_{11} &amp; n_{12}\\n_{21} &amp; n_{22}\\n_{31} &amp; n_{32}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">n</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle v{\left(\left[\begin{matrix}x_{11} &amp; x_{12} &amp; x_{13}\\x_{21} &amp; x_{22} &amp; x_{23}\\x_{31} &amp; x_{32} &amp; x_{33}\end{matrix}\right],\left[\begin{matrix}w_{11} &amp; w_{12}\\w_{21} &amp; w_{22}\\w_{31} &amp; w_{32}\end{matrix}\right] \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">n</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle v{\left(X,W \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">n</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="c1"># replace works when v = python lambda</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} &amp; w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} &amp; w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} &amp; w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">n</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n</span><span class="p">:</span> <span class="n">vL</span><span class="p">})</span> <span class="c1"># subs works when v = sympy lambda</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} &amp; w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} &amp; w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} &amp; w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">n</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vL</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} &amp; w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} &amp; w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} &amp; w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">n</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">W</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n</span><span class="p">:</span> <span class="n">v</span><span class="p">})</span><span class="c1"># subs() doesn&#39;t work when v is python lambda</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle v{\left(\left[\begin{matrix}x_{11} &amp; x_{12} &amp; x_{13}\\x_{21} &amp; x_{22} &amp; x_{23}\\x_{31} &amp; x_{32} &amp; x_{33}\end{matrix}\right],\left[\begin{matrix}w_{11} &amp; w_{12}\\w_{21} &amp; w_{22}\\w_{31} &amp; w_{32}\end{matrix}\right] \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Matrix</span><span class="p">(</span><span class="n">n</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n</span><span class="p">:</span> <span class="n">vL</span><span class="p">}))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{array}{cc}W_{0, 0} X_{0, 0} + W_{1, 0} X_{0, 1} + W_{2, 0} X_{0, 2} &amp; W_{0, 1} X_{0, 0} + W_{1, 1} X_{0, 1} + W_{2, 1} X_{0, 2}\\W_{0, 0} X_{1, 0} + W_{1, 0} X_{1, 1} + W_{2, 0} X_{1, 2} &amp; W_{0, 1} X_{1, 0} + W_{1, 1} X_{1, 1} + W_{2, 1} X_{1, 2}\\W_{0, 0} X_{2, 0} + W_{1, 0} X_{2, 1} + W_{2, 0} X_{2, 2} &amp; W_{0, 1} X_{2, 0} + W_{1, 1} X_{2, 1} + W_{2, 1} X_{2, 2}\end{array}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1">#N = v(X, W); N</span>
+<span class="n">N</span> <span class="o">=</span> <span class="n">n</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">);</span> <span class="n">N</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle v{\left(X,W \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">N</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle X W$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">N</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">A</span><span class="p">:</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span><span class="n">W</span><span class="p">})</span> <span class="c1"># replacing ariable values after doing function doesn&#39;t make the function apply directly on the values (matrices), need to replace values before the function is replaced, so that the function can act on them while they are given/alive.</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}x_{11} &amp; x_{12} &amp; x_{13}\\x_{21} &amp; x_{22} &amp; x_{23}\\x_{31} &amp; x_{32} &amp; x_{33}\end{matrix}\right] \left[\begin{matrix}w_{11} &amp; w_{12}\\w_{21} &amp; w_{22}\\w_{31} &amp; w_{32}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">N</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n</span><span class="p">:</span> <span class="n">vL</span><span class="p">,</span> <span class="n">A</span><span class="p">:</span><span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span><span class="n">W</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} &amp; w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} &amp; w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} &amp; w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Nspec</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">A</span><span class="p">:</span><span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span><span class="n">W</span><span class="p">})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">);</span> <span class="n">Nspec</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} &amp; w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} &amp; w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} &amp; w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">N</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle 1$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">N</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}0 &amp; 0 &amp; 0\\0 &amp; 0 &amp; 0\\0 &amp; 0 &amp; 0\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+
+
+<span></span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># way 2 of declaring S (better way)</span>
+<span class="n">sigma</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="s1">&#39;sigma&#39;</span><span class="p">)</span>
+
+<span class="n">sigmaApply</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="s2">&quot;sigma_apply&quot;</span><span class="p">)</span> <span class="c1">#lambda matrix:  matrix.applyfunc(sigma)</span>
+
+<span class="n">sigmaApply_</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">matrix</span><span class="p">:</span> <span class="n">matrix</span><span class="o">.</span><span class="n">applyfunc</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
+
+<span class="n">sigmaApply</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \sigma_{apply}{\left(X \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sigmaApply</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">A</span><span class="p">:</span> <span class="n">X</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \sigma_{apply}{\left(\left[\begin{matrix}x_{11} &amp; x_{12} &amp; x_{13}\\x_{21} &amp; x_{22} &amp; x_{23}\\x_{31} &amp; x_{32} &amp; x_{33}\end{matrix}\right] \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sigmaApply_</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle {\left( d \mapsto \sigma{\left(d \right)} \right)}_{\circ}\left({X}\right)$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sigmaApply</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">A</span><span class="p">:</span> <span class="n">X</span><span class="p">})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span> <span class="c1"># NOTE: subs of functions doesn&#39;t work, replace actually evaluates the replaced function!</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}\sigma{\left(x_{11} \right)} &amp; \sigma{\left(x_{12} \right)} &amp; \sigma{\left(x_{13} \right)}\\\sigma{\left(x_{21} \right)} &amp; \sigma{\left(x_{22} \right)} &amp; \sigma{\left(x_{23} \right)}\\\sigma{\left(x_{31} \right)} &amp; \sigma{\left(x_{32} \right)} &amp; \sigma{\left(x_{33} \right)}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">S</span> <span class="o">=</span> <span class="n">sigmaApply</span><span class="p">(</span><span class="n">N</span><span class="p">);</span> <span class="n">S</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \sigma_{apply}{\left(v{\left(X,W \right)} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Derivative</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">S</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \frac{\partial}{\partial \sigma_{apply}{\left(v{\left(X,W \right)} \right)}} \sigma_{apply}{\left(v{\left(X,W \right)} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Derivative</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">S</span><span class="p">)</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle 1$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Derivative</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">n</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">))</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \frac{\partial}{\partial v{\left(X,W \right)}} \sigma_{apply}{\left(v{\left(X,W \right)} \right)}$</div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1">#lambd = Function(&quot;lambda&quot;)</span>
+<span class="c1">#Lagain = lambd(sigmaApply(n(A))); Lagain</span>
+
+
+
+<span class="c1"># diff(Lagain, A) # never execute</span>
+<span class="c1">#</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">S</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">W</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \sigma_{apply}{\left(v{\left(\left[\begin{matrix}x_{11} &amp; x_{12} &amp; x_{13}\\x_{21} &amp; x_{22} &amp; x_{23}\\x_{31} &amp; x_{32} &amp; x_{33}\end{matrix}\right],\left[\begin{matrix}w_{11} &amp; w_{12}\\w_{21} &amp; w_{22}\\w_{31} &amp; w_{32}\end{matrix}\right] \right)} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">S</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \sigma_{apply}{\left(X W \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">S</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">A</span><span class="p">:</span><span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span><span class="n">W</span><span class="p">})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \sigma_{apply}{\left(\left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} &amp; w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} &amp; w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} &amp; w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right] \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Sspec</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">A</span><span class="p">:</span><span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span><span class="n">W</span><span class="p">})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span>
+<span class="n">Sspec</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}\sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} &amp; \sigma{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\\sigma{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} &amp; \sigma{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\\sigma{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} &amp; \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">S</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span> <span class="c1">#.replace(sigmaApply, sigmaApply_)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \sigma_{apply}{\left(\left[\begin{matrix}n_{11} &amp; n_{12}\\n_{21} &amp; n_{22}\\n_{31} &amp; n_{32}\end{matrix}\right] \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Selem</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">);</span> <span class="n">Selem</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}\sigma{\left(n_{11} \right)} &amp; \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} &amp; \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} &amp; \sigma{\left(n_{32} \right)}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="n">elemToSpecD</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="p">[[(</span><span class="n">Nelem</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">Nspec</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]))</span>
+
+<span class="n">elemToSpec</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">elemToSpecD</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+<span class="n">Matrix</span><span class="p">(</span><span class="n">elemToSpec</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}n_{11} &amp; w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13}\\n_{12} &amp; w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\n_{21} &amp; w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23}\\n_{22} &amp; w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\n_{31} &amp; w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33}\\n_{32} &amp; w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">elemToSpecFuncD</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="p">[[(</span><span class="n">Nelem</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">Function</span><span class="p">(</span><span class="s2">&quot;n_</span><span class="si">{}{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))(</span><span class="n">Nspec</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]))</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]))</span>
+
+<span class="n">elemToSpecFunc</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">elemToSpecFuncD</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+<span class="n">Matrix</span><span class="p">(</span><span class="n">elemToSpecFunc</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}n_{11} &amp; \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}\\n_{12} &amp; \operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\n_{21} &amp; \operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)}\\n_{22} &amp; \operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\n_{31} &amp; \operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)}\\n_{32} &amp; \operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">elemToSpecFuncArgsD</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="p">[[(</span><span class="n">Nelem</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">Function</span><span class="p">(</span><span class="s2">&quot;n_</span><span class="si">{}{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))(</span><span class="o">*</span><span class="n">X</span><span class="p">,</span><span class="o">*</span><span class="n">W</span><span class="p">))</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]))</span>
+
+<span class="n">elemToSpecFuncArgs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">elemToSpecFuncArgsD</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+<span class="n">Matrix</span><span class="p">(</span><span class="n">elemToSpecFuncArgs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}n_{11} &amp; \operatorname{n_{11}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{12} &amp; \operatorname{n_{12}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{21} &amp; \operatorname{n_{21}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{22} &amp; \operatorname{n_{22}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{31} &amp; \operatorname{n_{31}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{32} &amp; \operatorname{n_{32}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Selem</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}\sigma{\left(n_{11} \right)} &amp; \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} &amp; \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} &amp; \sigma{\left(n_{32} \right)}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Selem</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">elemToSpecD</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}\sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} &amp; \sigma{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\\sigma{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} &amp; \sigma{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\\sigma{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} &amp; \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span>
+<span class="c1">#Selem[0,1].diff(Nelem[0,1]).subs(dict([{Nelem[0,1] : Nspec[0,1]}]))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left. \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)} \right|_{\substack{ n_{12}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="mi">23</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left. \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)} \right|_{\substack{ n_{12}=23 }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">8</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left. \frac{d}{d n_{12}} 8 n_{12}^{3} \right|_{\substack{ n_{12}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">8</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \frac{d}{d n_{12}} 8 n_{12}^{3}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">8</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle 24 n_{12}^{2}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># ### GOT IT: can replace now with expression and do derivative with respect to that expression.</span>
+<span class="n">Selem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">8</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle 24 \left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\right)^{2}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span><span class="c1">#.subs({Nelem[0,1] : Nspec[0,1]})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Selem</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}\sigma{\left(n_{11} \right)} &amp; \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} &amp; \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} &amp; \sigma{\left(n_{32} \right)}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">nt</span> <span class="o">=</span> <span class="n">Nelem</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">elemToSpecFunc</span><span class="p">);</span> <span class="n">nt</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} &amp; \operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\\operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} &amp; \operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\\operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} &amp; \operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span> <span class="o">=</span> <span class="n">Selem</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">elemToSpecFunc</span><span class="p">);</span> <span class="n">st</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}\sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} &amp; \sigma{\left(\operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)} \right)}\\\sigma{\left(\operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} \right)} &amp; \sigma{\left(\operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)} \right)}\\\sigma{\left(\operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} \right)} &amp; \sigma{\left(\operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)} \right)}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[51]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">nt</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[51]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}\left[\begin{matrix}\frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} &amp; 0\\0 &amp; 0\\0 &amp; 0\end{matrix}\right] &amp; \left[\begin{matrix}0 &amp; \frac{\partial}{\partial \operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}} \sigma{\left(\operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)} \right)}\\0 &amp; 0\\0 &amp; 0\end{matrix}\right]\\\left[\begin{matrix}0 &amp; 0\\\frac{\partial}{\partial \operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)}} \sigma{\left(\operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} \right)} &amp; 0\\0 &amp; 0\end{matrix}\right] &amp; \left[\begin{matrix}0 &amp; 0\\0 &amp; \frac{\partial}{\partial \operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}} \sigma{\left(\operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)} \right)}\\0 &amp; 0\end{matrix}\right]\\\left[\begin{matrix}0 &amp; 0\\0 &amp; 0\\\frac{\partial}{\partial \operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)}} \sigma{\left(\operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} \right)} &amp; 0\end{matrix}\right] &amp; \left[\begin{matrix}0 &amp; 0\\0 &amp; 0\\0 &amp; \frac{\partial}{\partial \operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}} \sigma{\left(\operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)} \right)}\end{matrix}\right]\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle w_{11} \frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} \left. \frac{d}{d \xi_{1}} \operatorname{n_{11}}{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">st</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle 0$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Selem</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}\left[\begin{matrix}\frac{d}{d n_{11}} \sigma{\left(n_{11} \right)} &amp; 0\\0 &amp; 0\\0 &amp; 0\end{matrix}\right] &amp; \left[\begin{matrix}0 &amp; \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)}\\0 &amp; 0\\0 &amp; 0\end{matrix}\right]\\\left[\begin{matrix}0 &amp; 0\\\frac{d}{d n_{21}} \sigma{\left(n_{21} \right)} &amp; 0\\0 &amp; 0\end{matrix}\right] &amp; \left[\begin{matrix}0 &amp; 0\\0 &amp; \frac{d}{d n_{22}} \sigma{\left(n_{22} \right)}\\0 &amp; 0\end{matrix}\right]\\\left[\begin{matrix}0 &amp; 0\\0 &amp; 0\\\frac{d}{d n_{31}} \sigma{\left(n_{31} \right)} &amp; 0\end{matrix}\right] &amp; \left[\begin{matrix}0 &amp; 0\\0 &amp; 0\\0 &amp; \frac{d}{d n_{32}} \sigma{\left(n_{32} \right)}\end{matrix}\right]\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Selem</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">elemToSpecFunc</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}\left[\begin{matrix}\frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} &amp; 0\\0 &amp; 0\\0 &amp; 0\end{matrix}\right] &amp; \left[\begin{matrix}0 &amp; \frac{\partial}{\partial \operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}} \sigma{\left(\operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)} \right)}\\0 &amp; 0\\0 &amp; 0\end{matrix}\right]\\\left[\begin{matrix}0 &amp; 0\\\frac{\partial}{\partial \operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)}} \sigma{\left(\operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} \right)} &amp; 0\\0 &amp; 0\end{matrix}\right] &amp; \left[\begin{matrix}0 &amp; 0\\0 &amp; \frac{\partial}{\partial \operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}} \sigma{\left(\operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)} \right)}\\0 &amp; 0\end{matrix}\right]\\\left[\begin{matrix}0 &amp; 0\\0 &amp; 0\\\frac{\partial}{\partial \operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)}} \sigma{\left(\operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} \right)} &amp; 0\end{matrix}\right] &amp; \left[\begin{matrix}0 &amp; 0\\0 &amp; 0\\0 &amp; \frac{\partial}{\partial \operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}} \sigma{\left(\operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)} \right)}\end{matrix}\right]\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># CAN even replace elements after have done an operation on them!!! replacing n_21 * 2 with the number 4.</span>
+<span class="n">Sspec</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]:</span> <span class="mi">3</span><span class="p">})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">Nspec</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+
+
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}6 &amp; 2 w_{12} x_{11} + 2 w_{22} x_{12} + 2 w_{32} x_{13}\\2 w_{11} x_{21} + 2 w_{21} x_{22} + 2 w_{31} x_{23} &amp; 2 w_{12} x_{21} + 2 w_{22} x_{22} + 2 w_{32} x_{23}\\2 w_{11} x_{31} + 2 w_{21} x_{32} + 2 w_{31} x_{33} &amp; 4\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[58]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">lambd</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="s2">&quot;lambda&quot;</span><span class="p">)</span>
+<span class="n">lambd_</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">matrix</span> <span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+
+
+<span class="n">vN</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[58]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}n_{11} &amp; n_{12}\\n_{21} &amp; n_{22}\\n_{31} &amp; n_{32}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[59]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">vN</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[59]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}n_{11} &amp; n_{12}\\n_{21} &amp; n_{22}\\n_{31} &amp; n_{32}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[60]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">L</span> <span class="o">=</span> <span class="n">lambd</span><span class="p">(</span><span class="n">S</span><span class="p">);</span> <span class="n">L</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[60]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(v{\left(X,W \right)} \right)} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[61]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Nelem</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[61]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}n_{11} &amp; n_{12}\\n_{21} &amp; n_{22}\\n_{31} &amp; n_{32}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[62]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">L</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[62]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(\left[\begin{matrix}n_{11} &amp; n_{12}\\n_{21} &amp; n_{22}\\n_{31} &amp; n_{32}\end{matrix}\right] \right)} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[63]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">L</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[63]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \lambda{\left(\left[\begin{matrix}\sigma{\left(n_{11} \right)} &amp; \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} &amp; \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} &amp; \sigma{\left(n_{32} \right)}\end{matrix}\right] \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[64]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">L</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[64]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(X W \right)} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[65]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+
+<span></span><span class="n">L</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[65]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \lambda{\left({\left( d \mapsto \sigma{\left(d \right)} \right)}_{\circ}\left({X W}\right) \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[66]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">L</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">A</span><span class="p">:</span><span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span><span class="n">W</span><span class="p">})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vL</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[66]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \lambda{\left(\left[\begin{matrix}\sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} &amp; \sigma{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\\sigma{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} &amp; \sigma{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\\sigma{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} &amp; \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right] \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[67]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">L</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[67]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(\left[\begin{matrix}n_{11} &amp; n_{12}\\n_{21} &amp; n_{22}\\n_{31} &amp; n_{32}\end{matrix}\right] \right)} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[68]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">L</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">A</span><span class="p">:</span><span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span><span class="n">W</span><span class="p">})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">lambd</span><span class="p">,</span> <span class="n">lambd_</span><span class="p">)</span>
+
+
+
+
+
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[68]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \sigma{\left(n_{11} \right)} + \sigma{\left(n_{12} \right)} + \sigma{\left(n_{21} \right)} + \sigma{\left(n_{22} \right)} + \sigma{\left(n_{31} \right)} + \sigma{\left(n_{32} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[69]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">Derivative</span>
+
+<span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;x y r t&#39;</span><span class="p">)</span> <span class="c1"># r (radius), t (angle theta)</span>
+<span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;f g h&#39;</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">Function</span><span class="p">)</span>
+<span class="n">h</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+<span class="n">Derivative</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[69]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \frac{d}{d f{\left(x \right)}} g{\left(f{\left(x \right)} \right)}$</div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[70]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Never do this gives recursion ERROR (max depth exceeded)</span>
+<span class="c1"># h = g(f(A))</span>
+<span class="c1"># Derivative(h, A).doit()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[71]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[71]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">sympy.abc</span> <span class="kn">import</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span>
+
+<span class="n">Llower</span> <span class="o">=</span> <span class="n">lambd</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">(</span><span class="n">n</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)))</span>
+<span class="n">Llower</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[71]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(v{\left(a,b \right)} \right)} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[72]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Derivative</span><span class="p">(</span><span class="n">Llower</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[72]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \frac{\partial}{\partial \sigma_{apply}{\left(v{\left(a,b \right)} \right)}} \lambda{\left(\sigma_{apply}{\left(v{\left(a,b \right)} \right)} \right)} \frac{\partial}{\partial v{\left(a,b \right)}} \sigma_{apply}{\left(v{\left(a,b \right)} \right)} \frac{\partial}{\partial a} v{\left(a,b \right)}$</div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[73]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[73]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># ### WAY 1: of substituting to differentiate with respect to expression:</span>
+<span class="n">n_ij</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="s1">&#39;n_ij&#39;</span><span class="p">)</span>
+<span class="n">n_ij</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">)</span> <span class="c1"># (N[0,0]); n_ij</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[73]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \operatorname{n_{ij}}{\left(X,W \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[74]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">n_ij</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">)</span><span class="o">.</span><span class="n">args</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[74]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(X, W)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[75]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># sigma(n_ij).diff(n_ij).replace(n_ij, N[0,0]) # ERROR cannot deriv wi.r.t to the expression w11*x11 + ...</span>
+
+<span class="n">sigma</span><span class="p">(</span><span class="n">n_ij</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">))</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">n_ij</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[75]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \frac{\partial}{\partial \operatorname{n_{ij}}{\left(X,W \right)}} \sigma{\left(\operatorname{n_{ij}}{\left(X,W \right)} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[76]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sigma</span><span class="p">(</span><span class="n">n_ij</span><span class="p">(</span><span class="o">*</span><span class="n">X</span><span class="p">,</span><span class="o">*</span><span class="n">W</span><span class="p">))</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[76]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \frac{\partial}{\partial x_{11}} \operatorname{n_{ij}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)} \frac{\partial}{\partial \operatorname{n_{ij}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}} \sigma{\left(\operatorname{n_{ij}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[77]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">nab_ij</span> <span class="o">=</span> <span class="n">n_ij</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">)</span>
+<span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="c1">#.subs({nab_ij : Nspec[0, 0]})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[77]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \frac{\partial}{\partial \operatorname{n_{ij}}{\left(X,W \right)}} \sigma{\left(\operatorname{n_{ij}}{\left(X,W \right)} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[78]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">nab_ij</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[78]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[79]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">nab_ij</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">X</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]:</span><span class="mi">77777</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[79]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=w_{12} x_{31} + 77777 w_{22} + w_{32} x_{33} }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[80]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">nab_ij</span> <span class="p">:</span> <span class="mi">23</span><span class="p">})</span> <span class="c1"># ERROR if using replace() since it says can&#39;t calc derivs w.r.t to the x_11*w_11 + ...</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[80]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=23 }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[81]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">nab_ij</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">doit</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[81]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[82]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">nab_ij</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="c1">#.diff(X[2,1])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[82]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[83]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Substituting the value of the function n_ij first, and THEN differentiating with respect to something in that substitution. (X_21)</span>
+<span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">nab_ij</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[83]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[84]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+
+
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[84]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[85]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># ### WAY 2:</span>
+<span class="n">n_11</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="s1">&#39;n_11&#39;</span><span class="p">)(</span><span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]);</span> <span class="n">n_11</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[85]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[86]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[86]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[87]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">assert</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_11</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n_11</span> <span class="p">:</span> <span class="n">n_11</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[87]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[88]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span> <span class="c1">#.replace(n_ij, n_ij.args[0])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[88]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[89]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n_11</span> <span class="p">:</span> <span class="n">n_11</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]})</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]:</span><span class="mi">77777</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[89]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=77777 w_{11} + w_{21} x_{12} + w_{31} x_{13} }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[90]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n_11</span> <span class="p">:</span> <span class="n">n_11</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]})</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n_11</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">23</span><span class="p">)</span> <span class="c1"># same as subs in this case</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[90]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=23 }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[91]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[91]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle w_{11} \frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} \left. \frac{d}{d \xi_{1}} \operatorname{n_{11}}{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[92]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">id</span> <span class="o">=</span> <span class="n">Lambda</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+<span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n_11</span> <span class="p">:</span> <span class="nb">id</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[92]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle w_{11} \left. \frac{d}{d \xi_{1}} \operatorname{n_{11}}{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=\left( x \mapsto x \right) }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[93]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># NOTE: so I don&#39;t think WAY 2 is correct because here it doesn&#39;t simplify the derivative d n11 / d eps11, since this should equal 1 because now n11 = eps11. Correct one is below (repeated from above)</span>
+<span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n_11</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[93]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle w_{11} \left. \frac{d}{d \xi_{1}} \operatorname{n_{11}}{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[94]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># CORRECT WAY 1</span>
+<span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">n_11</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]})</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[94]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[95]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># CORRECT WAY 2</span>
+
+<span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">nab_ij</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]})</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[95]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[96]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># CORRECT WAY 3</span>
+<span class="n">Selem</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">Nelem</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">Nspec</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]})</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[96]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[97]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sigma</span><span class="p">(</span><span class="n">n_11</span><span class="p">)</span> <span class="c1"># WAY 1: sigma argument is already hardcoded</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[97]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[98]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sigma</span><span class="p">(</span><span class="n">nab_ij</span><span class="p">)</span> <span class="c1"># Way 2: sigma argument is function of matrixsymbol (better than 1)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[98]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \sigma{\left(\operatorname{n_{ij}}{\left(X,W \right)} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[99]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Selem</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># WAY 3: sigma argument is just symbol and we replace it as function with argument hardcoded only later. (better than 2)</span>
+
+
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[99]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \sigma{\left(n_{32} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[100]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">L</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[100]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \lambda{\left(\sigma_{apply}{\left(v{\left(X,W \right)} \right)} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[101]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">assert</span> <span class="n">Selem</span> <span class="o">==</span> <span class="n">S</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span>
+
+<span class="n">Selem</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[101]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}\sigma{\left(n_{11} \right)} &amp; \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} &amp; \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} &amp; \sigma{\left(n_{32} \right)}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[102]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">L</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[102]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \lambda{\left(\left[\begin{matrix}\sigma{\left(n_{11} \right)} &amp; \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} &amp; \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} &amp; \sigma{\left(n_{32} \right)}\end{matrix}\right] \right)}$</div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[103]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1">#L.replace(n, vN).replace(sigmaApply, sigmaApply_).diff(Nelem[0,0])</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[104]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Lsum</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">vN</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sigmaApply</span><span class="p">,</span> <span class="n">sigmaApply_</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">lambd</span><span class="p">,</span> <span class="n">lambd_</span><span class="p">)</span>
+<span class="n">Lsum</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[104]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \sigma{\left(n_{11} \right)} + \sigma{\left(n_{12} \right)} + \sigma{\left(n_{21} \right)} + \sigma{\left(n_{22} \right)} + \sigma{\left(n_{31} \right)} + \sigma{\left(n_{32} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[105]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Lsum</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Nelem</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[105]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}\frac{d}{d n_{11}} \sigma{\left(n_{11} \right)} &amp; \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)}\\\frac{d}{d n_{21}} \sigma{\left(n_{21} \right)} &amp; \frac{d}{d n_{22}} \sigma{\left(n_{22} \right)}\\\frac{d}{d n_{31}} \sigma{\left(n_{31} \right)} &amp; \frac{d}{d n_{32}} \sigma{\left(n_{32} \right)}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[106]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Lsum</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">elemToSpec</span><span class="p">)</span><span class="c1">#.diff(X[2,1])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[106]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} + \sigma{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} + \sigma{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} + \sigma{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)} + \sigma{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)} + \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[107]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">Lsum</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">elemToSpec</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[107]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }} &amp; w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }} &amp; w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}\\w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} }} &amp; w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} }} &amp; w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} }}\\w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }} &amp; w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }} &amp; w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}\end{matrix}\right]$</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[108]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+
+<span></span><span class="n">specToElemD</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span> <span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">elemToSpecD</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+<span class="n">Lsum</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">elemToSpecD</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">specToElemD</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[108]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle \left[\begin{matrix}w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{11} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{12} }} &amp; w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{11} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{12} }} &amp; w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{11} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{12} }}\\w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{21} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{22} }} &amp; w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{21} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{22} }} &amp; w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{21} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{22} }}\\w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{31} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{32} }} &amp; w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{31} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{32} }} &amp; w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{31} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{32} }}\end{matrix}\right]$</div></div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">TEMP_NOTEBOOK_PRODUCTION</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="temp1.html" title="previous chapter">&lt;no title&gt;</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, statisticallyfit.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/ch1_phase2.ipynb.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

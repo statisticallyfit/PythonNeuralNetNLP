@@ -9,7 +9,11 @@ Welcome to TEMP_NOTEBOOK_PRODUCTION's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-   :temp1
+
+   temp1
+   ch1_phase2
+   testlongforloop
+   
 
 
 

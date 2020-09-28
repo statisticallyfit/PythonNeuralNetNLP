@@ -1,5 +1,9 @@
 \usepackage{fancyvrb,newverbs,xcolor} % for code highlighting
+
+
+
 \usepackage[top=2cm, bottom=1.5cm, left=2cm, right=2cm]{geometry} % for page margins
+
 
 \usepackage[english]{babel}
 % Ana: adding graphics package for images
@@ -32,10 +36,11 @@
 
 % Font Setup  ---------------------------------------------------------
 \usepackage{unicode-math} % load 'fontspec' automatically
-\setmainfont{GFS Artemisia}
+%\setmainfont{GFS Artemisia}
 %\setmainfont{Libertinus Sans} 
-%\setmainfont{Alegreya}
-\setmathfont{TeX Gyre Schola Math}
+\setmainfont{Alegreya}
+%\setmathfont{TeX Gyre Schola Math}
+\setmathfont{Junicode}
 
 
 % Code syntax highlighting ---------------------------------------------------
@@ -44,6 +49,7 @@
 %\usepackage{minted}
 %\usemintedstyle{manni}
 %\setmonofont{Inconsolata}
+\setmonofont{Consolas}
 % ---------------------------
 
 
@@ -66,21 +72,21 @@
 \usemintedstyle{manni}
 
 %\setmonofont{Inconsolata} % setting code font
-\setmonofont{Fira Mono}
+%\setmonofont{Fira Mono}
 
 % General code environment, used like: \begin{code}{python} .... \end{code}
 % NOTE: this is how to nest two environments together: 
-\newenvironment{code}[2][]
- {\vspace{-3pt}%
- \VerbatimEnvironment
-  \begin{adjustwidth}{30pt}{30pt}
-  \begin{minted}[
-    fontsize=\CodeFontSizeSmall,
-    breaklines, mathescape,
-    style=manni, bgcolor=mannibg,  #1]{#2}}
- {\end{minted}\end{adjustwidth} 
-     \vspace{-10pt}
- }
+%\newenvironment{code}[2][]
+% {\vspace{-3pt}%
+% \VerbatimEnvironment
+%  \begin{adjustwidth}{30pt}{30pt}
+%  \begin{minted}[
+%    fontsize=\CodeFontSizeSmall,
+%    breaklines, mathescape,
+%    style=manni, bgcolor=mannibg,  #1]{#2}}
+% {\end{minted}\end{adjustwidth} 
+%     \vspace{-10pt}
+% }
  
 % TODO: test if possible to do \renewenvironment to renew the minted environment and just include this logic below whenever calling \begin{minted}[]{python} ... 
  

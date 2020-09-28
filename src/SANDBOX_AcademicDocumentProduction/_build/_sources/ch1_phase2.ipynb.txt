@@ -1,0 +1,3695 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:04.343756Z",
+     "iopub.status.busy": "2020-09-28T10:54:04.341834Z",
+     "iopub.status.idle": "2020-09-28T10:54:05.107770Z",
+     "shell.execute_reply": "2020-09-28T10:54:05.108848Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [],
+   "source": [
+    "from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Derivative, diff, symbols\n",
+    "from sympy import var\n",
+    "from sympy.abc import x, i, j, a, b"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:05.115754Z",
+     "iopub.status.busy": "2020-09-28T10:54:05.112695Z",
+     "iopub.status.idle": "2020-09-28T10:54:05.143416Z",
+     "shell.execute_reply": "2020-09-28T10:54:05.144458Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}x_{11} & x_{12} & x_{13}\\\\x_{21} & x_{22} & x_{23}\\\\x_{31} & x_{32} & x_{33}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[x_11, x_12, x_13],\n",
+       "[x_21, x_22, x_23],\n",
+       "[x_31, x_32, x_33]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "def myvar(letter: str, i: int, j: int) -> Symbol:\n",
+    "    letter_ij = Symbol('{}_{}{}'.format(letter, i+1, j+1), is_commutative=True)\n",
+    "    return letter_ij\n",
+    "\n",
+    "\n",
+    "n,m,p = 3,3,2\n",
+    "\n",
+    "X = Matrix(n, m, lambda i,j : myvar('x', i, j)); X"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:05.153996Z",
+     "iopub.status.busy": "2020-09-28T10:54:05.147869Z",
+     "iopub.status.idle": "2020-09-28T10:54:05.160386Z",
+     "shell.execute_reply": "2020-09-28T10:54:05.161476Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}w_{11} & w_{12}\\\\w_{21} & w_{22}\\\\w_{31} & w_{32}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[w_11, w_12],\n",
+       "[w_21, w_22],\n",
+       "[w_31, w_32]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "W = Matrix(m, p, lambda i,j : myvar('w', i, j)); W"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:05.166262Z",
+     "iopub.status.busy": "2020-09-28T10:54:05.164675Z",
+     "iopub.status.idle": "2020-09-28T10:54:05.173617Z",
+     "shell.execute_reply": "2020-09-28T10:54:05.174655Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [],
+   "source": [
+    "A = MatrixSymbol('X',3,3); Matrix(A)\n",
+    "B = MatrixSymbol('W',3,2)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:05.180078Z",
+     "iopub.status.busy": "2020-09-28T10:54:05.178616Z",
+     "iopub.status.idle": "2020-09-28T10:54:05.196018Z",
+     "shell.execute_reply": "2020-09-28T10:54:05.197089Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}n_{11} & n_{12}\\\\n_{21} & n_{22}\\\\n_{31} & n_{32}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[n_11, n_12],\n",
+       "[n_21, n_22],\n",
+       "[n_31, n_32]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "v = lambda a,b: a*b\n",
+    "\n",
+    "vL = Lambda((a,b), a*b)\n",
+    "\n",
+    "n = Function('v') #, Lambda((a,b), a*b))\n",
+    "\n",
+    "vN = lambda mat1, mat2: Matrix(mat1.shape[0], mat2.shape[1], lambda i, j: Symbol(\"n_{}{}\".format(i+1, j+1))); vN\n",
+    "\n",
+    "Nelem = vN(X, W); Nelem"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:05.201868Z",
+     "iopub.status.busy": "2020-09-28T10:54:05.200386Z",
+     "iopub.status.idle": "2020-09-28T10:54:05.213291Z",
+     "shell.execute_reply": "2020-09-28T10:54:05.214336Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle v{\\left(\\left[\\begin{matrix}x_{11} & x_{12} & x_{13}\\\\x_{21} & x_{22} & x_{23}\\\\x_{31} & x_{32} & x_{33}\\end{matrix}\\right],\\left[\\begin{matrix}w_{11} & w_{12}\\\\w_{21} & w_{22}\\\\w_{31} & w_{32}\\end{matrix}\\right] \\right)}$"
+      ],
+      "text/plain": [
+       "v(Matrix([\n",
+       "[x_11, x_12, x_13],\n",
+       "[x_21, x_22, x_23],\n",
+       "[x_31, x_32, x_33]]), Matrix([\n",
+       "[w_11, w_12],\n",
+       "[w_21, w_22],\n",
+       "[w_31, w_32]]))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "n(X,W)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:05.219290Z",
+     "iopub.status.busy": "2020-09-28T10:54:05.217685Z",
+     "iopub.status.idle": "2020-09-28T10:54:05.227407Z",
+     "shell.execute_reply": "2020-09-28T10:54:05.228485Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle v{\\left(X,W \\right)}$"
+      ],
+      "text/plain": [
+       "v(X, W)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "n(A,B)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:05.233536Z",
+     "iopub.status.busy": "2020-09-28T10:54:05.232031Z",
+     "iopub.status.idle": "2020-09-28T10:54:05.923212Z",
+     "shell.execute_reply": "2020-09-28T10:54:05.924283Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[w_11*x_11 + w_21*x_12 + w_31*x_13, w_12*x_11 + w_22*x_12 + w_32*x_13],\n",
+       "[w_11*x_21 + w_21*x_22 + w_31*x_23, w_12*x_21 + w_22*x_22 + w_32*x_23],\n",
+       "[w_11*x_31 + w_21*x_32 + w_31*x_33, w_12*x_31 + w_22*x_32 + w_32*x_33]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "n(X,W).replace(n, v) # replace works when v = python lambda"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:05.929472Z",
+     "iopub.status.busy": "2020-09-28T10:54:05.927918Z",
+     "iopub.status.idle": "2020-09-28T10:54:05.961055Z",
+     "shell.execute_reply": "2020-09-28T10:54:05.962157Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[w_11*x_11 + w_21*x_12 + w_31*x_13, w_12*x_11 + w_22*x_12 + w_32*x_13],\n",
+       "[w_11*x_21 + w_21*x_22 + w_31*x_23, w_12*x_21 + w_22*x_22 + w_32*x_23],\n",
+       "[w_11*x_31 + w_21*x_32 + w_31*x_33, w_12*x_31 + w_22*x_32 + w_32*x_33]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "n(X,W).subs({n: vL}) # subs works when v = sympy lambda"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:05.966842Z",
+     "iopub.status.busy": "2020-09-28T10:54:05.965402Z",
+     "iopub.status.idle": "2020-09-28T10:54:05.992947Z",
+     "shell.execute_reply": "2020-09-28T10:54:05.994058Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[w_11*x_11 + w_21*x_12 + w_31*x_13, w_12*x_11 + w_22*x_12 + w_32*x_13],\n",
+       "[w_11*x_21 + w_21*x_22 + w_31*x_23, w_12*x_21 + w_22*x_22 + w_32*x_23],\n",
+       "[w_11*x_31 + w_21*x_32 + w_31*x_33, w_12*x_31 + w_22*x_32 + w_32*x_33]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "n(X,W).replace(n, vL)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:05.998988Z",
+     "iopub.status.busy": "2020-09-28T10:54:05.997469Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.011037Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.012067Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle v{\\left(\\left[\\begin{matrix}x_{11} & x_{12} & x_{13}\\\\x_{21} & x_{22} & x_{23}\\\\x_{31} & x_{32} & x_{33}\\end{matrix}\\right],\\left[\\begin{matrix}w_{11} & w_{12}\\\\w_{21} & w_{22}\\\\w_{31} & w_{32}\\end{matrix}\\right] \\right)}$"
+      ],
+      "text/plain": [
+       "v(Matrix([\n",
+       "[x_11, x_12, x_13],\n",
+       "[x_21, x_22, x_23],\n",
+       "[x_31, x_32, x_33]]), Matrix([\n",
+       "[w_11, w_12],\n",
+       "[w_21, w_22],\n",
+       "[w_31, w_32]]))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "n(X,W).subs({n: v})# subs() doesn't work when v is python lambda"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.016752Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.015261Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.189375Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.190477Z"
+    },
+    "lines_to_next_cell": 2,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{array}{cc}W_{0, 0} X_{0, 0} + W_{1, 0} X_{0, 1} + W_{2, 0} X_{0, 2} & W_{0, 1} X_{0, 0} + W_{1, 1} X_{0, 1} + W_{2, 1} X_{0, 2}\\\\W_{0, 0} X_{1, 0} + W_{1, 0} X_{1, 1} + W_{2, 0} X_{1, 2} & W_{0, 1} X_{1, 0} + W_{1, 1} X_{1, 1} + W_{2, 1} X_{1, 2}\\\\W_{0, 0} X_{2, 0} + W_{1, 0} X_{2, 1} + W_{2, 0} X_{2, 2} & W_{0, 1} X_{2, 0} + W_{1, 1} X_{2, 1} + W_{2, 1} X_{2, 2}\\end{array}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[W[0, 0]*X[0, 0] + W[1, 0]*X[0, 1] + W[2, 0]*X[0, 2], W[0, 1]*X[0, 0] + W[1, 1]*X[0, 1] + W[2, 1]*X[0, 2]],\n",
+       "[W[0, 0]*X[1, 0] + W[1, 0]*X[1, 1] + W[2, 0]*X[1, 2], W[0, 1]*X[1, 0] + W[1, 1]*X[1, 1] + W[2, 1]*X[1, 2]],\n",
+       "[W[0, 0]*X[2, 0] + W[1, 0]*X[2, 1] + W[2, 0]*X[2, 2], W[0, 1]*X[2, 0] + W[1, 1]*X[2, 1] + W[2, 1]*X[2, 2]]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Matrix(n(A,B).subs({n: vL}))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.195495Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.193951Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.203721Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.204820Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle v{\\left(X,W \\right)}$"
+      ],
+      "text/plain": [
+       "v(X, W)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#N = v(X, W); N\n",
+    "N = n(A,B); N"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.209594Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.208129Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.218429Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.219480Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle X W$"
+      ],
+      "text/plain": [
+       "X*W"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "N.replace(n, v)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.224393Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.222907Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.240446Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.241498Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}x_{11} & x_{12} & x_{13}\\\\x_{21} & x_{22} & x_{23}\\\\x_{31} & x_{32} & x_{33}\\end{matrix}\\right] \\left[\\begin{matrix}w_{11} & w_{12}\\\\w_{21} & w_{22}\\\\w_{31} & w_{32}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[x_11, x_12, x_13],\n",
+       "[x_21, x_22, x_23],\n",
+       "[x_31, x_32, x_33]])*Matrix([\n",
+       "[w_11, w_12],\n",
+       "[w_21, w_22],\n",
+       "[w_31, w_32]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "N.replace(n, v).subs({A: X, B:W}) # replacing ariable values after doing function doesn't make the function apply directly on the values (matrices), need to replace values before the function is replaced, so that the function can act on them while they are given/alive."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.246249Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.244648Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.273596Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.274630Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[w_11*x_11 + w_21*x_12 + w_31*x_13, w_12*x_11 + w_22*x_12 + w_32*x_13],\n",
+       "[w_11*x_21 + w_21*x_22 + w_31*x_23, w_12*x_21 + w_22*x_22 + w_32*x_23],\n",
+       "[w_11*x_31 + w_21*x_32 + w_31*x_33, w_12*x_31 + w_22*x_32 + w_32*x_33]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "N.subs({n: vL, A:X, B:W})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.279505Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.278029Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.306621Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.307645Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[w_11*x_11 + w_21*x_12 + w_31*x_13, w_12*x_11 + w_22*x_12 + w_32*x_13],\n",
+       "[w_11*x_21 + w_21*x_22 + w_31*x_23, w_12*x_21 + w_22*x_22 + w_32*x_23],\n",
+       "[w_11*x_31 + w_21*x_32 + w_31*x_33, w_12*x_31 + w_22*x_32 + w_32*x_33]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Nspec = N.subs({A:X, B:W}).replace(n, v); Nspec"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.312638Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.310962Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.321942Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.322996Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle 1$"
+      ],
+      "text/plain": [
+       "1"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "N.diff(N)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.327722Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.326323Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.340029Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.341076Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}0 & 0 & 0\\\\0 & 0 & 0\\\\0 & 0 & 0\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[0, 0, 0],\n",
+       "[0, 0, 0],\n",
+       "[0, 0, 0]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "N.diff(X)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {
+    "title": "codecell"
+   },
+   "outputs": [],
+   "source": [
+    "\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.346041Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.344537Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.356391Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.357859Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\sigma_{apply}{\\left(X \\right)}$"
+      ],
+      "text/plain": [
+       "sigma_apply(X)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# way 2 of declaring S (better way)\n",
+    "sigma = Function('sigma')\n",
+    "\n",
+    "sigmaApply = Function(\"sigma_apply\") #lambda matrix:  matrix.applyfunc(sigma)\n",
+    "\n",
+    "sigmaApply_ = lambda matrix: matrix.applyfunc(sigma)\n",
+    "\n",
+    "sigmaApply(A)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.362702Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.361291Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.373344Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.374418Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\sigma_{apply}{\\left(\\left[\\begin{matrix}x_{11} & x_{12} & x_{13}\\\\x_{21} & x_{22} & x_{23}\\\\x_{31} & x_{32} & x_{33}\\end{matrix}\\right] \\right)}$"
+      ],
+      "text/plain": [
+       "sigma_apply(Matrix([\n",
+       "[x_11, x_12, x_13],\n",
+       "[x_21, x_22, x_23],\n",
+       "[x_31, x_32, x_33]]))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sigmaApply(A).subs({A: X})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.379095Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.377623Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.387916Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.388964Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle {\\left( d \\mapsto \\sigma{\\left(d \\right)} \\right)}_{\\circ}\\left({X}\\right)$"
+      ],
+      "text/plain": [
+       "Lambda(_d, sigma(_d)).(X)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sigmaApply_(A)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.393809Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.392349Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.407354Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.408429Z"
+    },
+    "lines_to_next_cell": 2,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}\\sigma{\\left(x_{11} \\right)} & \\sigma{\\left(x_{12} \\right)} & \\sigma{\\left(x_{13} \\right)}\\\\\\sigma{\\left(x_{21} \\right)} & \\sigma{\\left(x_{22} \\right)} & \\sigma{\\left(x_{23} \\right)}\\\\\\sigma{\\left(x_{31} \\right)} & \\sigma{\\left(x_{32} \\right)} & \\sigma{\\left(x_{33} \\right)}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[sigma(x_11), sigma(x_12), sigma(x_13)],\n",
+       "[sigma(x_21), sigma(x_22), sigma(x_23)],\n",
+       "[sigma(x_31), sigma(x_32), sigma(x_33)]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sigmaApply(A).subs({A: X}).replace(sigmaApply, sigmaApply_) # NOTE: subs of functions doesn't work, replace actually evaluates the replaced function!"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.413080Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.411604Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.424841Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.425934Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\sigma_{apply}{\\left(v{\\left(X,W \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "sigma_apply(v(X, W))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "S = sigmaApply(N); S"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.430656Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.429200Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.439411Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.440457Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\frac{\\partial}{\\partial \\sigma_{apply}{\\left(v{\\left(X,W \\right)} \\right)}} \\sigma_{apply}{\\left(v{\\left(X,W \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "Derivative(sigma_apply(v(X, W)), sigma_apply(v(X, W)))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Derivative(S, S)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.445066Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.443608Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.454795Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.455859Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle 1$"
+      ],
+      "text/plain": [
+       "1"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Derivative(S, S).doit()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.460532Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.459149Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.472403Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.473472Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\frac{\\partial}{\\partial v{\\left(X,W \\right)}} \\sigma_{apply}{\\left(v{\\left(X,W \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "Derivative(sigma_apply(v(X, W)), v(X, W))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Derivative(S, n(A,B)).doit()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.478167Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.476640Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.482024Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.483029Z"
+    },
+    "lines_to_next_cell": 2,
+    "title": "codecell"
+   },
+   "outputs": [],
+   "source": [
+    "#lambd = Function(\"lambda\")\n",
+    "#Lagain = lambd(sigmaApply(n(A))); Lagain\n",
+    "\n",
+    "\n",
+    "\n",
+    "# diff(Lagain, A) # never execute\n",
+    "#"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.487900Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.486288Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.502115Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.503130Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\sigma_{apply}{\\left(v{\\left(\\left[\\begin{matrix}x_{11} & x_{12} & x_{13}\\\\x_{21} & x_{22} & x_{23}\\\\x_{31} & x_{32} & x_{33}\\end{matrix}\\right],\\left[\\begin{matrix}w_{11} & w_{12}\\\\w_{21} & w_{22}\\\\w_{31} & w_{32}\\end{matrix}\\right] \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "sigma_apply(v(Matrix([\n",
+       "[x_11, x_12, x_13],\n",
+       "[x_21, x_22, x_23],\n",
+       "[x_31, x_32, x_33]]), Matrix([\n",
+       "[w_11, w_12],\n",
+       "[w_21, w_22],\n",
+       "[w_31, w_32]])))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "S.replace(A,X).replace(B,W)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.508391Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.506790Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.517960Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.518994Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\sigma_{apply}{\\left(X W \\right)}$"
+      ],
+      "text/plain": [
+       "sigma_apply(X*W)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "S.replace(n, v)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 31,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.523776Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.522358Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.551662Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.552728Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\sigma_{apply}{\\left(\\left[\\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\\end{matrix}\\right] \\right)}$"
+      ],
+      "text/plain": [
+       "sigma_apply(Matrix([\n",
+       "[w_11*x_11 + w_21*x_12 + w_31*x_13, w_12*x_11 + w_22*x_12 + w_32*x_13],\n",
+       "[w_11*x_21 + w_21*x_22 + w_31*x_23, w_12*x_21 + w_22*x_22 + w_32*x_23],\n",
+       "[w_11*x_31 + w_21*x_32 + w_31*x_33, w_12*x_31 + w_22*x_32 + w_32*x_33]]))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "S.subs({A:X, B:W}).replace(n, v)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.557457Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.555928Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.587189Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.588303Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}\\sigma{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)} & \\sigma{\\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \\right)}\\\\\\sigma{\\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \\right)} & \\sigma{\\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \\right)}\\\\\\sigma{\\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \\right)} & \\sigma{\\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \\right)}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[sigma(w_11*x_11 + w_21*x_12 + w_31*x_13), sigma(w_12*x_11 + w_22*x_12 + w_32*x_13)],\n",
+       "[sigma(w_11*x_21 + w_21*x_22 + w_31*x_23), sigma(w_12*x_21 + w_22*x_22 + w_32*x_23)],\n",
+       "[sigma(w_11*x_31 + w_21*x_32 + w_31*x_33), sigma(w_12*x_31 + w_22*x_32 + w_32*x_33)]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Sspec = S.subs({A:X, B:W}).replace(n, v).replace(sigmaApply, sigmaApply_)\n",
+    "Sspec"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.593294Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.591797Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.604100Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.605183Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\sigma_{apply}{\\left(\\left[\\begin{matrix}n_{11} & n_{12}\\\\n_{21} & n_{22}\\\\n_{31} & n_{32}\\end{matrix}\\right] \\right)}$"
+      ],
+      "text/plain": [
+       "sigma_apply(Matrix([\n",
+       "[n_11, n_12],\n",
+       "[n_21, n_22],\n",
+       "[n_31, n_32]]))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "S.replace(n, vN) #.replace(sigmaApply, sigmaApply_)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.609827Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.608321Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.622341Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.623373Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}\\sigma{\\left(n_{11} \\right)} & \\sigma{\\left(n_{12} \\right)}\\\\\\sigma{\\left(n_{21} \\right)} & \\sigma{\\left(n_{22} \\right)}\\\\\\sigma{\\left(n_{31} \\right)} & \\sigma{\\left(n_{32} \\right)}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[sigma(n_11), sigma(n_12)],\n",
+       "[sigma(n_21), sigma(n_22)],\n",
+       "[sigma(n_31), sigma(n_32)]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Selem = S.replace(n, vN).replace(sigmaApply, sigmaApply_); Selem"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.628230Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.626731Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.656721Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.657827Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}n_{11} & w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13}\\\\n_{12} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\\\n_{21} & w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23}\\\\n_{22} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\\\n_{31} & w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33}\\\\n_{32} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[n_11, w_11*x_11 + w_21*x_12 + w_31*x_13],\n",
+       "[n_12, w_12*x_11 + w_22*x_12 + w_32*x_13],\n",
+       "[n_21, w_11*x_21 + w_21*x_22 + w_31*x_23],\n",
+       "[n_22, w_12*x_21 + w_22*x_22 + w_32*x_23],\n",
+       "[n_31, w_11*x_31 + w_21*x_32 + w_31*x_33],\n",
+       "[n_32, w_12*x_31 + w_22*x_32 + w_32*x_33]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import itertools\n",
+    "\n",
+    "elemToSpecD = dict(itertools.chain(*[[(Nelem[i, j], Nspec[i, j]) for j in range(2)] for i in range(3)]))\n",
+    "\n",
+    "elemToSpec = list(elemToSpecD.items())\n",
+    "\n",
+    "Matrix(elemToSpec)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.662635Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.661162Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.695062Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.696273Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}n_{11} & \\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)}\\\\n_{12} & \\operatorname{n_{12}}{\\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \\right)}\\\\n_{21} & \\operatorname{n_{21}}{\\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \\right)}\\\\n_{22} & \\operatorname{n_{22}}{\\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \\right)}\\\\n_{31} & \\operatorname{n_{31}}{\\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \\right)}\\\\n_{32} & \\operatorname{n_{32}}{\\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \\right)}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[n_11, n_11(w_11*x_11 + w_21*x_12 + w_31*x_13)],\n",
+       "[n_12, n_12(w_12*x_11 + w_22*x_12 + w_32*x_13)],\n",
+       "[n_21, n_21(w_11*x_21 + w_21*x_22 + w_31*x_23)],\n",
+       "[n_22, n_22(w_12*x_21 + w_22*x_22 + w_32*x_23)],\n",
+       "[n_31, n_31(w_11*x_31 + w_21*x_32 + w_31*x_33)],\n",
+       "[n_32, n_32(w_12*x_31 + w_22*x_32 + w_32*x_33)]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "elemToSpecFuncD = dict(itertools.chain(*[[(Nelem[i, j], Function(\"n_{}{}\".format(i + 1, j + 1))(Nspec[i, j])) for j in range(2)] for i in range(3)]))\n",
+    "\n",
+    "elemToSpecFunc = list(elemToSpecFuncD.items())\n",
+    "\n",
+    "Matrix(elemToSpecFunc)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.702055Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.700535Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.731405Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.732500Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}n_{11} & \\operatorname{n_{11}}{\\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \\right)}\\\\n_{12} & \\operatorname{n_{12}}{\\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \\right)}\\\\n_{21} & \\operatorname{n_{21}}{\\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \\right)}\\\\n_{22} & \\operatorname{n_{22}}{\\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \\right)}\\\\n_{31} & \\operatorname{n_{31}}{\\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \\right)}\\\\n_{32} & \\operatorname{n_{32}}{\\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \\right)}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[n_11, n_11(x_11, x_12, x_13, x_21, x_22, x_23, x_31, x_32, x_33, w_11, w_12, w_21, w_22, w_31, w_32)],\n",
+       "[n_12, n_12(x_11, x_12, x_13, x_21, x_22, x_23, x_31, x_32, x_33, w_11, w_12, w_21, w_22, w_31, w_32)],\n",
+       "[n_21, n_21(x_11, x_12, x_13, x_21, x_22, x_23, x_31, x_32, x_33, w_11, w_12, w_21, w_22, w_31, w_32)],\n",
+       "[n_22, n_22(x_11, x_12, x_13, x_21, x_22, x_23, x_31, x_32, x_33, w_11, w_12, w_21, w_22, w_31, w_32)],\n",
+       "[n_31, n_31(x_11, x_12, x_13, x_21, x_22, x_23, x_31, x_32, x_33, w_11, w_12, w_21, w_22, w_31, w_32)],\n",
+       "[n_32, n_32(x_11, x_12, x_13, x_21, x_22, x_23, x_31, x_32, x_33, w_11, w_12, w_21, w_22, w_31, w_32)]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "elemToSpecFuncArgsD = dict(itertools.chain(*[[(Nelem[i, j], Function(\"n_{}{}\".format(i + 1, j + 1))(*X,*W)) for j in range(2)] for i in range(3)]))\n",
+    "\n",
+    "elemToSpecFuncArgs = list(elemToSpecFuncArgsD.items())\n",
+    "\n",
+    "Matrix(elemToSpecFuncArgs)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 38,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.737677Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.735790Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.748114Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.749206Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}\\sigma{\\left(n_{11} \\right)} & \\sigma{\\left(n_{12} \\right)}\\\\\\sigma{\\left(n_{21} \\right)} & \\sigma{\\left(n_{22} \\right)}\\\\\\sigma{\\left(n_{31} \\right)} & \\sigma{\\left(n_{32} \\right)}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[sigma(n_11), sigma(n_12)],\n",
+       "[sigma(n_21), sigma(n_22)],\n",
+       "[sigma(n_31), sigma(n_32)]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Selem"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 39,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.754218Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.752714Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.806472Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.807574Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}\\sigma{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)} & \\sigma{\\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \\right)}\\\\\\sigma{\\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \\right)} & \\sigma{\\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \\right)}\\\\\\sigma{\\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \\right)} & \\sigma{\\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \\right)}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[sigma(w_11*x_11 + w_21*x_12 + w_31*x_13), sigma(w_12*x_11 + w_22*x_12 + w_32*x_13)],\n",
+       "[sigma(w_11*x_21 + w_21*x_22 + w_31*x_23), sigma(w_12*x_21 + w_22*x_22 + w_32*x_23)],\n",
+       "[sigma(w_11*x_31 + w_21*x_32 + w_31*x_33), sigma(w_12*x_31 + w_22*x_32 + w_32*x_33)]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Selem.subs(elemToSpecD)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 40,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.812400Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.810912Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.822956Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.824003Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\frac{d}{d n_{12}} \\sigma{\\left(n_{12} \\right)}$"
+      ],
+      "text/plain": [
+       "Derivative(sigma(n_12), n_12)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Selem[0,1].diff(Nelem[0,1])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 41,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.828915Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.827428Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.844959Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.846079Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left. \\frac{d}{d n_{12}} \\sigma{\\left(n_{12} \\right)} \\right|_{\\substack{ n_{12}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}$"
+      ],
+      "text/plain": [
+       "Subs(Derivative(sigma(n_12), n_12), n_12, w_12*x_11 + w_22*x_12 + w_32*x_13)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]})\n",
+    "#Selem[0,1].diff(Nelem[0,1]).subs(dict([{Nelem[0,1] : Nspec[0,1]}]))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 42,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.850753Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.849332Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.863648Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.864682Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left. \\frac{d}{d n_{12}} \\sigma{\\left(n_{12} \\right)} \\right|_{\\substack{ n_{12}=23 }}$"
+      ],
+      "text/plain": [
+       "Subs(Derivative(sigma(n_12), n_12), n_12, 23)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]}).subs({Nspec[0,1] : 23})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 43,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.869601Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.868074Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.888457Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.889538Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left. \\frac{d}{d n_{12}} 8 n_{12}^{3} \\right|_{\\substack{ n_{12}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}$"
+      ],
+      "text/plain": [
+       "Subs(Derivative(8*n_12**3, n_12), n_12, w_12*x_11 + w_22*x_12 + w_32*x_13)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]}).replace(sigma, lambda x: 8*x**3)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 44,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.894280Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.892708Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.905625Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.906670Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\frac{d}{d n_{12}} 8 n_{12}^{3}$"
+      ],
+      "text/plain": [
+       "Derivative(8*n_12**3, n_12)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Selem[0,1].diff(Nelem[0,1]).replace(sigma, lambda x: 8*x**3)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 45,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.911499Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.909998Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.935460Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.936542Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle 24 n_{12}^{2}$"
+      ],
+      "text/plain": [
+       "24*n_12**2"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Selem[0,1].diff(Nelem[0,1]).replace(sigma, lambda x: 8*x**3).doit()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 46,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.941631Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.940125Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.963760Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.964799Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle 24 \\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\right)^{2}$"
+      ],
+      "text/plain": [
+       "24*(w_12*x_11 + w_22*x_12 + w_32*x_13)**2"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# ### GOT IT: can replace now with expression and do derivative with respect to that expression.\n",
+    "Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]}).replace(sigma, lambda x: 8*x**3).doit()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 47,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.969668Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.968157Z",
+     "iopub.status.idle": "2020-09-28T10:54:06.989412Z",
+     "shell.execute_reply": "2020-09-28T10:54:06.990474Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle w_{22} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}$"
+      ],
+      "text/plain": [
+       "w_22*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_12*x_11 + w_22*x_12 + w_32*x_13)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Selem[0,1].subs({Nelem[0,1] : Nspec[0,1]}).diff(X[0,1])#.subs({Nelem[0,1] : Nspec[0,1]})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 48,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:06.995094Z",
+     "iopub.status.busy": "2020-09-28T10:54:06.993592Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.004900Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.006008Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}\\sigma{\\left(n_{11} \\right)} & \\sigma{\\left(n_{12} \\right)}\\\\\\sigma{\\left(n_{21} \\right)} & \\sigma{\\left(n_{22} \\right)}\\\\\\sigma{\\left(n_{31} \\right)} & \\sigma{\\left(n_{32} \\right)}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[sigma(n_11), sigma(n_12)],\n",
+       "[sigma(n_21), sigma(n_22)],\n",
+       "[sigma(n_31), sigma(n_32)]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Selem"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 49,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.010935Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.009420Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.063239Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.064352Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}\\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)} & \\operatorname{n_{12}}{\\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \\right)}\\\\\\operatorname{n_{21}}{\\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \\right)} & \\operatorname{n_{22}}{\\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \\right)}\\\\\\operatorname{n_{31}}{\\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \\right)} & \\operatorname{n_{32}}{\\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \\right)}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[n_11(w_11*x_11 + w_21*x_12 + w_31*x_13), n_12(w_12*x_11 + w_22*x_12 + w_32*x_13)],\n",
+       "[n_21(w_11*x_21 + w_21*x_22 + w_31*x_23), n_22(w_12*x_21 + w_22*x_22 + w_32*x_23)],\n",
+       "[n_31(w_11*x_31 + w_21*x_32 + w_31*x_33), n_32(w_12*x_31 + w_22*x_32 + w_32*x_33)]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "nt = Nelem.subs(elemToSpecFunc); nt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 50,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.069177Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.067676Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.108181Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.109261Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}\\sigma{\\left(\\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)} \\right)} & \\sigma{\\left(\\operatorname{n_{12}}{\\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \\right)} \\right)}\\\\\\sigma{\\left(\\operatorname{n_{21}}{\\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \\right)} \\right)} & \\sigma{\\left(\\operatorname{n_{22}}{\\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \\right)} \\right)}\\\\\\sigma{\\left(\\operatorname{n_{31}}{\\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \\right)} \\right)} & \\sigma{\\left(\\operatorname{n_{32}}{\\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \\right)} \\right)}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[sigma(n_11(w_11*x_11 + w_21*x_12 + w_31*x_13)), sigma(n_12(w_12*x_11 + w_22*x_12 + w_32*x_13))],\n",
+       "[sigma(n_21(w_11*x_21 + w_21*x_22 + w_31*x_23)), sigma(n_22(w_12*x_21 + w_22*x_22 + w_32*x_23))],\n",
+       "[sigma(n_31(w_11*x_31 + w_21*x_32 + w_31*x_33)), sigma(n_32(w_12*x_31 + w_22*x_32 + w_32*x_33))]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "st = Selem.subs(elemToSpecFunc); st"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 51,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.114208Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.112717Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.213164Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.214284Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}\\left[\\begin{matrix}\\frac{\\partial}{\\partial \\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)}} \\sigma{\\left(\\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)} \\right)} & 0\\\\0 & 0\\\\0 & 0\\end{matrix}\\right] & \\left[\\begin{matrix}0 & \\frac{\\partial}{\\partial \\operatorname{n_{12}}{\\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \\right)}} \\sigma{\\left(\\operatorname{n_{12}}{\\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \\right)} \\right)}\\\\0 & 0\\\\0 & 0\\end{matrix}\\right]\\\\\\left[\\begin{matrix}0 & 0\\\\\\frac{\\partial}{\\partial \\operatorname{n_{21}}{\\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \\right)}} \\sigma{\\left(\\operatorname{n_{21}}{\\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \\right)} \\right)} & 0\\\\0 & 0\\end{matrix}\\right] & \\left[\\begin{matrix}0 & 0\\\\0 & \\frac{\\partial}{\\partial \\operatorname{n_{22}}{\\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \\right)}} \\sigma{\\left(\\operatorname{n_{22}}{\\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \\right)} \\right)}\\\\0 & 0\\end{matrix}\\right]\\\\\\left[\\begin{matrix}0 & 0\\\\0 & 0\\\\\\frac{\\partial}{\\partial \\operatorname{n_{31}}{\\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \\right)}} \\sigma{\\left(\\operatorname{n_{31}}{\\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \\right)} \\right)} & 0\\end{matrix}\\right] & \\left[\\begin{matrix}0 & 0\\\\0 & 0\\\\0 & \\frac{\\partial}{\\partial \\operatorname{n_{32}}{\\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \\right)}} \\sigma{\\left(\\operatorname{n_{32}}{\\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \\right)} \\right)}\\end{matrix}\\right]\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "[[[[Derivative(sigma(n_11(w_11*x_11 + w_21*x_12 + w_31*x_13)), n_11(w_11*x_11 + w_21*x_12 + w_31*x_13)), 0], [0, 0], [0, 0]], [[0, Derivative(sigma(n_12(w_12*x_11 + w_22*x_12 + w_32*x_13)), n_12(w_12*x_11 + w_22*x_12 + w_32*x_13))], [0, 0], [0, 0]]], [[[0, 0], [Derivative(sigma(n_21(w_11*x_21 + w_21*x_22 + w_31*x_23)), n_21(w_11*x_21 + w_21*x_22 + w_31*x_23)), 0], [0, 0]], [[0, 0], [0, Derivative(sigma(n_22(w_12*x_21 + w_22*x_22 + w_32*x_23)), n_22(w_12*x_21 + w_22*x_22 + w_32*x_23))], [0, 0]]], [[[0, 0], [0, 0], [Derivative(sigma(n_31(w_11*x_31 + w_21*x_32 + w_31*x_33)), n_31(w_11*x_31 + w_21*x_32 + w_31*x_33)), 0]], [[0, 0], [0, 0], [0, Derivative(sigma(n_32(w_12*x_31 + w_22*x_32 + w_32*x_33)), n_32(w_12*x_31 + w_22*x_32 + w_32*x_33))]]]]"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "st.diff(nt)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 52,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.219076Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.217633Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.236397Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.237474Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\frac{\\partial}{\\partial \\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)}} \\sigma{\\left(\\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "Derivative(sigma(n_11(w_11*x_11 + w_21*x_12 + w_31*x_13)), n_11(w_11*x_11 + w_21*x_12 + w_31*x_13))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "st[0,0].diff(st[0,0].args[0])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 53,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.243171Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.241361Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.273692Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.274758Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle w_{11} \\frac{\\partial}{\\partial \\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)}} \\sigma{\\left(\\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)} \\right)} \\left. \\frac{d}{d \\xi_{1}} \\operatorname{n_{11}}{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$"
+      ],
+      "text/plain": [
+       "w_11*Derivative(sigma(n_11(w_11*x_11 + w_21*x_12 + w_31*x_13)), n_11(w_11*x_11 + w_21*x_12 + w_31*x_13))*Subs(Derivative(n_11(_xi_1), _xi_1), _xi_1, w_11*x_11 + w_21*x_12 + w_31*x_13)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "st[0,0].diff(X[0,0])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 54,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.279564Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.278111Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.288386Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.289457Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle 0$"
+      ],
+      "text/plain": [
+       "0"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "st[0,0].diff(st[1,0].args[0])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 55,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.294206Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.292738Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.340163Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.341641Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}\\left[\\begin{matrix}\\frac{d}{d n_{11}} \\sigma{\\left(n_{11} \\right)} & 0\\\\0 & 0\\\\0 & 0\\end{matrix}\\right] & \\left[\\begin{matrix}0 & \\frac{d}{d n_{12}} \\sigma{\\left(n_{12} \\right)}\\\\0 & 0\\\\0 & 0\\end{matrix}\\right]\\\\\\left[\\begin{matrix}0 & 0\\\\\\frac{d}{d n_{21}} \\sigma{\\left(n_{21} \\right)} & 0\\\\0 & 0\\end{matrix}\\right] & \\left[\\begin{matrix}0 & 0\\\\0 & \\frac{d}{d n_{22}} \\sigma{\\left(n_{22} \\right)}\\\\0 & 0\\end{matrix}\\right]\\\\\\left[\\begin{matrix}0 & 0\\\\0 & 0\\\\\\frac{d}{d n_{31}} \\sigma{\\left(n_{31} \\right)} & 0\\end{matrix}\\right] & \\left[\\begin{matrix}0 & 0\\\\0 & 0\\\\0 & \\frac{d}{d n_{32}} \\sigma{\\left(n_{32} \\right)}\\end{matrix}\\right]\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "[[[[Derivative(sigma(n_11), n_11), 0], [0, 0], [0, 0]], [[0, Derivative(sigma(n_12), n_12)], [0, 0], [0, 0]]], [[[0, 0], [Derivative(sigma(n_21), n_21), 0], [0, 0]], [[0, 0], [0, Derivative(sigma(n_22), n_22)], [0, 0]]], [[[0, 0], [0, 0], [Derivative(sigma(n_31), n_31), 0]], [[0, 0], [0, 0], [0, Derivative(sigma(n_32), n_32)]]]]"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Selem.diff(Nelem)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 56,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.346612Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.345101Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.468734Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.469832Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}\\left[\\begin{matrix}\\frac{\\partial}{\\partial \\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)}} \\sigma{\\left(\\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)} \\right)} & 0\\\\0 & 0\\\\0 & 0\\end{matrix}\\right] & \\left[\\begin{matrix}0 & \\frac{\\partial}{\\partial \\operatorname{n_{12}}{\\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \\right)}} \\sigma{\\left(\\operatorname{n_{12}}{\\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \\right)} \\right)}\\\\0 & 0\\\\0 & 0\\end{matrix}\\right]\\\\\\left[\\begin{matrix}0 & 0\\\\\\frac{\\partial}{\\partial \\operatorname{n_{21}}{\\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \\right)}} \\sigma{\\left(\\operatorname{n_{21}}{\\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \\right)} \\right)} & 0\\\\0 & 0\\end{matrix}\\right] & \\left[\\begin{matrix}0 & 0\\\\0 & \\frac{\\partial}{\\partial \\operatorname{n_{22}}{\\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \\right)}} \\sigma{\\left(\\operatorname{n_{22}}{\\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \\right)} \\right)}\\\\0 & 0\\end{matrix}\\right]\\\\\\left[\\begin{matrix}0 & 0\\\\0 & 0\\\\\\frac{\\partial}{\\partial \\operatorname{n_{31}}{\\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \\right)}} \\sigma{\\left(\\operatorname{n_{31}}{\\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \\right)} \\right)} & 0\\end{matrix}\\right] & \\left[\\begin{matrix}0 & 0\\\\0 & 0\\\\0 & \\frac{\\partial}{\\partial \\operatorname{n_{32}}{\\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \\right)}} \\sigma{\\left(\\operatorname{n_{32}}{\\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \\right)} \\right)}\\end{matrix}\\right]\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "[[[[Derivative(sigma(n_11(w_11*x_11 + w_21*x_12 + w_31*x_13)), n_11(w_11*x_11 + w_21*x_12 + w_31*x_13)), 0], [0, 0], [0, 0]], [[0, Derivative(sigma(n_12(w_12*x_11 + w_22*x_12 + w_32*x_13)), n_12(w_12*x_11 + w_22*x_12 + w_32*x_13))], [0, 0], [0, 0]]], [[[0, 0], [Derivative(sigma(n_21(w_11*x_21 + w_21*x_22 + w_31*x_23)), n_21(w_11*x_21 + w_21*x_22 + w_31*x_23)), 0], [0, 0]], [[0, 0], [0, Derivative(sigma(n_22(w_12*x_21 + w_22*x_22 + w_32*x_23)), n_22(w_12*x_21 + w_22*x_22 + w_32*x_23))], [0, 0]]], [[[0, 0], [0, 0], [Derivative(sigma(n_31(w_11*x_31 + w_21*x_32 + w_31*x_33)), n_31(w_11*x_31 + w_21*x_32 + w_31*x_33)), 0]], [[0, 0], [0, 0], [0, Derivative(sigma(n_32(w_12*x_31 + w_22*x_32 + w_32*x_33)), n_32(w_12*x_31 + w_22*x_32 + w_32*x_33))]]]]"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Selem.diff(Nelem).subs(elemToSpecFunc)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 57,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.474756Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.473321Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.593557Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.594648Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}6 & 2 w_{12} x_{11} + 2 w_{22} x_{12} + 2 w_{32} x_{13}\\\\2 w_{11} x_{21} + 2 w_{21} x_{22} + 2 w_{31} x_{23} & 2 w_{12} x_{21} + 2 w_{22} x_{22} + 2 w_{32} x_{23}\\\\2 w_{11} x_{31} + 2 w_{21} x_{32} + 2 w_{31} x_{33} & 4\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[                                      6, 2*w_12*x_11 + 2*w_22*x_12 + 2*w_32*x_13],\n",
+       "[2*w_11*x_21 + 2*w_21*x_22 + 2*w_31*x_23, 2*w_12*x_21 + 2*w_22*x_22 + 2*w_32*x_23],\n",
+       "[2*w_11*x_31 + 2*w_21*x_32 + 2*w_31*x_33,                                       4]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# CAN even replace elements after have done an operation on them!!! replacing n_21 * 2 with the number 4.\n",
+    "Sspec.subs({Nspec[0, 0]: 3}).replace(sigma, lambda x: 2 * x).replace(Nspec[2, 1] * 2, 4)\n",
+    "\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 58,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.599437Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.597962Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.610708Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.611784Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}n_{11} & n_{12}\\\\n_{21} & n_{22}\\\\n_{31} & n_{32}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[n_11, n_12],\n",
+       "[n_21, n_22],\n",
+       "[n_31, n_32]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "lambd = Function(\"lambda\")\n",
+    "lambd_ = lambda matrix : sum(matrix)\n",
+    "\n",
+    "\n",
+    "vN(X, W)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 59,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.616543Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.615102Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.626323Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.627372Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}n_{11} & n_{12}\\\\n_{21} & n_{22}\\\\n_{31} & n_{32}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[n_11, n_12],\n",
+       "[n_21, n_22],\n",
+       "[n_31, n_32]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "vN(A, B)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 60,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.631936Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.630508Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.640375Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.641423Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\lambda{\\left(\\sigma_{apply}{\\left(v{\\left(X,W \\right)} \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "lambda(sigma_apply(v(X, W)))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "L = lambd(S); L"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 61,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.646586Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.645091Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.655947Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.656995Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}n_{11} & n_{12}\\\\n_{21} & n_{22}\\\\n_{31} & n_{32}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[n_11, n_12],\n",
+       "[n_21, n_22],\n",
+       "[n_31, n_32]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Nelem"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 62,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.661772Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.660250Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.672620Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.673670Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\lambda{\\left(\\sigma_{apply}{\\left(\\left[\\begin{matrix}n_{11} & n_{12}\\\\n_{21} & n_{22}\\\\n_{31} & n_{32}\\end{matrix}\\right] \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "lambda(sigma_apply(Matrix([\n",
+       "[n_11, n_12],\n",
+       "[n_21, n_22],\n",
+       "[n_31, n_32]])))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "L.replace(n, vN)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 63,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.678507Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.676938Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.690747Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.691789Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\lambda{\\left(\\left[\\begin{matrix}\\sigma{\\left(n_{11} \\right)} & \\sigma{\\left(n_{12} \\right)}\\\\\\sigma{\\left(n_{21} \\right)} & \\sigma{\\left(n_{22} \\right)}\\\\\\sigma{\\left(n_{31} \\right)} & \\sigma{\\left(n_{32} \\right)}\\end{matrix}\\right] \\right)}$"
+      ],
+      "text/plain": [
+       "lambda(Matrix([\n",
+       "[sigma(n_11), sigma(n_12)],\n",
+       "[sigma(n_21), sigma(n_22)],\n",
+       "[sigma(n_31), sigma(n_32)]]))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "L.replace(n, vN).replace(sigmaApply, sigmaApply_)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 64,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.696412Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.694859Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.706720Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.707824Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\lambda{\\left(\\sigma_{apply}{\\left(X W \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "lambda(sigma_apply(X*W))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "L.replace(n, v)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 65,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.712790Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.711346Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.723840Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.724856Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\lambda{\\left({\\left( d \\mapsto \\sigma{\\left(d \\right)} \\right)}_{\\circ}\\left({X W}\\right) \\right)}$"
+      ],
+      "text/plain": [
+       "lambda(Lambda(_d, sigma(_d)).(X*W))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "\n",
+    "L.replace(n, v).replace(sigmaApply, sigmaApply_)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 66,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.729519Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.728058Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.760398Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.761537Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\lambda{\\left(\\left[\\begin{matrix}\\sigma{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)} & \\sigma{\\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \\right)}\\\\\\sigma{\\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \\right)} & \\sigma{\\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \\right)}\\\\\\sigma{\\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \\right)} & \\sigma{\\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \\right)}\\end{matrix}\\right] \\right)}$"
+      ],
+      "text/plain": [
+       "lambda(Matrix([\n",
+       "[sigma(w_11*x_11 + w_21*x_12 + w_31*x_13), sigma(w_12*x_11 + w_22*x_12 + w_32*x_13)],\n",
+       "[sigma(w_11*x_21 + w_21*x_22 + w_31*x_23), sigma(w_12*x_21 + w_22*x_22 + w_32*x_23)],\n",
+       "[sigma(w_11*x_31 + w_21*x_32 + w_31*x_33), sigma(w_12*x_31 + w_22*x_32 + w_32*x_33)]]))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "L.subs({A:X, B:W}).replace(n, vL).replace(sigmaApply, sigmaApply_)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 67,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.766513Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.764894Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.777570Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.778614Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\lambda{\\left(\\sigma_{apply}{\\left(\\left[\\begin{matrix}n_{11} & n_{12}\\\\n_{21} & n_{22}\\\\n_{31} & n_{32}\\end{matrix}\\right] \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "lambda(sigma_apply(Matrix([\n",
+       "[n_11, n_12],\n",
+       "[n_21, n_22],\n",
+       "[n_31, n_32]])))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "L.replace(n, vN)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 68,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.783226Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.781787Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.806133Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.807224Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\sigma{\\left(n_{11} \\right)} + \\sigma{\\left(n_{12} \\right)} + \\sigma{\\left(n_{21} \\right)} + \\sigma{\\left(n_{22} \\right)} + \\sigma{\\left(n_{31} \\right)} + \\sigma{\\left(n_{32} \\right)}$"
+      ],
+      "text/plain": [
+       "sigma(n_11) + sigma(n_12) + sigma(n_21) + sigma(n_22) + sigma(n_31) + sigma(n_32)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "L.replace(n, vN).subs({A:X, B:W}).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)\n",
+    "\n",
+    "\n",
+    "\n",
+    "\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 69,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.812257Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.810720Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.827947Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.829005Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\frac{d}{d f{\\left(x \\right)}} g{\\left(f{\\left(x \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "Derivative(g(f(x)), f(x))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from sympy import symbols, Derivative\n",
+    "\n",
+    "x, y, r, t = symbols('x y r t') # r (radius), t (angle theta)\n",
+    "f, g, h = symbols('f g h', cls=Function)\n",
+    "h = g(f(x))\n",
+    "\n",
+    "Derivative(h, f(x)).doit()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 70,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.833676Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.832198Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.837463Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.838498Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [],
+   "source": [
+    "# Never do this gives recursion ERROR (max depth exceeded)\n",
+    "# h = g(f(A))\n",
+    "# Derivative(h, A).doit()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 71,
+   "metadata": {
+    "lines_to_next_cell": 2,
+    "title": "codecell"
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 71,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.843910Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.841790Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.853023Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.854082Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\lambda{\\left(\\sigma_{apply}{\\left(v{\\left(a,b \\right)} \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "lambda(sigma_apply(v(a, b)))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from sympy.abc import a, b\n",
+    "\n",
+    "Llower = lambd(sigmaApply(n(a, b)))\n",
+    "Llower"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 72,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.858737Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.857187Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.885079Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.886175Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\frac{\\partial}{\\partial \\sigma_{apply}{\\left(v{\\left(a,b \\right)} \\right)}} \\lambda{\\left(\\sigma_{apply}{\\left(v{\\left(a,b \\right)} \\right)} \\right)} \\frac{\\partial}{\\partial v{\\left(a,b \\right)}} \\sigma_{apply}{\\left(v{\\left(a,b \\right)} \\right)} \\frac{\\partial}{\\partial a} v{\\left(a,b \\right)}$"
+      ],
+      "text/plain": [
+       "Derivative(lambda(sigma_apply(v(a, b))), sigma_apply(v(a, b)))*Derivative(sigma_apply(v(a, b)), v(a, b))*Derivative(v(a, b), a)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Derivative(Llower, a).doit()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 73,
+   "metadata": {
+    "title": "codecell"
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 73,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.891204Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.889732Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.900094Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.901143Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\operatorname{n_{ij}}{\\left(X,W \\right)}$"
+      ],
+      "text/plain": [
+       "n_ij(X, W)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# ### WAY 1: of substituting to differentiate with respect to expression:\n",
+    "n_ij = Function('n_ij')\n",
+    "n_ij(A,B) # (N[0,0]); n_ij"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 74,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.909581Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.905158Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.917649Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.918681Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(X, W)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "n_ij(A,B).args"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 75,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.923532Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.922070Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.936093Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.937138Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\frac{\\partial}{\\partial \\operatorname{n_{ij}}{\\left(X,W \\right)}} \\sigma{\\left(\\operatorname{n_{ij}}{\\left(X,W \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "Derivative(sigma(n_ij(X, W)), n_ij(X, W))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# sigma(n_ij).diff(n_ij).replace(n_ij, N[0,0]) # ERROR cannot deriv wi.r.t to the expression w11*x11 + ...\n",
+    "\n",
+    "sigma(n_ij(A,B)).diff(n_ij(A,B))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 76,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.941852Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.940321Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.965235Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.966360Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\frac{\\partial}{\\partial x_{11}} \\operatorname{n_{ij}}{\\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \\right)} \\frac{\\partial}{\\partial \\operatorname{n_{ij}}{\\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \\right)}} \\sigma{\\left(\\operatorname{n_{ij}}{\\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "Derivative(n_ij(x_11, x_12, x_13, x_21, x_22, x_23, x_31, x_32, x_33, w_11, w_12, w_21, w_22, w_31, w_32), x_11)*Derivative(sigma(n_ij(x_11, x_12, x_13, x_21, x_22, x_23, x_31, x_32, x_33, w_11, w_12, w_21, w_22, w_31, w_32)), n_ij(x_11, x_12, x_13, x_21, x_22, x_23, x_31, x_32, x_33, w_11, w_12, w_21, w_22, w_31, w_32))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sigma(n_ij(*X,*W)).diff(X[0,0])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 77,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.971302Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.969753Z",
+     "iopub.status.idle": "2020-09-28T10:54:07.982914Z",
+     "shell.execute_reply": "2020-09-28T10:54:07.983950Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\frac{\\partial}{\\partial \\operatorname{n_{ij}}{\\left(X,W \\right)}} \\sigma{\\left(\\operatorname{n_{ij}}{\\left(X,W \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "Derivative(sigma(n_ij(X, W)), n_ij(X, W))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "nab_ij = n_ij(A,B)\n",
+    "sigma(nab_ij).diff(nab_ij)#.subs({nab_ij : Nspec[0, 0]})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 78,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:07.988605Z",
+     "iopub.status.busy": "2020-09-28T10:54:07.987158Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.008342Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.009711Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left. \\frac{d}{d \\xi} \\sigma{\\left(\\xi \\right)} \\right|_{\\substack{ \\xi=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$"
+      ],
+      "text/plain": [
+       "Subs(Derivative(sigma(_xi), _xi), _xi, w_12*x_31 + w_22*x_32 + w_32*x_33)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sigma(nab_ij).diff(nab_ij).subs({nab_ij : Nspec[2, 1]})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 79,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.017490Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.016556Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.035014Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.036073Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left. \\frac{d}{d \\xi} \\sigma{\\left(\\xi \\right)} \\right|_{\\substack{ \\xi=w_{12} x_{31} + 77777 w_{22} + w_{32} x_{33} }}$"
+      ],
+      "text/plain": [
+       "Subs(Derivative(sigma(_xi), _xi), _xi, w_12*x_31 + 77777*w_22 + w_32*x_33)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sigma(nab_ij).diff(nab_ij).subs({nab_ij : Nspec[2,1]}).subs({X[2,1]:77777})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 80,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.040766Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.039293Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.053397Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.054461Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left. \\frac{d}{d \\xi} \\sigma{\\left(\\xi \\right)} \\right|_{\\substack{ \\xi=23 }}$"
+      ],
+      "text/plain": [
+       "Subs(Derivative(sigma(_xi), _xi), _xi, 23)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sigma(nab_ij).diff(nab_ij).subs({nab_ij : 23}) # ERROR if using replace() since it says can't calc derivs w.r.t to the x_11*w_11 + ..."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 81,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.059237Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.057751Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.078175Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.079207Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left. \\frac{d}{d \\xi} \\sigma{\\left(\\xi \\right)} \\right|_{\\substack{ \\xi=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$"
+      ],
+      "text/plain": [
+       "Subs(Derivative(sigma(_xi), _xi), _xi, w_12*x_31 + w_22*x_32 + w_32*x_33)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sigma(nab_ij).diff(nab_ij).subs({nab_ij : Nspec[2,1]}).doit()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 82,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.083888Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.082454Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.096243Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.097684Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\sigma{\\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \\right)}$"
+      ],
+      "text/plain": [
+       "sigma(w_12*x_31 + w_22*x_32 + w_32*x_33)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sigma(nab_ij).subs({nab_ij : Nspec[2,1]})#.diff(X[2,1])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 83,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.106219Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.101990Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.122659Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.123709Z"
+    },
+    "lines_to_next_cell": 2,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle w_{22} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$"
+      ],
+      "text/plain": [
+       "w_22*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_12*x_31 + w_22*x_32 + w_32*x_33)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Substituting the value of the function n_ij first, and THEN differentiating with respect to something in that substitution. (X_21)\n",
+    "sigma(nab_ij).subs({nab_ij : Nspec[2,1]}).diff(X[2,1])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 84,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.128547Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.126960Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.144282Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.145792Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle w_{22} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$"
+      ],
+      "text/plain": [
+       "w_22*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_12*x_31 + w_22*x_32 + w_32*x_33)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Selem[2,1].subs({Nelem[2,1] : Nspec[2,1]}).diff(X[2,1])\n",
+    "\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 85,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.150742Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.149258Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.161633Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.162718Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)}$"
+      ],
+      "text/plain": [
+       "n_11(w_11*x_11 + w_21*x_12 + w_31*x_13)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# ### WAY 2:\n",
+    "n_11 = Function('n_11')(Nspec[0, 0]); n_11"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 86,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.167388Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.165906Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.178140Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.179184Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\sigma{\\left(\\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "sigma(n_11(w_11*x_11 + w_21*x_12 + w_31*x_13))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sigma(n_11)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 87,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.183956Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.182498Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.196238Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.197338Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\sigma{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)}$"
+      ],
+      "text/plain": [
+       "sigma(w_11*x_11 + w_21*x_12 + w_31*x_13)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "assert Nspec[0,0] == n_11.args[0]\n",
+    "\n",
+    "sigma(n_11).subs({n_11 : n_11.args[0]})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 88,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.201967Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.200483Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.224763Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.225915Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\frac{\\partial}{\\partial \\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)}} \\sigma{\\left(\\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "Derivative(sigma(n_11(w_11*x_11 + w_21*x_12 + w_31*x_13)), n_11(w_11*x_11 + w_21*x_12 + w_31*x_13))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sigma(n_11).diff(n_11) #.replace(n_ij, n_ij.args[0])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 89,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.230725Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.229214Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.253049Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.254085Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left. \\frac{d}{d \\xi} \\sigma{\\left(\\xi \\right)} \\right|_{\\substack{ \\xi=77777 w_{11} + w_{21} x_{12} + w_{31} x_{13} }}$"
+      ],
+      "text/plain": [
+       "Subs(Derivative(sigma(_xi), _xi), _xi, 77777*w_11 + w_21*x_12 + w_31*x_13)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sigma(n_11).diff(n_11).subs({n_11 : n_11.args[0]}).subs({X[0,0]:77777})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 90,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.258746Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.257312Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.282943Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.284006Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left. \\frac{d}{d \\xi} \\sigma{\\left(\\xi \\right)} \\right|_{\\substack{ \\xi=23 }}$"
+      ],
+      "text/plain": [
+       "Subs(Derivative(sigma(_xi), _xi), _xi, 23)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sigma(n_11).diff(n_11).subs({n_11 : n_11.args[0]}).replace(n_11.args[0], 23) # same as subs in this case"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 91,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.288873Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.287409Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.310217Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.311266Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle w_{11} \\frac{\\partial}{\\partial \\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)}} \\sigma{\\left(\\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)} \\right)} \\left. \\frac{d}{d \\xi_{1}} \\operatorname{n_{11}}{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$"
+      ],
+      "text/plain": [
+       "w_11*Derivative(sigma(n_11(w_11*x_11 + w_21*x_12 + w_31*x_13)), n_11(w_11*x_11 + w_21*x_12 + w_31*x_13))*Subs(Derivative(n_11(_xi_1), _xi_1), _xi_1, w_11*x_11 + w_21*x_12 + w_31*x_13)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sigma(n_11).diff(X[0,0])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 92,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.316319Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.314669Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.343115Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.344168Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle w_{11} \\left. \\frac{d}{d \\xi_{1}} \\operatorname{n_{11}}{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} \\left. \\frac{d}{d \\xi} \\sigma{\\left(\\xi \\right)} \\right|_{\\substack{ \\xi=\\left( x \\mapsto x \\right) }}$"
+      ],
+      "text/plain": [
+       "w_11*Subs(Derivative(n_11(_xi_1), _xi_1), _xi_1, w_11*x_11 + w_21*x_12 + w_31*x_13)*Subs(Derivative(sigma(_xi), _xi), _xi, Lambda(_x, _x))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "id = Lambda(x, x)\n",
+    "\n",
+    "sigma(n_11).diff(X[0,0]).subs({n_11 : id})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 93,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.349480Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.348014Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.377533Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.378594Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle w_{11} \\left. \\frac{d}{d \\xi_{1}} \\operatorname{n_{11}}{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} \\left. \\frac{d}{d \\xi} \\sigma{\\left(\\xi \\right)} \\right|_{\\substack{ \\xi=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$"
+      ],
+      "text/plain": [
+       "w_11*Subs(Derivative(n_11(_xi_1), _xi_1), _xi_1, w_11*x_11 + w_21*x_12 + w_31*x_13)*Subs(Derivative(sigma(_xi), _xi), _xi, w_11*x_11 + w_21*x_12 + w_31*x_13)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# NOTE: so I don't think WAY 2 is correct because here it doesn't simplify the derivative d n11 / d eps11, since this should equal 1 because now n11 = eps11. Correct one is below (repeated from above)\n",
+    "sigma(n_11).diff(X[0,0]).subs({n_11 : Nspec[0,0]})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 94,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.383271Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.381801Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.400938Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.402021Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle w_{11} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$"
+      ],
+      "text/plain": [
+       "w_11*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_11*x_11 + w_21*x_12 + w_31*x_13)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# CORRECT WAY 1\n",
+    "sigma(n_11).subs({n_11 : Nspec[0,0]}).diff(X[0,0])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 95,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.407359Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.405908Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.424834Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.425958Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle w_{11} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}$"
+      ],
+      "text/plain": [
+       "w_11*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_11*x_11 + w_21*x_12 + w_31*x_13)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# CORRECT WAY 2\n",
+    "\n",
+    "sigma(nab_ij).subs({nab_ij : Nspec[0,0]}).diff(X[0,0])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 96,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.430561Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.429132Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.446583Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.447683Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle w_{22} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}$"
+      ],
+      "text/plain": [
+       "w_22*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_12*x_31 + w_22*x_32 + w_32*x_33)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# CORRECT WAY 3\n",
+    "Selem[2,1].subs({Nelem[2,1] : Nspec[2,1]}).diff(X[2,1])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 97,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.452934Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.451411Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.464725Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.465907Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\sigma{\\left(\\operatorname{n_{11}}{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "sigma(n_11(w_11*x_11 + w_21*x_12 + w_31*x_13))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sigma(n_11) # WAY 1: sigma argument is already hardcoded"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 98,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.470957Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.469360Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.479818Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.480890Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\sigma{\\left(\\operatorname{n_{ij}}{\\left(X,W \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "sigma(n_ij(X, W))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sigma(nab_ij) # Way 2: sigma argument is function of matrixsymbol (better than 1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 99,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.485843Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.484235Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.493728Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.494739Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\sigma{\\left(n_{32} \\right)}$"
+      ],
+      "text/plain": [
+       "sigma(n_32)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Selem[2,1] # WAY 3: sigma argument is just symbol and we replace it as function with argument hardcoded only later. (better than 2)\n",
+    "\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 100,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.499377Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.497888Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.511884Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.512995Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\lambda{\\left(\\sigma_{apply}{\\left(v{\\left(X,W \\right)} \\right)} \\right)}$"
+      ],
+      "text/plain": [
+       "lambda(sigma_apply(v(X, W)))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "L"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 101,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.518001Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.516431Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.530804Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.531843Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}\\sigma{\\left(n_{11} \\right)} & \\sigma{\\left(n_{12} \\right)}\\\\\\sigma{\\left(n_{21} \\right)} & \\sigma{\\left(n_{22} \\right)}\\\\\\sigma{\\left(n_{31} \\right)} & \\sigma{\\left(n_{32} \\right)}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[sigma(n_11), sigma(n_12)],\n",
+       "[sigma(n_21), sigma(n_22)],\n",
+       "[sigma(n_31), sigma(n_32)]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "assert Selem == S.replace(n, vN).replace(sigmaApply, sigmaApply_)\n",
+    "\n",
+    "Selem"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 102,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.536556Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.535058Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.549054Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.550166Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\lambda{\\left(\\left[\\begin{matrix}\\sigma{\\left(n_{11} \\right)} & \\sigma{\\left(n_{12} \\right)}\\\\\\sigma{\\left(n_{21} \\right)} & \\sigma{\\left(n_{22} \\right)}\\\\\\sigma{\\left(n_{31} \\right)} & \\sigma{\\left(n_{32} \\right)}\\end{matrix}\\right] \\right)}$"
+      ],
+      "text/plain": [
+       "lambda(Matrix([\n",
+       "[sigma(n_11), sigma(n_12)],\n",
+       "[sigma(n_21), sigma(n_22)],\n",
+       "[sigma(n_31), sigma(n_32)]]))"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "L.replace(n, vN).replace(sigmaApply, sigmaApply_)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 103,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.555145Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.553660Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.559073Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.560112Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [],
+   "source": [
+    "#L.replace(n, vN).replace(sigmaApply, sigmaApply_).diff(Nelem[0,0])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 104,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.568945Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.563255Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.579996Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.581011Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\sigma{\\left(n_{11} \\right)} + \\sigma{\\left(n_{12} \\right)} + \\sigma{\\left(n_{21} \\right)} + \\sigma{\\left(n_{22} \\right)} + \\sigma{\\left(n_{31} \\right)} + \\sigma{\\left(n_{32} \\right)}$"
+      ],
+      "text/plain": [
+       "sigma(n_11) + sigma(n_12) + sigma(n_21) + sigma(n_22) + sigma(n_31) + sigma(n_32)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Lsum = L.replace(n, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)\n",
+    "Lsum"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 105,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.585827Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.584346Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.609010Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.610067Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}\\frac{d}{d n_{11}} \\sigma{\\left(n_{11} \\right)} & \\frac{d}{d n_{12}} \\sigma{\\left(n_{12} \\right)}\\\\\\frac{d}{d n_{21}} \\sigma{\\left(n_{21} \\right)} & \\frac{d}{d n_{22}} \\sigma{\\left(n_{22} \\right)}\\\\\\frac{d}{d n_{31}} \\sigma{\\left(n_{31} \\right)} & \\frac{d}{d n_{32}} \\sigma{\\left(n_{32} \\right)}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[Derivative(sigma(n_11), n_11), Derivative(sigma(n_12), n_12)],\n",
+       "[Derivative(sigma(n_21), n_21), Derivative(sigma(n_22), n_22)],\n",
+       "[Derivative(sigma(n_31), n_31), Derivative(sigma(n_32), n_32)]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Lsum.diff(Nelem)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 106,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.614673Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.613182Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.658916Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.659999Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\sigma{\\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \\right)} + \\sigma{\\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \\right)} + \\sigma{\\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \\right)} + \\sigma{\\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \\right)} + \\sigma{\\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \\right)} + \\sigma{\\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \\right)}$"
+      ],
+      "text/plain": [
+       "sigma(w_11*x_11 + w_21*x_12 + w_31*x_13) + sigma(w_11*x_21 + w_21*x_22 + w_31*x_23) + sigma(w_11*x_31 + w_21*x_32 + w_31*x_33) + sigma(w_12*x_11 + w_22*x_12 + w_32*x_13) + sigma(w_12*x_21 + w_22*x_22 + w_32*x_23) + sigma(w_12*x_31 + w_22*x_32 + w_32*x_33)"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Lsum.subs(elemToSpec)#.diff(X[2,1])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 107,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.664828Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.663404Z",
+     "iopub.status.idle": "2020-09-28T10:54:08.920166Z",
+     "shell.execute_reply": "2020-09-28T10:54:08.921233Z"
+    },
+    "lines_to_next_cell": 0,
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}w_{11} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} + w_{12} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }} & w_{21} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} + w_{22} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }} & w_{31} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} + w_{32} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}\\\\w_{11} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} }} + w_{12} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} }} & w_{21} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} }} + w_{22} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} }} & w_{31} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} }} + w_{32} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} }}\\\\w_{11} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} }} + w_{12} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }} & w_{21} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} }} + w_{22} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }} & w_{31} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} }} + w_{32} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[w_11*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_11*x_11 + w_21*x_12 + w_31*x_13) + w_12*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_12*x_11 + w_22*x_12 + w_32*x_13), w_21*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_11*x_11 + w_21*x_12 + w_31*x_13) + w_22*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_12*x_11 + w_22*x_12 + w_32*x_13), w_31*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_11*x_11 + w_21*x_12 + w_31*x_13) + w_32*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_12*x_11 + w_22*x_12 + w_32*x_13)],\n",
+       "[w_11*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_11*x_21 + w_21*x_22 + w_31*x_23) + w_12*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_12*x_21 + w_22*x_22 + w_32*x_23), w_21*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_11*x_21 + w_21*x_22 + w_31*x_23) + w_22*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_12*x_21 + w_22*x_22 + w_32*x_23), w_31*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_11*x_21 + w_21*x_22 + w_31*x_23) + w_32*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_12*x_21 + w_22*x_22 + w_32*x_23)],\n",
+       "[w_11*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_11*x_31 + w_21*x_32 + w_31*x_33) + w_12*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_12*x_31 + w_22*x_32 + w_32*x_33), w_21*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_11*x_31 + w_21*x_32 + w_31*x_33) + w_22*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_12*x_31 + w_22*x_32 + w_32*x_33), w_31*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_11*x_31 + w_21*x_32 + w_31*x_33) + w_32*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, w_12*x_31 + w_22*x_32 + w_32*x_33)]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Lsum.subs(elemToSpec).diff(X)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 108,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-09-28T10:54:08.926065Z",
+     "iopub.status.busy": "2020-09-28T10:54:08.924491Z",
+     "iopub.status.idle": "2020-09-28T10:54:09.296745Z",
+     "shell.execute_reply": "2020-09-28T10:54:09.297935Z"
+    },
+    "title": "codecell"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/latex": [
+       "$\\displaystyle \\left[\\begin{matrix}w_{11} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{11} }} + w_{12} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{12} }} & w_{21} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{11} }} + w_{22} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{12} }} & w_{31} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{11} }} + w_{32} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{12} }}\\\\w_{11} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{21} }} + w_{12} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{22} }} & w_{21} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{21} }} + w_{22} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{22} }} & w_{31} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{21} }} + w_{32} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{22} }}\\\\w_{11} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{31} }} + w_{12} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{32} }} & w_{21} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{31} }} + w_{22} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{32} }} & w_{31} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{31} }} + w_{32} \\left. \\frac{d}{d \\xi_{1}} \\sigma{\\left(\\xi_{1} \\right)} \\right|_{\\substack{ \\xi_{1}=n_{32} }}\\end{matrix}\\right]$"
+      ],
+      "text/plain": [
+       "Matrix([\n",
+       "[w_11*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_11) + w_12*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_12), w_21*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_11) + w_22*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_12), w_31*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_11) + w_32*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_12)],\n",
+       "[w_11*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_21) + w_12*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_22), w_21*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_21) + w_22*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_22), w_31*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_21) + w_32*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_22)],\n",
+       "[w_11*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_31) + w_12*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_32), w_21*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_31) + w_22*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_32), w_31*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_31) + w_32*Subs(Derivative(sigma(_xi_1), _xi_1), _xi_1, n_32)]])"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "\n",
+    "specToElemD = {v : k for k, v in elemToSpecD.items()}\n",
+    "\n",
+    "Lsum.subs(elemToSpecD).diff(X).subs(specToElemD)"
+   ]
+  }
+ ],
+ "metadata": {
+  "jupytext": {
+   "cell_metadata_filter": "title,-all"
+  },
+  "kernelspec": {
+   "display_name": "pymatrix_env",
+   "language": "python",
+   "name": "pymatrix_env"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.8"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}

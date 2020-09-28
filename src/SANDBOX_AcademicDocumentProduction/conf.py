@@ -34,8 +34,11 @@ release = '1'
 #]
 ### COPIED FROM: https://hyp.is/SJhGOADREeuiFCPvGIa0dQ/nbsphinx.readthedocs.io/en/0.7.1/usage.html
 extensions = [
+    'sphinx.ext.autodoc',
     'nbsphinx',
     'sphinx.ext.mathjax',
+    'sphinx.ext.githubpages',
+    'IPython.sphinxext.ipython_console_highlighting'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -45,6 +48,14 @@ templates_path = ['_templates']
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+
+
+
+
+
+source_suffix = ['.rst', '.ipynb']
+
+
 
 
 # -- Options for HTML output -------------------------------------------------

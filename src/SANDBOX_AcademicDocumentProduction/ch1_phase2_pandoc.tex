@@ -1,0 +1,964 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{fancyvrb,newverbs,xcolor} % for code highlighting
+
+
+
+% OLD: 
+% \usepackage[top=2cm, bottom=1.5cm, left=2cm, right=2cm]{geometry} % for page margins
+
+% NEW Margin setting for guessing larger code cell outputs (a2 paper is wider).
+\usepackage[left=2cm, % left margin
+right=2cm,% right margin
+top=3cm, % top margin
+bottom=3cm,% bottom margin
+a2paper% other options: a0paper, a1paper, a2paper, a3paper, a4paper, a5paper, a6paper, and many more.
+]{geometry}
+
+\usepackage[english]{babel}
+% Ana: adding graphics package for images
+\usepackage{graphics}
+\usepackage{graphicx}
+
+% change background color for inline code in
+% markdown files. The following code does not work well for
+% long text as the text will exceed the page boundary
+%\definecolor{bgcolor}{HTML}{E0E0E0}
+%\let\oldtexttt\texttt
+
+% \renewcommand{\texttt}[1]{
+% \colorbox{bgcolor}{\oldtexttt{#1}}
+% }
+
+
+%% Setting pythong ??? -----------------------------------------------------
+%default_block_language: "lexer"
+%default_inline_language: "lexer"
+
+
+%% color and other settings for hyperref package -----------------------------
+\hypersetup{
+    bookmarksopen=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=RoyalBlue,
+}
+
+% Font Setup  ---------------------------------------------------------
+\usepackage{unicode-math} % load 'fontspec' automatically
+%\setmainfont{GFS Artemisia}
+\setmainfont{Libertinus Sans} 
+%\setmainfont{Palatino}
+%\setmainfont{Alegreya}
+\setmathfont{TeX Gyre Schola Math}
+%\setmathfont{Junicode}
+
+
+% Code syntax highlighting ---------------------------------------------------
+
+% OLD PART -----------------
+%\usepackage{minted}
+%\usemintedstyle{manni}
+\setmonofont{Inconsolata}
+%\setmonofont{Consolas}
+% ---------------------------
+
+
+% Preliminary macro things for code (snatched from macros in REPORT):  ------
+\newcommand\CodeFontSizeSmall{\fontsize{9pt}{9pt}\selectfont}
+
+\definecolor{originalmannibg}{HTML}{f2f2ff}
+\colorlet{BasePurple}{originalmannibg!90}
+\newcommand{\lighten}[3]{% Reference Color, Percentage, New Color Name
+    \colorlet{#3}{#1!#2!white}
+}
+\lighten{BasePurple}{50}{mannibg}
+
+% Code things --------------------
+\usepackage{minted}
+\usepackage{verbatim}  % has commenting
+
+
+
+\usemintedstyle{manni}
+
+%\setmonofont{Inconsolata} % setting code font
+\setmonofont{Fira Mono}
+
+% General code environment, used like: \begin{code}{python} .... \end{code}
+% NOTE: this is how to nest two environments together: 
+%\newenvironment{code}[2][]
+% {\vspace{-3pt}%
+% \VerbatimEnvironment
+%  \begin{adjustwidth}{30pt}{30pt}
+%  \begin{minted}[
+%    fontsize=\CodeFontSizeSmall,
+%    breaklines, mathescape,
+%    style=manni, bgcolor=mannibg,  #1]{#2}}
+% {\end{minted}\end{adjustwidth} 
+%     \vspace{-10pt}
+% }
+ 
+% TODO: test if possible to do \renewenvironment to renew the minted environment and just include this logic below whenever calling \begin{minted}[]{python} ... 
+ 
+% Python code environment, used like \begin{pythonCode} ... \end{pythonCode}
+\newenvironment{pythonCode}
+ {\vspace{-3pt}%
+ \VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines, mathescape,
+    style=manni, bgcolor=mannibg]{python}}
+ {\end{minted}\end{adjustwidth} 
+     \vspace{-10pt}
+ }
+
+
+
+% General code output environment
+\newenvironment{outputCode}
+ {\VerbatimEnvironment
+  \begin{adjustwidth}{30pt}{30pt}
+  \begin{minted}[
+    fontsize=\CodeFontSizeSmall,
+    breaklines]{text}}
+ {\end{minted}\end{adjustwidth}}
+
+
+% Creating inline code font (equivalent to backticks in jupyter notebooks)
+% Must use like: \pythoninline{...text here ... }
+\newmintinline{python}{python3, fontsize=\CodeFontSizeSmall, bgcolor=mannibg}
+
+%\newenvironment{mintInline}[1][]{\mintinline{latex}{#1}}{}
+%\DeclareTextFontCommand{\mint}{\mintInline}
+
+
+\ifluatex
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\author{}
+\date{}
+
+\begin{document}
+
+\begin{minted}[]{python}
+from sympy.interactive import init_printing
+from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Derivative, diff, symbols
+from sympy import var
+from sympy.abc import x, i, j, a, b
+
+
+init_printing(pretty_print=True, wrap_line=True, num_columns=60)
+\end{minted}
+
+\begin{minted}[]{python}
+def myvar(letter: str, i: int, j: int) -> Symbol:
+    letter_ij = Symbol('{}_{}{}'.format(letter, i+1, j+1), is_commutative=True)
+    return letter_ij
+
+
+n,m,p = 3,3,2
+
+X = Matrix(n, m, lambda i,j : myvar('x', i, j)); X
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+W = Matrix(m, p, lambda i,j : myvar('w', i, j)); W
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}w_{11} & w_{12}\\w_{21} & w_{22}\\w_{31} & w_{32}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+A = MatrixSymbol('X',3,3); Matrix(A)
+B = MatrixSymbol('W',3,2)
+\end{minted}
+
+\begin{minted}[]{python}
+
+\end{minted}
+
+\begin{minted}[]{python}
+
+\end{minted}
+
+\begin{minted}[]{python}
+v = lambda a,b: a*b
+
+vL = Lambda((a,b), a*b)
+
+n = Function('v') #, Lambda((a,b), a*b))
+
+vN = lambda mat1, mat2: Matrix(mat1.shape[0], mat2.shape[1], lambda i, j: Symbol("n_{}{}".format(i+1, j+1))); vN
+
+Nelem = vN(X, W); Nelem
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+n(X,W)
+\end{minted}
+
+\(\displaystyle v{\left(\left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right],\left[\begin{matrix}w_{11} & w_{12}\\w_{21} & w_{22}\\w_{31} & w_{32}\end{matrix}\right] \right)}\)
+
+\begin{minted}[]{python}
+n(A,B)
+\end{minted}
+
+\(\displaystyle v{\left(X,W \right)}\)
+
+\begin{minted}[]{python}
+n(X,W).replace(n, v) # replace works when v = python lambda
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+n(X,W).subs({n: vL}) # subs works when v = sympy lambda
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+n(X,W).replace(n, vL)
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+n(X,W).subs({n: v})# subs() doesn't work when v is python lambda
+\end{minted}
+
+\(\displaystyle v{\left(\left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right],\left[\begin{matrix}w_{11} & w_{12}\\w_{21} & w_{22}\\w_{31} & w_{32}\end{matrix}\right] \right)}\)
+
+\begin{minted}[]{python}
+Matrix(n(A,B).subs({n: vL}))
+\end{minted}
+
+\(\displaystyle \left[\begin{array}{cc}W_{0, 0} X_{0, 0} + W_{1, 0} X_{0, 1} + W_{2, 0} X_{0, 2} & W_{0, 1} X_{0, 0} + W_{1, 1} X_{0, 1} + W_{2, 1} X_{0, 2}\\W_{0, 0} X_{1, 0} + W_{1, 0} X_{1, 1} + W_{2, 0} X_{1, 2} & W_{0, 1} X_{1, 0} + W_{1, 1} X_{1, 1} + W_{2, 1} X_{1, 2}\\W_{0, 0} X_{2, 0} + W_{1, 0} X_{2, 1} + W_{2, 0} X_{2, 2} & W_{0, 1} X_{2, 0} + W_{1, 1} X_{2, 1} + W_{2, 1} X_{2, 2}\end{array}\right]\)
+
+\begin{minted}[]{python}
+#N = v(X, W); N
+N = n(A,B); N
+\end{minted}
+
+\(\displaystyle v{\left(X,W \right)}\)
+
+\begin{minted}[]{python}
+N.replace(n, v)
+\end{minted}
+
+\(\displaystyle X W\)
+
+\begin{minted}[]{python}
+N.replace(n, v).subs({A: X, B:W}) # replacing ariable values after doing function doesn't make the function apply directly on the values (matrices), need to replace values before the function is replaced, so that the function can act on them while they are given/alive.
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right] \left[\begin{matrix}w_{11} & w_{12}\\w_{21} & w_{22}\\w_{31} & w_{32}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+N.subs({n: vL, A:X, B:W})
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+Nspec = N.subs({A:X, B:W}).replace(n, v); Nspec
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+
+\end{minted}
+
+\begin{minted}[]{python}
+N.diff(N)
+\end{minted}
+
+\(\displaystyle 1\)
+
+\begin{minted}[]{python}
+N.diff(X)
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}0 & 0 & 0\\0 & 0 & 0\\0 & 0 & 0\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+
+\end{minted}
+
+\begin{minted}[]{python}
+
+
+
+\end{minted}
+
+\begin{minted}[]{python}
+# way 2 of declaring S (better way)
+sigma = Function('sigma')
+
+sigmaApply = Function("sigma_apply") #lambda matrix:  matrix.applyfunc(sigma)
+
+sigmaApply_ = lambda matrix: matrix.applyfunc(sigma)
+
+sigmaApply(A)
+\end{minted}
+
+\(\displaystyle \sigma_{apply}{\left(X \right)}\)
+
+\begin{minted}[]{python}
+sigmaApply(A).subs({A: X})
+\end{minted}
+
+\(\displaystyle \sigma_{apply}{\left(\left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right] \right)}\)
+
+\begin{minted}[]{python}
+sigmaApply_(A)
+\end{minted}
+
+\(\displaystyle {\left( d \mapsto \sigma{\left(d \right)} \right)}_{\circ}\left({X}\right)\)
+
+\begin{minted}[]{python}
+sigmaApply(A).subs({A: X}).replace(sigmaApply, sigmaApply_) # NOTE: subs of functions doesn't work, replace actually evaluates the replaced function!
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}\sigma{\left(x_{11} \right)} & \sigma{\left(x_{12} \right)} & \sigma{\left(x_{13} \right)}\\\sigma{\left(x_{21} \right)} & \sigma{\left(x_{22} \right)} & \sigma{\left(x_{23} \right)}\\\sigma{\left(x_{31} \right)} & \sigma{\left(x_{32} \right)} & \sigma{\left(x_{33} \right)}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+S = sigmaApply(N); S
+\end{minted}
+
+\(\displaystyle \sigma_{apply}{\left(v{\left(X,W \right)} \right)}\)
+
+\begin{minted}[]{python}
+Derivative(S, S)
+\end{minted}
+
+\(\displaystyle \frac{\partial}{\partial \sigma_{apply}{\left(v{\left(X,W \right)} \right)}} \sigma_{apply}{\left(v{\left(X,W \right)} \right)}\)
+
+\begin{minted}[]{python}
+Derivative(S, S).doit()
+\end{minted}
+
+\(\displaystyle 1\)
+
+\begin{minted}[]{python}
+Derivative(S, n(A,B)).doit()
+\end{minted}
+
+\(\displaystyle \frac{\partial}{\partial v{\left(X,W \right)}} \sigma_{apply}{\left(v{\left(X,W \right)} \right)}\)
+
+\begin{minted}[]{python}
+#lambd = Function("lambda")
+#Lagain = lambd(sigmaApply(n(A))); Lagain
+
+
+
+# diff(Lagain, A) # never execute
+#
+\end{minted}
+
+\begin{minted}[]{python}
+S.replace(A,X).replace(B,W)
+\end{minted}
+
+\(\displaystyle \sigma_{apply}{\left(v{\left(\left[\begin{matrix}x_{11} & x_{12} & x_{13}\\x_{21} & x_{22} & x_{23}\\x_{31} & x_{32} & x_{33}\end{matrix}\right],\left[\begin{matrix}w_{11} & w_{12}\\w_{21} & w_{22}\\w_{31} & w_{32}\end{matrix}\right] \right)} \right)}\)
+
+\begin{minted}[]{python}
+S.replace(n, v)
+\end{minted}
+
+\(\displaystyle \sigma_{apply}{\left(X W \right)}\)
+
+\begin{minted}[]{python}
+S.subs({A:X, B:W}).replace(n, v)
+\end{minted}
+
+\(\displaystyle \sigma_{apply}{\left(\left[\begin{matrix}w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right] \right)}\)
+
+\begin{minted}[]{python}
+Sspec = S.subs({A:X, B:W}).replace(n, v).replace(sigmaApply, sigmaApply_)
+Sspec
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}\sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} & \sigma{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\\sigma{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} & \sigma{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\\sigma{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} & \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+S.replace(n, vN) #.replace(sigmaApply, sigmaApply_)
+\end{minted}
+
+\(\displaystyle \sigma_{apply}{\left(\left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right] \right)}\)
+
+\begin{minted}[]{python}
+Selem = S.replace(n, vN).replace(sigmaApply, sigmaApply_); Selem
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+import itertools
+
+elemToSpecD = dict(itertools.chain(*[[(Nelem[i, j], Nspec[i, j]) for j in range(2)] for i in range(3)]))
+
+elemToSpec = list(elemToSpecD.items())
+
+Matrix(elemToSpec)
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}n_{11} & w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13}\\n_{12} & w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\\n_{21} & w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23}\\n_{22} & w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23}\\n_{31} & w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33}\\n_{32} & w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+elemToSpecFuncD = dict(itertools.chain(*[[(Nelem[i, j], Function("n_{}{}".format(i + 1, j + 1))(Nspec[i, j])) for j in range(2)] for i in range(3)]))
+
+elemToSpecFunc = list(elemToSpecFuncD.items())
+
+Matrix(elemToSpecFunc)
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}n_{11} & \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}\\n_{12} & \operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\n_{21} & \operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)}\\n_{22} & \operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\n_{31} & \operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)}\\n_{32} & \operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+elemToSpecFuncArgsD = dict(itertools.chain(*[[(Nelem[i, j], Function("n_{}{}".format(i + 1, j + 1))(*X,*W)) for j in range(2)] for i in range(3)]))
+
+elemToSpecFuncArgs = list(elemToSpecFuncArgsD.items())
+
+Matrix(elemToSpecFuncArgs)
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}n_{11} & \operatorname{n_{11}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{12} & \operatorname{n_{12}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{21} & \operatorname{n_{21}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{22} & \operatorname{n_{22}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{31} & \operatorname{n_{31}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\\n_{32} & \operatorname{n_{32}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+Selem
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+Selem.subs(elemToSpecD)
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}\sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} & \sigma{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\\sigma{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} & \sigma{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\\sigma{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} & \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+Selem[0,1].diff(Nelem[0,1])
+\end{minted}
+
+\(\displaystyle \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)}\)
+
+\begin{minted}[]{python}
+Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]})
+#Selem[0,1].diff(Nelem[0,1]).subs(dict([{Nelem[0,1] : Nspec[0,1]}]))
+\end{minted}
+
+\(\displaystyle \left. \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)} \right|_{\substack{ n_{12}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}\)
+
+\begin{minted}[]{python}
+Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]}).subs({Nspec[0,1] : 23})
+\end{minted}
+
+\(\displaystyle \left. \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)} \right|_{\substack{ n_{12}=23 }}\)
+
+\begin{minted}[]{python}
+Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]}).replace(sigma, lambda x: 8*x**3)
+\end{minted}
+
+\(\displaystyle \left. \frac{d}{d n_{12}} 8 n_{12}^{3} \right|_{\substack{ n_{12}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}\)
+
+\begin{minted}[]{python}
+Selem[0,1].diff(Nelem[0,1]).replace(sigma, lambda x: 8*x**3)
+\end{minted}
+
+\(\displaystyle \frac{d}{d n_{12}} 8 n_{12}^{3}\)
+
+\begin{minted}[]{python}
+Selem[0,1].diff(Nelem[0,1]).replace(sigma, lambda x: 8*x**3).doit()
+\end{minted}
+
+\(\displaystyle 24 n_{12}^{2}\)
+
+\begin{minted}[]{python}
+# ### GOT IT: can replace now with expression and do derivative with respect to that expression.
+Selem[0,1].diff(Nelem[0,1]).subs({Nelem[0,1] : Nspec[0,1]}).replace(sigma, lambda x: 8*x**3).doit()
+\end{minted}
+
+\(\displaystyle 24 \left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13}\right)^{2}\)
+
+\begin{minted}[]{python}
+Selem[0,1].subs({Nelem[0,1] : Nspec[0,1]}).diff(X[0,1])#.subs({Nelem[0,1] : Nspec[0,1]})
+\end{minted}
+
+\(\displaystyle w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}\)
+
+\begin{minted}[]{python}
+Selem
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+nt = Nelem.subs(elemToSpecFunc); nt
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} & \operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\\operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} & \operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\\operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} & \operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+st = Selem.subs(elemToSpecFunc); st
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}\sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} & \sigma{\left(\operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)} \right)}\\\sigma{\left(\operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} \right)} & \sigma{\left(\operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)} \right)}\\\sigma{\left(\operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} \right)} & \sigma{\left(\operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)} \right)}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+st.diff(nt)
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}\left[\begin{matrix}\frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} & 0\\0 & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & \frac{\partial}{\partial \operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}} \sigma{\left(\operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)} \right)}\\0 & 0\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\\frac{\partial}{\partial \operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)}} \sigma{\left(\operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} \right)} & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & \frac{\partial}{\partial \operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}} \sigma{\left(\operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)} \right)}\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\0 & 0\\\frac{\partial}{\partial \operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)}} \sigma{\left(\operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} \right)} & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & 0\\0 & \frac{\partial}{\partial \operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}} \sigma{\left(\operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)} \right)}\end{matrix}\right]\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+st[0,0].diff(st[0,0].args[0])
+\end{minted}
+
+\(\displaystyle \frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)}\)
+
+\begin{minted}[]{python}
+st[0,0].diff(X[0,0])
+\end{minted}
+
+\(\displaystyle w_{11} \frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} \left. \frac{d}{d \xi_{1}} \operatorname{n_{11}}{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}\)
+
+\begin{minted}[]{python}
+st[0,0].diff(st[1,0].args[0])
+\end{minted}
+
+\(\displaystyle 0\)
+
+\begin{minted}[]{python}
+Selem.diff(Nelem)
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}\left[\begin{matrix}\frac{d}{d n_{11}} \sigma{\left(n_{11} \right)} & 0\\0 & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)}\\0 & 0\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\\frac{d}{d n_{21}} \sigma{\left(n_{21} \right)} & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & \frac{d}{d n_{22}} \sigma{\left(n_{22} \right)}\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\0 & 0\\\frac{d}{d n_{31}} \sigma{\left(n_{31} \right)} & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & 0\\0 & \frac{d}{d n_{32}} \sigma{\left(n_{32} \right)}\end{matrix}\right]\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+Selem.diff(Nelem).subs(elemToSpecFunc)
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}\left[\begin{matrix}\frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} & 0\\0 & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & \frac{\partial}{\partial \operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}} \sigma{\left(\operatorname{n_{12}}{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)} \right)}\\0 & 0\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\\frac{\partial}{\partial \operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)}} \sigma{\left(\operatorname{n_{21}}{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} \right)} & 0\\0 & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & \frac{\partial}{\partial \operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}} \sigma{\left(\operatorname{n_{22}}{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)} \right)}\\0 & 0\end{matrix}\right]\\\left[\begin{matrix}0 & 0\\0 & 0\\\frac{\partial}{\partial \operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)}} \sigma{\left(\operatorname{n_{31}}{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} \right)} & 0\end{matrix}\right] & \left[\begin{matrix}0 & 0\\0 & 0\\0 & \frac{\partial}{\partial \operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}} \sigma{\left(\operatorname{n_{32}}{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)} \right)}\end{matrix}\right]\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+# CAN even replace elements after have done an operation on them!!! replacing n_21 * 2 with the number 4.
+Sspec.subs({Nspec[0, 0]: 3}).replace(sigma, lambda x: 2 * x).replace(Nspec[2, 1] * 2, 4)
+
+
+
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}6 & 2 w_{12} x_{11} + 2 w_{22} x_{12} + 2 w_{32} x_{13}\\2 w_{11} x_{21} + 2 w_{21} x_{22} + 2 w_{31} x_{23} & 2 w_{12} x_{21} + 2 w_{22} x_{22} + 2 w_{32} x_{23}\\2 w_{11} x_{31} + 2 w_{21} x_{32} + 2 w_{31} x_{33} & 4\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+lambd = Function("lambda")
+lambd_ = lambda matrix : sum(matrix)
+
+
+vN(X, W)
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+vN(A, B)
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+L = lambd(S); L
+\end{minted}
+
+\(\displaystyle \lambda{\left(\sigma_{apply}{\left(v{\left(X,W \right)} \right)} \right)}\)
+
+\begin{minted}[]{python}
+Nelem
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+L.replace(n, vN)
+\end{minted}
+
+\(\displaystyle \lambda{\left(\sigma_{apply}{\left(\left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right] \right)} \right)}\)
+
+\begin{minted}[]{python}
+L.replace(n, vN).replace(sigmaApply, sigmaApply_)
+\end{minted}
+
+\(\displaystyle \lambda{\left(\left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right] \right)}\)
+
+\begin{minted}[]{python}
+L.replace(n, v)
+\end{minted}
+
+\(\displaystyle \lambda{\left(\sigma_{apply}{\left(X W \right)} \right)}\)
+
+\begin{minted}[]{python}
+
+L.replace(n, v).replace(sigmaApply, sigmaApply_)
+\end{minted}
+
+\(\displaystyle \lambda{\left({\left( d \mapsto \sigma{\left(d \right)} \right)}_{\circ}\left({X W}\right) \right)}\)
+
+\begin{minted}[]{python}
+L.subs({A:X, B:W}).replace(n, vL).replace(sigmaApply, sigmaApply_)
+\end{minted}
+
+\(\displaystyle \lambda{\left(\left[\begin{matrix}\sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} & \sigma{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)}\\\sigma{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} & \sigma{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)}\\\sigma{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} & \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\end{matrix}\right] \right)}\)
+
+\begin{minted}[]{python}
+L.replace(n, vN)
+\end{minted}
+
+\(\displaystyle \lambda{\left(\sigma_{apply}{\left(\left[\begin{matrix}n_{11} & n_{12}\\n_{21} & n_{22}\\n_{31} & n_{32}\end{matrix}\right] \right)} \right)}\)
+
+\begin{minted}[]{python}
+L.replace(n, vN).subs({A:X, B:W}).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)
+
+
+
+
+
+
+\end{minted}
+
+\(\displaystyle \sigma{\left(n_{11} \right)} + \sigma{\left(n_{12} \right)} + \sigma{\left(n_{21} \right)} + \sigma{\left(n_{22} \right)} + \sigma{\left(n_{31} \right)} + \sigma{\left(n_{32} \right)}\)
+
+\begin{minted}[]{python}
+from sympy import symbols, Derivative
+
+x, y, r, t = symbols('x y r t') # r (radius), t (angle theta)
+f, g, h = symbols('f g h', cls=Function)
+h = g(f(x))
+
+Derivative(h, f(x)).doit()
+\end{minted}
+
+\(\displaystyle \frac{d}{d f{\left(x \right)}} g{\left(f{\left(x \right)} \right)}\)
+
+\begin{minted}[]{python}
+# Never do this gives recursion ERROR (max depth exceeded)
+# h = g(f(A))
+# Derivative(h, A).doit()
+\end{minted}
+
+\begin{minted}[]{python}
+
+\end{minted}
+
+\begin{minted}[]{python}
+from sympy.abc import a, b
+
+Llower = lambd(sigmaApply(n(a, b)))
+Llower
+\end{minted}
+
+\(\displaystyle \lambda{\left(\sigma_{apply}{\left(v{\left(a,b \right)} \right)} \right)}\)
+
+\begin{minted}[]{python}
+Derivative(Llower, a).doit()
+\end{minted}
+
+\(\displaystyle \frac{\partial}{\partial \sigma_{apply}{\left(v{\left(a,b \right)} \right)}} \lambda{\left(\sigma_{apply}{\left(v{\left(a,b \right)} \right)} \right)} \frac{\partial}{\partial v{\left(a,b \right)}} \sigma_{apply}{\left(v{\left(a,b \right)} \right)} \frac{\partial}{\partial a} v{\left(a,b \right)}\)
+
+\begin{minted}[]{python}
+
+\end{minted}
+
+\begin{minted}[]{python}
+# ### WAY 1: of substituting to differentiate with respect to expression:
+n_ij = Function('n_ij')
+n_ij(A,B) # (N[0,0]); n_ij
+\end{minted}
+
+\(\displaystyle \operatorname{n_{ij}}{\left(X,W \right)}\)
+
+\begin{minted}[]{python}
+n_ij(A,B).args
+\end{minted}
+
+\(\displaystyle \left( X, \  W\right)\)
+
+\begin{minted}[]{python}
+# sigma(n_ij).diff(n_ij).replace(n_ij, N[0,0]) # ERROR cannot deriv wi.r.t to the expression w11*x11 + ...
+
+sigma(n_ij(A,B)).diff(n_ij(A,B))
+\end{minted}
+
+\(\displaystyle \frac{\partial}{\partial \operatorname{n_{ij}}{\left(X,W \right)}} \sigma{\left(\operatorname{n_{ij}}{\left(X,W \right)} \right)}\)
+
+\begin{minted}[]{python}
+sigma(n_ij(*X,*W)).diff(X[0,0])
+\end{minted}
+
+\(\displaystyle \frac{\partial}{\partial x_{11}} \operatorname{n_{ij}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)} \frac{\partial}{\partial \operatorname{n_{ij}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)}} \sigma{\left(\operatorname{n_{ij}}{\left(x_{11},x_{12},x_{13},x_{21},x_{22},x_{23},x_{31},x_{32},x_{33},w_{11},w_{12},w_{21},w_{22},w_{31},w_{32} \right)} \right)}\)
+
+\begin{minted}[]{python}
+nab_ij = n_ij(A,B)
+sigma(nab_ij).diff(nab_ij)#.subs({nab_ij : Nspec[0, 0]})
+\end{minted}
+
+\(\displaystyle \frac{\partial}{\partial \operatorname{n_{ij}}{\left(X,W \right)}} \sigma{\left(\operatorname{n_{ij}}{\left(X,W \right)} \right)}\)
+
+\begin{minted}[]{python}
+sigma(nab_ij).diff(nab_ij).subs({nab_ij : Nspec[2, 1]})
+\end{minted}
+
+\(\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}\)
+
+\begin{minted}[]{python}
+sigma(nab_ij).diff(nab_ij).subs({nab_ij : Nspec[2,1]}).subs({X[2,1]:77777})
+\end{minted}
+
+\(\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=w_{12} x_{31} + 77777 w_{22} + w_{32} x_{33} }}\)
+
+\begin{minted}[]{python}
+sigma(nab_ij).diff(nab_ij).subs({nab_ij : 23}) # ERROR if using replace() since it says can't calc derivs w.r.t to the x_11*w_11 + ...
+\end{minted}
+
+\(\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=23 }}\)
+
+\begin{minted}[]{python}
+sigma(nab_ij).diff(nab_ij).subs({nab_ij : Nspec[2,1]}).doit()
+\end{minted}
+
+\(\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}\)
+
+\begin{minted}[]{python}
+sigma(nab_ij).subs({nab_ij : Nspec[2,1]})#.diff(X[2,1])
+\end{minted}
+
+\(\displaystyle \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\)
+
+\begin{minted}[]{python}
+# Substituting the value of the function n_ij first, and THEN differentiating with respect to something in that substitution. (X_21)
+sigma(nab_ij).subs({nab_ij : Nspec[2,1]}).diff(X[2,1])
+\end{minted}
+
+\(\displaystyle w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}\)
+
+\begin{minted}[]{python}
+Selem[2,1].subs({Nelem[2,1] : Nspec[2,1]}).diff(X[2,1])
+
+
+
+\end{minted}
+
+\(\displaystyle w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}\)
+
+\begin{minted}[]{python}
+# ### WAY 2:
+n_11 = Function('n_11')(Nspec[0, 0]); n_11
+\end{minted}
+
+\(\displaystyle \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}\)
+
+\begin{minted}[]{python}
+sigma(n_11)
+\end{minted}
+
+\(\displaystyle \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)}\)
+
+\begin{minted}[]{python}
+assert Nspec[0,0] == n_11.args[0]
+
+sigma(n_11).subs({n_11 : n_11.args[0]})
+\end{minted}
+
+\(\displaystyle \sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}\)
+
+\begin{minted}[]{python}
+sigma(n_11).diff(n_11) #.replace(n_ij, n_ij.args[0])
+\end{minted}
+
+\(\displaystyle \frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)}\)
+
+\begin{minted}[]{python}
+sigma(n_11).diff(n_11).subs({n_11 : n_11.args[0]}).subs({X[0,0]:77777})
+\end{minted}
+
+\(\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=77777 w_{11} + w_{21} x_{12} + w_{31} x_{13} }}\)
+
+\begin{minted}[]{python}
+sigma(n_11).diff(n_11).subs({n_11 : n_11.args[0]}).replace(n_11.args[0], 23) # same as subs in this case
+\end{minted}
+
+\(\displaystyle \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=23 }}\)
+
+\begin{minted}[]{python}
+sigma(n_11).diff(X[0,0])
+\end{minted}
+
+\(\displaystyle w_{11} \frac{\partial}{\partial \operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)}} \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)} \left. \frac{d}{d \xi_{1}} \operatorname{n_{11}}{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}\)
+
+\begin{minted}[]{python}
+id = Lambda(x, x)
+
+sigma(n_11).diff(X[0,0]).subs({n_11 : id})
+\end{minted}
+
+\(\displaystyle w_{11} \left. \frac{d}{d \xi_{1}} \operatorname{n_{11}}{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=\left( x \mapsto x \right) }}\)
+
+\begin{minted}[]{python}
+# NOTE: so I don't think WAY 2 is correct because here it doesn't simplify the derivative d n11 / d eps11, since this should equal 1 because now n11 = eps11. Correct one is below (repeated from above)
+sigma(n_11).diff(X[0,0]).subs({n_11 : Nspec[0,0]})
+\end{minted}
+
+\(\displaystyle w_{11} \left. \frac{d}{d \xi_{1}} \operatorname{n_{11}}{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} \left. \frac{d}{d \xi} \sigma{\left(\xi \right)} \right|_{\substack{ \xi=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}\)
+
+\begin{minted}[]{python}
+# CORRECT WAY 1
+sigma(n_11).subs({n_11 : Nspec[0,0]}).diff(X[0,0])
+\end{minted}
+
+\(\displaystyle w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}\)
+
+\begin{minted}[]{python}
+# CORRECT WAY 2
+
+sigma(nab_ij).subs({nab_ij : Nspec[0,0]}).diff(X[0,0])
+\end{minted}
+
+\(\displaystyle w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }}\)
+
+\begin{minted}[]{python}
+# CORRECT WAY 3
+Selem[2,1].subs({Nelem[2,1] : Nspec[2,1]}).diff(X[2,1])
+\end{minted}
+
+\(\displaystyle w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}\)
+
+\begin{minted}[]{python}
+sigma(n_11) # WAY 1: sigma argument is already hardcoded
+\end{minted}
+
+\(\displaystyle \sigma{\left(\operatorname{n_{11}}{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} \right)}\)
+
+\begin{minted}[]{python}
+sigma(nab_ij) # Way 2: sigma argument is function of matrixsymbol (better than 1)
+\end{minted}
+
+\(\displaystyle \sigma{\left(\operatorname{n_{ij}}{\left(X,W \right)} \right)}\)
+
+\begin{minted}[]{python}
+Selem[2,1] # WAY 3: sigma argument is just symbol and we replace it as function with argument hardcoded only later. (better than 2)
+
+
+
+\end{minted}
+
+\(\displaystyle \sigma{\left(n_{32} \right)}\)
+
+\begin{minted}[]{python}
+L
+\end{minted}
+
+\(\displaystyle \lambda{\left(\sigma_{apply}{\left(v{\left(X,W \right)} \right)} \right)}\)
+
+\begin{minted}[]{python}
+assert Selem == S.replace(n, vN).replace(sigmaApply, sigmaApply_)
+
+Selem
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+L.replace(n, vN).replace(sigmaApply, sigmaApply_)
+\end{minted}
+
+\(\displaystyle \lambda{\left(\left[\begin{matrix}\sigma{\left(n_{11} \right)} & \sigma{\left(n_{12} \right)}\\\sigma{\left(n_{21} \right)} & \sigma{\left(n_{22} \right)}\\\sigma{\left(n_{31} \right)} & \sigma{\left(n_{32} \right)}\end{matrix}\right] \right)}\)
+
+\begin{minted}[]{python}
+#L.replace(n, vN).replace(sigmaApply, sigmaApply_).diff(Nelem[0,0])
+\end{minted}
+
+\begin{minted}[]{python}
+Lsum = L.replace(n, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_)
+Lsum
+\end{minted}
+
+\(\displaystyle \sigma{\left(n_{11} \right)} + \sigma{\left(n_{12} \right)} + \sigma{\left(n_{21} \right)} + \sigma{\left(n_{22} \right)} + \sigma{\left(n_{31} \right)} + \sigma{\left(n_{32} \right)}\)
+
+\begin{minted}[]{python}
+Lsum.diff(Nelem)
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}\frac{d}{d n_{11}} \sigma{\left(n_{11} \right)} & \frac{d}{d n_{12}} \sigma{\left(n_{12} \right)}\\\frac{d}{d n_{21}} \sigma{\left(n_{21} \right)} & \frac{d}{d n_{22}} \sigma{\left(n_{22} \right)}\\\frac{d}{d n_{31}} \sigma{\left(n_{31} \right)} & \frac{d}{d n_{32}} \sigma{\left(n_{32} \right)}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+Lsum.subs(elemToSpec)#.diff(X[2,1])
+\end{minted}
+
+\(\displaystyle \sigma{\left(w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} \right)} + \sigma{\left(w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} \right)} + \sigma{\left(w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} \right)} + \sigma{\left(w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} \right)} + \sigma{\left(w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} \right)} + \sigma{\left(w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} \right)}\)
+
+\begin{minted}[]{python}
+Lsum.subs(elemToSpec).diff(X)
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{11} + w_{21} x_{12} + w_{31} x_{13} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{11} + w_{22} x_{12} + w_{32} x_{13} }}\\w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{21} + w_{21} x_{22} + w_{31} x_{23} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{21} + w_{22} x_{22} + w_{32} x_{23} }}\\w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{11} x_{31} + w_{21} x_{32} + w_{31} x_{33} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=w_{12} x_{31} + w_{22} x_{32} + w_{32} x_{33} }}\end{matrix}\right]\)
+
+\begin{minted}[]{python}
+
+specToElemD = {v : k for k, v in elemToSpecD.items()}
+
+Lsum.subs(elemToSpecD).diff(X).subs(specToElemD)
+\end{minted}
+
+\(\displaystyle \left[\begin{matrix}w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{11} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{12} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{11} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{12} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{11} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{12} }}\\w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{21} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{22} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{21} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{22} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{21} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{22} }}\\w_{11} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{31} }} + w_{12} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{32} }} & w_{21} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{31} }} + w_{22} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{32} }} & w_{31} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{31} }} + w_{32} \left. \frac{d}{d \xi_{1}} \sigma{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}=n_{32} }}\end{matrix}\right]\)
+
+\end{document}
