@@ -1,5 +1,0 @@
-INFO:ipypublish:started ipypublish v0.10.12 at Mon Sep 28 13:44:10 2020
-INFO:ipypublish:logging to: /development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP/src/NeuralNetworkStudy/books/SethWeidman_DeepLearningFromScratch/converted/ch1_phase2.nbpub.log
-INFO:ipypublish:running for ipynb(s) at: ch1_phase2.pdf
-INFO:ipypublish:with conversion configuration: latex_ipypublish_main
-INFO:nbmerge:Reading notebook
