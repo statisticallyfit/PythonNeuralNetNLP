@@ -3,7 +3,7 @@ from sympy import Matrix, Symbol, derive_by_array, Lambda, symbols, Derivative, 
 from sympy.abc import x, y, i, j, a, b
 
 # %% markdown [markdown]
-# 
+#
 # Defining variable-element matrices $X \in \mathbb{R}^{n \times m}$ and $W \in \mathbb{R}^{m \times p}$:
 # %% codecell
 def var(letter: str, i: int, j: int) -> Symbol:
@@ -65,20 +65,21 @@ S
 
 # %% markdown [markdown]
 # Defining $L = \Lambda(S) = \Lambda(\sigma_\text{apply}(\nu(X,W))) = \Lambda \Big(\Big \{ \sigma(XW_{ij}) \Big\} \Big)$. In general, let the function be defined as:
+#
 # $$
-# \begin{align}
+# \begin{aligned}
 # L &= \Lambda \begin{pmatrix}
 #    \sigma(XW_{11}) & \sigma(XW_{12}) & ... & \sigma(XW_{1p}) \\
 #    \sigma(XW_{21}) & \sigma(XW_{22}) & ... & \sigma(XW_{2p}) \\
 #    \vdots & \vdots & & \vdots \\
 #    \sigma(XW_{n1}) & \sigma(XW_{n2}) & ... & \sigma(XW_{np})
 # \end{pmatrix} \\
-#
 # &= \sum_{i=1}^p \sum_{j = 1}^n  \sigma(XW_{ij}) \\
-#
 # &= \sigma(XW_{11}) + \sigma{XW_{12}} + ... + \sigma(XW_{np})
-# \end{align}
+# \end{aligned}
 # $$
+# %% markdown [markdown]
+# NOTE HERE:
 # * $\Lambda: \mathbb{R}^{n \times p} \rightarrow \mathbb{R}$
 # * $L \in \mathbb{R}$
 # %% codecell
