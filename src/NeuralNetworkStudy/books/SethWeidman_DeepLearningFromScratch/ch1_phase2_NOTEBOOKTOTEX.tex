@@ -1,4 +1,4 @@
-\documentclass[11pt]{article}
+\documentclass[11pt,landscape]{article}
 
     \usepackage[breakable]{tcolorbox}
     \usepackage{parskip} % Stop auto-indenting (to mimic markdown behaviour)
@@ -29,8 +29,8 @@
     \floatplacement{figure}{H} % forces figures to be placed at the correct location
     \usepackage{xcolor} % Allow colors to be defined
     \usepackage{enumerate} % Needed for markdown enumerations to work
-    \usepackage{geometry} % Used to adjust the document margins
-    %%%\usepackage[left=2cm, right=2cm, top=3cm, bottom=3cm, a3paper]{geometry}
+    %\usepackage{geometry} % Used to adjust the document margins
+    \usepackage[left=2cm, right=2cm, top=3cm, bottom=3cm, a3paper]{geometry}
     \usepackage{amsmath} % Equations
     \usepackage{amssymb} % Equations
     \usepackage{textcomp} % defines textquotesingle
@@ -147,7 +147,7 @@
     \renewcommand{\LaTeX}{\textrm{\Oldlatex}}
     % Document parameters
     % Document title
-    \title{ch1\_phase2}
+    \title{ch1\_phase2\_MDTONOTEBOOK}
     
     
     
@@ -347,6 +347,17 @@
         \ttfamily\llap{{\color{#2}[#3]:\hspace{3pt}#4}}\vspace{-\baselineskip}
     }
     
+    
+    
+    
+    % ANA ----------------------------------------------------------------------
+    % Setting font types
+    \setmainfont{Artifika}
+    \setmonofont{Monaco}
+    %\setmathfont{"Latin Modern Roman Unslanted"}
+%    \setmathfont{GFS Artemisia}
+
+    % --------------------------------------------------------------------------
 
     
     % Prevent overflowing lines due to hard-to-break entities
@@ -429,19 +440,15 @@
 \end{Verbatim}
 \end{tcolorbox}
 
-    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
-\prompt{In}{incolor}{5}{\boxspacing}
-\begin{Verbatim}[commandchars=\\\{\}]
+    Defining \(N = \nu(X, W) = X \times W\)
 
-\end{Verbatim}
-\end{tcolorbox}
-
-    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
-\prompt{In}{incolor}{5}{\boxspacing}
-\begin{Verbatim}[commandchars=\\\{\}]
-
-\end{Verbatim}
-\end{tcolorbox}
+\begin{itemize}
+\tightlist
+\item
+  \(\nu : \mathbb{R}^{(n \times m) \times (m \times p)} \rightarrow \mathbb{R}^{n \times p}\)
+\item
+  \(N \in \mathbb{R}^{n \times p}\)
+\end{itemize}
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{5}{\boxspacing}

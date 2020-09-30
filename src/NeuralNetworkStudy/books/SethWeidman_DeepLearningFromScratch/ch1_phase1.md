@@ -37,6 +37,7 @@ W = Matrix(m, p, lambda i,j : var('w', i, j)); W
 ```
 
 <!-- #region markdown -->
+
 Defining $N = \nu(X, W) = X \times W$
 
 * $\nu : \mathbb{R}^{(n \times m) \times (m \times p)} \rightarrow \mathbb{R}^{n \times p}$
@@ -92,9 +93,11 @@ S
 ```
 
 <!-- #region markdown -->
+
 Defining $L = \Lambda(S) = \Lambda(\sigma_\text{apply}(\nu(X,W))) = \Lambda \Big(\Big \{ \sigma(XW_{ij}) \Big\} \Big)$. In general, let the function be defined as:
 
-$\begin{aligned}
+$$
+\begin{aligned}
 L &= \Lambda \begin{pmatrix}
    \sigma(XW_{11}) & \sigma(XW_{12}) & ... & \sigma(XW_{1p}) \\
    \sigma(XW_{21}) & \sigma(XW_{22}) & ... & \sigma(XW_{2p}) \\
@@ -103,8 +106,10 @@ L &= \Lambda \begin{pmatrix}
 \end{pmatrix} \\
 &= \sum_{i=1}^p \sum_{j = 1}^n  \sigma(XW_{ij}) \\
 &= \sigma(XW_{11}) + \sigma{XW_{12}} + ... + \sigma(XW_{np})
-\end{aligned}$
-
+\end{aligned}
+$$
+<!-- #endregion -->
+<!-- #region markdown -->
 NOTE HERE:
 * $\Lambda: \mathbb{R}^{n \times p} \rightarrow \mathbb{R}$
 * $L \in \mathbb{R}$
@@ -118,12 +123,10 @@ L = lambdaF(sigmaApply(v(X, W)))
 L
 #L = lambda mat1, mat2: lambdaF(sigmaApply(v(mat1, mat2)))
 #L(X, W)
+
+
 ```
 
-
-<!-- #region markdown -->
-
-<!-- #endregion -->
 ```python title="codecell"
 #derive_by_array(L, X)
 ```

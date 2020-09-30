@@ -18,6 +18,7 @@ X = Matrix(n, m, lambda i,j : var('x', i, j)); X
 W = Matrix(m, p, lambda i,j : var('w', i, j)); W
 
 # %% markdown [markdown]
+# 
 # Defining $N = \nu(X, W) = X \times W$
 #
 # * $\nu : \mathbb{R}^{(n \times m) \times (m \times p)} \rightarrow \mathbb{R}^{n \times p}$
@@ -32,7 +33,7 @@ N = v(X, W); N
 #
 # Defining $S = \sigma_{\text{apply}}(N) = \sigma_{\text{apply}}(\nu(X,W)) = \sigma_\text{apply}(X \times W) = \Big \{ \sigma(XW_{ij}) \Big\}$.
 #
-
+#
 # Assume that $\sigma_{\text{apply}} : \mathbb{R}^{n \times p} \rightarrow \mathbb{R}^{n \times p}$ while $\sigma : \mathbb{R} \rightarrow \mathbb{R}$, so the function $\sigma_{\text{apply}}$ takes in a matrix and returns a matrix while the simple $\sigma$ acts on the individual elements $N_{ij} = XW_{ij}$ in the matrix argument $N$ of $\sigma_{\text{apply}}$.
 #
 # * $\sigma : \mathbb{R} \rightarrow \mathbb{R}$
@@ -64,6 +65,7 @@ S = sigmaApply(v(X,W)) # composing
 S
 
 # %% markdown [markdown]
+#
 # Defining $L = \Lambda(S) = \Lambda(\sigma_\text{apply}(\nu(X,W))) = \Lambda \Big(\Big \{ \sigma(XW_{ij}) \Big\} \Big)$. In general, let the function be defined as:
 #
 # $$
@@ -92,7 +94,7 @@ L
 #L(X, W)
 
 
-# %% markdown [markdown]
+
 # %% codecell
 #derive_by_array(L, X)
 # %% codecell
