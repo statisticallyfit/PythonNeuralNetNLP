@@ -9,7 +9,7 @@ PATH_NN = "/development/projects/statisticallyfit/github/learningmathstat/Python
 
 
 #filename = PATH + "temp1.ipynb"
-filename = PATH_NN + "ch1_phase1.ipynb"
+filename = PATH_NN + "new_ch1_phase1.ipynb"
 
 with open(filename) as f:
     data = json.load(f)
