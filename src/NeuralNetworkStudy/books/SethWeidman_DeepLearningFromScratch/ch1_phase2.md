@@ -42,12 +42,13 @@ A = MatrixSymbol('X',3,3); Matrix(A)
 B = MatrixSymbol('W',3,2)
 ```
 
-```python title="codecell"
+<!-- #region markdown -->
+Defining $N = \nu(X, W) = X \times W$
 
-```
-```python title="codecell"
+* $\nu : \mathbb{R}^{(n \times m) \times (m \times p)} \rightarrow \mathbb{R}^{n \times p}$
+* $N \in \mathbb{R}^{n \times p}$
+<!-- #endregion -->
 
-```
 ```python title="codecell"
 v = lambda a,b: a*b
 
