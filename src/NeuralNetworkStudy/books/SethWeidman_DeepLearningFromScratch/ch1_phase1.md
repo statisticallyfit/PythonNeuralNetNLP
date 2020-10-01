@@ -1,18 +1,3 @@
----
-jupyter:
-  jupytext:
-    cell_metadata_filter: title,-all
-    text_representation:
-      extension: .md
-      format_name: markdown
-      format_version: '1.2'
-      jupytext_version: 1.6.0
-  kernelspec:
-    display_name: pymatrix_env
-    language: python
-    name: pymatrix_env
----
-
 ```python title="codecell"
 from sympy import Matrix, Symbol, derive_by_array, Lambda, symbols, Derivative, diff
 from sympy.abc import x, y, i, j, a, b

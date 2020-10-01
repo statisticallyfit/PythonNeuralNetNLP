@@ -1,5 +1,8 @@
+```python
 
-# %% codecell
+```
+
+```python title="codecell"
 from sympy import diff, sin, exp, symbols, Function, Matrix, MatrixSymbol, FunctionMatrix, derive_by_array
 
 
@@ -18,7 +21,8 @@ def func(i, j):
 n,m,p = 3,3,2
 
 X = Matrix(n, m, lambda i, j: var('x', i, j)); X
-# %% codecell
+```
+```python title="codecell"
 #Y = MatrixSymbol(Function('y'), 2, 3); Matrix(Y)
 #M = MatrixSymbol('M',2,2); Matrix(M)
 #Y = Matrix(m, p, lambda i,j: Function('y_{}{}'.format(i+1,j+1))(X) ); Y
@@ -26,42 +30,47 @@ X = Matrix(n, m, lambda i, j: var('x', i, j)); X
 Y = Matrix(m, p, lambda i,j:  func(i, j)); Y
 
 
+```
 
-# %% markdown [markdown]
-# ### Derivative of Matrix With Respect a Matrix
-# Let $X = \{ x_{ij} \}$ be a matrix of order $m \times n$ and let
-# $$
-# y = f(X)
-# $$
-# be a scalar function of $X$, so $y \in \mathbb{R}$ and $f: \mathbb{R}^{m \times n} \rightarrow \mathbb{R}$,
-#
-# Also let the matrix $Y = \{y_{ij}(X) \}$ be of size $p \times q$.
-#
-# Then we can define the **derivative of $Y$ with respect to $X$** as the following matrix of order $mp \times nq$:
-#
-# $$
-# \Large
-# \frac{\partial Y}{\partial X}
-# = \begin{pmatrix}
-#    \frac{\partial Y}{\partial x_{11}} & \frac{\partial Y}{\partial x_{12}} & ... & \frac{\partial Y}{\partial x_{1n}} \\
-#    \frac{\partial Y}{\partial x_{21}} & \frac{\partial Y}{\partial x_{22}} & ... & \frac{\partial Y}{\partial x_{23}} \\
-#    \vdots & \vdots & & \vdots \\
-#    \frac{\partial Y}{\partial x_{m1}} & \frac{\partial Y}{\partial x_{m2}} & ... & \frac{\partial Y}{\partial x_{mn}} \\
-# \end{pmatrix}
-# = \Bigg\{ \frac{\partial y_{ij}}{\partial x_{lk}} \Bigg\}
-# $$
+<!-- #region markdown -->
+### Derivative of Matrix With Respect a Matrix
+Let $X = \{ x_{ij} \}$ be a matrix of order $m \times n$ and let
+$$
+y = f(X)
+$$
+be a scalar function of $X$, so $y \in \mathbb{R}$ and $f: \mathbb{R}^{m \times n} \rightarrow \mathbb{R}$,
 
-# %% codecell
+Also let the matrix $Y = \{y_{ij}(X) \}$ be of size $p \times q$.
+
+Then we can define the **derivative of $Y$ with respect to $X$** as the following matrix of order $mp \times nq$:
+
+$$
+\Large
+\frac{\partial Y}{\partial X}
+= \begin{pmatrix}
+   \frac{\partial Y}{\partial x_{11}} & \frac{\partial Y}{\partial x_{12}} & ... & \frac{\partial Y}{\partial x_{1n}} \\
+   \frac{\partial Y}{\partial x_{21}} & \frac{\partial Y}{\partial x_{22}} & ... & \frac{\partial Y}{\partial x_{23}} \\
+   \vdots & \vdots & & \vdots \\
+   \frac{\partial Y}{\partial x_{m1}} & \frac{\partial Y}{\partial x_{m2}} & ... & \frac{\partial Y}{\partial x_{mn}} \\
+\end{pmatrix}
+= \Bigg\{ \frac{\partial y_{ij}}{\partial x_{lk}} \Bigg\}
+$$
+<!-- #endregion -->
+
+```python title="codecell"
 # GOT IT this is the definition of gradient matrix (matrix of partial derivatives or dY/dX)
 D = derive_by_array(Y, X); D
-# %% codecell
+```
+```python title="codecell"
 D.subs({Y[0,0]: X[0,0]**2 + X[1,0]}).doit()
-# %% codecell
+```
+```python title="codecell"
 Y.diff(X) ## GOT IT
 
 
+```
 
-# %% codecell
+```python title="codecell"
 Yval = Y.subs({Y[0,0]: X[0,0]**2 + X[0,1]*X[1,0] - X[1,1],
         Y[0,1]: X[1,1]**3 + 4* X[0,1] + X[0,0] - X[1,0],
         Y[1,0]: X[1,0] * X[0,0] + 3*X[0,1] * X[1,1],
@@ -70,7 +79,8 @@ Yval = Y.subs({Y[0,0]: X[0,0]**2 + X[0,1]*X[1,0] - X[1,1],
         Y[2,1]: 3*X[0,1] - 5*X[1,1] * X[0,0] - X[1,0]**2})
 
 Yval
-# %% codecell
+```
+```python title="codecell"
 DYval = D.subs({Y[0,0]: X[0,0]**2 + X[0,1]*X[1,0] - X[1,1],
         Y[0,1]: X[1,1]**3 + 4* X[0,1] + X[0,0] - X[1,0],
         Y[1,0]: X[1,0] * X[0,0] + 3*X[0,1] * X[1,1],
@@ -78,13 +88,15 @@ DYval = D.subs({Y[0,0]: X[0,0]**2 + X[0,1]*X[1,0] - X[1,1],
         Y[2,0]: 2*X[0,0]**2 * X[0,1] * 3*X[1,0] + 4*X[1,1],
         Y[2,1]: 3*X[0,1] - 5*X[1,1] * X[0,0] - X[1,0]**2})
 DYval
-# %% codecell
+```
+```python title="codecell"
 DYval.doit()
 
 
 
+```
 
-# %% codecell
+```python title="codecell"
 # ### GOAL: testing the A kronecker B rule for diff of Y = AXB
 from sympy import Lambda
 l, m, n, q = 3, 5, 4, 2
@@ -93,18 +105,24 @@ A = Matrix(l, m, lambda i, j: var('a', i, j))
 X = Matrix(m, n, lambda i, j: var('x', i, j))
 W = Matrix(n, q, lambda i, j: var('w', i, j))
 Y = X*W; Y
-# %% codecell
+```
+```python title="codecell"
 from sympy.matrices import zeros
 E_12 = zeros(m, n)
 E_12[1-1,2-1] = 1
 E_12
-# %% codecell
+```
+```python title="codecell"
 Y = X*W; Y
-# %% codecell
+```
+```python title="codecell"
 E_12*W
-# %% codecell
+```
+```python title="codecell"
 derive_by_array(Y, X[0,1])
-# %% codecell
+```
+```python title="codecell"
 assert Matrix(derive_by_array(Y, X[0,1])) == E_12 * W
 
 assert Matrix(derive_by_array(Y, X[0,1])) == Y.diff(X[0,1])
+```
