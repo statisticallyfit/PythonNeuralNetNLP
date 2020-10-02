@@ -1959,11 +1959,13 @@
     $\displaystyle \left. \frac{d}{d \xi_{1}} \lambda{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}={\left( d \mapsto \sigma{\left(d \right)} \right)}_{\circ}\left({X W}\right) }} X^{T} {\left( d \mapsto \frac{d}{d d} \sigma{\left(d \right)} \right)}_{\circ}\left({X W}\right)$
 
     
+% MANUAL FIX HERE: to fix subscripts. 
+% NOTE: then used VM's xelatex to print this to pdf using jupyter template
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{105}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-\PY{c+c1}{\PYZsh{} Not showing ???}
+\PY{c+c1}{ \PYZsh{} Why not showing in ATOM ??? NOTE: this comment was added in the jupyter-generated latex file. Maybe it did not show in atom because of subscript error. Symbol was generated xi_{1}_{0,1} and renders xi_10,0 so had to go and fix manually to be xi_{{1}_{0,1}} }
 \PY{n}{L}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{n}\PY{p}{,}\PY{n}{v}\PY{p}{)}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{sigmaApply}\PY{p}{,} \PY{n}{sigmaApply\PYZus{}}\PY{p}{)}\PY{o}{.}\PY{n}{diff}\PY{p}{(}\PY{n}{B}\PY{p}{)}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{lambd}\PY{p}{,} \PY{n}{lambd\PYZus{}L}\PY{p}{)}
 \end{Verbatim}
 \end{tcolorbox}
@@ -1971,7 +1973,7 @@
             
 \prompt{Out}{outcolor}{105}{}
     
-    $\displaystyle \left. \frac{d}{d \xi_{1}} \left(\xi_{1}_{0, 0} + \xi_{1}_{0, 1} + \xi_{1}_{0, 2} + \xi_{1}_{1, 0} + \xi_{1}_{1, 1} + \xi_{1}_{1, 2} + \xi_{1}_{2, 0} + \xi_{1}_{2, 1} + \xi_{1}_{2, 2}\right) \right|_{\substack{ \xi_{1}={\left( d \mapsto \sigma{\left(d \right)} \right)}_{\circ}\left({X W}\right) }} X^{T} {\left( d \mapsto \frac{d}{d d} \sigma{\left(d \right)} \right)}_{\circ}\left({X W}\right)$
+    $\displaystyle \left. \frac{d}{d \xi_{1}} \left(\xi_{{1}_{0, 0}} + \xi_{{1}_{0, 1}} + \xi_{{1}_{0, 2}} + \xi_{{1}_{1, 0}} + \xi_{{1}_{1, 1}} + \xi_{{1}_{1, 2}} + \xi_{{1}_{2, 0}} + \xi_{{1}_{2, 1}} + \xi_{{1}_{2, 2}}\right) \right|_{\substack{ \xi_{1}={\left( d \mapsto \sigma{\left(d \right)} \right)}_{\circ}\left({X W}\right) }} X^{T} {\left( d \mapsto \frac{d}{d d} \sigma{\left(d \right)} \right)}_{\circ}\left({X W}\right)$
 
     
 
@@ -2397,21 +2399,21 @@ mappingproxy(\{'applyfunc': True,
               '\_\_module\_\_': None,
               '\_\_doc\_\_': None,
               'name': 'sigma',
-              '\_sage\_': <sympy.core.function.UndefSageHelper at 0x7fd13afb3bd0>,
+              '\_sage\_': <sympy.core.function.UndefSageHelper at 0x7f732bb75690>,
               '\_nargs': None,
-              '\_\_sympy\_\_': <property at 0x7fd1398b8950>,
+              '\_\_sympy\_\_': <property at 0x7f732a7a8950>,
               '\_explicit\_class\_assumptions': \{\},
               'default\_assumptions': \{\},
-              '\_prop\_handler': \{'commutative': <function
-sympy.core.function.Function.\_eval\_is\_commutative(self)>,
+              '\_prop\_handler': \{'extended\_positive': <function
+sympy.core.expr.Expr.\_eval\_is\_extended\_positive(self)>,
+               'positive': <function
+sympy.core.expr.Expr.\_eval\_is\_positive(self)>,
                'negative': <function
 sympy.core.expr.Expr.\_eval\_is\_negative(self)>,
-               'extended\_positive': <function
-sympy.core.expr.Expr.\_eval\_is\_extended\_positive(self)>,
+               'commutative': <function
+sympy.core.function.Function.\_eval\_is\_commutative(self)>,
                'extended\_negative': <function
-sympy.core.expr.Expr.\_eval\_is\_extended\_negative(self)>,
-               'positive': <function
-sympy.core.expr.Expr.\_eval\_is\_positive(self)>\}\})
+sympy.core.expr.Expr.\_eval\_is\_extended\_negative(self)>\}\})
 \end{Verbatim}
 \end{tcolorbox}
         
@@ -2613,21 +2615,21 @@ mappingproxy(\{'applyfunc': True,
               '\_\_module\_\_': None,
               '\_\_doc\_\_': None,
               'name': 'v',
-              '\_sage\_': <sympy.core.function.UndefSageHelper at 0x7fd13afb3bd0>,
+              '\_sage\_': <sympy.core.function.UndefSageHelper at 0x7f732bb75690>,
               '\_nargs': None,
-              '\_\_sympy\_\_': <property at 0x7fd139a6d3b0>,
+              '\_\_sympy\_\_': <property at 0x7f732a6332f0>,
               '\_explicit\_class\_assumptions': \{\},
               'default\_assumptions': \{\},
-              '\_prop\_handler': \{'commutative': <function
-sympy.core.function.Function.\_eval\_is\_commutative(self)>,
+              '\_prop\_handler': \{'extended\_positive': <function
+sympy.core.expr.Expr.\_eval\_is\_extended\_positive(self)>,
+               'positive': <function
+sympy.core.expr.Expr.\_eval\_is\_positive(self)>,
                'negative': <function
 sympy.core.expr.Expr.\_eval\_is\_negative(self)>,
-               'extended\_positive': <function
-sympy.core.expr.Expr.\_eval\_is\_extended\_positive(self)>,
+               'commutative': <function
+sympy.core.function.Function.\_eval\_is\_commutative(self)>,
                'extended\_negative': <function
-sympy.core.expr.Expr.\_eval\_is\_extended\_negative(self)>,
-               'positive': <function
-sympy.core.expr.Expr.\_eval\_is\_positive(self)>\}\})
+sympy.core.expr.Expr.\_eval\_is\_extended\_negative(self)>\}\})
 \end{Verbatim}
 \end{tcolorbox}
         
@@ -2650,21 +2652,21 @@ mappingproxy(\{'applyfunc': True,
               '\_\_module\_\_': None,
               '\_\_doc\_\_': None,
               'name': 'y',
-              '\_sage\_': <sympy.core.function.UndefSageHelper at 0x7fd13afb3bd0>,
+              '\_sage\_': <sympy.core.function.UndefSageHelper at 0x7f732bb75690>,
               '\_nargs': None,
-              '\_\_sympy\_\_': <property at 0x7fd13993ccb0>,
+              '\_\_sympy\_\_': <property at 0x7f732a445d10>,
               '\_explicit\_class\_assumptions': \{\},
               'default\_assumptions': \{\},
-              '\_prop\_handler': \{'commutative': <function
-sympy.core.function.Function.\_eval\_is\_commutative(self)>,
+              '\_prop\_handler': \{'extended\_positive': <function
+sympy.core.expr.Expr.\_eval\_is\_extended\_positive(self)>,
+               'positive': <function
+sympy.core.expr.Expr.\_eval\_is\_positive(self)>,
                'negative': <function
 sympy.core.expr.Expr.\_eval\_is\_negative(self)>,
-               'extended\_positive': <function
-sympy.core.expr.Expr.\_eval\_is\_extended\_positive(self)>,
+               'commutative': <function
+sympy.core.function.Function.\_eval\_is\_commutative(self)>,
                'extended\_negative': <function
-sympy.core.expr.Expr.\_eval\_is\_extended\_negative(self)>,
-               'positive': <function
-sympy.core.expr.Expr.\_eval\_is\_positive(self)>\}\})
+sympy.core.expr.Expr.\_eval\_is\_extended\_negative(self)>\}\})
 \end{Verbatim}
 \end{tcolorbox}
         

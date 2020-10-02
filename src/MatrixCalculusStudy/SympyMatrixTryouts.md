@@ -1,17 +1,20 @@
-# %% codecell
+```python title="codecell"
 from sympy import sin, cos, Matrix
 from sympy.abc import rho, phi
 X = Matrix([rho*cos(phi), rho*sin(phi), rho**2])
 Y = Matrix([rho, phi])
 
 X
-# %% codecell
+```
+```python title="codecell"
 Y
+```
 
-# %% codecell
+```python title="codecell"
 X.jacobian(Y)
+```
 
-# %% codecell
+```python title="codecell"
 from sympy import MatrixSymbol, Matrix
 from sympy.core.function import Function
 from sympy import FunctionMatrix, Lambda
@@ -22,17 +25,20 @@ X = MatrixSymbol('X', n, m)
 W = MatrixSymbol('W', m, p)
 
 (X.T*X).I*W
+```
 
 
-# %% codecell
+```python title="codecell"
 Matrix(X)
-# %% codecell
+```
+```python title="codecell"
 Matrix(X * W)
 
 
 
+```
 
-# %% codecell
+```python title="codecell"
 from sympy import I, Matrix, symbols
 from sympy.physics.quantum import TensorProduct
 
@@ -40,21 +46,25 @@ m1 = Matrix([[1,2],[3,4]])
 m2 = Matrix([[1,0],[0,1]])
 
 m1
-# %% codecell
+```
+```python title="codecell"
 TensorProduct(m1, m2)
 
 
+```
 
-# %% codecell
+```python title="codecell"
 f = Function('f')
 F = FunctionMatrix(3,4, f)
 Matrix(F)
+```
 
 
-# %% codecell
+```python title="codecell"
 y = Function('y')(X)
 y
-# %% codecell
+```
+```python title="codecell"
 # y.diff(X)
 from sympy.abc import x,y,z,t,e,r,a,b,c
 from sympy import derive_by_array
@@ -72,8 +82,9 @@ ax = derive_by_array(m, M)
 ax
 
 
+```
 
-# %% codecell
+```python title="codecell"
 Matrix(X)[1,2]
 x_12 = Matrix(X)[1,2]
 type(Matrix(X)[1,2])
@@ -82,13 +93,15 @@ g = Function('g')
 h = f(g(x_12))
 h
 h.diff(x_12)
+```
 
-# %% codecell
+```python title="codecell"
 
 
 
+```
 
-# %% codecell
+```python title="codecell"
 from sympy import Symbol
 from sympy.abc import i, j
 
@@ -108,14 +121,17 @@ def makeX(i, j):
 X = Matrix(2, 3, lambda i,j: makeX(i+1, j+1)); X
 # BAD
 #X = FunctionMatrix(2,3, Lambda((a,b), makeX(int(a), int(b))))
-# %% codecell
+```
+```python title="codecell"
 X[0,0]
+```
 
-# %% codecell
+```python title="codecell"
 from sympy import derive_by_array
 
 derive_by_array(Matrix(X), Matrix(X))
-# %% codecell
+```
+```python title="codecell"
 
 from sympy import Symbol
 x_11 = Symbol('x_11', is_commutative=True)
@@ -148,31 +164,38 @@ Y
 #Y.diff(X)
 
 #y = Function('y')
+```
 
-# %% codecell
+```python title="codecell"
 #derive_by_array(Y, X)
+```
 
-# %% codecell
+```python title="codecell"
 A = Matrix(MatrixSymbol('x', 3,3)); A
 B = Matrix(MatrixSymbol('w', 3,2)); B
-# %% codecell
+```
+```python title="codecell"
 A*B
 
 derive_by_array(A*B, A)
-# %% codecell
+```
+```python title="codecell"
 (A*B).diff(A)
 
 assert (A*B).diff(A) == derive_by_array(A*B, A)
+```
 
-# %% codecell
+```python title="codecell"
 X*W
-# %% codecell
+```
+```python title="codecell"
 derive_by_array(X*W, X)
-# %% codecell
+```
+```python title="codecell"
 (X*W).diff(X)
+```
 
-
-# %% codecell
+```python title="codecell"
 ### JACOBIAN:
 def makeX(i, j):
      x_ij = Symbol('x_{}{}'.format(i,j), is_commutative=True)
@@ -186,8 +209,9 @@ def makeYofX(i, j):
      return yx_ij #Lambda((i,j), x_ij)
 
 
+```
 
-# %% codecell
+```python title="codecell"
 def var(letter: str, i: int, j: int) -> Symbol:
      letter_ij = Symbol('{}_{}{}'.format(letter, i+1, j+1), is_commutative=True)
      return letter_ij
@@ -196,47 +220,59 @@ def var(letter: str, i: int, j: int) -> Symbol:
 n,m,p = 3,3,2
 # NOTE: even if i, j are sympy Symbols, passing them here with python's lambda instead of sympy's Lambda lets the indices actually be seen!!!
 X = Matrix(n,m, lambda i,j: var('x', i,j)); X
-# %% codecell
+```
+```python title="codecell"
 W = Matrix(m,p, lambda i,j: var('w', i, j)); W
+```
 
 
-# %% codecell
+```python title="codecell"
 #res = y.subs({y[0]:x[0]**2* x[2] +x[1]}); res
-# %% codecell
+```
+```python title="codecell"
 #res.subs({x[0]: 23, x[1]: 14})
-# %% codecell
+```
+```python title="codecell"
 #derive_by_array(res[0], x[0])
 #derive_by_array(res[1], x[0])
 
 
+```
 
-# %% codecell
+```python title="codecell"
 #derive_by_array(y, x)
+```
 
-# %% codecell
+```python title="codecell"
 #y.diff(x)
 #y.jacobian(x)
+```
 
-# %% codecell
+```python title="codecell"
 from sympy import Function, hessian, pprint
 from sympy.abc import x, y
 f = Function('f')(x, y)
 g1 = Function('g')(x, y)
 g2 = x**2 + 3*y
 hessian(f, (x,y),[g1,g2])
-# %% codecell
+```
+```python title="codecell"
 #Matrix(FunctionMatrix(n, 1, Lambda((i,j), Function("y_{}{}".format(i,j)))))
 rho = Matrix([[Symbol("r_{}{}".format(i+1,j+1)) for j in range(5)] for i in range(5)])
 rho
+```
 
-# %% codecell
+```python title="codecell"
 derive_by_array(rho, rho[2,1])
-# %% codecell
+```
+```python title="codecell"
 derive_by_array(rho[2,1], rho)
-# %% codecell
+```
+```python title="codecell"
 rho.diff(rho[2,1])
+```
 
-# %% codecell
+```python title="codecell"
 from sympy.abc import x
 from sympy.utilities.lambdify import lambdify, implemented_function
 from sympy import Function
@@ -245,3 +281,4 @@ f = implemented_function('f', lambda x: x)
 lam_f = lambdify(x, f(x))
 
 lam_f(4)
+```

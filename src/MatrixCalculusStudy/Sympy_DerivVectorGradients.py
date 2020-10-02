@@ -40,7 +40,7 @@ def func(i):
 yv = Matrix( m, 1, lambda i,_:  func(i)); yv
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Gradient Vector
 # Let $f(\mathbf{x})$ be a differentiable real-valued function of the real $m \times 1$ vector $\mathbf{x} = \begin{pmatrix} x_1 \\ x_2 \\ \vdots \\ x_m \end{pmatrix}$.
 #
@@ -78,7 +78,7 @@ assert Matrix(derive_by_array(f(*xv), xv)) == f(*xv).diff(xv)
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Derivative of Vector with Respect to Scalar
 # Let $\mathbf{y}(x) = \begin{pmatrix} y_1(x) \\ y_2(x) \\ \vdots \\ y_m(x) \end{pmatrix}$ be a vector of order $m$, where each of the elements $y_i$ are functions of the scalar variable $x$. Specifically, $y_i = f_i(x), 1 \leq i \leq m$, where $f_i : \mathbb{R} \rightarrow \mathbb{R}$ and $\mathbf{y} : \mathbb{R} \rightarrow \mathbb{R}^m$.
 #
@@ -112,7 +112,7 @@ assert Matrix(derive_by_array(yv, x)) == Matrix(yv).diff(x)
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ### Vector Chain Rule
 # %% codecell
 # ### for vector chain rule

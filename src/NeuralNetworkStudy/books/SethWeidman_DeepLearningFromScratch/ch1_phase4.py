@@ -1,5 +1,5 @@
 # %% codecell
-from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Derivative
+from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Derivative, symbols, diff
 from sympy import var
 from sympy.abc import x, i, j, a, b
 
@@ -129,6 +129,11 @@ Sspec.subs({Nspec[0, 0]: 3}).replace(sigma, lambda x: 2 * x).replace(Nspec[2, 1]
 # %% codecell
 lambd = Function("lambda")
 lambd_ = lambda matrix : sum(matrix)
+
+i, j = symbols('i j')
+M = MatrixSymbol('M', i, j)# abstract shape
+#sigmaApply_L = Lambda(M, M.applyfunc(sigma))
+
 lambda_L = Lambda(M, sum(M))
 
 n = Function("nu",applyfunc=True)
@@ -160,11 +165,6 @@ L.replace(n,vL).diff(sigmaApply(A*B))
 #L.replace(n,vL).diff(sigmaApply(A*B)).replace(sigmaApply,sigmaApply_)
 ## ERROR cannot do that
 # %% codecell
-from sympy import symbols, diff
-#V = MatrixSymbol('V', X.shape[0], W.shape[1])
-i, j = symbols('i j')
-M = MatrixSymbol('M', i, j)# abstract shape
-
 sigmaApply_L = Lambda(M, M.applyfunc(sigma))
 #L.replace(n,vL).diff(sigmaApply(A*B)).subs(sigmaApply,sigmaApply_L) ## ERROR
 
@@ -336,10 +336,10 @@ dL_dW
 # %% markdown [markdown]
 # One more time as complete symbolic form:
 # $$
-# \begin{align}
+# \begin{aligned}
 # \frac{\partial L}{\partial W} &= \frac{\partial N}{\partial W} \times \frac{\partial S}{\partial N} \odot \frac{\partial L}{\partial S} \\
 # &= X^T \times  \frac{\partial S}{\partial N} \odot \frac{\partial L}{\partial S}
-# \end{align}
+# \end{aligned}
 # $$
 # where $\odot$ signifies the Hadamard product and $\times$ is matrix multiplication.
 # %% codecell
