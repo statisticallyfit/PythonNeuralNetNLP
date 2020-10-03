@@ -2,6 +2,9 @@
 from sympy import Matrix, Symbol, derive_by_array, Lambda, symbols, Derivative, diff
 from sympy.abc import x, y, i, j, a, b
 
+#%%
+#' Defining variable-element matrices $X \in \mathbb{R}^{n \times m}$ and $W \in \mathbb{R}^{m \times p}$:
+
 # %% markdown [markdown]
 #
 # Defining variable-element matrices $X \in \mathbb{R}^{n \times m}$ and $W \in \mathbb{R}^{m \times p}$:
@@ -18,7 +21,7 @@ X = Matrix(n, m, lambda i,j : var('x', i, j)); X
 W = Matrix(m, p, lambda i,j : var('w', i, j)); W
 
 # %% markdown [markdown]
-# 
+#
 # Defining $N = \nu(X, W) = X \times W$
 #
 # * $\nu : \mathbb{R}^{(n \times m) \times (m \times p)} \rightarrow \mathbb{R}^{n \times p}$
