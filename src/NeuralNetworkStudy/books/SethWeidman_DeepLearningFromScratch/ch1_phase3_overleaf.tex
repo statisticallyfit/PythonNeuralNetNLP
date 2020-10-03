@@ -1,5 +1,4 @@
-%\documentclass[11pt]{article}
-\documentclass[12pt, border=1cm]{standalone} % MANUAL 1
+\documentclass[11pt]{article}
 
     \usepackage[breakable]{tcolorbox}
     \usepackage{parskip} % Stop auto-indenting (to mimic markdown behaviour)
@@ -365,12 +364,14 @@
     %\geometry{verbose,tmargin=1in,bmargin=1in,lmargin=1in,rmargin=1in}
     %
     
+    % MANUAL: Set this paper width manually via overleaf latex then printed to pdf
+\setlength{\paperwidth}{5200pt}    
 
 \begin{document}
     
     \maketitle
     
-    \begin{tabular}{l}
+    
 
     
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
@@ -388,10 +389,7 @@
 \PY{k}{def} \PY{n+nf}{myvar}\PY{p}{(}\PY{n}{letter}\PY{p}{:} \PY{n+nb}{str}\PY{p}{,} \PY{n}{i}\PY{p}{:} \PY{n+nb}{int}\PY{p}{,} \PY{n}{j}\PY{p}{:} \PY{n+nb}{int}\PY{p}{)} \PY{o}{\PYZhy{}}\PY{o}{\PYZgt{}} \PY{n}{Symbol}\PY{p}{:}
     \PY{n}{letter\PYZus{}ij} \PY{o}{=} \PY{n}{Symbol}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}\PYZcb{}}\PY{l+s+s1}{\PYZus{}}\PY{l+s+si}{\PYZob{}\PYZcb{}}\PY{l+s+si}{\PYZob{}\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{o}{.}\PY{n}{format}\PY{p}{(}\PY{n}{letter}\PY{p}{,} \PY{n}{i}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{,} \PY{n}{j}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{)}\PY{p}{,} \PY{n}{is\PYZus{}commutative}\PY{o}{=}\PY{k+kc}{True}\PY{p}{)}
     \PY{k}{return} \PY{n}{letter\PYZus{}ij}
-
-
 \PY{n}{ns}\PY{p}{,}\PY{n}{ms}\PY{p}{,}\PY{n}{ps} \PY{o}{=} \PY{l+m+mi}{3}\PY{p}{,}\PY{l+m+mi}{3}\PY{p}{,}\PY{l+m+mi}{2}
-
 \PY{n}{X} \PY{o}{=} \PY{n}{Matrix}\PY{p}{(}\PY{n}{ns}\PY{p}{,} \PY{n}{ms}\PY{p}{,} \PY{k}{lambda} \PY{n}{i}\PY{p}{,}\PY{n}{j} \PY{p}{:} \PY{n}{myvar}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{i}\PY{p}{,} \PY{n}{j}\PY{p}{)}\PY{p}{)}\PY{p}{;} \PY{n}{X}
 \end{Verbatim}
 \end{tcolorbox}
@@ -431,14 +429,9 @@
 \prompt{In}{incolor}{5}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
 \PY{n}{v} \PY{o}{=} \PY{k}{lambda} \PY{n}{a}\PY{p}{,}\PY{n}{b}\PY{p}{:} \PY{n}{a}\PY{o}{*}\PY{n}{b}
-
 \PY{n}{vL} \PY{o}{=} \PY{n}{Lambda}\PY{p}{(}\PY{p}{(}\PY{n}{a}\PY{p}{,}\PY{n}{b}\PY{p}{)}\PY{p}{,} \PY{n}{a}\PY{o}{*}\PY{n}{b}\PY{p}{)}
-
 \PY{n}{n} \PY{o}{=} \PY{n}{Function}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{v}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)} \PY{c+c1}{\PYZsh{}, Lambda((a,b), a*b))}
-
 \PY{n}{vN} \PY{o}{=} \PY{k}{lambda} \PY{n}{mat1}\PY{p}{,} \PY{n}{mat2}\PY{p}{:} \PY{n}{Matrix}\PY{p}{(}\PY{n}{mat1}\PY{o}{.}\PY{n}{shape}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{,} \PY{n}{mat2}\PY{o}{.}\PY{n}{shape}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{p}{,} \PY{k}{lambda} \PY{n}{i}\PY{p}{,} \PY{n}{j}\PY{p}{:} \PY{n}{Symbol}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{n\PYZus{}}\PY{l+s+si}{\PYZob{}\PYZcb{}}\PY{l+s+si}{\PYZob{}\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{o}{.}\PY{n}{format}\PY{p}{(}\PY{n}{i}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{,} \PY{n}{j}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{)}\PY{p}{)}\PY{p}{)}\PY{p}{;} \PY{n}{vN}
-
-
 \PY{n}{Nelem} \PY{o}{=} \PY{n}{vN}\PY{p}{(}\PY{n}{X}\PY{p}{,} \PY{n}{W}\PY{p}{)}
 \PY{n}{Nelem}
 \end{Verbatim}
@@ -488,21 +481,13 @@
 \PY{k}{def} \PY{n+nf}{siga}\PY{p}{(}\PY{n}{mat}\PY{p}{:} \PY{n}{Matrix}\PY{p}{)} \PY{o}{\PYZhy{}}\PY{o}{\PYZgt{}} \PY{n}{Matrix}\PY{p}{:}
      \PY{c+c1}{\PYZsh{}lst = mat.tolist()}
      \PY{n}{nr}\PY{p}{,} \PY{n}{nc} \PY{o}{=} \PY{n}{mat}\PY{o}{.}\PY{n}{shape}
-
      \PY{n}{applied} \PY{o}{=} \PY{p}{[}\PY{p}{[}\PY{n}{sigma}\PY{p}{(}\PY{n}{mat}\PY{p}{[}\PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{]}\PY{p}{)} \PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{nc}\PY{p}{)}\PY{p}{]} \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{nr}\PY{p}{)}\PY{p}{]}
-
      \PY{k}{return} \PY{n}{Matrix}\PY{p}{(}\PY{n}{applied}\PY{p}{)}
-
-
 \PY{c+c1}{\PYZsh{} way 2 of declaring S (better way)}
 \PY{n}{sigma} \PY{o}{=} \PY{n}{Function}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{sigma}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
-
 \PY{n}{sigmaApply} \PY{o}{=} \PY{n}{Function}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{sigma\PYZus{}apply}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)} \PY{c+c1}{\PYZsh{}lambda matrix:  matrix.applyfunc(sigma)}
-
 \PY{n}{sigmaApply\PYZus{}} \PY{o}{=} \PY{k}{lambda} \PY{n}{matrix}\PY{p}{:} \PY{n}{matrix}\PY{o}{.}\PY{n}{applyfunc}\PY{p}{(}\PY{n}{sigma}\PY{p}{)}
-
 \PY{n}{sigmaApply\PYZus{}2} \PY{o}{=} \PY{k}{lambda} \PY{n}{matrix}\PY{p}{:} \PY{n}{siga}\PY{p}{(}\PY{n}{matrix}\PY{p}{)}
-
 \PY{n}{S} \PY{o}{=} \PY{n}{sigmaApply}\PY{p}{(}\PY{n}{N}\PY{p}{)}\PY{p}{;} \PY{n}{S}
 \end{Verbatim}
 \end{tcolorbox}
@@ -583,11 +568,8 @@
 \prompt{In}{incolor}{14}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
 \PY{k+kn}{import} \PY{n+nn}{itertools}
-
 \PY{n}{elemToSpecD} \PY{o}{=} \PY{n+nb}{dict}\PY{p}{(}\PY{n}{itertools}\PY{o}{.}\PY{n}{chain}\PY{p}{(}\PY{o}{*}\PY{p}{[}\PY{p}{[}\PY{p}{(}\PY{n}{Nelem}\PY{p}{[}\PY{n}{i}\PY{p}{,} \PY{n}{j}\PY{p}{]}\PY{p}{,} \PY{n}{Nspec}\PY{p}{[}\PY{n}{i}\PY{p}{,} \PY{n}{j}\PY{p}{]}\PY{p}{)} \PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{]} \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{3}\PY{p}{)}\PY{p}{]}\PY{p}{)}\PY{p}{)}
-
 \PY{n}{elemToSpec} \PY{o}{=} \PY{n+nb}{list}\PY{p}{(}\PY{n}{elemToSpecD}\PY{o}{.}\PY{n}{items}\PY{p}{(}\PY{p}{)}\PY{p}{)}
-
 \PY{n}{Matrix}\PY{p}{(}\PY{n}{elemToSpec}\PY{p}{)}
 \end{Verbatim}
 \end{tcolorbox}
@@ -603,9 +585,7 @@
 \prompt{In}{incolor}{15}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
 \PY{n}{elemToSpecFuncD} \PY{o}{=} \PY{n+nb}{dict}\PY{p}{(}\PY{n}{itertools}\PY{o}{.}\PY{n}{chain}\PY{p}{(}\PY{o}{*}\PY{p}{[}\PY{p}{[}\PY{p}{(}\PY{n}{Nelem}\PY{p}{[}\PY{n}{i}\PY{p}{,} \PY{n}{j}\PY{p}{]}\PY{p}{,} \PY{n}{Function}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{n\PYZus{}}\PY{l+s+si}{\PYZob{}\PYZcb{}}\PY{l+s+si}{\PYZob{}\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{o}{.}\PY{n}{format}\PY{p}{(}\PY{n}{i} \PY{o}{+} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{j} \PY{o}{+} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{)}\PY{p}{(}\PY{n}{Nspec}\PY{p}{[}\PY{n}{i}\PY{p}{,} \PY{n}{j}\PY{p}{]}\PY{p}{)}\PY{p}{)} \PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{]} \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{3}\PY{p}{)}\PY{p}{]}\PY{p}{)}\PY{p}{)}
-
 \PY{n}{elemToSpecFunc} \PY{o}{=} \PY{n+nb}{list}\PY{p}{(}\PY{n}{elemToSpecFuncD}\PY{o}{.}\PY{n}{items}\PY{p}{(}\PY{p}{)}\PY{p}{)}
-
 \PY{n}{Matrix}\PY{p}{(}\PY{n}{elemToSpecFunc}\PY{p}{)}
 \end{Verbatim}
 \end{tcolorbox}
@@ -621,9 +601,7 @@
 \prompt{In}{incolor}{16}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
 \PY{n}{elemToSpecFuncArgsD} \PY{o}{=} \PY{n+nb}{dict}\PY{p}{(}\PY{n}{itertools}\PY{o}{.}\PY{n}{chain}\PY{p}{(}\PY{o}{*}\PY{p}{[}\PY{p}{[}\PY{p}{(}\PY{n}{Nelem}\PY{p}{[}\PY{n}{i}\PY{p}{,} \PY{n}{j}\PY{p}{]}\PY{p}{,} \PY{n}{Function}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{n\PYZus{}}\PY{l+s+si}{\PYZob{}\PYZcb{}}\PY{l+s+si}{\PYZob{}\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{o}{.}\PY{n}{format}\PY{p}{(}\PY{n}{i} \PY{o}{+} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{j} \PY{o}{+} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{)}\PY{p}{(}\PY{o}{*}\PY{n}{X}\PY{p}{,}\PY{o}{*}\PY{n}{W}\PY{p}{)}\PY{p}{)} \PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{]} \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{3}\PY{p}{)}\PY{p}{]}\PY{p}{)}\PY{p}{)}
-
 \PY{n}{elemToSpecFuncArgs} \PY{o}{=} \PY{n+nb}{list}\PY{p}{(}\PY{n}{elemToSpecFuncArgsD}\PY{o}{.}\PY{n}{items}\PY{p}{(}\PY{p}{)}\PY{p}{)}
-
 \PY{n}{Matrix}\PY{p}{(}\PY{n}{elemToSpecFuncArgs}\PY{p}{)}
 \end{Verbatim}
 \end{tcolorbox}
@@ -639,9 +617,7 @@
 \prompt{In}{incolor}{17}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
 \PY{n}{elemToMatArgD} \PY{o}{=} \PY{n+nb}{dict}\PY{p}{(}\PY{n}{itertools}\PY{o}{.}\PY{n}{chain}\PY{p}{(}\PY{o}{*}\PY{p}{[}\PY{p}{[}\PY{p}{(}\PY{n}{Nelem}\PY{p}{[}\PY{n}{i}\PY{p}{,} \PY{n}{j}\PY{p}{]}\PY{p}{,} \PY{n}{Function}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{n\PYZus{}}\PY{l+s+si}{\PYZob{}\PYZcb{}}\PY{l+s+si}{\PYZob{}\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{o}{.}\PY{n}{format}\PY{p}{(}\PY{n}{i}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{,}\PY{n}{j}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{)}\PY{p}{)}\PY{p}{(}\PY{n}{A}\PY{p}{,}\PY{n}{B}\PY{p}{)} \PY{p}{)} \PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{]} \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{3}\PY{p}{)}\PY{p}{]}\PY{p}{)}\PY{p}{)}
-
 \PY{n}{elemToMatArg} \PY{o}{=} \PY{n+nb}{list}\PY{p}{(}\PY{n}{elemToMatArgD}\PY{o}{.}\PY{n}{items}\PY{p}{(}\PY{p}{)}\PY{p}{)}
-
 \PY{n}{Matrix}\PY{p}{(}\PY{n}{elemToMatArg}\PY{p}{)}
 \end{Verbatim}
 \end{tcolorbox}
@@ -657,9 +633,7 @@
 \prompt{In}{incolor}{18}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
 \PY{n}{matargToSpecD} \PY{o}{=} \PY{n+nb}{dict}\PY{p}{(}\PY{n+nb}{zip}\PY{p}{(}\PY{n}{elemToMatArgD}\PY{o}{.}\PY{n}{values}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{elemToSpecD}\PY{o}{.}\PY{n}{values}\PY{p}{(}\PY{p}{)}\PY{p}{)}\PY{p}{)}
-
 \PY{n}{matargToSpec} \PY{o}{=} \PY{n+nb}{list}\PY{p}{(}\PY{n}{matargToSpecD}\PY{o}{.}\PY{n}{items}\PY{p}{(}\PY{p}{)}\PY{p}{)}
-
 \PY{n}{Matrix}\PY{p}{(}\PY{n}{matargToSpec}\PY{p}{)}
 \end{Verbatim}
 \end{tcolorbox}
@@ -887,11 +861,8 @@
 \prompt{In}{incolor}{34}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
 \PY{n}{temp} \PY{o}{=} \PY{n}{st}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{l+m+mi}{0}\PY{p}{]}\PY{o}{.}\PY{n}{diff}\PY{p}{(}\PY{n}{X}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{)}\PY{p}{;} \PY{n}{temp}
-
 \PY{c+c1}{\PYZsh{}nt[0,0]}
-
 \PY{c+c1}{\PYZsh{}temp.replace(Function(\PYZdq{}n\PYZus{}11\PYZdq{})(nt[0,0].args[0]), nt[0,0].args[0])}
-
 \PY{c+c1}{\PYZsh{}temp.subs(\PYZob{}nt[0,0] : nt[0,0].args[0]\PYZcb{})}
 \end{Verbatim}
 \end{tcolorbox}
@@ -965,7 +936,6 @@
 \begin{Verbatim}[commandchars=\\\{\}]
 \PY{n}{lambd} \PY{o}{=} \PY{n}{Function}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{lambda}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
 \PY{n}{lambd\PYZus{}} \PY{o}{=} \PY{k}{lambda} \PY{n}{matrix} \PY{p}{:} \PY{n+nb}{sum}\PY{p}{(}\PY{n}{matrix}\PY{p}{)}
-
 \PY{n}{L} \PY{o}{=} \PY{n}{lambd}\PY{p}{(}\PY{n}{S}\PY{p}{)}\PY{p}{;} \PY{n}{L}
 \end{Verbatim}
 \end{tcolorbox}
@@ -1062,7 +1032,6 @@
 \PY{c+c1}{\PYZsh{}}
 \PY{c+c1}{\PYZsh{}\PYZsh{}\PYZsh{} END RESULT ACHIEVED HERE (this is the end result and the most specific form of the result of the  matrix differentiation, when sigma is unknown)}
 \PY{n}{specToElemD} \PY{o}{=} \PY{p}{\PYZob{}}\PY{n}{v}\PY{p}{:}\PY{n}{k} \PY{k}{for} \PY{n}{k}\PY{p}{,}\PY{n}{v} \PY{o+ow}{in} \PY{n}{elemToSpecD}\PY{o}{.}\PY{n}{items}\PY{p}{(}\PY{p}{)}\PY{p}{\PYZcb{}}
-
 \PY{k}{assert} \PY{n}{Lsum} \PY{o}{==} \PY{n}{L}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{n}\PY{p}{,} \PY{n}{vN}\PY{p}{)}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{sigmaApply}\PY{p}{,} \PY{n}{sigmaApply\PYZus{}}\PY{p}{)}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{lambd}\PY{p}{,} \PY{n}{lambd\PYZus{}}\PY{p}{)}
 \PY{n}{Lsum}\PY{o}{.}\PY{n}{subs}\PY{p}{(}\PY{n}{elemToSpecD}\PY{p}{)}\PY{o}{.}\PY{n}{diff}\PY{p}{(}\PY{n}{X}\PY{p}{)}\PY{o}{.}\PY{n}{subs}\PY{p}{(}\PY{n}{specToElemD}\PY{p}{)}
 \end{Verbatim}
@@ -1152,28 +1121,24 @@
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{53}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{53}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{53}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{53}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
@@ -1191,7 +1156,6 @@
 \begin{Verbatim}[commandchars=\\\{\}]
 \PY{c+c1}{\PYZsh{}L.replace(sigmaApply, sigmaApply\PYZus{}).diff(A) \PYZsh{} ERROR}
 \PY{c+c1}{\PYZsh{} L.replace(lambd, lambd\PYZus{}) \PYZsh{} ERROR}
-
 \PY{c+c1}{\PYZsh{}L.replace(n, v).replace(sigmaApply, sigmaApply\PYZus{}2)\PYZsh{} shows matrix results, too specific, want the function composition notation as below but just applied to the function v(X,W) in abstract way}
 \PY{c+c1}{\PYZsh{}\PYZsh{}\PYZsh{} METHOD 0: (prepare by substituting n \PYZhy{}\PYZhy{}\PYZgt{} v, then sigmaApply \PYZhy{}\PYZhy{}\PYZgt{} sigma)}
 \PY{n}{L}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{n}\PY{p}{,} \PY{n}{v}\PY{p}{)}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{sigmaApply}\PY{p}{,} \PY{n}{sigmaApply\PYZus{}}\PY{p}{)}\PY{c+c1}{\PYZsh{}.replace(lambd, lambd\PYZus{})}
@@ -1550,7 +1514,6 @@
 \prompt{In}{incolor}{79}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
 \PY{n}{sas} \PY{o}{=} \PY{n}{Lambda}\PY{p}{(}\PY{p}{(}\PY{n}{A}\PY{p}{,}\PY{n}{B}\PY{p}{)}\PY{p}{,} \PY{n}{VL}\PY{p}{(}\PY{n}{A}\PY{p}{,}\PY{n}{B}\PY{p}{)}\PY{o}{.}\PY{n}{applyfunc}\PY{p}{(}\PY{n}{sigma}\PY{p}{)}\PY{p}{)}
-
 \PY{n}{sas}
 \end{Verbatim}
 \end{tcolorbox}
@@ -1665,9 +1628,7 @@
 \PY{c+c1}{\PYZsh{}sigmaApply\PYZus{}(Vs.subs(Vs, Lambda((A,B), n(A,B))))}
 \PY{k+kn}{from} \PY{n+nn}{sympy} \PY{k+kn}{import} \PY{n}{lambdify}
 \PY{c+c1}{\PYZsh{}sigma(lambdify([A,B], n(A,B)))}
-
 \PY{c+c1}{\PYZsh{}inner = Lambda((A,B), n(A,B)); inner}
-
 \PY{c+c1}{\PYZsh{}sigmaApply\PYZus{}(n(A,B))}
 \PY{c+c1}{\PYZsh{}sigmaApply(inner).replace(sigmaApply, Lambda(A, sigma(A)))}
 \end{Verbatim}
@@ -1713,14 +1674,12 @@
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{92}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{92}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
@@ -1749,14 +1708,12 @@
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{94}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{94}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
@@ -1798,14 +1755,12 @@
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{97}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{97}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
@@ -1815,7 +1770,6 @@
 \PY{n}{f} \PY{o}{=} \PY{n}{Function}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{f}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
 \PY{n}{xtoxL} \PY{o}{=} \PY{n}{Lambda}\PY{p}{(}\PY{n}{a}\PY{p}{,} \PY{n}{a}\PY{p}{)}
 \PY{n}{xtox} \PY{o}{=} \PY{k}{lambda} \PY{n}{a}\PY{p}{:} \PY{n}{a}
-
 \PY{n}{f}\PY{p}{(}\PY{n}{x}\PY{p}{)}\PY{o}{.}\PY{n}{subs}\PY{p}{(}\PY{p}{\PYZob{}}\PY{n}{x} \PY{p}{:} \PY{n}{xtoxL}\PY{p}{\PYZcb{}}\PY{p}{)}
 \end{Verbatim}
 \end{tcolorbox}
@@ -1859,14 +1813,12 @@
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{100}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{100}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
@@ -1880,21 +1832,18 @@
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{101}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{101}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{101}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
@@ -1904,9 +1853,7 @@
 \PY{c+c1}{\PYZsh{}\PYZsh{}\PYZsh{} METHOD 0: the matrix diff rule in the most abstract form possible}
 \PY{n}{n} \PY{o}{=} \PY{n}{Function}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{v}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{applyfunc}\PY{o}{=}\PY{k+kc}{True}\PY{p}{)} \PY{c+c1}{\PYZsh{} necessary}
 \PY{n}{L} \PY{o}{=} \PY{n}{lambd}\PY{p}{(}\PY{n}{sigmaApply}\PY{p}{(}\PY{n}{n}\PY{p}{(}\PY{n}{A}\PY{p}{,}\PY{n}{B}\PY{p}{)}\PY{p}{)}\PY{p}{)}
-
 \PY{n}{lambd\PYZus{}L} \PY{o}{=} \PY{n}{Lambda}\PY{p}{(}\PY{n}{A}\PY{p}{,} \PY{n+nb}{sum}\PY{p}{(}\PY{n}{A}\PY{p}{)}\PY{p}{)}
-
 \PY{n}{lambd\PYZus{}L}\PY{p}{(}\PY{n}{A}\PY{p}{)}
 \end{Verbatim}
 \end{tcolorbox}
@@ -1960,11 +1907,13 @@
     $\displaystyle \left. \frac{d}{d \xi_{1}} \lambda{\left(\xi_{1} \right)} \right|_{\substack{ \xi_{1}={\left( d \mapsto \sigma{\left(d \right)} \right)}_{\circ}\left({X W}\right) }} X^{T} {\left( d \mapsto \frac{d}{d d} \sigma{\left(d \right)} \right)}_{\circ}\left({X W}\right)$
 
     
+% MANUAL FIX HERE: to fix subscripts. 
+% NOTE: then used VM's xelatex to print this to pdf using jupyter template
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{105}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-\PY{c+c1}{\PYZsh{} Not showing ???}
+\PY{c+c1}{ \PYZsh{} Why not showing in ATOM ??? NOTE: this comment was added in the jupyter-generated latex file. Maybe it did not show in atom because of subscript error. Symbol was generated xi_{1}_{0,1} and renders xi_10,0 so had to go and fix manually to be xi_{{1}_{0,1}} }
 \PY{n}{L}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{n}\PY{p}{,}\PY{n}{v}\PY{p}{)}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{sigmaApply}\PY{p}{,} \PY{n}{sigmaApply\PYZus{}}\PY{p}{)}\PY{o}{.}\PY{n}{diff}\PY{p}{(}\PY{n}{B}\PY{p}{)}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{lambd}\PY{p}{,} \PY{n}{lambd\PYZus{}L}\PY{p}{)}
 \end{Verbatim}
 \end{tcolorbox}
@@ -1972,7 +1921,7 @@
             
 \prompt{Out}{outcolor}{105}{}
     
-    $\displaystyle \left. \frac{d}{d \xi_{1}} \left(\xi_{1}_{0, 0} + \xi_{1}_{0, 1} + \xi_{1}_{0, 2} + \xi_{1}_{1, 0} + \xi_{1}_{1, 1} + \xi_{1}_{1, 2} + \xi_{1}_{2, 0} + \xi_{1}_{2, 1} + \xi_{1}_{2, 2}\right) \right|_{\substack{ \xi_{1}={\left( d \mapsto \sigma{\left(d \right)} \right)}_{\circ}\left({X W}\right) }} X^{T} {\left( d \mapsto \frac{d}{d d} \sigma{\left(d \right)} \right)}_{\circ}\left({X W}\right)$
+    $\displaystyle \left. \frac{d}{d \xi_{1}} \left(\xi_{{1}_{0, 0}} + \xi_{{1}_{0, 1}} + \xi_{{1}_{0, 2}} + \xi_{{1}_{1, 0}} + \xi_{{1}_{1, 1}} + \xi_{{1}_{1, 2}} + \xi_{{1}_{2, 0}} + \xi_{{1}_{2, 1}} + \xi_{{1}_{2, 2}}\right) \right|_{\substack{ \xi_{1}={\left( d \mapsto \sigma{\left(d \right)} \right)}_{\circ}\left({X W}\right) }} X^{T} {\left( d \mapsto \frac{d}{d d} \sigma{\left(d \right)} \right)}_{\circ}\left({X W}\right)$
 
     
 
@@ -2040,7 +1989,6 @@
 \prompt{In}{incolor}{111}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
 \PY{c+c1}{\PYZsh{}Lsum = L.replace(n, vN).replace(sigmaApply, sigmaApply\PYZus{}).replace(lambd, lambd\PYZus{})}
-
 \PY{n}{L}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{n}\PY{p}{,} \PY{n}{vN}\PY{p}{)}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{sigmaApply}\PY{p}{,} \PY{n}{sigmaApply\PYZus{}}\PY{p}{)}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{lambd}\PY{p}{,} \PY{n}{lambd\PYZus{}}\PY{p}{)}\PY{o}{.}\PY{n}{subs}\PY{p}{(}\PY{n}{elemToSpecD}\PY{p}{)}\PY{o}{.}\PY{n}{diff}\PY{p}{(}\PY{n}{X}\PY{p}{)}\PY{c+c1}{\PYZsh{}.subs(specToElemD)}
 \end{Verbatim}
 \end{tcolorbox}
@@ -2055,7 +2003,6 @@
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{112}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
@@ -2134,28 +2081,24 @@ differentiating .w.r.t to X vs.~w.r.t to W \#\#\# With respect to X
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{116}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{116}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{116}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{116}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
@@ -2169,7 +2112,6 @@ method 2 or
 \prompt{In}{incolor}{116}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
 \PY{k+kn}{from} \PY{n+nn}{sympy} \PY{k+kn}{import} \PY{n}{simplify}\PY{p}{,} \PY{n}{expand}
-
 \PY{c+c1}{\PYZsh{}simplify(L.replace(n,vL).replace(sigmaApply, sigmaApply\PYZus{}).diff(B).subs(\PYZob{}A:X, B:W\PYZcb{})) \PYZsh{}\PYZsh{}\PYZsh{} ERROR max recursion depth exceeded}
 \PY{n}{L}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{n}\PY{p}{,}\PY{n}{vL}\PY{p}{)}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{sigmaApply}\PY{p}{,} \PY{n}{sigmaApply\PYZus{}}\PY{p}{)}\PY{o}{.}\PY{n}{diff}\PY{p}{(}\PY{n}{B}\PY{p}{)}\PY{o}{.}\PY{n}{subs}\PY{p}{(}\PY{p}{\PYZob{}}\PY{n}{A}\PY{p}{:}\PY{n}{X}\PY{p}{,} \PY{n}{B}\PY{p}{:}\PY{n}{W}\PY{p}{\PYZcb{}}\PY{p}{)}
 \end{Verbatim}
@@ -2235,7 +2177,6 @@ method 2 or
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{121}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
@@ -2312,7 +2253,6 @@ method 2 or
 \begin{Verbatim}[commandchars=\\\{\}]
 \PY{c+c1}{\PYZsh{} TODO always get fatal python error here, as if it can\PYZsq{}t deal with two matrix args!!}
 \PY{c+c1}{\PYZsh{}Ly.replace(A,A.T).replace(B,B.T).diff(A)}
-
 \PY{c+c1}{\PYZsh{}siga2 = Lambda(a, siga(a))}
 \end{Verbatim}
 \end{tcolorbox}
@@ -2349,7 +2289,6 @@ method 2 or
 \prompt{In}{incolor}{129}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
 \PY{c+c1}{\PYZsh{}L.replace(n, vN).replace(sigmaApply, sigmaApply\PYZus{}).subs(elemToMatArgD).diff(A)\PYZsh{}\PYZsh{} ERROR: max recursion depth eceeded}
-
 \PY{n}{L}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{n}\PY{p}{,} \PY{n}{vN}\PY{p}{)}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{sigmaApply}\PY{p}{,} \PY{n}{sigmaApply\PYZus{}}\PY{p}{)}\PY{o}{.}\PY{n}{subs}\PY{p}{(}\PY{n}{elemToMatArgD}\PY{p}{)}\PY{o}{.}\PY{n}{diff}\PY{p}{(}\PY{n}{Matrix}\PY{p}{(}\PY{l+m+mi}{3}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{,}\PY{n+nb}{list}\PY{p}{(}\PY{n}{elemToMatArgD}\PY{o}{.}\PY{n}{values}\PY{p}{(}\PY{p}{)}\PY{p}{)}\PY{p}{)}\PY{p}{)}
 \end{Verbatim}
 \end{tcolorbox}
@@ -2398,21 +2337,21 @@ mappingproxy(\{'applyfunc': True,
               '\_\_module\_\_': None,
               '\_\_doc\_\_': None,
               'name': 'sigma',
-              '\_sage\_': <sympy.core.function.UndefSageHelper at 0x7fd13afb3bd0>,
+              '\_sage\_': <sympy.core.function.UndefSageHelper at 0x7f732bb75690>,
               '\_nargs': None,
-              '\_\_sympy\_\_': <property at 0x7fd1398b8950>,
+              '\_\_sympy\_\_': <property at 0x7f732a7a8950>,
               '\_explicit\_class\_assumptions': \{\},
               'default\_assumptions': \{\},
-              '\_prop\_handler': \{'commutative': <function
-sympy.core.function.Function.\_eval\_is\_commutative(self)>,
+              '\_prop\_handler': \{'extended\_positive': <function
+sympy.core.expr.Expr.\_eval\_is\_extended\_positive(self)>,
+               'positive': <function
+sympy.core.expr.Expr.\_eval\_is\_positive(self)>,
                'negative': <function
 sympy.core.expr.Expr.\_eval\_is\_negative(self)>,
-               'extended\_positive': <function
-sympy.core.expr.Expr.\_eval\_is\_extended\_positive(self)>,
+               'commutative': <function
+sympy.core.function.Function.\_eval\_is\_commutative(self)>,
                'extended\_negative': <function
-sympy.core.expr.Expr.\_eval\_is\_extended\_negative(self)>,
-               'positive': <function
-sympy.core.expr.Expr.\_eval\_is\_positive(self)>\}\})
+sympy.core.expr.Expr.\_eval\_is\_extended\_negative(self)>\}\})
 \end{Verbatim}
 \end{tcolorbox}
         
@@ -2498,28 +2437,24 @@ sympy.core.expr.Expr.\_eval\_is\_positive(self)>\}\})
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{139}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{139}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{139}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{139}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
@@ -2557,14 +2492,11 @@ sympy.core.expr.Expr.\_eval\_is\_positive(self)>\}\})
 \PY{n}{sigma} \PY{o}{=} \PY{n}{Function}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{sigma}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{applyfunc}\PY{o}{=}\PY{k+kc}{True}\PY{p}{,} \PY{n}{real}\PY{o}{=}\PY{k+kc}{True}\PY{p}{)}
 \PY{n}{sigmaApply\PYZus{}} \PY{o}{=} \PY{k}{lambda} \PY{n}{mat}\PY{p}{:} \PY{n}{mat}\PY{o}{.}\PY{n}{applyfunc}\PY{p}{(}\PY{n}{sigma}\PY{p}{)}
 \PY{n}{L} \PY{o}{=} \PY{n}{lambd}\PY{p}{(}\PY{n}{sigmaApply}\PY{p}{(}\PY{n}{n}\PY{p}{(}\PY{n}{A}\PY{p}{,}\PY{n}{B}\PY{p}{)}\PY{p}{)}\PY{p}{)}
-
 \PY{c+c1}{\PYZsh{}L.replace(A,a).replace(B,b).diff(b).subs(\PYZob{}a:A,b:B\PYZcb{}).replace(sigmaApply, sigmaApply\PYZus{})}
 \PY{n}{L}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{n}\PY{p}{,} \PY{n}{v}\PY{p}{)}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{sigmaApply}\PY{p}{,} \PY{n}{sigmaApply\PYZus{}}\PY{p}{)}\PY{o}{.}\PY{n}{diff}\PY{p}{(}\PY{n}{A}\PY{p}{)}
 \PY{c+c1}{\PYZsh{}m = Symbol(\PYZdq{}m\PYZdq{}, shape=(3,2))}
 \PY{c+c1}{\PYZsh{}m.shape}
-
 \PY{c+c1}{\PYZsh{}sigmaApply\PYZus{}3 = Lambda(m, siga(m))}
-
 \PY{c+c1}{\PYZsh{}L.replace(A,a).replace(B,b).diff(b).replace(b,B).replace(a,A).subs(\PYZob{}n:vL\PYZcb{}).replace(sigmaApply, sigmaApply\PYZus{}2) \PYZsh{}\PYZsh{}\PYZsh{} ERROR: Dummy object has no attribute shape}
 \end{Verbatim}
 \end{tcolorbox}
@@ -2614,21 +2546,21 @@ mappingproxy(\{'applyfunc': True,
               '\_\_module\_\_': None,
               '\_\_doc\_\_': None,
               'name': 'v',
-              '\_sage\_': <sympy.core.function.UndefSageHelper at 0x7fd13afb3bd0>,
+              '\_sage\_': <sympy.core.function.UndefSageHelper at 0x7f732bb75690>,
               '\_nargs': None,
-              '\_\_sympy\_\_': <property at 0x7fd139a6d3b0>,
+              '\_\_sympy\_\_': <property at 0x7f732a6332f0>,
               '\_explicit\_class\_assumptions': \{\},
               'default\_assumptions': \{\},
-              '\_prop\_handler': \{'commutative': <function
-sympy.core.function.Function.\_eval\_is\_commutative(self)>,
+              '\_prop\_handler': \{'extended\_positive': <function
+sympy.core.expr.Expr.\_eval\_is\_extended\_positive(self)>,
+               'positive': <function
+sympy.core.expr.Expr.\_eval\_is\_positive(self)>,
                'negative': <function
 sympy.core.expr.Expr.\_eval\_is\_negative(self)>,
-               'extended\_positive': <function
-sympy.core.expr.Expr.\_eval\_is\_extended\_positive(self)>,
+               'commutative': <function
+sympy.core.function.Function.\_eval\_is\_commutative(self)>,
                'extended\_negative': <function
-sympy.core.expr.Expr.\_eval\_is\_extended\_negative(self)>,
-               'positive': <function
-sympy.core.expr.Expr.\_eval\_is\_positive(self)>\}\})
+sympy.core.expr.Expr.\_eval\_is\_extended\_negative(self)>\}\})
 \end{Verbatim}
 \end{tcolorbox}
         
@@ -2651,35 +2583,33 @@ mappingproxy(\{'applyfunc': True,
               '\_\_module\_\_': None,
               '\_\_doc\_\_': None,
               'name': 'y',
-              '\_sage\_': <sympy.core.function.UndefSageHelper at 0x7fd13afb3bd0>,
+              '\_sage\_': <sympy.core.function.UndefSageHelper at 0x7f732bb75690>,
               '\_nargs': None,
-              '\_\_sympy\_\_': <property at 0x7fd13993ccb0>,
+              '\_\_sympy\_\_': <property at 0x7f732a445d10>,
               '\_explicit\_class\_assumptions': \{\},
               'default\_assumptions': \{\},
-              '\_prop\_handler': \{'commutative': <function
-sympy.core.function.Function.\_eval\_is\_commutative(self)>,
+              '\_prop\_handler': \{'extended\_positive': <function
+sympy.core.expr.Expr.\_eval\_is\_extended\_positive(self)>,
+               'positive': <function
+sympy.core.expr.Expr.\_eval\_is\_positive(self)>,
                'negative': <function
 sympy.core.expr.Expr.\_eval\_is\_negative(self)>,
-               'extended\_positive': <function
-sympy.core.expr.Expr.\_eval\_is\_extended\_positive(self)>,
+               'commutative': <function
+sympy.core.function.Function.\_eval\_is\_commutative(self)>,
                'extended\_negative': <function
-sympy.core.expr.Expr.\_eval\_is\_extended\_negative(self)>,
-               'positive': <function
-sympy.core.expr.Expr.\_eval\_is\_positive(self)>\}\})
+sympy.core.expr.Expr.\_eval\_is\_extended\_negative(self)>\}\})
 \end{Verbatim}
 \end{tcolorbox}
         
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{146}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{146}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-
 \end{Verbatim}
 \end{tcolorbox}
 
@@ -2688,10 +2618,8 @@ sympy.core.expr.Expr.\_eval\_is\_positive(self)>\}\})
 \begin{Verbatim}[commandchars=\\\{\}]
 \PY{k+kn}{from} \PY{n+nn}{sympy} \PY{k+kn}{import} \PY{n}{diff}
 \PY{c+c1}{\PYZsh{} \PYZsh{}\PYZsh{}\PYZsh{} WARNING: this only works when size(X) == size(Y) else since size(W) != size(X) cannot subst B with W, so this operation won\PYZsq{}t work in my case.}
-
 \PY{c+c1}{\PYZsh{}X = Matrix(3,3, lambda i,j: Symbol(\PYZdq{}x\PYZus{}\PYZob{}\PYZcb{}\PYZob{}\PYZcb{}\PYZdq{}.format(i+1,j+1))); Matrix(X)}
 \PY{c+c1}{\PYZsh{} Create another matrix instead of W so that it matches size of X during diff(X) operation, since otherwise the diff by X doesn\PYZsq{}t work, says X and W need to be same size.}
-
 \PY{n}{Wtemp} \PY{o}{=} \PY{n}{Matrix}\PY{p}{(}\PY{o}{*}\PY{n}{X}\PY{o}{.}\PY{n}{shape}\PY{p}{,} \PY{k}{lambda} \PY{n}{i}\PY{p}{,}\PY{n}{j}\PY{p}{:} \PY{n}{Symbol}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{t\PYZus{}}\PY{l+s+si}{\PYZob{}\PYZcb{}}\PY{l+s+si}{\PYZob{}\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{o}{.}\PY{n}{format}\PY{p}{(}\PY{n}{i}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{,}\PY{n}{j}\PY{o}{+}\PY{l+m+mi}{1}\PY{p}{)}\PY{p}{)}\PY{p}{)}\PY{p}{;} \PY{n}{Matrix}\PY{p}{(}\PY{n}{Wtemp}\PY{p}{)}
 \end{Verbatim}
 \end{tcolorbox}
@@ -2815,9 +2743,6 @@ sympy.core.expr.Expr.\_eval\_is\_positive(self)>\}\})
 \PY{c+c1}{\PYZsh{} Making matrix symbols again}
 \PY{n}{Ss} \PY{o}{=} \PY{n}{MatrixSymbol}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{S}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+m+mi}{3}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{)} \PY{c+c1}{\PYZsh{}n by p}
 \PY{n}{Ns} \PY{o}{=} \PY{n}{MatrixSymbol}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{N}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+m+mi}{3}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{)} \PY{c+c1}{\PYZsh{}n by p}
-
-
-
 \PY{n}{short} \PY{o}{=} \PY{n}{elem}\PY{o}{.}\PY{n}{subs}\PY{p}{(}\PY{p}{\PYZob{}}\PY{n}{A}\PY{p}{:}\PY{n}{X}\PY{p}{,} \PY{n}{B}\PY{p}{:}\PY{n}{W}\PY{p}{\PYZcb{}}\PY{p}{)}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{n}\PY{p}{,} \PY{n}{vN}\PY{p}{)}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{sigmaApply}\PY{p}{,} \PY{n}{sigmaApply\PYZus{}}\PY{p}{)}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{X}\PY{p}{,}\PY{n}{A}\PY{p}{)}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{Nelem}\PY{p}{,} \PY{n}{Ns}\PY{p}{)}\PY{o}{.}\PY{n}{replace}\PY{p}{(}\PY{n}{Selem} \PY{p}{,}\PY{n}{Ss}\PY{p}{)}
 \PY{n}{short}
 \end{Verbatim}
@@ -2850,7 +2775,6 @@ sympy.core.expr.Expr.\_eval\_is\_positive(self)>\}\})
 \begin{Verbatim}[commandchars=\\\{\}]
 \PY{c+c1}{\PYZsh{} Making each of the n\PYZus{}ijs a function}
 \PY{c+c1}{\PYZsh{}elem.subs(\PYZob{}A:X, B:W\PYZcb{}).replace(n, vN).replace(sigmaApply, sigmaApply\PYZus{}).replace(lambd, lambd\PYZus{}).subs(elemToSpecD)}
-
 \PY{n}{Matrix}\PY{p}{(}\PY{n}{elemToSpecFuncArgs}\PY{p}{)}
 \end{Verbatim}
 \end{tcolorbox}
@@ -3219,6 +3143,6 @@ sympy.core.expr.Expr.\_eval\_is\_positive(self)>\}\})
 
     % Add a bibliography block to the postdoc
     
-    \end{tabular}
+    
     
 \end{document}
