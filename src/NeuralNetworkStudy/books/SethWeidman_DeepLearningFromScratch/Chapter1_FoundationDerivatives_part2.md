@@ -75,31 +75,31 @@ Define some straightforward operations on these matrices:
 Multiply these matrices together using $N = \nu(X, W)$ and denoting the row $i$ and column $j$ in the resulting matrix as $(XW)_{ij}$:
 
 $$
-\begin{align}
-N &= \nu(X,W) \\\\\\\\
-&= X \times W \\\\\\\\
+\begin{aligned}
+N &= \nu(X,W) \\
+&= X \times W \\
 &= \begin{pmatrix}
   x_{11} \cdot w_{11} + x_{12} \cdot w_{21} + ... + x_{1m} \cdot w_{m1} &
   x_{11} \cdot w_{12} + x_{12} \cdot w_{22} + ... + x_{1m} \cdot w_{m2} &
   ... &
-  x_{11} \cdot w_{1p} + x_{12} \cdot w_{2p} + ... + x_{1m} \cdot w_{mp} \\\\\\\\
+  x_{11} \cdot w_{1p} + x_{12} \cdot w_{2p} + ... + x_{1m} \cdot w_{mp} \\
   x_{21} \cdot w_{11} + x_{22} \cdot w_{21} + ... + x_{2m} \cdot w_{m1} &
   x_{21} \cdot w_{12} + x_{22} \cdot w_{22} + ... + x_{2m} \cdot w_{m2} &
   ... &
-  x_{21} \cdot w_{1p} + x_{22} \cdot w_{2p} + ... + x_{2m} \cdot w_{mp} \\\\\\\\
-  \vdots & \vdots & \vdots & \vdots \\\\\\\\
+  x_{21} \cdot w_{1p} + x_{22} \cdot w_{2p} + ... + x_{2m} \cdot w_{mp} \\
+  \vdots & \vdots & \vdots & \vdots \\
   x_{n1} \cdot w_{11} + x_{n2} \cdot w_{21} + ... + x_{nm} \cdot w_{m1} &
   x_{n1} \cdot w_{12} + x_{n2} \cdot w_{22} + ... + x_{nm} \cdot w_{m2} &
   ... &
-  x_{n1} \cdot w_{1p} + x_{n2} \cdot w_{2p} + ... + x_{nm} \cdot w_{mp} \\\\\\\\
-\end{pmatrix} \\\\\\\\
+  x_{n1} \cdot w_{1p} + x_{n2} \cdot w_{2p} + ... + x_{nm} \cdot w_{mp} \\
+\end{pmatrix} \\
 &= \begin{pmatrix}
-  (XW)_{11} &   (XW)_{12} & ... & (XW)_{1p} \\\\\\\\
-  (XW)_{21} &   (XW)_{22} & ... & (XW)_{2p} \\\\\\\\
-  \vdots & \vdots & \vdots & \vdots \\\\\\\\
+  (XW)_{11} &   (XW)_{12} & ... & (XW)_{1p} \\
+  (XW)_{21} &   (XW)_{22} & ... & (XW)_{2p} \\
+  \vdots & \vdots & \vdots & \vdots \\
   (XW)_{n1} &   (XW)_{n2} & ... & (XW)_{np}
 \end{pmatrix}
-\end{align}
+\end{aligned}
 $$
 where `X.shape == (n, m)`, and `W.shape == (m, p)`, and `N.shape == (n, p)`.
 
@@ -108,72 +108,72 @@ Feed $N$ through some differentiable function $\sigma$ and define $S = \sigma(N)
 
 
 $$
-\begin{align}
-S &= \sigma(N) \\\\\\\\
- &= \sigma(\nu(X, W)) \\\\\\\\
- &= \sigma(X \times W) \\\\\\\\
+\begin{aligned}
+S &= \sigma(N) \\
+ &= \sigma(\nu(X, W)) \\
+ &= \sigma(X \times W) \\
  &= \begin{pmatrix}
   \sigma \Big( x_{11} \cdot w_{11} + x_{12} \cdot w_{21} + ... + x_{1m} \cdot w_{m1} \Big) &
   \sigma \Big( x_{11} \cdot w_{12} + x_{12} \cdot w_{22} + ... + x_{1m} \cdot w_{m2} \Big) &
   ... &
-  \sigma \Big( x_{11} \cdot w_{1p} + x_{12} \cdot w_{2p} + ... + x_{1m} \cdot w_{mp} \Big) \\\\\\\\
+  \sigma \Big( x_{11} \cdot w_{1p} + x_{12} \cdot w_{2p} + ... + x_{1m} \cdot w_{mp} \Big) \\
   \sigma \Big( x_{21} \cdot w_{11} + x_{22} \cdot w_{21} + ... + x_{2m} \cdot w_{m1} \Big) &
   \sigma \Big( x_{21} \cdot w_{12} + x_{22} \cdot w_{22} + ... + x_{2m} \cdot w_{m2} \Big) &
   ... &
-  \sigma \Big( x_{21} \cdot w_{1p} + x_{22} \cdot w_{2p} + ... + x_{2m} \cdot w_{mp} \Big) \\\\\\\\
-  \vdots & \vdots & \vdots & \vdots \\\\\\\\
+  \sigma \Big( x_{21} \cdot w_{1p} + x_{22} \cdot w_{2p} + ... + x_{2m} \cdot w_{mp} \Big) \\
+  \vdots & \vdots & \vdots & \vdots \\
   \sigma \Big( x_{n1} \cdot w_{11} + x_{n2} \cdot w_{21} + ... + x_{nm} \cdot w_{m1} \Big) &
   \sigma \Big( x_{n1} \cdot w_{12} + x_{n2} \cdot w_{22} + ... + x_{nm} \cdot w_{m2} \Big) &
   ... &
   \sigma \Big( x_{n1} \cdot w_{1p} + x_{n2} \cdot w_{2p} + ... + x_{nm} \cdot w_{mp} \Big)
-\end{pmatrix} \\\\\\\\
+\end{pmatrix} \\
 &= \begin{pmatrix}
-  \sigma \Big( (XW)_{11} \Big) &   \sigma \Big( (XW)_{12} \Big) & ... & \sigma \Big( (XW)_{1p} \Big) \\\\\\\\
-  \sigma \Big( (XW)_{21} \Big) &   \sigma \Big( (XW)_{22} \Big) & ... & \sigma \Big( (XW)_{2p} \Big) \\\\\\\\
-  \vdots & \vdots & \vdots & \vdots \\\\\\\\
+  \sigma \Big( (XW)_{11} \Big) &   \sigma \Big( (XW)_{12} \Big) & ... & \sigma \Big( (XW)_{1p} \Big) \\
+  \sigma \Big( (XW)_{21} \Big) &   \sigma \Big( (XW)_{22} \Big) & ... & \sigma \Big( (XW)_{2p} \Big) \\
+  \vdots & \vdots & \vdots & \vdots \\
   \sigma \Big( (XW)_{n1} \Big) &   \sigma \Big( (XW)_{n2} \Big) & ... & \sigma \Big( (XW)_{np} \Big)
 \end{pmatrix}
-\end{align}
+\end{aligned}
 $$
 
 where `S.shape == N.shape == (n, p)`.
 <!-- #endregion -->
-```python title="markdown"
-# ### STEP 3:
-# Defining a $\Lambda$ function to sum up the elements in the matrix to find the total effect of changing each element of a matrix:
-#
-# $$
-# \begin{align}
-# L &= \Lambda(\sigma(N(X, W))) \\
-#   &= \Lambda \begin{pmatrix}
-# \begin{pmatrix}
-#   \sigma \Big( (XW)_{11} \Big) &   \sigma \Big( (XW)_{12} \Big) & ... & \sigma \Big( (XW)_{1p} \Big) \\
-#   \sigma \Big( (XW)_{21} \Big) &   \sigma \Big( (XW)_{22} \Big) & ... & \sigma \Big( (XW)_{2p} \Big) \\
-#   \vdots & \vdots & \vdots & \vdots \\
-#   \sigma \Big( (XW)_{n1} \Big) &   \sigma \Big( (XW)_{n2} \Big) & ... & \sigma \Big( (XW)_{np} \Big)
-# \end{pmatrix}
-# \end{pmatrix} \\
-#
-# &= \sigma(XW_{11}) + ... + \sigma(XW_{1p}) + \sigma(XW_{21}) + ... + \sigma(XW_{2p}) + ... ... ... + \sigma(XW_{n1}) + ... + \sigma(XW_{np})
-# \end{align}
-# $$
-#  where $\Lambda$.`shape == (1,1)` so $\Lambda$ is a constant
-#
-# * NOTE: the code can handle higher-dim tensors while the formulas above handle only 2-dim tensors (matrices). So in the code, we have:
-#   * `X.shape == (..., n, m)`
-#   * `W.shape == (..., m, p)`
-#   * `N.shape == (..., n, p)`
-#   * `S.shape == (..., n, p)`
-#   * $\Lambda$`.shape == (1,1)`
-# * and in the formulas we have:
-#   * `X.shape == (n, m)`
-#   * `W.shape == (m, p)`
-#   * `N.shape == (n, p)`
-#   * `S.shape == (n, p)`
-#   * $\Lambda$`.shape == (1,1)`
-#
-# * NOTE: the '...' is set to mean that all dimensions before the last two are the same for all tensors in these calculations.
-```
+<!-- #region markdown -->
+### STEP 3:
+Defining a $\Lambda$ function to sum up the elements in the matrix to find the total effect of changing each element of a matrix:
+
+$$
+\begin{aligned}
+L &= \Lambda(\sigma(N(X, W))) \\
+  &= \Lambda \begin{pmatrix}
+\begin{pmatrix}
+  \sigma \Big( (XW)_{11} \Big) &   \sigma \Big( (XW)_{12} \Big) & ... & \sigma \Big( (XW)_{1p} \Big) \\
+  \sigma \Big( (XW)_{21} \Big) &   \sigma \Big( (XW)_{22} \Big) & ... & \sigma \Big( (XW)_{2p} \Big) \\
+  \vdots & \vdots & \vdots & \vdots \\
+  \sigma \Big( (XW)_{n1} \Big) &   \sigma \Big( (XW)_{n2} \Big) & ... & \sigma \Big( (XW)_{np} \Big)
+\end{pmatrix}
+\end{pmatrix} \\
+
+&= \sigma(XW_{11}) + ... + \sigma(XW_{1p}) + \sigma(XW_{21}) + ... + \sigma(XW_{2p}) + ... ... ... + \sigma(XW_{n1}) + ... + \sigma(XW_{np})
+\end{aligned}
+$$
+ where $\Lambda$.`shape == (1,1)` so $\Lambda$ is a constant
+
+* NOTE: the code can handle higher-dim tensors while the formulas above handle only 2-dim tensors (matrices). So in the code, we have:
+  * `X.shape == (..., n, m)`
+  * `W.shape == (..., m, p)`
+  * `N.shape == (..., n, p)`
+  * `S.shape == (..., n, p)`
+  * $\Lambda$`.shape == (1,1)`
+* and in the formulas we have:
+  * `X.shape == (n, m)`
+  * `W.shape == (m, p)`
+  * `N.shape == (n, p)`
+  * `S.shape == (n, p)`
+  * $\Lambda$`.shape == (1,1)`
+
+* NOTE: the '...' is set to mean that all dimensions before the last two are the same for all tensors in these calculations.
+<!-- #endregion -->
 ```python title="codecell"
 def matrixForwardSum(Xa: Tensor, Wa: Tensor, sigma: TensorFunction) -> float:
      '''Computes the result of the forward pass of the function L with input tensors X and W and function sigma
@@ -266,7 +266,7 @@ $$
 Information about the rate of change of $\mathbf{y}$ with respect to $\mathbf{x}$ is contained in the various partial derivatives $\frac{\partial y_i}{\partial x_j}$ for $1 \leq i \leq m, 1 \leq j \leq n$ and is conveniently organized into an $m \times n$ matrix $\frac{\partial \mathbf{y}}{\partial \mathbf{x}}$ called the **Jacobian matrix** of the transformation $\mathbf{f}$. The Jacobian matrix is the collection of all $m \times n$ possible partial derivatives ($m$ rows and $n$ columns), which is the stack of $m$ gradients with respect to $\mathbf{x}$:
 $$
 \Large
-\begin{align}
+\begin{aligned}
 \frac{\partial \mathbf{y}}{\partial \mathbf{x}} &= \begin{pmatrix}
    \nabla f_1(\mathbf{x}) \\
    \nabla f_2(\mathbf{x}) \\
@@ -294,7 +294,7 @@ $$
   \vdots & \vdots &  & \vdots \\
   \frac{\partial f_m}{\partial x_1} & \frac{\partial f_m}{\partial x_2} & ... & \frac{\partial f_m}{\partial x_n}
 \end{pmatrix}
-\end{align}
+\end{aligned}
 $$
 This linear transformation represented by the Jacobian matrix is called **the derivative** of the transformation $\mathbf{f}$.
 
@@ -356,7 +356,7 @@ has, according to the Chain Rule, the $m \times n$ Jacobian matrix
 
 $$
 \Large
-\begin{align}
+\begin{aligned}
 
 \frac{\partial}{\partial \mathbf{x}} \mathbf{f} \big( \mathbf{g}(\mathbf{x}) \big) &= \frac{\partial \mathbf{f}}{\partial \mathbf{g}} \times \frac{\partial \mathbf{g}}{\partial \mathbf{x}} \\
 
@@ -383,7 +383,7 @@ $$
 \frac{\partial g_k}{\partial x_1} & \frac{\partial g_k}{\partial x_2} & ... & \frac{\partial g_k}{\partial x_n}
 \end{pmatrix}
 
-\end{align}
+\end{aligned}
 $$
 where $\times$ denotes matrix multiplication, and $m = |\mathbf{f}|, n = |\mathbf{x}|$ and $k = |\mathbf{g}|$.
 

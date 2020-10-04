@@ -14330,12 +14330,12 @@ a.anchor-link {
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>tensor(780.0781)
-tensor(779.3425)
-tensor(11886.0352)
-tensor(11880.3770)
-tensor(2212.5000)
-tensor(2173.3906)
+<pre>tensor(2561.4746)
+tensor(2560.3645)
+tensor(10825.6836)
+tensor(10817.1699)
+tensor(347.7783)
+tensor(347.7498)
 </pre>
 </div>
 </div>
@@ -14403,114 +14403,109 @@ $$
 <p>Define some straightforward operations on these matrices:</p>
 <h3 id="STEP-1:">STEP 1:<a class="anchor-link" href="#STEP-1:">&#182;</a></h3><p>Multiply these matrices together using $N = \nu(X, W)$ and denoting the row $i$ and column $j$ in the resulting matrix as $(XW)_{ij}$:</p>
 $$
-\begin{align}
-N &amp;= \nu(X,W) \\\\\\\\
-&amp;= X \times W \\\\\\\\
+\begin{aligned}
+N &amp;= \nu(X,W) \\
+&amp;= X \times W \\
 &amp;= \begin{pmatrix}
   x_{11} \cdot w_{11} + x_{12} \cdot w_{21} + ... + x_{1m} \cdot w_{m1} &amp;
   x_{11} \cdot w_{12} + x_{12} \cdot w_{22} + ... + x_{1m} \cdot w_{m2} &amp;
   ... &amp;
-  x_{11} \cdot w_{1p} + x_{12} \cdot w_{2p} + ... + x_{1m} \cdot w_{mp} \\\\\\\\
+  x_{11} \cdot w_{1p} + x_{12} \cdot w_{2p} + ... + x_{1m} \cdot w_{mp} \\
   x_{21} \cdot w_{11} + x_{22} \cdot w_{21} + ... + x_{2m} \cdot w_{m1} &amp;
   x_{21} \cdot w_{12} + x_{22} \cdot w_{22} + ... + x_{2m} \cdot w_{m2} &amp;
   ... &amp;
-  x_{21} \cdot w_{1p} + x_{22} \cdot w_{2p} + ... + x_{2m} \cdot w_{mp} \\\\\\\\
-  \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\\\\\\\
+  x_{21} \cdot w_{1p} + x_{22} \cdot w_{2p} + ... + x_{2m} \cdot w_{mp} \\
+  \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\
   x_{n1} \cdot w_{11} + x_{n2} \cdot w_{21} + ... + x_{nm} \cdot w_{m1} &amp;
   x_{n1} \cdot w_{12} + x_{n2} \cdot w_{22} + ... + x_{nm} \cdot w_{m2} &amp;
   ... &amp;
-  x_{n1} \cdot w_{1p} + x_{n2} \cdot w_{2p} + ... + x_{nm} \cdot w_{mp} \\\\\\\\
-\end{pmatrix} \\\\\\\\
+  x_{n1} \cdot w_{1p} + x_{n2} \cdot w_{2p} + ... + x_{nm} \cdot w_{mp} \\
+\end{pmatrix} \\
 &amp;= \begin{pmatrix}
-  (XW)_{11} &amp;   (XW)_{12} &amp; ... &amp; (XW)_{1p} \\\\\\\\
-  (XW)_{21} &amp;   (XW)_{22} &amp; ... &amp; (XW)_{2p} \\\\\\\\
-  \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\\\\\\\
+  (XW)_{11} &amp;   (XW)_{12} &amp; ... &amp; (XW)_{1p} \\
+  (XW)_{21} &amp;   (XW)_{22} &amp; ... &amp; (XW)_{2p} \\
+  \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\
   (XW)_{n1} &amp;   (XW)_{n2} &amp; ... &amp; (XW)_{np}
 \end{pmatrix}
-\end{align}
+\end{aligned}
 $$<p>where <code>X.shape == (n, m)</code>, and <code>W.shape == (m, p)</code>, and <code>N.shape == (n, p)</code>.</p>
 <h3 id="STEP-2:">STEP 2:<a class="anchor-link" href="#STEP-2:">&#182;</a></h3><p>Feed $N$ through some differentiable function $\sigma$ and define $S = \sigma(N)$ (just applying $\sigma$ to every element of the matrix operation defined by $N$):</p>
 $$
-\begin{align}
-S &amp;= \sigma(N) \\\\\\\\
- &amp;= \sigma(\nu(X, W)) \\\\\\\\
- &amp;= \sigma(X \times W) \\\\\\\\
+\begin{aligned}
+S &amp;= \sigma(N) \\
+ &amp;= \sigma(\nu(X, W)) \\
+ &amp;= \sigma(X \times W) \\
  &amp;= \begin{pmatrix}
   \sigma \Big( x_{11} \cdot w_{11} + x_{12} \cdot w_{21} + ... + x_{1m} \cdot w_{m1} \Big) &amp;
   \sigma \Big( x_{11} \cdot w_{12} + x_{12} \cdot w_{22} + ... + x_{1m} \cdot w_{m2} \Big) &amp;
   ... &amp;
-  \sigma \Big( x_{11} \cdot w_{1p} + x_{12} \cdot w_{2p} + ... + x_{1m} \cdot w_{mp} \Big) \\\\\\\\
+  \sigma \Big( x_{11} \cdot w_{1p} + x_{12} \cdot w_{2p} + ... + x_{1m} \cdot w_{mp} \Big) \\
   \sigma \Big( x_{21} \cdot w_{11} + x_{22} \cdot w_{21} + ... + x_{2m} \cdot w_{m1} \Big) &amp;
   \sigma \Big( x_{21} \cdot w_{12} + x_{22} \cdot w_{22} + ... + x_{2m} \cdot w_{m2} \Big) &amp;
   ... &amp;
-  \sigma \Big( x_{21} \cdot w_{1p} + x_{22} \cdot w_{2p} + ... + x_{2m} \cdot w_{mp} \Big) \\\\\\\\
-  \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\\\\\\\
+  \sigma \Big( x_{21} \cdot w_{1p} + x_{22} \cdot w_{2p} + ... + x_{2m} \cdot w_{mp} \Big) \\
+  \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\
   \sigma \Big( x_{n1} \cdot w_{11} + x_{n2} \cdot w_{21} + ... + x_{nm} \cdot w_{m1} \Big) &amp;
   \sigma \Big( x_{n1} \cdot w_{12} + x_{n2} \cdot w_{22} + ... + x_{nm} \cdot w_{m2} \Big) &amp;
   ... &amp;
   \sigma \Big( x_{n1} \cdot w_{1p} + x_{n2} \cdot w_{2p} + ... + x_{nm} \cdot w_{mp} \Big)
-\end{pmatrix} \\\\\\\\
+\end{pmatrix} \\
 &amp;= \begin{pmatrix}
-  \sigma \Big( (XW)_{11} \Big) &amp;   \sigma \Big( (XW)_{12} \Big) &amp; ... &amp; \sigma \Big( (XW)_{1p} \Big) \\\\\\\\
-  \sigma \Big( (XW)_{21} \Big) &amp;   \sigma \Big( (XW)_{22} \Big) &amp; ... &amp; \sigma \Big( (XW)_{2p} \Big) \\\\\\\\
-  \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\\\\\\\
+  \sigma \Big( (XW)_{11} \Big) &amp;   \sigma \Big( (XW)_{12} \Big) &amp; ... &amp; \sigma \Big( (XW)_{1p} \Big) \\
+  \sigma \Big( (XW)_{21} \Big) &amp;   \sigma \Big( (XW)_{22} \Big) &amp; ... &amp; \sigma \Big( (XW)_{2p} \Big) \\
+  \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\
   \sigma \Big( (XW)_{n1} \Big) &amp;   \sigma \Big( (XW)_{n2} \Big) &amp; ... &amp; \sigma \Big( (XW)_{np} \Big)
 \end{pmatrix}
-\end{align}
+\end{aligned}
 $$<p>where <code>S.shape == N.shape == (n, p)</code>.</p>
+
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="STEP-3:">STEP 3:<a class="anchor-link" href="#STEP-3:">&#182;</a></h3><p>Defining a $\Lambda$ function to sum up the elements in the matrix to find the total effect of changing each element of a matrix:</p>
+$$
+\begin{aligned}
+L &amp;= \Lambda(\sigma(N(X, W))) \\
+  &amp;= \Lambda \begin{pmatrix}
+\begin{pmatrix}
+  \sigma \Big( (XW)_{11} \Big) &amp;   \sigma \Big( (XW)_{12} \Big) &amp; ... &amp; \sigma \Big( (XW)_{1p} \Big) \\
+  \sigma \Big( (XW)_{21} \Big) &amp;   \sigma \Big( (XW)_{22} \Big) &amp; ... &amp; \sigma \Big( (XW)_{2p} \Big) \\
+  \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\
+  \sigma \Big( (XW)_{n1} \Big) &amp;   \sigma \Big( (XW)_{n2} \Big) &amp; ... &amp; \sigma \Big( (XW)_{np} \Big)
+\end{pmatrix}
+\end{pmatrix} \\
+
+&amp;= \sigma(XW_{11}) + ... + \sigma(XW_{1p}) + \sigma(XW_{21}) + ... + \sigma(XW_{2p}) + ... ... ... + \sigma(XW_{n1}) + ... + \sigma(XW_{np})
+\end{aligned}
+$$<p>where $\Lambda$.<code>shape == (1,1)</code> so $\Lambda$ is a constant</p>
+<ul>
+<li>NOTE: the code can handle higher-dim tensors while the formulas above handle only 2-dim tensors (matrices). So in the code, we have:<ul>
+<li><code>X.shape == (..., n, m)</code></li>
+<li><code>W.shape == (..., m, p)</code></li>
+<li><code>N.shape == (..., n, p)</code></li>
+<li><code>S.shape == (..., n, p)</code></li>
+<li>$\Lambda$<code>.shape == (1,1)</code></li>
+</ul>
+</li>
+<li><p>and in the formulas we have:</p>
+<ul>
+<li><code>X.shape == (n, m)</code></li>
+<li><code>W.shape == (m, p)</code></li>
+<li><code>N.shape == (n, p)</code></li>
+<li><code>S.shape == (n, p)</code></li>
+<li>$\Lambda$<code>.shape == (1,1)</code></li>
+</ul>
+</li>
+<li><p>NOTE: the '...' is set to mean that all dimensions before the last two are the same for all tensors in these calculations.</p>
+</li>
+</ul>
 
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># ### STEP 3:</span>
-<span class="c1"># Defining a $\Lambda$ function to sum up the elements in the matrix to find the total effect of changing each element of a matrix:</span>
-<span class="c1">#</span>
-<span class="c1"># $$</span>
-<span class="c1"># \begin{align}</span>
-<span class="c1"># L &amp;= \Lambda(\sigma(N(X, W))) \\</span>
-<span class="c1">#   &amp;= \Lambda \begin{pmatrix}</span>
-<span class="c1"># \begin{pmatrix}</span>
-<span class="c1">#   \sigma \Big( (XW)_{11} \Big) &amp;   \sigma \Big( (XW)_{12} \Big) &amp; ... &amp; \sigma \Big( (XW)_{1p} \Big) \\</span>
-<span class="c1">#   \sigma \Big( (XW)_{21} \Big) &amp;   \sigma \Big( (XW)_{22} \Big) &amp; ... &amp; \sigma \Big( (XW)_{2p} \Big) \\</span>
-<span class="c1">#   \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\</span>
-<span class="c1">#   \sigma \Big( (XW)_{n1} \Big) &amp;   \sigma \Big( (XW)_{n2} \Big) &amp; ... &amp; \sigma \Big( (XW)_{np} \Big)</span>
-<span class="c1"># \end{pmatrix}</span>
-<span class="c1"># \end{pmatrix} \\</span>
-<span class="c1">#</span>
-<span class="c1"># &amp;= \sigma(XW_{11}) + ... + \sigma(XW_{1p}) + \sigma(XW_{21}) + ... + \sigma(XW_{2p}) + ... ... ... + \sigma(XW_{n1}) + ... + \sigma(XW_{np})</span>
-<span class="c1"># \end{align}</span>
-<span class="c1"># $$</span>
-<span class="c1">#  where $\Lambda$.`shape == (1,1)` so $\Lambda$ is a constant</span>
-<span class="c1">#</span>
-<span class="c1"># * NOTE: the code can handle higher-dim tensors while the formulas above handle only 2-dim tensors (matrices). So in the code, we have:</span>
-<span class="c1">#   * `X.shape == (..., n, m)`</span>
-<span class="c1">#   * `W.shape == (..., m, p)`</span>
-<span class="c1">#   * `N.shape == (..., n, p)`</span>
-<span class="c1">#   * `S.shape == (..., n, p)`</span>
-<span class="c1">#   * $\Lambda$`.shape == (1,1)`</span>
-<span class="c1"># * and in the formulas we have:</span>
-<span class="c1">#   * `X.shape == (n, m)`</span>
-<span class="c1">#   * `W.shape == (m, p)`</span>
-<span class="c1">#   * `N.shape == (n, p)`</span>
-<span class="c1">#   * `S.shape == (n, p)`</span>
-<span class="c1">#   * $\Lambda$`.shape == (1,1)`</span>
-<span class="c1">#</span>
-<span class="c1"># * NOTE: the &#39;...&#39; is set to mean that all dimensions before the last two are the same for all tensors in these calculations.</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">matrixForwardSum</span><span class="p">(</span><span class="n">Xa</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">Wa</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="n">TensorFunction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -14608,7 +14603,7 @@ $$
 Information about the rate of change of $\mathbf{y}$ with respect to $\mathbf{x}$ is contained in the various partial derivatives $\frac{\partial y_i}{\partial x_j}$ for $1 \leq i \leq m, 1 \leq j \leq n$ and is conveniently organized into an $m \times n$ matrix $\frac{\partial \mathbf{y}}{\partial \mathbf{x}}$ called the <strong>Jacobian matrix</strong> of the transformation $\mathbf{f}$. The Jacobian matrix is the collection of all $m \times n$ possible partial derivatives ($m$ rows and $n$ columns), which is the stack of $m$ gradients with respect to $\mathbf{x}$:
 $$
 \Large
-\begin{align}
+\begin{aligned}
 \frac{\partial \mathbf{y}}{\partial \mathbf{x}} &amp;= \begin{pmatrix}
    \nabla f_1(\mathbf{x}) \\
    \nabla f_2(\mathbf{x}) \\
@@ -14633,7 +14628,7 @@ $$
   \vdots &amp; \vdots &amp;  &amp; \vdots \\
   \frac{\partial f_m}{\partial x_1} &amp; \frac{\partial f_m}{\partial x_2} &amp; ... &amp; \frac{\partial f_m}{\partial x_n}
 \end{pmatrix}
-\end{align}
+\end{aligned}
 $$
 This linear transformation represented by the Jacobian matrix is called **the derivative** of the transformation $\mathbf{f}$.</p>
 <p>Each $\frac{\partial f_i}{\partial \mathbf{x}}$ is a horizontal $n$-vector because the partial derivative is with respect to a vector $\mathbf{x}$ whose length is $n = |\mathbf{x}|$, making the width of the Jacobian $n$ (there are $n$ parameters that are variable, each potentially changing the function's value).</p>
@@ -14686,7 +14681,7 @@ $$</p>
 <p>has, according to the Chain Rule, the $m \times n$ Jacobian matrix</p>
 $$
 \Large
-\begin{align}
+\begin{aligned}
 
 \frac{\partial}{\partial \mathbf{x}} \mathbf{f} \big( \mathbf{g}(\mathbf{x}) \big) &amp;= \frac{\partial \mathbf{f}}{\partial \mathbf{g}} \times \frac{\partial \mathbf{g}}{\partial \mathbf{x}} \\
 
@@ -14713,7 +14708,7 @@ $$
 \frac{\partial g_k}{\partial x_1} &amp; \frac{\partial g_k}{\partial x_2} &amp; ... &amp; \frac{\partial g_k}{\partial x_n}
 \end{pmatrix}
 
-\end{align}
+\end{aligned}
 $$<p>where $\times$ denotes matrix multiplication, and $m = |\mathbf{f}|, n = |\mathbf{x}|$ and $k = |\mathbf{g}|$.</p>
 <p><strong>SOURCES:</strong></p>
 <ul>
@@ -14746,7 +14741,7 @@ $$</p>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># TODO: equivalent for the matrix W (understand why dot first then matmul in the chain rule)</span>
@@ -14830,7 +14825,7 @@ $$</p>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">X</span><span class="p">:</span> <span class="n">Tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="mi">4</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="mi">7</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">7</span><span class="p">)</span>
@@ -14856,7 +14851,7 @@ $$</p>
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
 
 
 
@@ -14928,7 +14923,7 @@ $$</p>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
@@ -14950,16 +14945,16 @@ $$</p>
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
 
 
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>tensor([[0.0541, 0.0372, 0.0590, 0.0660, 0.0611, 0.0165, 0.0127, 0.0578, 0.0320,
-         0.0705],
-        [0.1736, 0.1196, 0.1892, 0.2117, 0.1960, 0.0529, 0.0408, 0.1856, 0.1027,
-         0.2263]])</pre>
+<pre>tensor([[0.0338, 0.1116, 0.1016, 0.0281, 0.0748, 0.0234, 0.0760, 0.0681, 0.0307,
+         0.0459],
+        [0.0214, 0.0795, 0.0716, 0.0179, 0.0524, 0.0141, 0.0541, 0.0467, 0.0194,
+         0.0320]])</pre>
 </div>
 
 </div>
@@ -14977,7 +14972,7 @@ $$</p>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">doForwardSumIncr_X</span><span class="p">(</span><span class="n">Xa</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">Wa</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="n">TensorFunction</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">increment</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
@@ -15028,7 +15023,7 @@ $$</p>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">X</span><span class="p">:</span> <span class="n">Tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
@@ -15067,8 +15062,8 @@ $$</p>
 AFTER: -1.715999960899353
 BEFORE: 9.0
 AFTER: -1.7259999513626099
-tensor(10.2051)
-tensor(10.2017)
+tensor(7.2388)
+tensor(7.2431)
 </pre>
 </div>
 </div>
@@ -15086,7 +15081,7 @@ tensor(10.2017)
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">X</span><span class="p">:</span> <span class="n">Tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="o">*</span><span class="mi">4</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
@@ -15124,8 +15119,8 @@ tensor(10.2017)
 AFTER: -1.715999960899353
 BEFORE: 29.0
 AFTER: -1.7259999513626099
-tensor(4.6875)
-tensor(4.7208)
+tensor(5.3711)
+tensor(5.3132)
 </pre>
 </div>
 </div>
@@ -15143,7 +15138,7 @@ tensor(4.7208)
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">X</span><span class="p">:</span> <span class="n">Tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="o">*</span><span class="mi">4</span><span class="o">*</span><span class="mi">3</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
@@ -15181,8 +15176,8 @@ tensor(4.7208)
 AFTER: -1.715999960899353
 BEFORE: 66.0
 AFTER: -1.7259999513626099
-tensor(2.2461)
-tensor(2.2619)
+tensor(2.5391)
+tensor(2.5692)
 </pre>
 </div>
 </div>

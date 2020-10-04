@@ -851,9 +851,9 @@ def matrixBackward_X(X: Tensor, W: Tensor) -> Tensor:
 
     return dN_dX
 ```
-```python title="markdown"
-# Checking the numpy transpose correspondence with torch transpose:
-```
+<!-- #region markdown -->
+Checking the numpy transpose correspondence with torch transpose:
+<!-- #endregion -->
 ```python title="codecell"
 X: Tensor = torch.arange(2*3*4).reshape(3,2,4)
 W: Tensor = torch.arange(5*3*2).reshape(5,3,2)
@@ -870,13 +870,13 @@ assert torch.equal(dN_dX, torch.transpose(W, 0, 1))
 assert torch.equal(Tensor(dN_dX.numpy().transpose((1,0,2))), torch.transpose(dN_dX,1,0))
 ```
 
-```python title="markdown"
-# ## Vector Functions with Multiple Tensor Inputs (Extra Output Function)
-# Using $N = \nu(X, W)$ from previously, define the following function $s = f(X, W)$ which passes $\nu$ through an extra function $\sigma$::
-# $$
-# s = f(X, W) = \sigma(\nu(X, W)) = \sigma(x_1 \times w_1 + ... + x_n \times w_n)
-# $$
-```
+<!-- #region markdown -->
+## Vector Functions with Multiple Tensor Inputs (Extra Output Function)
+Using $N = \nu(X, W)$ from previously, define the following function $s = f(X, W)$ which passes $\nu$ through an extra function $\sigma$::
+$$
+s = f(X, W) = \sigma(\nu(X, W)) = \sigma(x_1 \times w_1 + ... + x_n \times w_n)
+$$
+<!-- #endregion -->
 
 ```python title="codecell"
 
@@ -916,28 +916,28 @@ assert matrixForwardSigma(X, W, sigma).shape == (3, 2, 4, 4)
 
 ```
 
-```python title="markdown"
-# ## Derivative of Functions with Multiple Tensor Inputs (Extra Function)
-# #### Abstract Calculation:
-# Since $s = f(X, W) = \sigma(\nu(X, Y))$, we apply the chain rule to find $\frac{\partial f}{\partial X}$:
-#
-# $$
-# \frac{\partial f}{\partial X}
-#   = \frac{\partial \sigma}{\partial \nu} \times \frac{\partial \nu}{\partial X}
-#   = \frac{\partial \sigma}{\partial \nu} \times W^T
-# $$
-#
-# #### Evaluation Calculation:
-# $$
-# \begin{align}
-# \frac{\partial f}{\partial X} \bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n}
-#   &= \frac{\partial \sigma}{\partial \nu} \bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n} \times \frac{\partial \nu}{\partial X}  \\
-#   &= \frac{\partial \sigma}{\partial \nu}\bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n} \times W^T \\
-#   &= \frac{\partial}{\partial \nu}(\sigma(\nu(X,W))) \bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n} \times W^T \\
-#   &= \frac{\partial}{\partial \nu}(\sigma(x_1 \times w_1 + ... + x_n \times w_n)) \times W^T
-# \end{align}
-# $$
-```
+<!-- #region markdown -->
+## Derivative of Functions with Multiple Tensor Inputs (Extra Function)
+#### Abstract Calculation:
+Since $s = f(X, W) = \sigma(\nu(X, Y))$, we apply the chain rule to find $\frac{\partial f}{\partial X}$:
+
+$$
+\frac{\partial f}{\partial X}
+  = \frac{\partial \sigma}{\partial \nu} \times \frac{\partial \nu}{\partial X}
+  = \frac{\partial \sigma}{\partial \nu} \times W^T
+$$
+
+#### Evaluation Calculation:
+$$
+\begin{align}
+\frac{\partial f}{\partial X} \bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n}
+  &= \frac{\partial \sigma}{\partial \nu} \bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n} \times \frac{\partial \nu}{\partial X}  \\
+  &= \frac{\partial \sigma}{\partial \nu}\bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n} \times W^T \\
+  &= \frac{\partial}{\partial \nu}(\sigma(\nu(X,W))) \bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n} \times W^T \\
+  &= \frac{\partial}{\partial \nu}(\sigma(x_1 \times w_1 + ... + x_n \times w_n)) \times W^T
+\end{align}
+$$
+<!-- #endregion -->
 
 ```python title="codecell"
 def matrixBackwardSigma_X(X: Tensor, W: Tensor, sigma: TensorFunction) -> Tensor:
@@ -1001,10 +1001,10 @@ w: Tensor = torch.rand(10,2)
 
 matrixBackwardSigma_X(x, w, sigmoid)
 ```
-```python title="markdown"
-# #### Testing if the derivatives computed are correct:
-# A simple test is to perturb the array and observe the resulting change in output. If we increase $x_{2,1,3}$ by 0.01 from -1.726 to -1.716 we should see an increase in the value porduced by the forward function of the *gradient of the output with respect to $x_{2,1,3}$*.
-```
+<!-- #region markdown -->
+#### Testing if the derivatives computed are correct:
+A simple test is to perturb the array and observe the resulting change in output. If we increase $x_{2,1,3}$ by 0.01 from -1.726 to -1.716 we should see an increase in the value porduced by the forward function of the *gradient of the output with respect to $x_{2,1,3}$*.
+<!-- #endregion -->
 ```python title="codecell"
 
 def doForwardSigmaIncr(X: Tensor, W: Tensor, sigma: TensorFunction, indices: Tuple[int], increment: float) -> Tensor:
@@ -1021,9 +1021,9 @@ def doForwardSigmaIncr(X: Tensor, W: Tensor, sigma: TensorFunction, indices: Tup
     return matrixForwardSigma(X_, W, sigma)
 ```
 
-```python title="markdown"
-# Testing with 2-dim tensors:
-```
+<!-- #region markdown -->
+Testing with 2-dim tensors:
+<!-- #endregion -->
 ```python title="codecell"
 X: Tensor = torch.arange(5*4).reshape(5,4).type(torch.FloatTensor)
 W: Tensor = torch.rand(4,5)
@@ -1037,9 +1037,9 @@ print(torch.sum((inc - incNot) / increment))
 
 print(matrixBackwardSigma_X(X, W, sigma)[indices])
 ```
-```python title="markdown"
-# Testing with 3-dim tensors:
-```
+<!-- #region markdown -->
+Testing with 3-dim tensors:
+<!-- #endregion -->
 
 ```python title="codecell"
 X: Tensor = torch.arange(5*4*3).reshape(5,4,3).type(torch.FloatTensor)
@@ -1056,9 +1056,9 @@ print(matrixBackwardSigma_X(X, W, sigma)[indices])
 ```
 
 
-```python title="markdown"
-# Testing with 4-dim tensors:
-```
+<!-- #region markdown -->
+Testing with 4-dim tensors:
+<!-- #endregion -->
 
 ```python title="codecell"
 X: Tensor = torch.arange(5*4*3*2).reshape(5,2,4,3).type(torch.FloatTensor)

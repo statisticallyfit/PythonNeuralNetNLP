@@ -802,7 +802,7 @@ def matrixBackward_X(X: Tensor, W: Tensor) -> Tensor:
     dN_dX: Tensor = torch.transpose(W, 1, 0)
 
     return dN_dX
-# %% markdown
+# %% markdown [markdown]
 # Checking the numpy transpose correspondence with torch transpose:
 # %% codecell
 X: Tensor = torch.arange(2*3*4).reshape(3,2,4)
@@ -819,7 +819,7 @@ assert torch.equal(dN_dX, torch.transpose(W, 0, 1))
 assert torch.equal(Tensor(dN_dX.numpy().transpose((1,0,2))), torch.transpose(dN_dX,1,0))
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## Vector Functions with Multiple Tensor Inputs (Extra Output Function)
 # Using $N = \nu(X, W)$ from previously, define the following function $s = f(X, W)$ which passes $\nu$ through an extra function $\sigma$::
 # $$
@@ -862,7 +862,7 @@ assert matrixForwardSigma(X, W, sigma).shape == (3, 2, 4, 4)
 
 
 
-# %% markdown
+# %% markdown [markdown]
 # ## Derivative of Functions with Multiple Tensor Inputs (Extra Function)
 # #### Abstract Calculation:
 # Since $s = f(X, W) = \sigma(\nu(X, Y))$, we apply the chain rule to find $\frac{\partial f}{\partial X}$:
@@ -943,7 +943,7 @@ x: Tensor = torch.rand(2,10)
 w: Tensor = torch.rand(10,2)
 
 matrixBackwardSigma_X(x, w, sigmoid)
-# %% markdown
+# %% markdown [markdown]
 # #### Testing if the derivatives computed are correct:
 # A simple test is to perturb the array and observe the resulting change in output. If we increase $x_{2,1,3}$ by 0.01 from -1.726 to -1.716 we should see an increase in the value porduced by the forward function of the *gradient of the output with respect to $x_{2,1,3}$*.
 # %% codecell
@@ -962,7 +962,7 @@ def doForwardSigmaIncr(X: Tensor, W: Tensor, sigma: TensorFunction, indices: Tup
     return matrixForwardSigma(X_, W, sigma)
 
 
-# %% markdown
+# %% markdown [markdown]
 # Testing with 2-dim tensors:
 # %% codecell
 X: Tensor = torch.arange(5*4).reshape(5,4).type(torch.FloatTensor)
@@ -976,7 +976,7 @@ incNot: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = 
 print(torch.sum((inc - incNot) / increment))
 
 print(matrixBackwardSigma_X(X, W, sigma)[indices])
-# %% markdown
+# %% markdown [markdown]
 # Testing with 3-dim tensors:
 
 # %% codecell
@@ -993,7 +993,7 @@ print(torch.sum((inc - incNot) / increment))
 print(matrixBackwardSigma_X(X, W, sigma)[indices])
 
 
-# %% markdown
+# %% markdown [markdown]
 # Testing with 4-dim tensors:
 
 # %% codecell
