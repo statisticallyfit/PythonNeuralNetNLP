@@ -213,62 +213,6 @@ def matrixForwardSum(Xa: Tensor, Wa: Tensor, sigma: TensorFunction) -> float:
 
 
 
-
-
-# %% markdown
-# ### Background: Jacobian Matrix and Multivariable Functions
-# A vector $\mathbf{f} = \big( f_1, f_2, ..., f_m \big)$ of $m$ functions, each depending on $n$ variables $\mathbf{x} = \big(x_1, x_2, ..., x_n \big)$ defines a transformation or function from $\mathbb{R}^n$ to $\mathbb{R}^m$. Specifically, if $\mathbf{x} \in \mathbb{R}^n$ and if:
-# $$
-# y_1 = f_1 \big(x_1,x_2,...,x_n \big) \\
-# y_2 = f_2 \big(x_1,x_2,...,x_n \big) \\
-# \vdots \\
-# y_m = f_m \big(x_1,x_2,...,x_n \big)
-# $$
-# then $\mathbf{y} = \big(y_1, y_2, ..., y_m \big)$ is the point in $\mathbb{R}^m$ that corresponds to $\mathbf{x}$ under the transformation $\mathbf{f}$. We can write these equations more compactly as:
-# $$
-# \mathbf{y} = \mathbf{f}(\mathbf{x})
-# $$
-# Information about the rate of change of $\mathbf{y}$ with respect to $\mathbf{x}$ is contained in the various partial derivatives $\frac{\partial y_i}{\partial x_j}$ for $1 \leq i \leq m, 1 \leq j \leq n$ and is conveniently organized into an $m \times n$ matrix $\frac{\partial \mathbf{y}}{\partial \mathbf{x}}$ called the **Jacobian matrix** of the transformation $\mathbf{f}$. The Jacobian matrix is the collection of all $m \times n$ possible partial derivatives ($m$ rows and $n$ columns), which is the stack of $m$ gradients with respect to $\mathbf{x}$:
-# $$
-# \Large
-# \begin{aligned}
-# \frac{\partial \mathbf{y}}{\partial \mathbf{x}} &= \begin{pmatrix}
-#    \nabla f_1(\mathbf{x}) \\
-#    \nabla f_2(\mathbf{x}) \\
-#    \vdots \\
-#    \nabla f_m(\mathbf{x})
-# \end{pmatrix}
-# = \begin{pmatrix}
-#    \frac{\partial}{\partial \mathbf{x}} f_1(\mathbf{x}) \\
-#    \frac{\partial}{\partial \mathbf{x}} f_2(\mathbf{x}) \\
-#    \vdots \\
-#    \frac{\partial}{\partial \mathbf{x}} f_m(\mathbf{x})
-# \end{pmatrix} \\
-# &= \begin{pmatrix}
-#   \frac{\partial}{\partial x_1} f_1(\mathbf{x}) & \frac{\partial}{\partial x_2} f_1(\mathbf{x}) & ... & \frac{\partial}{\partial x_n} f_1(\mathbf{x}) \\
-#   \frac{\partial}{\partial x_1} f_2(\mathbf{x}) & \frac{\partial}{\partial x_2} f_2(\mathbf{x}) & ... & \frac{\partial}{\partial x_n} f_2(\mathbf{x}) \\
-#   \vdots & \vdots &  & \vdots \\
-#   \frac{\partial}{\partial x_1} f_m(\mathbf{x}) & \frac{\partial}{\partial x_2} f_m(\mathbf{x}) & ... & \frac{\partial}{\partial x_n} f_m(\mathbf{x})
-# \end{pmatrix} \\
-#
-# \frac{\partial \mathbf{y}}{\partial \mathbf{x}} &= \begin{pmatrix}
-#   \frac{\partial f_1}{\partial x_1} & \frac{\partial f_1}{\partial x_2} & ... & \frac{\partial f_1}{\partial x_n} \\
-#   \frac{\partial f_2}{\partial x_1} & \frac{\partial f_2}{\partial x_2} & ... & \frac{\partial f_2}{\partial x_n} \\
-#   \vdots & \vdots &  & \vdots \\
-#   \frac{\partial f_m}{\partial x_1} & \frac{\partial f_m}{\partial x_2} & ... & \frac{\partial f_m}{\partial x_n}
-# \end{pmatrix}
-# \end{aligned}
-# $$
-# This linear transformation represented by the Jacobian matrix is called **the derivative** of the transformation $\mathbf{f}$.
-#
-# Each $\frac{\partial f_i}{\partial \mathbf{x}}$ is a horizontal $n$-vector because the partial derivative is with respect to a vector $\mathbf{x}$ whose length is $n = |\mathbf{x}|$, making the width of the Jacobian $n$ (there are $n$ parameters that are variable, each potentially changing the function's value).
-#
-
-
-
-
-
-
 # %% markdown
 # ## Derivative of Functions with Multiple Matrix Inputs: (Backward Pass) Lambda Sum
 #
