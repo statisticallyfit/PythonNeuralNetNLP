@@ -38,11 +38,11 @@ from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.FunctionUt
 from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.TypeUtil import *
 from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.Chapter1_FoundationDerivatives import *
 
-
+from IPython.display import display
 ## Computation Graph with 2D Matrix Inputs
 
 
-# %% markdown [markdown]
+# %% markdown
 # ## Functions with Multiple Matrix Inputs: (Forward Pass) Lambda Sum
 # Define the following, where $X$ and $W$ are now 2D matrices instead of higher-dim tensors (letting $X$ be $n \times m$ and $W$ be $m \times p$):
 # $$
@@ -62,7 +62,7 @@ from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.Chapter1_F
 # w_{m1} & w_{m2} & ... & w_{mp}
 # \end{pmatrix}
 # $$
-# %% markdown [markdown]
+# %% markdown
 # Define some straightforward operations on these matrices:
 #
 # ### STEP 1:
@@ -131,7 +131,7 @@ from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.Chapter1_F
 # $$
 #
 # where `S.shape == N.shape == (n, p)`.
-# %% markdown [markdown]
+# %% markdown
 # ### STEP 3:
 # Defining a $\Lambda$ function to sum up the elements in the matrix to find the total effect of changing each element of a matrix:
 #
@@ -211,36 +211,11 @@ def matrixForwardSum(Xa: Tensor, Wa: Tensor, sigma: TensorFunction) -> float:
 
 
 
-# %% markdown [markdown]
-#
-# ### Background: Gradients
-# The **gradient** of a multivariable function $f(\mathbf{x}) = f(x_1,x_2,...,x_n)$ from $\mathbb{R}^n \longrightarrow \mathbb{R}$ is defined as:
-#
-# * Notation 1:
-# $$
-# \nabla f(\mathbf{x}) = \frac{\partial}{\partial \mathbf{x}} f(\mathbf{x})
-# {\Large
-# = \begin{pmatrix}
-#         \frac{\partial }{\partial x_1} f(\mathbf{x}) &
-#         \frac{\partial }{\partial x_2} f(\mathbf{x}) & ... &
-#         \frac{\partial }{\partial x_n} f(\mathbf{x})
-# \end{pmatrix} }
-# $$
-#
-# * Notation 2:
-# $$
-# \nabla f(x_1,...,x_n) = \frac{\partial f}{\partial \mathbf{x}}
-# {\Large
-# = \begin{pmatrix}
-#         \frac{\partial f}{\partial x_1} &
-#         \frac{\partial f}{\partial x_2} & ... &
-#         \frac{\partial f}{\partial x_n}
-# \end{pmatrix} }
-# $$
 
 
 
-# %% markdown [markdown]
+
+# %% markdown
 # ### Background: Jacobian Matrix and Multivariable Functions
 # A vector $\mathbf{f} = \big( f_1, f_2, ..., f_m \big)$ of $m$ functions, each depending on $n$ variables $\mathbf{x} = \big(x_1, x_2, ..., x_n \big)$ defines a transformation or function from $\mathbb{R}^n$ to $\mathbb{R}^m$. Specifically, if $\mathbf{x} \in \mathbb{R}^n$ and if:
 # $$
@@ -263,15 +238,13 @@ def matrixForwardSum(Xa: Tensor, Wa: Tensor, sigma: TensorFunction) -> float:
 #    \vdots \\
 #    \nabla f_m(\mathbf{x})
 # \end{pmatrix}
-#
 # = \begin{pmatrix}
 #    \frac{\partial}{\partial \mathbf{x}} f_1(\mathbf{x}) \\
 #    \frac{\partial}{\partial \mathbf{x}} f_2(\mathbf{x}) \\
 #    \vdots \\
 #    \frac{\partial}{\partial \mathbf{x}} f_m(\mathbf{x})
-# \end{pmatrix}
-#
-# = \begin{pmatrix}
+# \end{pmatrix} \\
+# &= \begin{pmatrix}
 #   \frac{\partial}{\partial x_1} f_1(\mathbf{x}) & \frac{\partial}{\partial x_2} f_1(\mathbf{x}) & ... & \frac{\partial}{\partial x_n} f_1(\mathbf{x}) \\
 #   \frac{\partial}{\partial x_1} f_2(\mathbf{x}) & \frac{\partial}{\partial x_2} f_2(\mathbf{x}) & ... & \frac{\partial}{\partial x_n} f_2(\mathbf{x}) \\
 #   \vdots & \vdots &  & \vdots \\
@@ -291,103 +264,12 @@ def matrixForwardSum(Xa: Tensor, Wa: Tensor, sigma: TensorFunction) -> float:
 # Each $\frac{\partial f_i}{\partial \mathbf{x}}$ is a horizontal $n$-vector because the partial derivative is with respect to a vector $\mathbf{x}$ whose length is $n = |\mathbf{x}|$, making the width of the Jacobian $n$ (there are $n$ parameters that are variable, each potentially changing the function's value).
 #
 
-# %% markdown [markdown]
-# ### Background: Chain Rule for Matrices
-# In general the Jacobian matrix of the composition of two vector-valued functions of a vector variable is the matrix product of their Jacobian matrices.
-#
-# To see this let $\mathbf{z} = \mathbf{f}(\mathbf{y})$ be a transformation from $\mathbb{R}^k$ to $\mathbb{R}^m$ given by:
-# $$
-# z_1 = f_1 \big(y_1,y_2,...,y_k \big) \\
-# z_2 = f_2 \big(y_1,y_2,...,y_k \big) \\
-# \vdots \\
-# z_k = f_m \big(y_1,y_2,...,y_k \big)
-# $$
-# which has the $m \times k$ Jacobian matrix:
-# $$
-# \Large
-# \frac{\partial \mathbf{f}}{\partial \mathbf{y}} = \begin{pmatrix}
-#   \frac{\partial f_1}{\partial y_1} & \frac{\partial f_1}{\partial y_2} & ... & \frac{\partial f_1}{\partial y_k} \\
-#   \frac{\partial f_2}{\partial y_1} & \frac{\partial f_2}{\partial y_2} & ... & \frac{\partial f_2}{\partial y_k} \\
-#   \vdots & \vdots &  & \vdots \\
-#   \frac{\partial f_m}{\partial y_1} & \frac{\partial f_m}{\partial y_2} & ... & \frac{\partial f_m}{\partial y_k}
-# \end{pmatrix}
-# $$
-#
-
-# and let $\mathbf{y} = \mathbf{g}(\mathbf{x})$ be another such transformation from $\mathbb{R}^n$ to $\mathbb{R}^k$ given by:
-#
-# $$
-# y_1 = g_1 \big(x_1,x_2,...,x_n \big) \\
-# y_2 = g_2 \big(x_1,x_2,...,x_n \big) \\
-# \vdots \\
-# y_k = g_k \big(x_1,x_2,...,x_n \big)
-# $$
-# which has the $k \times n$ Jacobian matrix:
-# $$
-# \Large
-# \frac{\partial \mathbf{g}}{\partial \mathbf{x}} = \begin{pmatrix}
-#   \frac{\partial g_1}{\partial x_1} & \frac{\partial g_1}{\partial x_2} & ... & \frac{\partial g_1}{\partial x_n} \\
-#   \frac{\partial g_2}{\partial x_1} & \frac{\partial g_2}{\partial x_2} & ... & \frac{\partial g_2}{\partial x_n} \\
-#   \vdots & \vdots &  & \vdots \\
-#   \frac{\partial g_k}{\partial x_1} & \frac{\partial g_k}{\partial x_2} & ... & \frac{\partial g_k}{\partial x_n}
-# \end{pmatrix}
-# $$
-#
-# Then the composition $\mathbf{z} = (\mathbf{f} \circ \mathbf{g})(\mathbf{x}) = \mathbf{f}(\mathbf{g}(\mathbf{x}))$ given by :
-# $$
-# z_1 = f_1 \big( g_1 \big( x_1,...,x_n \big),..., g_k \big( x_1,...,x_n \big) \big) \\
-# z_2 = f_2 \big( g_1 \big( x_1,...,x_n \big),..., g_k \big( x_1,...,x_n \big) \big) \\
-# \vdots \\
-# z_k = f_m \big( g_1 \big( x_1,...,x_n \big),..., g_k \big( x_1,...,x_n \big) \big)
-# $$
-#
-# has, according to the Chain Rule, the $m \times n$ Jacobian matrix
-#
-# $$
-# \Large
-# \begin{aligned}
-#
-# \frac{\partial}{\partial \mathbf{x}} \mathbf{f} \big( \mathbf{g}(\mathbf{x}) \big) &= \frac{\partial \mathbf{f}}{\partial \mathbf{g}} \times \frac{\partial \mathbf{g}}{\partial \mathbf{x}} \\
-#
-# \begin{pmatrix}
-# \frac{\partial f_1}{\partial x_1} & \frac{\partial f_1}{\partial x_2} & ... & \frac{\partial f_1}{\partial x_n} \\
-# \frac{\partial f_2}{\partial x_1} & \frac{\partial f_2}{\partial x_2} & ... & \frac{\partial f_2}{\partial x_n} \\
-# \vdots & \vdots & & \vdots \\
-# \frac{\partial f_m}{\partial x_1} & \frac{\partial f_m}{\partial x_2} & ... & \frac{\partial f_m}{\partial x_n}
-# \end{pmatrix}
-#
-# &= \begin{pmatrix}
-# \frac{\partial f_1}{\partial g_1} & \frac{\partial f_1}{\partial g_2} & ... & \frac{\partial f_1}{\partial g_k} \\
-# \frac{\partial f_2}{\partial g_1} & \frac{\partial f_2}{\partial g_2} & ... & \frac{\partial f_2}{\partial g_k} \\
-# \vdots & \vdots & & \vdots \\
-# \frac{\partial f_m}{\partial g_1} & \frac{\partial f_m}{\partial g_2} & ... & \frac{\partial f_m}{\partial g_k}
-# \end{pmatrix}
-#
-# \times
-#
-# \begin{pmatrix}
-# \frac{\partial g_1}{\partial x_1} & \frac{\partial g_1}{\partial x_2} & ... & \frac{\partial g_1}{\partial x_n} \\
-# \frac{\partial g_2}{\partial x_1} & \frac{\partial g_2}{\partial x_2} & ... & \frac{\partial g_2}{\partial x_n} \\
-# \vdots & \vdots & & \vdots \\
-# \frac{\partial g_k}{\partial x_1} & \frac{\partial g_k}{\partial x_2} & ... & \frac{\partial g_k}{\partial x_n}
-# \end{pmatrix}
-#
-# \end{aligned}
-# $$
-# where $\times$ denotes matrix multiplication, and $m = |\mathbf{f}|, n = |\mathbf{x}|$ and $k = |\mathbf{g}|$.
-#
-#
-# **SOURCES:**
-# * R.A Adams - Calculus: A Complete Course (sections 12.5 and 12.6)
-# * Thomas Weir - Calculus (section 14.4)
-# * [Medium's blog post on "The Matrix Calculus you Need for Deep Learning"](https://medium.com/@rohitrpatil/the-matrix-calculus-you-need-for-deep-learning-notes-from-a-paper-by-terence-parr-and-jeremy-4f4263b7bb8)
 
 
 
 
 
-
-# %% markdown [markdown]
+# %% markdown
 # ## Derivative of Functions with Multiple Matrix Inputs: (Backward Pass) Lambda Sum
 #
 # We have a number $L$ and we want to find out the gradient of $L$ with respect to $X$ and $W$; how much changing *each element* of these input matrices (so each $x_{ij}$ and each $w_{ij}$) would change $L$. This is written as:
@@ -506,7 +388,7 @@ x: Tensor = torch.rand(2,10)
 w: Tensor = torch.rand(10,2)
 
 matrixBackwardSum_X(x, w, sigmoid)
-# %% markdown [markdown]
+# %% markdown
 # #### Testing if the derivatives computed are correct:
 # A simple test is to perturb the array and observe the resulting change in output. If we increase $x_{2,1,3}$ by 0.01 from -1.726 to -1.716 we should see an increase in the value porduced by the forward function of the *gradient of the output with respect to $x_{2,1,3}$*.
 # %% codecell
@@ -545,7 +427,7 @@ def doForwardSumIncr_X(Xa: Tensor, Wa: Tensor, sigma: TensorFunction, indices: T
      return matrixForwardSum(X_, W, sigma)
 
 
-# %% markdown [markdown]
+# %% markdown
 # Testing with 2-dim tensors:
 # %% codecell
 X: Tensor = torch.arange(5*4).reshape(5,4)
@@ -561,7 +443,7 @@ incNot: Tensor = doForwardSumIncr_X(Xc, W, sigma, indices = indices, increment =
 print(((inc - incNot)/increment).sum())
 
 print(matrixBackwardSum_X(Xc, W, sigma)[indices])
-# %% markdown [markdown]
+# %% markdown
 # Testing with 3-dim tensors:
 
 # %% codecell
@@ -577,7 +459,7 @@ print(torch.sum((inc - incNot) / increment))
 
 print(matrixBackwardSum_X(X, W, sigma)[indices])
 #matrixBackwardExtra_X(X, W, sigma)[2,1,3]
-# %% markdown [markdown]
+# %% markdown
 # Testing with 4-dim tensors:
 
 # %% codecell

@@ -1,0 +1,6 @@
+{
+    "python.pythonPath": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
+    "python.linting.pylintEnabled": false,
+    "python.linting.mypyEnabled": true,
+    "python.linting.enabled": true
+}
