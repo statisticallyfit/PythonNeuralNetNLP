@@ -47,11 +47,14 @@ B = MatrixSymbol('W',m,p)
 
 # matrix variable for sympy Lambda function arguments
 M = MatrixSymbol('M', i, j)# abstract shape
+N = MatrixSymbol("N", n, p)# shape of A*B
 
 display(X)
 display(W)
 display(Matrix(A))
 
+xi  = Symbol('xi')
+xi_1  = Symbol('xi_1')
 
 
 # %% codecell
@@ -209,6 +212,18 @@ display(dL_dW_step.replace(unapplied, applied))
 display(dL_dW_step.subs({A:X}).doit()) # replace won't work here
 display(dL_dW_step.subs({A:X}).doit().replace(unapplied, applied))
 
+# %%
+dle = lambd(xi).diff(xi)
+#display(dle)
+
+dle_repl = lambd(xi).diff(xi).subs(xi, applied).replace(lambd, lambd_L)
+#display(dle_repl)
+
+
+display(dL_dW_abstract.replace(sigmaApply_L(A*B), xi))
+display(dL_dW_abstract.replace(sigmaApply_L(A*B), xi).doit())
+display(dL_dW_abstract.replace(sigmaApply_L(A*B), xi).doit().replace(dle, dle_repl)) #.doit())
+# NOTE here it says the matrices are not aligned if we execute doit() to reveal the ones matrix that is dL_dS. True since assumption here is matrix multplication with dL_dS and right hand side, but in fact it is hadamard multiplication. 
 
 
 # %% 
@@ -225,12 +240,8 @@ display(dL_dX_step.subs({B:W}).doit().replace(unapplied, applied))
 
 
 
-
 # %% markdown
 # The first part: dldn
-# %% 
-xi  = Symbol('xi')
-xi_1  = Symbol('xi_1')
 
 # %% markdown
 # Direct substitution way: 
@@ -272,18 +283,18 @@ display(dN_dX_times_dS_dN.subs({B:W}).doit()) # replace won't work here
 
 
 
-# %% markdown [markdown]
+# %% markdown
 # ### COMPARE: Symbolic form vs. Direct form vs. Step by Step form (which goes from symbolic to direct form by replacing)
 # #### Symbolic Abstract Form (with respect to W):
 # %% codecell
 Lc = compose(lambd, sigmaApply, v)(A, B)
 symb = Lc.replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B)
 symb
-# %% markdown [markdown]
+# %% markdown
 # #### Direct form: (after the symbolic form)
 # %% codecell
 Lc.replace(v, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(W).subs(specToElemD)
-# %% markdown [markdown]
+# %% markdown
 # Just placing the "n" values right in place of the "epsilons" using the "doit" function:
 # %% codecell
 direct = Lc.replace(v, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(W).subs(specToElemD).doit()
@@ -383,7 +394,7 @@ sigmaApply_L(A*B).diff(B).subs({A*B : vN(A,B)}).doit()
 # %% codecell
 #part1=sigmaApply_L(A*B).diff(B).subs({A*B : vN(A,B)}).doit()
 
-# %% markdown [markdown]
+# %% markdown
 # #### Step by Step Form:
 # %% codecell
 assert symb == Lc.replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B)
@@ -394,10 +405,6 @@ symb.subs({A*B : vN(A,B)}).doit() # the dummy variable for lambda still stays un
 # %% codecell
 symb.subs({A*B : vN(A,B)}).subs({A:X}).doit() # two doits are equivalent to the last one at the end
 # %% codecell
-# Creating a special symbol just for the lambda_L function that has the appropriate shape after multiplying A*B. Supposed to represent a matrix R s.t. R == A * B (so that the indices after applying lambda_L are correct)
-ABres = MatrixSymbol("R", A.shape[0], B.shape[1])
-lambd_L = Lambda(ABres, sum(ABres))
-
 
 symb.subs({A*B : vN(A,B)}).subs({A:X}).doit()#subs({lambd: lambd_L}).doit()
 
@@ -414,37 +421,53 @@ lambd(Selem).diff(Selem).replace(lambd, lambd_L).doit()
 # %% codecell
 # THis seems right:
 dL_dS = lambd(Selem).replace(lambd, lambd_L).diff(Selem)
-dL_dS
-# %% codecell
-lambd(Selem)
+display(dL_dS)
+
+
 # %% codecell
 # This is the X^T * dS/dN part
-compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B).subs({A*B : vN(A,B)}).doit()
+display(compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B).subs({A*B : vN(A,B)}).doit())
 # %% codecell
-N = MatrixSymbol("N", A.shape[0], B.shape[1])
-Matrix(N)
-# %% codecell
+
 dS_dN = compose(sigmaApply)(N).replace(sigmaApply, sigmaApply_).diff(N).subs({N : vN(A,B)}).doit()
+
+dS_dN_abstract = compose(sigmaApply)(N).replace(sigmaApply, sigmaApply_).diff(N).subs(N, v_(A,B))
+# ANOTHER WAY: sigmaApply_L(M).diff(M).subs({M : Nelem}).doit()
 # WRONG:
 #dS_dN = sigmaApply(Nelem).replace(sigmaApply, sigmaApply_).diff(Matrix(Nelem))
-dS_dN
-
-# %% codecell
-from sympy.physics.quantum import TensorProduct
-
-#TensorProduct( X.T, dS_dN)
+display(dS_dN_abstract)
+display(dS_dN)
 
 
-dN_dW = X.T
-dS_dW = dN_dW * dS_dN
-dS_dW
-#HadamardProduct(X.T, dS_dN)
+
 # %% codecell
 from sympy import HadamardProduct
 
-dL_dW = HadamardProduct(dS_dW , dL_dS)
-dL_dW
-# %% markdown [markdown]
+dN_dW = A.transpose()
+
+dS_dW = dN_dW * dS_dN
+dS_dW_abstract = compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B)
+
+dL_dW = HadamardProduct(dL_dS, dS_dW)
+
+display(dS_dW)
+display(dS_dW.subs(A, X).doit())
+
+display(dL_dW)
+
+
+assert dL_dW == HadamardProduct(dL_dS, dN_dW * dS_dN ) 
+
+
+# %%
+dL_dW_hadamard = dL_dW.subs(A,X).doit()
+# %%
+display(dL_dW_abstract)
+display(dL_dW_step)
+display(dL_dW)
+display(dL_dW_hadamard)
+
+# %% markdown
 # One more time as complete symbolic form:
 # $$
 # \begin{aligned}
