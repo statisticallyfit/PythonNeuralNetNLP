@@ -89,7 +89,10 @@ display(Selem)
 # %%
 lambd = Function("lambda")
 lambd_ = lambda matrix : sum(matrix)
-lambda_L = Lambda(M, sum(M))
+#lambda_L = Lambda(M, sum(M))
+
+ABres = MatrixSymbol("R", A.shape[0], B.shape[1])
+lambd_L = Lambda(ABres, sum(ABres))
 
 L = lambd(sigmaApply(v(A,B)))
 display(L)
@@ -180,29 +183,83 @@ display(dN_dW_times_dS_dN.subs({A:X})) # replace won't work here
 # Carrying out the multplication: 
 display(dN_dW_times_dS_dN.subs({A:X}).doit()) # replace won't work here
 
-# %%
-dL_dW_step = compose(lambd, sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B).subs({A*B : vN(A,B)}).doit()
 
-display(dL_dW_step)
-
-display(dL_dW_step.subs({A:X})) # replace won't work here
-
-# Carrying out the multplication: 
-display(dL_dW_step.subs({A:X}).doit()) # replace won't work here
 
 # %%
 unapplied = sigmaApply_L(vN(A,B))
+# Also works: same as above: 
+#compose(sigmaApply, v)(A,B).replace(v, vN).replace(sigmaApply , sigmaApply_L)
 applied = unapplied.doit()
+
 
 display(unapplied)
 display(applied)
 
+
+
+
+# %%
+dL_dW_step = compose(lambd, sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B).subs({A*B : vN(A,B)}).doit()
+
+display(dL_dW_step)
 display(dL_dW_step.replace(unapplied, applied))
+#display(dL_dW_step.subs({A:X})) # replace won't work here
+
+# Carrying out the multplication: 
+display(dL_dW_step.subs({A:X}).doit()) # replace won't work here
 display(dL_dW_step.subs({A:X}).doit().replace(unapplied, applied))
 
 
 
+# %% 
+dL_dX_step = compose(lambd, sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(A).subs({A*B : vN(A,B)}).doit()
 
+display(dL_dX_step)
+display(dL_dX_step.replace(unapplied, applied))
+#display(dL_dW_step.subs({A:X})) # replace won't work here
+
+# Carrying out the multplication: 
+display(dL_dX_step.subs({B:W}).doit()) # replace won't work here
+display(dL_dX_step.subs({B:W}).doit().replace(unapplied, applied))
+
+
+
+
+
+# %% markdown
+# The first part: dldn
+# %% 
+xi  = Symbol('xi')
+xi_1  = Symbol('xi_1')
+
+# %% markdown
+# Direct substitution way: 
+# %%
+display( lambd(xi).diff(xi).subs(xi, applied) )
+display( lambd(xi).diff(xi).subs(xi, applied).replace(lambd, lambd_L) )
+display( lambd(xi).diff(xi).subs(xi, applied).replace(lambd, lambd_L).doit() )
+# %% markdown
+# The substitute into derivative way: 
+# %%
+display( lambd(xi).diff(xi).subs(xi, unapplied) )
+
+display( lambd(xi).diff(xi).subs(xi, unapplied).replace(unapplied, applied) ) # gives same expression as in dldx
+
+display( lambd(xi).diff(xi).subs(xi, unapplied).replace(unapplied, applied).replace(lambd, lambd_L) ) 
+
+
+
+# %% 
+# TODO cannot substitute here, gives error
+ones = lambd(xi).diff(xi).subs(xi, applied).replace(lambd, lambd_L).doit()
+display(ones)
+
+#display(dL_dX_step.replace(lambdExpr, ones))
+
+
+
+# %% markdown
+# The second part: dndx * dsdn
 # %% codecell
 dN_dX_times_dS_dN = compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(A).subs({A*B : vN(A,B)}).doit()
 
