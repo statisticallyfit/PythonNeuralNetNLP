@@ -1,25 +1,43 @@
+# %% markdown
+# # Chapter 1: Phase 4 derivations
+
+
 # %% codecell
 from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Derivative, symbols, diff
-from sympy import var
 from sympy.abc import x, i, j, a, b
 
+from IPython.display import display 
 
-# %% codecell
-def myvar(letter: str, i: int, j: int) -> Symbol:
+
+
+def var_i(letter: str, i: int) -> Symbol:
+    letter_i = Symbol('{}_{}'.format(letter, i), is_commutative=True)
+    return letter_i
+
+
+def var_ij(letter: str, i: int, j: int) -> Symbol:
     letter_ij = Symbol('{}_{}{}'.format(letter, i+1, j+1), is_commutative=True)
     return letter_ij
 
 
+def func(fLetter: str, i: int, xLetter, xLen):
+    xs = [var_i(xLetter, i+1) for i in range(xLen)]
+    func_i = Function('{}_{}'.format(fLetter, i + 1))(*xs)
+    return func_i
+
+# %% codecell
 n,m,p = 3,3,2
 
-X = Matrix(n, m, lambda i,j : myvar('x', i, j)); X
-# %% codecell
-W = Matrix(m, p, lambda i,j : myvar('w', i, j)); W
-# %% codecell
-A = MatrixSymbol('X',3,3); Matrix(A)
-B = MatrixSymbol('W',3,2)
+X = Matrix(n, m, lambda i,j : var_ij('x', i, j))
 
+W = Matrix(m, p, lambda i,j : var_ij('w', i, j))
 
+A = MatrixSymbol('X',n,m)
+B = MatrixSymbol('W',m,p)
+
+display(X)
+display(W)
+display(Matrix(A))
 
 
 
