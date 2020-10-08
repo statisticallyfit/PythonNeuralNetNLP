@@ -1,7 +1,6 @@
 # %% markdown
 # # Chapter 1: Phase 3 derivations
 
-
 # %% codecell
 from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Derivative
 from sympy import var

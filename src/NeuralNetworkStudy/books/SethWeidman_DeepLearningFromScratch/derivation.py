@@ -6,7 +6,11 @@
 from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Derivative, symbols, diff
 from sympy.abc import x, i, j, a, b
 
+# NOTE no need to call display manually anymore! Just import display from ipython and manually init printing for sympy and then we can render equations nicely in python interactive window!
+# SOURCE = https://hyp.is/Czfddgk8EeuVNlfac98M0w/confluence.jetbrains.com/display/PYH/Using+IPython+Notebook+with+PyCharm
 from IPython.display import display 
+from sympy.interactive import printing
+printing.init_printing(use_latex='mathjax')
 
 import itertools 
 
@@ -38,20 +42,21 @@ def func(fLetter: str, i: int, xLetter, xLen):
 # %% codecell
 n,m,p = 3,3,2
 
-X = Matrix(n, m, lambda i,j : var_ij('x', i, j))
-
-W = Matrix(m, p, lambda i,j : var_ij('w', i, j))
-
+X = Matrix(n, m, lambda i,j : var_ij('x', i, j)); X
+# %%
+W = Matrix(m, p, lambda i,j : var_ij('w', i, j)); W
+# %%
 A = MatrixSymbol('X',n,m)
 B = MatrixSymbol('W',m,p)
-
+# %%
+Matrix(A)
+# %%
 # matrix variable for sympy Lambda function arguments
 M = MatrixSymbol('M', i, j)# abstract shape
 N = MatrixSymbol("N", n, p)# shape of A*B
 
-display(X)
-display(W)
-display(Matrix(A))
+# %%
+Matrix(A)
 
 xi  = Symbol('xi')
 xi_1  = Symbol('xi_1')
@@ -97,7 +102,8 @@ lambd_ = lambda matrix : sum(matrix)
 ABres = MatrixSymbol("R", A.shape[0], B.shape[1])
 lambd_L = Lambda(ABres, sum(ABres))
 
-L = lambd(sigmaApply(v(A,B)))
+#L = lambd(sigmaApply(v(A,B)))
+L = compose(lambd, sigmaApply, v)(A, B)
 display(L)
 
 
@@ -161,9 +167,14 @@ display(Matrix(nmatfuncToSpec))
 
 # %% codecell
 #L.replace(v,v_).replace(sigmaApply, sigmaApply_).diff(B)
+
 dL_dW_abstract = L.replace(v,v_).replace(sigmaApply, sigmaApply_).diff(B)
 
+dL_dW_abstract
+# %%
 display(dL_dW_abstract)
+
+display( dL_dW_abstract.subs({lambd : lambd_L}) )
 # %%
 dL_dX_abstract = L.replace(v, v_).replace(sigmaApply, sigmaApply_).diff(A)
 
@@ -173,8 +184,13 @@ display(dL_dX_abstract)
 
 
 # %% codecell
-display(L.replace(v, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(W).subs(specToElemD))
+dL_dW_direct = L.replace(v, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(W).subs(specToElemD)
 
+display(dL_dW_direct)
+
+dL_dX_direct = L.replace(v, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(X).subs(specToElemD)
+
+display(dL_dX_direct)
 
 # %% codecell
 dN_dW_times_dS_dN = compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B).subs({A*B : vN(A,B)}).doit()
@@ -325,102 +341,24 @@ nL = Lambda((A,B), v(A,B)); nL
 
 
 
-# %% codecell
-f, g, h = symbols("f g h ", cls=Function)
-diff(f(g(h(x))), x)
-# %% codecell
-compose(f,g,h)(x)
-# %% codecell
-compose(f,g,h)
-# %% codecell
-compose(lambd, sigmaApply, v)(A,B)
-# %% codecell
-#diff(compose(lambd, sigmaApply, n)(A.T,B), A)
-
-
 #compose(lambd, sigmaApply, n)(A,B).diff(lambd)
-diff(compose(lambd, sigmaApply, v)(A,B), compose(lambd, sigmaApply, v)(A,B))
+display( diff(compose(lambd, sigmaApply, v)(A,B), compose(lambd, sigmaApply, v)(A,B)) )
 
-# %% codecell
-d = diff(compose(lambd, sigmaApply, v)(A,B), v(A,B)); d
-# %% codecell
-#compose(lambd, sigmaApply, n)(A,B).diff(A) # ERROR
-Lc = compose(lambd, sigmaApply, v)(A, B)
-Lc.replace(v, vL).replace(sigmaApply, sigmaApply_)
-# %% codecell
-# Same result as replacing in L
-#Lc.replace(n, vL).replace(sigmaApply, sigmaApply_).diff(B)
-Lc.replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B)
 
-# %% codecell
+display( diff(L, v(A,B)) )
 
-funcToMat = lambda func: Matrix([func])
-funcToMat(f)
-A.applyfunc(sigma)
-#funcToMat(f).applyfunc(sigma)
-from sympy import FunctionMatrix
-F = MatrixSymbol("F",3,3)#(FunctionMatrix(3,3, f))
-FL = Lambda(F, v(A,B))
-FL
-gL = lambda A: A.applyfunc(sigma)
-gL(A)
-temp = lambda n : n
-temp(v(A,B))
-#sigmaApply_L(A).subs(A, Lambda((A,B), vL(A,B)))# arg must be matrix instance
-# %% codecell
-sigmaApply_L(A*B).diff(B)
-# %% codecell
-sigmaApply_L(A).diff(A).subs(A,X).doit()
-# %% codecell
 
-# %% codecell
-sigmaApply_L(A*B).diff(B).subs(A,X).subs(B,W)#.doit()
-### CANNOT go farther here because of noncommutative scalars in matrix error
-# %% codecell
-#sigmaApply_L(X*W).subs(specToElemD).subs(elemToMatArgD).diff(B)#
-# %% codecell
-sigmaApply_L(A*B).diff(B)#.replace(A,X).replace(B,W).replace(X*W,Nelem)
+display( L.replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B) )
 
-# %% codecell
-sigmaApply_L(A*B).diff(B).subs({A*B : vN(A,B)})
-# %% codecell
-sigmaApply_L(A*B).diff(B).subs({A*B : vN(A,B)}).doit()
-# %% codecell
-sigmaApply_L(A*B).diff(B).subs({A*B : vN(A,B)}).subs(elemToNmatfuncD)
-# %% codecell
-sigmaApply_L(A*B).diff(B).subs({A*B : vN(A,B)}).subs(elemToNmatfuncD).doit()
-# %% codecell
-sigmaApply_L(A*B).diff(B).subs({A*B : vN(A,B)}).doit()
-# %% codecell
-#part1=sigmaApply_L(A*B).diff(B).subs({A*B : vN(A,B)}).doit()
 
-# %% markdown
-# #### Step by Step Form:
-# %% codecell
-assert symb == Lc.replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B)
 
-symb.subs({A*B : vN(A,B)})#.doit()
-# %% codecell
-symb.subs({A*B : vN(A,B)}).doit() # the dummy variable for lambda still stays unapplied
-# %% codecell
-symb.subs({A*B : vN(A,B)}).subs({A:X}).doit() # two doits are equivalent to the last one at the end
-# %% codecell
 
-symb.subs({A*B : vN(A,B)}).subs({A:X}).doit()#subs({lambd: lambd_L}).doit()
-
-# %% codecell
-# yay finall got the dummy variable in the lambd to be applied!!
-unapplied = sigmaApply_L(vN(A,B))
-applied = unapplied.doit()
-
-symb.subs({A*B : vN(A,B)}).subs({A:X}).doit().replace(unapplied, applied)
-
-# %% codecell
-# THIS SEEMS WRONG : ??? how to tell for sure?
-lambd(Selem).diff(Selem).replace(lambd, lambd_L).doit()
 # %% codecell
 # THis seems right:
 dL_dS = lambd(Selem).replace(lambd, lambd_L).diff(Selem)
+# THIS SEEMS WRONG : ??? how to tell for sure?
+#lambd(Selem).diff(Selem).replace(lambd, lambd_L).doit()
+
 display(dL_dS)
 
 
