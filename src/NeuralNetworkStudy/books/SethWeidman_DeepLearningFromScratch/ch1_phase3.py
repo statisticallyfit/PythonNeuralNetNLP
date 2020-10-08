@@ -7,8 +7,6 @@ from sympy import var
 from sympy.abc import x, i, j, a, b, c, d
 
 
-
-
 # %% codecell
 def myvar(letter: str, i: int, j: int) -> Symbol:
     letter_ij = Symbol('{}_{}{}'.format(letter, i+1, j+1), is_commutative=True)

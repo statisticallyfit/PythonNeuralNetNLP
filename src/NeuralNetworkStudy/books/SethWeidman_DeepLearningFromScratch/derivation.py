@@ -1,7 +1,39 @@
 # %% markdown
 # # Derivations For Matrix Derivative Rule of $L = \lambda( \sigma_{\text{apply}}( \nu(X, W) ) )$
 
+# %%
 
+import sys
+import os
+
+PATH: str = '/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP'
+
+UTIL_DISPLAY_PATH: str = PATH + "/src/utils/DisplaySympyResultsAsGroup"
+
+NEURALNET_PATH: str = PATH + '/src/NeuralNetworkStudy/books/SethWeidman_DeepLearningFromScratch'
+
+#os.chdir(PATH)
+#assert os.getcwd() == NEURALNET_PATH
+
+#sys.path.append(PATH)
+#assert PATH in sys.path
+
+#sys.path.append(UTIL_DISPLAY_PATH)
+#assert UTIL_DISPLAY_PATH in sys.path 
+
+#sys.path.append(NEURALNET_PATH)#
+#assert NEURALNET_PATH in sys.path
+
+#from src.utils.DisplaySympyResultsAsGroup import showGroup1
+def showGroup(group: List[Any]) -> None:
+    list(map(lambda elem : display(elem), group))
+
+    return None
+
+    # TODO how to import this function from the above file? 
+# %%
+showGroup1([xi, xi, beta])
+from src.Neural
 # %% codecell
 from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Derivative, symbols, diff
 from sympy.abc import x, i, j, a, b
@@ -16,6 +48,7 @@ import itertools
 
 from functools import reduce
 
+from typing import * 
 # %% codecell
 def composeTwoFunctions(f, g):
     return lambda *a, **kw: f(g(*a, **kw))
@@ -42,25 +75,26 @@ def func(fLetter: str, i: int, xLetter, xLen):
 # %% codecell
 n,m,p = 3,3,2
 
-X = Matrix(n, m, lambda i,j : var_ij('x', i, j)); X
-# %%
-W = Matrix(m, p, lambda i,j : var_ij('w', i, j)); W
-# %%
+
+xi  = Symbol('xi')
+xi_1  = Symbol('xi_1')
+beta = Symbol('beta')
+
+
+X = Matrix(n, m, lambda i,j : var_ij('x', i, j))
+W = Matrix(m, p, lambda i,j : var_ij('w', i, j))
+
 A = MatrixSymbol('X',n,m)
 B = MatrixSymbol('W',m,p)
-# %%
-Matrix(A)
-# %%
+
 # matrix variable for sympy Lambda function arguments
 M = MatrixSymbol('M', i, j)# abstract shape
 N = MatrixSymbol("N", n, p)# shape of A*B
 
-# %%
-Matrix(A)
 
-xi  = Symbol('xi')
-xi_1  = Symbol('xi_1')
-
+showGroup([
+    X, W, Matrix(A)
+])
 
 # %% codecell
 v = Function("nu",applyfunc=True)
@@ -72,9 +106,11 @@ Nelem = vN(X, W)
 Nspec = v_(X,W)
 N = v(A,B)
 
-display(Nelem)
-display(Nspec)
-display(N)
+
+showGroup([
+    Nelem, Nspec, N
+])
+
 
 # %%
 sigma = Function('sigma')
@@ -84,14 +120,13 @@ sigmaApply_L = Lambda(M, M.applyfunc(sigma))
 
 
 S = sigmaApply(N)
-display(S)
-
 Sspec = S.subs({A:X, B:W}).replace(v, v_).replace(sigmaApply, sigmaApply_)
-#Selem.subs(elemToSpecD)
-display(Sspec)
-
 Selem = S.replace(v, vN).replace(sigmaApply, sigmaApply_)
-display(Selem)
+
+
+showGroup([
+    S, Sspec, Selem
+])
 
 
 # %%
@@ -104,7 +139,7 @@ lambd_L = Lambda(ABres, sum(ABres))
 
 #L = lambd(sigmaApply(v(A,B)))
 L = compose(lambd, sigmaApply, v)(A, B)
-display(L)
+L
 
 
 
@@ -115,7 +150,7 @@ elemToSpec = list(elemToSpecD.items())
 specToElemD = {val:key for key, val in elemToSpecD.items()}
 specToElem = list(specToElemD.items())
 
-display(Matrix(elemToSpec))
+Matrix(elemToSpec)
 
 # %% codecell
 
@@ -126,7 +161,7 @@ elemToSpecFunc = list(elemToSpecFuncD.items())
 specFuncToElemD = {val : key for key , val in elemToSpecFuncD.items()}
 specFuncToElem = list(specFuncToElemD.items())
 
-display(Matrix(elemToSpecFunc))
+Matrix(elemToSpecFunc)
 
 
 
@@ -138,7 +173,7 @@ elemToNFunc = list(elemToNFuncD.items())
 nfuncToElemD = {val: key for key, val in elemToNFuncD.items()}
 nfuncToElem = list(nfuncToElemD.items())
 
-display(Matrix(elemToNFunc))
+Matrix(elemToNFunc)
 
 
 
@@ -150,7 +185,7 @@ elemToNmatfunc = list(elemToNmatfuncD.items())
 nmatfuncToElemD = {val: key for key, val in elemToNmatfuncD.items()}
 nmatfuncToElem = list(nmatfuncToElemD.items())
 
-display(Matrix(elemToNmatfunc))
+Matrix(elemToNmatfunc)
 
 
 
@@ -159,7 +194,7 @@ nmatfuncToSpecD = dict(zip(elemToNmatfuncD.values(), elemToSpecD.values()))
 
 nmatfuncToSpec = list(nmatfuncToSpecD.items())
 
-display(Matrix(nmatfuncToSpec))
+Matrix(nmatfuncToSpec)
 
 
 
@@ -170,38 +205,38 @@ display(Matrix(nmatfuncToSpec))
 
 dL_dW_abstract = L.replace(v,v_).replace(sigmaApply, sigmaApply_).diff(B)
 
-dL_dW_abstract
-# %%
-display(dL_dW_abstract)
+showGroup([
+    dL_dW_abstract,
+    dL_dW_abstract.subs({lambd : lambd_L}) 
+])
 
-display( dL_dW_abstract.subs({lambd : lambd_L}) )
 # %%
 dL_dX_abstract = L.replace(v, v_).replace(sigmaApply, sigmaApply_).diff(A)
 
-display(dL_dX_abstract)
-
-
+dL_dX_abstract
 
 
 # %% codecell
 dL_dW_direct = L.replace(v, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(W).subs(specToElemD)
 
-display(dL_dW_direct)
-
+dL_dW_direct
+# %%
 dL_dX_direct = L.replace(v, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(X).subs(specToElemD)
 
-display(dL_dX_direct)
+dL_dX_direct
+
+
 
 # %% codecell
-dN_dW_times_dS_dN = compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B).subs({A*B : vN(A,B)}).doit()
+'''dN_dW_times_dS_dN = compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B).subs({A*B : vN(A,B)}).doit()
 
-display(dN_dW_times_dS_dN)
-
-display(dN_dW_times_dS_dN.subs({A:X})) # replace won't work here
-
+dN_dW_times_dS_dN
+# %%
+dN_dW_times_dS_dN.subs({A:X}) # replace won't work here
+# %%
 # Carrying out the multplication: 
-display(dN_dW_times_dS_dN.subs({A:X}).doit()) # replace won't work here
-
+dN_dW_times_dS_dN.subs({A:X}).doit() # replace won't work here
+'''
 
 
 # %%
@@ -210,70 +245,79 @@ unapplied = sigmaApply_L(vN(A,B))
 #compose(sigmaApply, v)(A,B).replace(v, vN).replace(sigmaApply , sigmaApply_L)
 applied = unapplied.doit()
 
-
-display(unapplied)
-display(applied)
-
-
-
+showGroup([
+    unapplied, 
+    applied
+])
 
 # %%
 dL_dW_step = compose(lambd, sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B).subs({A*B : vN(A,B)}).doit()
 
-display(dL_dW_step)
-display(dL_dW_step.replace(unapplied, applied))
-#display(dL_dW_step.subs({A:X})) # replace won't work here
+showGroup([
+    dL_dW_step,
+    dL_dW_step.replace(unapplied, applied),
+    # Carrying out the multplication: 
+    dL_dW_step.subs({A:X}).doit(), # replace won't work here
+    dL_dW_step.subs({A:X}).doit().replace(unapplied, applied)
+])
 
-# Carrying out the multplication: 
-display(dL_dW_step.subs({A:X}).doit()) # replace won't work here
-display(dL_dW_step.subs({A:X}).doit().replace(unapplied, applied))
-
-# %%
-dle = lambd(xi).diff(xi)
-#display(dle)
-
-dle_repl = lambd(xi).diff(xi).subs(xi, applied).replace(lambd, lambd_L)
-#display(dle_repl)
-
-
-display(dL_dW_abstract.replace(sigmaApply_L(A*B), xi))
-display(dL_dW_abstract.replace(sigmaApply_L(A*B), xi).doit())
-display(dL_dW_abstract.replace(sigmaApply_L(A*B), xi).doit().replace(dle, dle_repl)) #.doit())
-# NOTE here it says the matrices are not aligned if we execute doit() to reveal the ones matrix that is dL_dS. True since assumption here is matrix multplication with dL_dS and right hand side, but in fact it is hadamard multiplication. 
 
 
 # %% 
 dL_dX_step = compose(lambd, sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(A).subs({A*B : vN(A,B)}).doit()
 
-display(dL_dX_step)
-display(dL_dX_step.replace(unapplied, applied))
-#display(dL_dW_step.subs({A:X})) # replace won't work here
 
-# Carrying out the multplication: 
-display(dL_dX_step.subs({B:W}).doit()) # replace won't work here
-display(dL_dX_step.subs({B:W}).doit().replace(unapplied, applied))
+showGroup([
+    dL_dX_step,
+    dL_dX_step.replace(unapplied, applied),
+    dL_dX_step.subs({B:W}).doit(),
+    dL_dX_step.subs({B:W}).doit().replace(unapplied, applied)
+])
 
+
+
+# %% markdown
+# Trying to replace further to get the ones matrix for the deriv of lambda expression, but doesn't work, see code below for why (hadamard is not present, just matrix multiplication. Chain rule in this form doesn't know there should be hadamard product between deriv of lambda expression and dsdx expression)
+# %%
+dle = lambd(xi).diff(xi)
+dle_repl = lambd(xi).diff(xi).subs(xi, applied).replace(lambd, lambd_L)
+
+showGroup([
+    dle,
+    dle_repl
+])
+# %%
+showGroup([
+    dL_dW_abstract.replace(sigmaApply_L(A*B), xi),
+    dL_dW_abstract.replace(sigmaApply_L(A*B), xi).doit(),
+    dL_dW_abstract.replace(sigmaApply_L(A*B), xi).doit().replace(dle, dle_repl) #.doit())
+])
+
+# NOTE here it says the matrices are not aligned if we execute doit() to reveal the ones matrix that is dL_dS. True since assumption here is matrix multplication with dL_dS and right hand side, but in fact it is hadamard multiplication. 
 
 
 
 # %% markdown
-# The first part: dldn
-
-# %% markdown
+# The first part: $\frac{dL}{dS}$
+#
 # Direct substitution way: 
 # %%
-display( lambd(xi).diff(xi).subs(xi, applied) )
-display( lambd(xi).diff(xi).subs(xi, applied).replace(lambd, lambd_L) )
-display( lambd(xi).diff(xi).subs(xi, applied).replace(lambd, lambd_L).doit() )
+showGroup([
+    lambd(xi).diff(xi).subs(xi, applied),
+    lambd(xi).diff(xi).subs(xi, applied).replace(lambd, lambd_L),
+    lambd(xi).diff(xi).subs(xi, applied).replace(lambd, lambd_L).doit()
+])
+
 # %% markdown
 # The substitute into derivative way: 
 # %%
-display( lambd(xi).diff(xi).subs(xi, unapplied) )
-
-display( lambd(xi).diff(xi).subs(xi, unapplied).replace(unapplied, applied) ) # gives same expression as in dldx
-
-display( lambd(xi).diff(xi).subs(xi, unapplied).replace(unapplied, applied).replace(lambd, lambd_L) ) 
-
+showGroup([
+    lambd(xi).diff(xi).subs(xi, unapplied),
+    lambd(xi).diff(xi).subs(xi, unapplied).replace(unapplied, applied),
+    # gives same expression as in dldx
+    lambd(xi).diff(xi).subs(xi, unapplied).replace(unapplied, applied).replace(lambd, lambd_L)
+])
+# TODO left off here recipe
 
 
 # %% 
