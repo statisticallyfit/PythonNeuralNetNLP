@@ -2,7 +2,7 @@
 # # Derivations For Matrix Derivative Rule of $L = \lambda( \sigma_{\text{apply}}( \nu(X, W) ) )$
 
 # %%
-
+from typing import * 
 import sys
 import os
 
@@ -32,10 +32,10 @@ def showGroup(group: List[Any]) -> None:
 
     # TODO how to import this function from the above file? 
 # %%
-showGroup1([xi, xi, beta])
-from src.Neural
+#showGroup1([xi, xi, beta])
+#from src.Neural
 # %% codecell
-from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Derivative, symbols, diff
+from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity, Derivative, symbols, diff
 from sympy.abc import x, i, j, a, b
 
 # NOTE no need to call display manually anymore! Just import display from ipython and manually init printing for sympy and then we can render equations nicely in python interactive window!
@@ -89,7 +89,10 @@ B = MatrixSymbol('W',m,p)
 
 # matrix variable for sympy Lambda function arguments
 M = MatrixSymbol('M', i, j)# abstract shape
-N = MatrixSymbol("N", n, p)# shape of A*B
+# %% codecell
+compose(sigmaApply)(N).replace(sigmaApply, sigmaApply_).diff(N).subs({N : vN(A,B)}).doit()
+# %% codecell
+###N = MatrixSymbol("N", n, p)# shape of A*B### use Nelem below
 
 
 showGroup([
@@ -227,18 +230,6 @@ dL_dX_direct
 
 
 
-# %% codecell
-'''dN_dW_times_dS_dN = compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B).subs({A*B : vN(A,B)}).doit()
-
-dN_dW_times_dS_dN
-# %%
-dN_dW_times_dS_dN.subs({A:X}) # replace won't work here
-# %%
-# Carrying out the multplication: 
-dN_dW_times_dS_dN.subs({A:X}).doit() # replace won't work here
-'''
-
-
 # %%
 unapplied = sigmaApply_L(vN(A,B))
 # Also works: same as above: 
@@ -317,82 +308,32 @@ showGroup([
     # gives same expression as in dldx
     lambd(xi).diff(xi).subs(xi, unapplied).replace(unapplied, applied).replace(lambd, lambd_L)
 ])
-# TODO left off here recipe
-
-
-# %% 
-# TODO cannot substitute here, gives error
-ones = lambd(xi).diff(xi).subs(xi, applied).replace(lambd, lambd_L).doit()
-display(ones)
-
-#display(dL_dX_step.replace(lambdExpr, ones))
 
 
 
 # %% markdown
 # The second part: dndx * dsdn
 # %% codecell
+
+# %% codecell
+dN_dW_times_dS_dN = compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B).subs({A*B : vN(A,B)}).doit()
+
+showGroup([
+    dN_dW_times_dS_dN,
+    dN_dW_times_dS_dN.subs({A:X}), # replace won't work here
+    # Carrying out the multplication: 
+    dN_dW_times_dS_dN.subs({A:X}).doit() # replace won't work here
+])
+
+# %%
 dN_dX_times_dS_dN = compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(A).subs({A*B : vN(A,B)}).doit()
 
-display(dN_dX_times_dS_dN)
-
-display(dN_dX_times_dS_dN.subs({B:W})) # replace won't work here
-
-# Carrying out the multplication: 
-display(dN_dX_times_dS_dN.subs({B:W}).doit()) # replace won't work here
-
-
-
-# %% markdown
-# ### COMPARE: Symbolic form vs. Direct form vs. Step by Step form (which goes from symbolic to direct form by replacing)
-# #### Symbolic Abstract Form (with respect to W):
-# %% codecell
-Lc = compose(lambd, sigmaApply, v)(A, B)
-symb = Lc.replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B)
-symb
-# %% markdown
-# #### Direct form: (after the symbolic form)
-# %% codecell
-Lc.replace(v, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(W).subs(specToElemD)
-# %% markdown
-# Just placing the "n" values right in place of the "epsilons" using the "doit" function:
-# %% codecell
-direct = Lc.replace(v, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(W).subs(specToElemD).doit()
-direct
-
-
-
-
-
-# %% codecell
-# Now verifying the above rule by applying the composition thing piece by piece via multiplication:
-L.replace(v,vL).replace(sigmaApply, sigmaApply_).diff(B)
-# %% codecell
-L.replace(v,vL).replace(sigmaApply,sigmaApply_)#.diff()
-# %% codecell
-L.replace(v,vL)
-# %% codecell
-L.replace(v,vL).diff(sigmaApply(A*B))
-# %% codecell
-#L.replace(n,vL).diff(sigmaApply(A*B)).replace(sigmaApply,sigmaApply_)
-## ERROR cannot do that
-# %% codecell
-
-#L.replace(n,vL).diff(sigmaApply(A*B)).subs(sigmaApply,sigmaApply_L) ## ERROR
-
-nL = Lambda((A,B), v(A,B)); nL
-
-
-
-
-#compose(lambd, sigmaApply, n)(A,B).diff(lambd)
-display( diff(compose(lambd, sigmaApply, v)(A,B), compose(lambd, sigmaApply, v)(A,B)) )
-
-
-display( diff(L, v(A,B)) )
-
-
-display( L.replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B) )
+showGroup([
+    dN_dX_times_dS_dN, 
+    dN_dX_times_dS_dN.subs({B:W}), # replace won't work here
+    # Carrying out the multplication: 
+    dN_dX_times_dS_dN.subs({B:W}).doit() # replace won't work here
+])
 
 
 
@@ -400,31 +341,55 @@ display( L.replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B) )
 # %% codecell
 # THis seems right:
 dL_dS = lambd(Selem).replace(lambd, lambd_L).diff(Selem)
+# ANOTHER WAY: lambd(xi).diff(xi).subs(xi, applied).replace(lambd, lambd_L).doit()
+
 # THIS SEEMS WRONG : ??? how to tell for sure?
 #lambd(Selem).diff(Selem).replace(lambd, lambd_L).doit()
 
-display(dL_dS)
+dL_dS
 
 
 # %% codecell
-# This is the X^T * dS/dN part
-display(compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B).subs({A*B : vN(A,B)}).doit())
-# %% codecell
 
-dS_dN = compose(sigmaApply)(N).replace(sigmaApply, sigmaApply_).diff(N).subs({N : vN(A,B)}).doit()
+dS_dN = compose(sigmaApply)(M).replace(sigmaApply, sigmaApply_).diff(M).subs({M : vN(A,B)}).doit()
 
-dS_dN_abstract = compose(sigmaApply)(N).replace(sigmaApply, sigmaApply_).diff(N).subs(N, v_(A,B))
+dS_dN_abstract = compose(sigmaApply)(M).replace(sigmaApply, sigmaApply_).diff(M).subs(M, v_(A,B))
 # ANOTHER WAY: sigmaApply_L(M).diff(M).subs({M : Nelem}).doit()
 # WRONG:
 #dS_dN = sigmaApply(Nelem).replace(sigmaApply, sigmaApply_).diff(Matrix(Nelem))
-display(dS_dN_abstract)
-display(dS_dN)
+showGroup([
+    dS_dN,
+    dS_dN_abstract
+])
+
+# %%
+# Temporary function to make symbolic matrix derivative (of matrix product, using a hack involving the apply func)
+
+# Args: expr, variable
+expr = A.T * B * (C.T*A)
+byVar = B
+
+#A = MatrixSymbol('X')
+# Create temporary undefined function: 
+t = Function('t')
+# Create the lambd apply func
+M = MatrixSymbol('M', i, j) # abstract shape, doesn't matter
+tL = Lambda(M, M.applyfunc(t)) # apply the miniature inner function to the matrix (to get that lambda symbol using an arbitrary function t())
+# Create shape of the Nelem matrix (shape of resulting multiplication of arguments). Will use this to substitute
+R = Matrix(MatrixSymbol('R', expr.shape[0], expr.shape[1]))
 
 
+# Do derivative: 
+deriv = t(expr).replace(t, tL).diff(byVar)
 
+cutExpr = diff(tL(M), M).subs(M, R).doit()
+derivToCut = deriv.subs(expr, R).doit()
+
+derivID = derivToCut.replace(cutExpr, 1).doit()
 # %% codecell
 from sympy import HadamardProduct
 
+dN_dX = B.transpose()
 dN_dW = A.transpose()
 
 dS_dW = dN_dW * dS_dN
