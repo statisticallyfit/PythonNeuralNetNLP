@@ -5,6 +5,7 @@
 #----------------------------------------------------------------------
  
 from sympy import *
+from sympy import Function , Symbol, Add, Mul
 from sympy.printing.str import StrPrinter
 from sympy.printing.latex import LatexPrinter
  

@@ -90,7 +90,7 @@ B = MatrixSymbol('W',m,p)
 # matrix variable for sympy Lambda function arguments
 M = MatrixSymbol('M', i, j)# abstract shape
 # %% codecell
-compose(sigmaApply)(N).replace(sigmaApply, sigmaApply_).diff(N).subs({N : vN(A,B)}).doit()
+#compose(sigmaApply)(N).replace(sigmaApply, sigmaApply_).diff(N).subs({N : vN(A,B)}).doit()
 # %% codecell
 ###N = MatrixSymbol("N", n, p)# shape of A*B### use Nelem below
 
