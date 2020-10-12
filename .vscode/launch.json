@@ -12,7 +12,9 @@
 
             "console": "integratedTerminal",
 
-            "pythonPath": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python"
+            "pythonPath": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
+
+            "internalConsoleOptions":"neverOpen"
         },
         {
             "name": "diff",
@@ -22,7 +24,9 @@
 
             "console": "integratedTerminal",
 
-            "pythonPath": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python"
+            "pythonPath": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
+
+            "internalConsoleOptions":"neverOpen"
         }
     ]
 }

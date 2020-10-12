@@ -4,8 +4,15 @@
 # 
 #----------------------------------------------------------------------
  
-from sympy import *
-from sympy import Function , Symbol, Add, Mul
+from sympy import (Symbol, MatrixSymbol, Matrix, ZeroMatrix, Identity, Add, Mul, MatAdd, MatMul, Determinant, Inverse, Trace, Transpose, Function, derive_by_array, Lambda, Derivative, symbols, diff)
+
+from sympy.abc import x, i, j, a, b
+
+from IPython.display import display
+from sympy.interactive import printing
+printing.init_printing(use_latex='mathjax')
+
+
 from sympy.printing.str import StrPrinter
 from sympy.printing.latex import LatexPrinter
  

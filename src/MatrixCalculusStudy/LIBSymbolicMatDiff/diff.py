@@ -1,9 +1,15 @@
-from sympy import (Symbol, MatrixSymbol, ZeroMatrix, Add, Mul, MatAdd, MatMul,
-                   Determinant, Inverse, Trace, Transpose)
+from sympy import (Symbol, MatrixSymbol, Matrix, ZeroMatrix, Identity, Add, Mul, MatAdd, MatMul, Determinant, Inverse, Trace, Transpose, Function, derive_by_array, Lambda, Derivative, symbols, diff)
 
-from typing import * 
+from sympy.abc import x, i, j, a, b
 
-#  Setting the paths for importing: 
+from IPython.display import display
+from sympy.interactive import printing
+printing.init_printing(use_latex='mathjax')
+
+
+from typing import *
+
+#  Setting the paths for importing:
 import sys
 import os
 
@@ -14,22 +20,24 @@ MATDIFF_PATH: str = PATH + "/src/MatrixCalculusStudy/LIBSymbolicMatDiff/"
 sys.path.append(PATH)
 sys.path.append(MATDIFF_PATH)
 
-# Importing the custom files: 
-from symbols import d, Kron, SymmetricMatrixSymbol
-from simplifications import simplify_matdiff
+# Importing the custom files:
+#from symbols import d, Kron, SymmetricMatrixSymbol
+#from simplifications import simplify_matdiff
+from src.MatrixCalculusStudy.LIBSymbolicMatDiff.symbols import d, Kron, SymmetricMatrixSymbol
+from src.MatrixCalculusStudy.LIBSymbolicMatDiff.simplifications import simplify_matdiff
 
 
-MY_RULES = {
 
-}
-
-# THe matrix diff rules: 
+# THe matrix diff rules:
 MATRIX_DIFF_RULES = {
     # e =expression, s = a list of symbols respsect to which
     # we want to differentiate
     Symbol: lambda e, s: d(e) if (e in s) else 0,
     MatrixSymbol: lambda e, s: d(e) if (e in s) else ZeroMatrix(*e.shape),
     SymmetricMatrixSymbol: lambda e, s: d(e) if (e in s) else ZeroMatrix(*e.shape),
+    #Symbol: lambda e, s: d(e) if (e in s) else 0,
+    #MatrixSymbol: lambda e, s: d(e) if (e in s) else ZeroMatrix(*e.shape),
+    #SymmetricMatrixSymbol: lambda e, s: d(e) if (e in s) else ZeroMatrix(*e.shape),
     Add: lambda e, s: Add(*[_matDiff_apply(arg, s) for arg in e.args]),
     Mul: lambda e, s: _matDiff_apply(e.args[0], s) if len(e.args)==1 else Mul(_matDiff_apply(e.args[0],s),Mul(*e.args[1:])) + Mul(e.args[0], _matDiff_apply(Mul(*e.args[1:]),s)),
     MatAdd: lambda e, s: MatAdd(*[_matDiff_apply(arg, s) for arg in e.args]),
@@ -38,7 +46,7 @@ MATRIX_DIFF_RULES = {
 
     Kron: lambda e, s: _matDiff_apply(e.args[0],s) if len(e.args)==1 else Kron(_matDiff_apply(e.args[0],s),Kron(*e.args[1:]))
                   + Kron(e.args[0],_matDiff_apply(Kron(*e.args[1:]),s)),
-    Determinant: lambda e, s: MatMul(Determinant(e.args[0]), Trace(e.args[0].I*_matDiff_apply(e.args[0], s))), 
+    Determinant: lambda e, s: MatMul(Determinant(e.args[0]), Trace(e.args[0].I*_matDiff_apply(e.args[0], s))),
     # inverse always has 1 arg, so we index
     Inverse: lambda e, s: -Inverse(e.args[0]) * _matDiff_apply(e.args[0], s) * Inverse(e.args[0]),
     # trace always has 1 arg
@@ -54,16 +62,9 @@ def _matDiff_apply(expr, syms):
     elif expr.is_constant():
         return 0
     else:
-        raise TypeError("Don't know how to differentiate class %s", expr.__class__) 
+        raise TypeError("Don't know how to differentiate class %s", expr.__class__)
 
 
-def _diff_to_grad(expr, s):
-    # if expr is a trace, sum of traces, or scalar times a trace, we can do it
-    # scalar times a trace 
-    if expr.is_Mul and expr.args[0].is_constant() and expr.args[1].is_Trace:
-        return (expr.args[0] * expr.args[1].arg.xreplace({d(s): 1}))
-    else: 
-        raise RuntimeError("Don't know how to convert %s to gradient!" % expr)
 
 def matDiff(expr, syms):
     # diff wrt 1 element wrap in list
@@ -78,6 +79,18 @@ def matDiff(expr, syms):
         return expr
 
     return [diff_and_simplify(expr, s).doit() for s in syms]
+
+
+
+
+
+def _diff_to_grad(expr, s):
+    # if expr is a trace, sum of traces, or scalar times a trace, we can do it
+    # scalar times a trace
+    if expr.is_Mul and expr.args[0].is_constant() and expr.args[1].is_Trace:
+        return (expr.args[0] * expr.args[1].arg.xreplace({d(s): 1}))
+    else:
+        raise RuntimeError("Don't know how to convert %s to gradient!" % expr)
 
 
 
@@ -109,8 +122,6 @@ def func(fLetter: str, i: int, xLetter, xLen):
 
 
 def main():
-    from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity, Derivative, symbols, diff
-    from sympy.abc import x, i, j, a, b
 
     n,m,p = 3,3,2
 
@@ -121,4 +132,12 @@ def main():
     B = MatrixSymbol('W',m,p)
 
 
-    matDiff(A*B, A)
+
+    #print(_matDiff_apply(A*B, [A]))
+
+    print(matDiff(A*B, A))
+
+
+
+if __name__ == "__main__":
+    main()
