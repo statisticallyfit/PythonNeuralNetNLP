@@ -125,9 +125,9 @@ def matDiff(expression, variables: List[Symbol]):
         variables = [variables]
 
     def diff_and_simplify(expression, byVar: List[Symbol]):
-        diffExpr = _matDiff_apply(expression, [byVar])
-        simpDiffExpr = simplify_matdiff(diffExpr, d(byVar))
-        return simpDiffExpr
+        expr = _matDiff_apply(expression, [byVar])
+        #expr = simplify_matdiff(diffExpr, d(byVar))
+        return expr
 
     return [diff_and_simplify(expression, v).doit() for v in variables]
 
@@ -185,7 +185,7 @@ def main():
     B = MatrixSymbol("B", 3, 2)
     R = MatrixSymbol("R", 3,3)
 
-    matDiff(A * Inverse(R) * B, R)
+    #matDiff(A * Inverse(R) * B, R)
 
 
 
