@@ -65,7 +65,7 @@ def matmul_distribute_repl(dX):
                 pre.append(arg)
             else:
                 post.append(arg)
-        # ugly hack here because I can't figure out how to not end up 
+        # ugly hack here because I can't figure out how to not end up
         # with nested parens that break other things
         addends = [[*addend.args] if addend.is_MatMul else [addend] for addend in add.args]
         return MatAdd(*[MatMul(*[*pre, *addend, *post]) for addend in addends])

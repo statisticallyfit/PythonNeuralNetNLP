@@ -1,5 +1,10 @@
 from sympy import (Symbol, MatrixSymbol, Matrix, ZeroMatrix, Identity, Add, Mul, MatAdd, MatMul, Determinant, Inverse, Trace, Transpose, Function, derive_by_array, Lambda, Derivative, symbols, diff)
 
+from sympy.matrices.expressions import MatrixExpr
+
+# NOTE: Application is an applied undefined function like f(x,y) while UndefinedFunction would be just f
+from sympy.core.function import UndefinedFunction, Application
+
 from sympy.abc import x, i, j, a, b
 
 from IPython.display import display
@@ -26,13 +31,52 @@ sys.path.append(MATDIFF_PATH)
 #from .symbols import d, Kron, SymmetricMatrixSymbol
 #from .simplifications import simplify_matdiff
 
-### Interactive imports: 
+### Interactive imports:
 from symbols import d, Kron, SymmetricMatrixSymbol
 from simplifications import simplify_matdiff
-# NOTE: need these imports below when executing in Python Interactive. Here these imports don't really work for the file itself, only in interactive. 
+# NOTE: need these imports below when executing in Python Interactive. Here these imports don't really work for the file itself, only in interactive.
 #from src.MatrixCalculusStudy.LIBSymbolicMatDiff.symbols import d, Kron, SymmetricMatrixSymbol
 #from src.MatrixCalculusStudy.LIBSymbolicMatDiff.simplifications import simplify_matdiff
 
+
+from src.utils.GeneralUtil import *
+
+# TODO how to import from src.utils.GeneralUtil ?? need the findWhere function here
+
+def wrapMatSymInDiff(expr, syms: List[Symbol]):
+    if (expr in syms):
+        indices = findWhere(syms, expr)
+        frst = indices[0]
+        return diff(expr, syms[frst])
+    else:
+        return ZeroMatrix(*expr.shape)
+
+
+MY_RULES = {
+    # e = expression, s = a list of symbols respsect to which
+    # we want to differentiate
+    Symbol: lambda e, s: d(e) if (e in s) else 0,
+    MatrixSymbol: lambda e, s: wrapMatSymInDiff(e, s),
+    SymmetricMatrixSymbol: lambda e, s: d(e) if (e in s) else ZeroMatrix(*e.shape),
+    #Symbol: lambda e, s: d(e) if (e in s) else 0,
+    #MatrixSymbol: lambda e, s: d(e) if (e in s) else ZeroMatrix(*e.shape),
+    #SymmetricMatrixSymbol: lambda e, s: d(e) if (e in s) else ZeroMatrix(*e.shape),
+    Add: lambda e, s: Add(*[_matDiff_apply(arg, s) for arg in e.args]),
+    Mul: lambda e, s: _matDiff_apply(e.args[0], s) if len(e.args)==1 else Mul(_matDiff_apply(e.args[0],s),Mul(*e.args[1:])) + Mul(e.args[0], _matDiff_apply(Mul(*e.args[1:]),s)),
+    MatAdd: lambda e, s: MatAdd(*[_matDiff_apply(arg, s) for arg in e.args]),
+
+    MatMul: lambda e, s: _matDiff_apply(e.args[0], s) if len(e.args)== 1 else MatMul(_matDiff_apply(e.args[0],s),MatMul(*e.args[1:])) + MatMul(e.args[0], _matDiff_apply(MatMul(*e.args[1:]),s)),
+
+    Kron: lambda e, s: _matDiff_apply(e.args[0],s) if len(e.args)==1 else Kron(_matDiff_apply(e.args[0],s),Kron(*e.args[1:]))
+                  + Kron(e.args[0],_matDiff_apply(Kron(*e.args[1:]),s)),
+    Determinant: lambda e, s: MatMul(Determinant(e.args[0]), Trace(e.args[0].I*_matDiff_apply(e.args[0], s))),
+    # inverse always has 1 arg, so we index
+    Inverse: lambda e, s: -Inverse(e.args[0]) * _matDiff_apply(e.args[0], s) * Inverse(e.args[0]),
+    # trace always has 1 arg
+    Trace: lambda e, s: Trace(_matDiff_apply(e.args[0], s)),
+    # transpose also always has 1 arg, index
+    Transpose: lambda e, s: Transpose(_matDiff_apply(e.args[0], s))
+}
 
 
 # THe matrix diff rules:
@@ -49,7 +93,7 @@ MATRIX_DIFF_RULES = {
     Mul: lambda e, s: _matDiff_apply(e.args[0], s) if len(e.args)==1 else Mul(_matDiff_apply(e.args[0],s),Mul(*e.args[1:])) + Mul(e.args[0], _matDiff_apply(Mul(*e.args[1:]),s)),
     MatAdd: lambda e, s: MatAdd(*[_matDiff_apply(arg, s) for arg in e.args]),
 
-    MatMul: lambda e, s: _matDiff_apply(e.args[0], s) if len(e.args)==1 else MatMul(_matDiff_apply(e.args[0],s),MatMul(*e.args[1:])) + MatMul(e.args[0], _matDiff_apply(MatMul(*e.args[1:]),s)),
+    MatMul: lambda e, s: _matDiff_apply(e.args[0], s) if len(e.args)== 1 else MatMul(_matDiff_apply(e.args[0],s),MatMul(*e.args[1:])) + MatMul(e.args[0], _matDiff_apply(MatMul(*e.args[1:]),s)),
 
     Kron: lambda e, s: _matDiff_apply(e.args[0],s) if len(e.args)==1 else Kron(_matDiff_apply(e.args[0],s),Kron(*e.args[1:]))
                   + Kron(e.args[0],_matDiff_apply(Kron(*e.args[1:]),s)),
@@ -60,32 +104,32 @@ MATRIX_DIFF_RULES = {
     Trace: lambda e, s: Trace(_matDiff_apply(e.args[0], s)),
     # transpose also always has 1 arg, index
     Transpose: lambda e, s: Transpose(_matDiff_apply(e.args[0], s))
-    }
+}
 
 
-def _matDiff_apply(expr, syms):
-    if expr.__class__ in list(MATRIX_DIFF_RULES.keys()):
-        return MATRIX_DIFF_RULES[expr.__class__](expr, syms)
-    elif expr.is_constant():
+def _matDiff_apply(expression, byVar: Symbol):
+    if expression.__class__ in list(MY_RULES.keys()):
+        return MY_RULES[expression.__class__](expression, byVar)
+    elif expression.is_constant():
         return 0
     else:
-        raise TypeError("Don't know how to differentiate class %s", expr.__class__)
+        raise TypeError("Don't know how to differentiate class %s", expression.__class__)
 
 
 
-def matDiff(expr, syms):
+def matDiff(expression, variables: List[Symbol]):
     # diff wrt 1 element wrap in list
     try:
-        _ = syms.__iter__
+        _ = variables.__iter__
     except AttributeError:
-        syms = [syms]
+        variables = [variables]
 
-    def diff_and_simplify(expr, s):
-        expr = _matDiff_apply(expr, [s])
-        expr = simplify_matdiff(expr, d(s))
-        return expr
+    def diff_and_simplify(expression, byVar: List[Symbol]):
+        diffExpr = _matDiff_apply(expression, [byVar])
+        simpDiffExpr = simplify_matdiff(diffExpr, d(byVar))
+        return simpDiffExpr
 
-    return [diff_and_simplify(expr, s).doit() for s in syms]
+    return [diff_and_simplify(expression, v).doit() for v in variables]
 
 
 # -----------------------------------
