@@ -21,10 +21,17 @@ sys.path.append(PATH)
 sys.path.append(MATDIFF_PATH)
 
 # Importing the custom files:
-#from symbols import d, Kron, SymmetricMatrixSymbol
-#from simplifications import simplify_matdiff
-from src.MatrixCalculusStudy.LIBSymbolicMatDiff.symbols import d, Kron, SymmetricMatrixSymbol
-from src.MatrixCalculusStudy.LIBSymbolicMatDiff.simplifications import simplify_matdiff
+
+### File imports
+#from .symbols import d, Kron, SymmetricMatrixSymbol
+#from .simplifications import simplify_matdiff
+
+### Interactive imports: 
+from symbols import d, Kron, SymmetricMatrixSymbol
+from simplifications import simplify_matdiff
+# NOTE: need these imports below when executing in Python Interactive. Here these imports don't really work for the file itself, only in interactive. 
+#from src.MatrixCalculusStudy.LIBSymbolicMatDiff.symbols import d, Kron, SymmetricMatrixSymbol
+#from src.MatrixCalculusStudy.LIBSymbolicMatDiff.simplifications import simplify_matdiff
 
 
 
@@ -81,7 +88,7 @@ def matDiff(expr, syms):
     return [diff_and_simplify(expr, s).doit() for s in syms]
 
 
-
+# -----------------------------------
 
 
 def _diff_to_grad(expr, s):
@@ -128,8 +135,13 @@ def main():
     X = Matrix(n, m, lambda i,j : var_ij('x', i, j))
     W = Matrix(m, p, lambda i,j : var_ij('w', i, j))
 
-    A = MatrixSymbol('X',n,m)
-    B = MatrixSymbol('W',m,p)
+    #A = MatrixSymbol('X',n,m)
+    #B = MatrixSymbol('W',m,p)
+    A = MatrixSymbol("A", 4, 3)
+    B = MatrixSymbol("B", 3, 2)
+    R = MatrixSymbol("R", 3,3)
+
+    matDiff(A * Inverse(R) * B, R)
 
 
 

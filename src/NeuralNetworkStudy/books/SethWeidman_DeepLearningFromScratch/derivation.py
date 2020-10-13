@@ -371,21 +371,26 @@ byVar = B
 
 #A = MatrixSymbol('X')
 # Create temporary undefined function: 
-t = Function('t')
-# Create the lambd apply func
-M = MatrixSymbol('M', i, j) # abstract shape, doesn't matter
-tL = Lambda(M, M.applyfunc(t)) # apply the miniature inner function to the matrix (to get that lambda symbol using an arbitrary function t())
-# Create shape of the Nelem matrix (shape of resulting multiplication of arguments). Will use this to substitute
-R = Matrix(MatrixSymbol('R', expr.shape[0], expr.shape[1]))
+def myderiv(expr, byVar): 
+    t = Function('t')
+    # Create the lambd apply func
+    M = MatrixSymbol('M', i, j) # abstract shape, doesn't matter
+    tL = Lambda(M, M.applyfunc(t)) # apply the miniature inner function to the matrix (to get that lambda symbol using an arbitrary function t())
+    # Create shape of the Nelem matrix (shape of resulting multiplication of arguments). Will use this to substitute
+    R = Matrix(MatrixSymbol('R', expr.shape[0], expr.shape[1]))
 
 
-# Do derivative: 
-deriv = t(expr).replace(t, tL).diff(byVar)
+    # Do derivative: 
+    deriv = t(expr).replace(t, tL).diff(byVar)
 
-cutExpr = diff(tL(M), M).subs(M, R).doit()
-derivToCut = deriv.subs(expr, R).doit()
+    cutExpr = diff(tL(M), M).subs(M, R).doit()
+    derivToCut = deriv.subs(expr, R).doit()
 
-derivID = derivToCut.replace(cutExpr, 1).doit()
+    derivID = derivToCut.replace(cutExpr, 1).doit()
+
+    return derivID
+
+    
 # %% codecell
 from sympy import HadamardProduct
 
