@@ -53,11 +53,27 @@ class d(MatrixExpr):
 from sympy import sympify
 
 class Deriv(MatrixExpr):
-    def __init__(self, mat: MatrixSymbol):
-        self.mat = mat
+    def __init__(self, funcOrMat):
+        self.funcOrMat = funcOrMat
 
-    def __new__(cls, mat: MatrixSymbol):
-        return Basic.__new__(cls, mat)
+    def __new__(cls, funcOrMat):
+        funcOrMat = sympify(funcOrMat)
+
+        # If not a matrixsymbol or applied function, throw error
+
+        # NOTE: assuming the applied function takes in a matrix symbol only (no multi args yet .... )
+        if not isinstance(funcOrMat, MatrixSymbol) and not isinstance(funcOrMat, Application):
+            raise TypeError("input to matrix derivative, %s, is not a MatrixSymbol or Application (applied UndefinedFunction)" % str(funcOrMat))
+
+        if isinstance(funcOrMat, Application): 
+            if not len(funcOrMat.args) == 1:
+                raise AttributeError("assuming only single-var function")
+
+            # TODO: what if functino has ssclar argument and that scalar is an element of another argumnt matrix? 
+            if not isinstance(funcOrMat.args[0], MatrixSymbol):
+                raise TypeError("function must have MatrixSymbol argument only")
+
+        return Basic.__new__(cls, funcOrMat)
 
     
     @property
@@ -68,7 +84,7 @@ class Deriv(MatrixExpr):
         
         #return (self.mat.rows**2, self.mat.cols**2)
         # NOTE: (update) if we put the above then cannot do matmul predictably anymore so just return same shape as the argument
-        return (self.mat.rows, self.mat.cols)    
+        return (self.funcOrMat.rows, self.funcOrMat.cols)
 
 
 
@@ -77,8 +93,11 @@ class MyLatexPrinter(LatexPrinter):
     def _print_Deriv(self, deriv: Deriv):
 
         # NOTE: MatrixSymbol has args (symbolletter, sizeRow, sizeCol) so we need args[0] to get its symbol letter
-        
-        return '\\displaystyle \\frac {\\partial ' + self._print(deriv.mat) + '} {\\partial ' + self._print(deriv.mat) + '}'
+        if (isinstance(deriv.funcOrMat, MatrixSymbol)):
+            return '\\displaystyle \\frac {\\partial ' + self._print(deriv.funcOrMat) + '} {\\partial ' + self._print(deriv.funcOrMat) + '}'
+        else: #is function application type with matrixsymbol argument
+            matArg = deriv.funcOrMat.args[0]
+            return '\\displaystyle \\frac {\\partial } {\\partial ' + self._print(matArg) + '} ' + self._print(deriv.funcOrMat) #+ ' )'
 
 
 #def print_my_latex(expr):
@@ -99,8 +118,8 @@ if __name__ == "__main__":
     B = MatrixSymbol("B", 3, 2)
     R = MatrixSymbol("R", 3,3)
 
-    DE(A)
-    print(DE(A))
+    Deriv(A)
+    Deriv(f(A))
 #    matLatex(A*B, A)
 # %%
 
