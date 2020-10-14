@@ -50,15 +50,25 @@ class d(MatrixExpr):
 
 
 # %%
-
+from sympy import sympify
 
 class Deriv(MatrixExpr):
-    def __init__(self, expr: Basic, byVar: MatrixSymbol):
-        self.expr = expr
-        self.byVar = byVar 
+    def __init__(self, mat: MatrixSymbol):
+        self.mat = mat
 
-    def __new__(cls, expr: Basic, byVar: MatrixSymbol):
-        return Basic.__new__(cls, expr, byVar)
+    def __new__(cls, mat: MatrixSymbol):
+        return Basic.__new__(cls, mat)
+
+    
+    @property
+    def shape(self):
+        # TODO assumpin the expr function is real-valued, then would d(f(X))/dX have shape equal to X? 
+        # TODO when expr is just matrix symbol then shape of dX/dX is (rows^2, cols^2) of X
+        # To check the below, try derive_by_array(Matrix(mat), Matrix(mat) to see it is that kind of identity matrix. 
+        
+        #return (self.mat.rows**2, self.mat.cols**2)
+        # NOTE: (update) if we put the above then cannot do matmul predictably anymore so just return same shape as the argument
+        return (self.mat.rows, self.mat.cols)    
 
 
 
@@ -67,11 +77,8 @@ class MyLatexPrinter(LatexPrinter):
     def _print_Deriv(self, deriv: Deriv):
 
         # NOTE: MatrixSymbol has args (symbolletter, sizeRow, sizeCol) so we need args[0] to get its symbol letter
-        if len(deriv.expr.args) == 1: 
-            return '\\displaystyle \\frac {\\partial ' + self._print(deriv.expr.args[0]) + '} {\\partial ' + self._print(deriv.byVar) + '}'
-
-        else:
-            return '\\displaystyle \\frac {\\partial } {\\partial ' + self._print(deriv.byVar) + '} ' + self._print(deriv.expr) #+ ')'
+        
+        return '\\displaystyle \\frac {\\partial ' + self._print(deriv.mat) + '} {\\partial ' + self._print(deriv.mat) + '}'
 
 
 #def print_my_latex(expr):
@@ -92,8 +99,8 @@ if __name__ == "__main__":
     B = MatrixSymbol("B", 3, 2)
     R = MatrixSymbol("R", 3,3)
 
-    Deriv(A*B, A)
-    print(Deriv(A*B, A))
+    DE(A)
+    print(DE(A))
 #    matLatex(A*B, A)
 # %%
 
