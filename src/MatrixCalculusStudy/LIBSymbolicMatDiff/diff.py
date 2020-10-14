@@ -4,6 +4,7 @@ from sympy.matrices.expressions import MatrixExpr
 
 # NOTE: Application is an applied undefined function like f(x,y) while UndefinedFunction would be just f
 from sympy.core.function import UndefinedFunction, Application
+from sympy.core import Basic #base class for all sympy objects
 
 from sympy.abc import x, i, j, a, b
 
@@ -22,8 +23,11 @@ PATH: str = '/development/projects/statisticallyfit/github/learningmathstat/Pyth
 
 MATDIFF_PATH: str = PATH + "/src/MatrixCalculusStudy/LIBSymbolicMatDiff/"
 
+UTIL_PATH: str = PATH + "/src/utils/"
+
 sys.path.append(PATH)
 sys.path.append(MATDIFF_PATH)
+sys.path.append(UTIL_PATH)
 
 # Importing the custom files:
 
@@ -32,11 +36,11 @@ sys.path.append(MATDIFF_PATH)
 #from .simplifications import simplify_matdiff
 
 ### Interactive imports:
-from symbols import d, Kron, SymmetricMatrixSymbol
-from simplifications import simplify_matdiff
+#from symbols import d, Kron, SymmetricMatrixSymbol
+#from simplifications import simplify_matdiff
 # NOTE: need these imports below when executing in Python Interactive. Here these imports don't really work for the file itself, only in interactive.
-#from src.MatrixCalculusStudy.LIBSymbolicMatDiff.symbols import d, Kron, SymmetricMatrixSymbol
-#from src.MatrixCalculusStudy.LIBSymbolicMatDiff.simplifications import simplify_matdiff
+from src.MatrixCalculusStudy.LIBSymbolicMatDiff.symbols import d, Kron, SymmetricMatrixSymbol
+from src.MatrixCalculusStudy.LIBSymbolicMatDiff.simplifications import simplify_matdiff
 
 
 from src.utils.GeneralUtil import *
@@ -107,7 +111,7 @@ MATRIX_DIFF_RULES = {
 }
 
 
-def _matDiff_apply(expression, byVar: Symbol):
+def _matDiff_apply_RULES(expression, byVar: Symbol):
     if expression.__class__ in list(MY_RULES.keys()):
         return MY_RULES[expression.__class__](expression, byVar)
     elif expression.is_constant():
@@ -115,6 +119,14 @@ def _matDiff_apply(expression, byVar: Symbol):
     else:
         raise TypeError("Don't know how to differentiate class %s", expression.__class__)
 
+
+def _matDiff_apply(expression, byVar: Symbol):
+    if expression.__class__ in list(MATRIX_DIFF_RULES.keys()):
+        return MATRIX_DIFF_RULES[expression.__class__](expression, byVar)
+    elif expression.is_constant():
+        return 0
+    else:
+        raise TypeError("Don't know how to differentiate class %s", expression.__class__)
 
 
 def matDiff(expression, variables: List[Symbol]):
@@ -132,6 +144,20 @@ def matDiff(expression, variables: List[Symbol]):
     return [diff_and_simplify(expression, v).doit() for v in variables]
 
 
+
+def matDiff_RULES(expression, variables: List[Symbol]):
+    # diff wrt 1 element wrap in list
+    try:
+        _ = variables.__iter__
+    except AttributeError:
+        variables = [variables]
+
+    def diff_and_simplify(expression, byVar: List[Symbol]):
+        expr = _matDiff_apply_RULES(expression, [byVar])
+        #expr = simplify_matdiff(diffExpr, d(byVar))
+        return expr
+
+    return [diff_and_simplify(expression, v).doit() for v in variables]
 # -----------------------------------
 
 
@@ -187,7 +213,7 @@ def main():
 
     #matDiff(A * Inverse(R) * B, R)
 
-
+    d(A)
 
     #print(_matDiff_apply(A*B, [A]))
 

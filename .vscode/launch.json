@@ -27,6 +27,18 @@
             "pythonPath": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
 
             "internalConsoleOptions":"neverOpen"
+        },
+        {
+            "name": "symbols",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/MatrixCalculusStudy/LIBSymbolicMatDiff/symbols.py",
+
+            "console": "integratedTerminal",
+
+            "pythonPath": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
+
+            "internalConsoleOptions":"neverOpen"
         }
     ]
 }
