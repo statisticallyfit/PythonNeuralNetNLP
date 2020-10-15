@@ -43,17 +43,17 @@ class d(MatrixExpr):
 # GOal: make functions multiplyable with matrix symbols
 # NOTE: need this to extend Expr not MatrixExpr so can multiply by ANY MatrixSymbol. Can now do func * Deriv(A, B) where func = RealValuedMatrixFunc(f(A,B,R))
 class RealValuedMatrixFunc(Expr):
-    def __init__(self, func: Application):
-        self.fa = func 
-        self.f = func.__class__ #get function letter name
-        self.variables = func.args 
+    def __init__(self, func):
+        self.expr = func 
+        #self.f = func.__class__ #get function letter name
+        #self.variables = func.args 
 
-    def __new__(cls, func: Application):
+    def __new__(cls, func):
         func = sympify(func)
 
-        if not isinstance(func, Application):
+        if not isinstance(func, Application) and not isinstance(func, Add) and not isinstance(func, Mul):
             raise TypeError("must pass in an applied UndefinedFunction")
-
+        
         return Basic.__new__(cls, func)
 
     # this shape doesn't work when want to multiply by actual shaped MatrixSymbols. 

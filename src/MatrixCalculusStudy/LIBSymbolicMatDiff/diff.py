@@ -39,7 +39,7 @@ sys.path.append(UTIL_PATH)
 #from symbols import d, Kron, SymmetricMatrixSymbol
 #from simplifications import simplify_matdiff
 # NOTE: need these imports below when executing in Python Interactive. Here these imports don't really work for the file itself, only in interactive.
-from src.MatrixCalculusStudy.LIBSymbolicMatDiff.symbols import d, Kron, SymmetricMatrixSymbol, Deriv # my deriv here
+from src.MatrixCalculusStudy.LIBSymbolicMatDiff.symbols import d, Kron, SymmetricMatrixSymbol, Deriv, RealValuedMatrixFunc # my deriv here
 from src.MatrixCalculusStudy.LIBSymbolicMatDiff.simplifications import simplify_matdiff
 
 
@@ -63,30 +63,44 @@ printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLat
 
 MY_RULES = {
     # e = expression, s = SINGLE symbol  respsect to which
-    # we want to differentiate
+    # we want to differentiate. ASSUME S is a MatrixSymbol
 
-    # NOTE: if symbol e is an element of the matrixsymbol s then can do derivative else is just zero.  
-    Symbol: lambda e, s: Deriv(e, s) if (e in Matrix(s)) else ZeroMatrix(*s.shape),
-    MatrixSymbol: lambda e, s: Deriv(e, s) if (e == s) else ZeroMatrix(*e.shape),
-    SymmetricMatrixSymbol: lambda e, s: Deriv(e, s) if (e == s) else ZeroMatrix(*e.shape),
+    # NOTE: if symbol e is an element of the matrixsymbol s then can do derivative else is just zero.
+    Symbol: lambda e, S: Deriv(e, S) if (e in Matrix(S)) else ZeroMatrix(*S.shape),
+
+    MatrixSymbol: lambda e, S: Deriv(e, S) if (e == S) else ZeroMatrix(*e.shape),
+
+    SymmetricMatrixSymbol: lambda e, S: Deriv(e, S) if (e == S) else ZeroMatrix(*e.shape),
     #Symbol: lambda e, s: d(e) if (e in s) else 0,
     #MatrixSymbol: lambda e, s: d(e) if (e in s) else ZeroMatrix(*e.shape),
     #SymmetricMatrixSymbol: lambda e, s: d(e) if (e in s) else ZeroMatrix(*e.shape),
-    Add: lambda e, s: Add(*[_matDiff_apply_RULES(arg, s) for arg in e.args]),
-    Mul: lambda e, s: _matDiff_apply_RULES(e.args[0], s) if len(e.args)==1 else Mul(_matDiff_apply_RULES(e.args[0],s),Mul(*e.args[1:])) + Mul(e.args[0], _matDiff_apply_RULES(Mul(*e.args[1:]),s)),
-    MatAdd: lambda e, s: MatAdd(*[_matDiff_apply_RULES(arg, s) for arg in e.args]),
 
-    MatMul: lambda e, s: _matDiff_apply_RULES(e.args[0], s) if len(e.args)== 1 else MatMul(_matDiff_apply_RULES(e.args[0],s),MatMul(*e.args[1:])) + MatMul(e.args[0], _matDiff_apply_RULES(MatMul(*e.args[1:]),s)),
+    Application: lambda appFunc, S: _matDiff_apply_RULES(RealValuedMatrixFunc(appFunc), S),
+    #lambda appFunc, S: Deriv(appFunc, S) if (appFunc.has(S)) else ZeroMatrix(*S.shape),
+    #Deriv(appFunc, S) if (appFunc.has(S)) else ZeroMatrix(*S.shape),
 
-    Kron: lambda e, s: _matDiff_apply_RULES(e.args[0],s) if len(e.args)==1 else Kron(_matDiff_apply_RULES(e.args[0],s),Kron(*e.args[1:]))
-                  + Kron(e.args[0],_matDiff_apply_RULES(Kron(*e.args[1:]),s)),
-    Determinant: lambda e, s: MatMul(Determinant(e.args[0]), Trace(e.args[0].I*_matDiff_apply_RULES(e.args[0], s))),
+    RealValuedMatrixFunc: lambda rvmf, S: Deriv(rvmf.fa, S) if (rvmf.fa.has(S)) else ZeroMatrix(*S.shape),
+
+    Add: lambda e, S: Add(*[_matDiff_apply_RULES(arg, S) for arg in e.args]),
+
+    Mul: lambda e, S: _matDiff_apply_RULES(e.args[0], S) if len(e.args)==1 else Mul(_matDiff_apply_RULES(e.args[0],S),Mul(*e.args[1:])) + Mul(e.args[0], _matDiff_apply_RULES(Mul(*e.args[1:]),S)),
+
+    MatAdd: lambda e, S: MatAdd(*[_matDiff_apply_RULES(arg, S) for arg in e.args]),
+
+    MatMul: lambda e, S: _matDiff_apply_RULES(e.args[0], S) if len(e.args)== 1 else MatMul(_matDiff_apply_RULES(e.args[0],S),MatMul(*e.args[1:])) + MatMul(e.args[0], _matDiff_apply_RULES(MatMul(*e.args[1:]),S)),
+
+    Kron: lambda e, S: _matDiff_apply_RULES(e.args[0],S) if len(e.args)==1 else Kron(_matDiff_apply_RULES(e.args[0],S),Kron(*e.args[1:])) + Kron(e.args[0],_matDiff_apply_RULES(Kron(*e.args[1:]),S)),
+
+    Determinant: lambda e, S: MatMul(Determinant(e.args[0]), Trace(e.args[0].I*_matDiff_apply_RULES(e.args[0], S))),
+
     # inverse always has 1 arg, so we index
-    Inverse: lambda e, s: -Inverse(e.args[0]) * _matDiff_apply_RULES(e.args[0], s) * Inverse(e.args[0]),
+    Inverse: lambda e, S: -Inverse(e.args[0]) * _matDiff_apply_RULES(e.args[0], S) * Inverse(e.args[0]),
+
     # trace always has 1 arg
-    Trace: lambda e, s: Trace(_matDiff_apply_RULES(e.args[0], s)),
+    Trace: lambda e, S: Trace(_matDiff_apply_RULES(e.args[0], S)),
     # transpose also always has 1 arg, index
-    Transpose: lambda e, s: Transpose(_matDiff_apply_RULES(e.args[0], s))
+
+    Transpose: lambda e, S: Transpose(_matDiff_apply_RULES(e.args[0], S))
 }
 
 
@@ -119,8 +133,20 @@ MATRIX_DIFF_RULES = {
 
 
 def _matDiff_apply_RULES(expression, byVar: MatrixSymbol):
-    if expression.__class__ in list(MY_RULES.keys()):
+    # The ordinary condition:
+    testClass = expression.__class__ in list(MY_RULES.keys())
+    # Extra condition imposed by me to check that Application type objects like f(A, B, R) get checked in. Otherwise f(A, B, R).__clas__ just gives 'f' and that is not in the keys but using 'isinstance' we can check Application type.
+    testInstance = any(map(lambda rulesType: isinstance(expression, rulesType), list(MY_RULES.keys())))
+
+    #if expression.__class__ in list(MY_RULES.keys()):
+    if testClass:
         return MY_RULES[expression.__class__](expression, byVar)
+    elif testInstance:
+        # Find the type of expression using the key (otherwise what is easier way?)
+        exprType = list(filter(lambda keyType: isinstance(expression, keyType), MY_RULES.keys()))[0]
+
+        return MY_RULES[exprType](expression, byVar)
+
     elif expression.is_constant():
         return 0
     else:
@@ -221,6 +247,10 @@ def main():
 
     display(matDiff_RULES(A*B, A))
 
+    f = Function('f')
+    g = Function('g')
+
+    matDiff_RULES(f(A)*g(A), A)
 
 
 if __name__ == "__main__":

@@ -1,12 +1,9 @@
-from sympy.printing.latex import LatexPrinter, print_latex
+from sympy.printing.latex import LatexPrinter
 
 from sympy import (Symbol, MatrixSymbol, Matrix, ZeroMatrix, Identity, Add, Mul, MatAdd, MatMul, Determinant, Inverse, Trace, Transpose, Function, derive_by_array, Lambda, Derivative, symbols, diff, sympify)
 from sympy.core import Expr, Basic # Basic is base class for all sympy objects
 from sympy.matrices.expressions import MatrixExpr
-from sympy.core.function import UndefinedFunction, Application
 from sympy.abc import x, i, j, a, b
-from sympy.core.function import UndefinedFunction, Application
-from sympy.core import Basic #base class for all sympy objects
 from sympy.core.function import UndefinedFunction, Application
 
 from src.MatrixCalculusStudy.LIBSymbolicMatDiff.symbols import Deriv, RealValuedMatrixFunc
@@ -34,7 +31,7 @@ class MyLatexPrinter(LatexPrinter):
 
     def _print_RealValuedMatrixFunc(self, func: RealValuedMatrixFunc):
 
-        return '\\displaystyle ' + self._print(func.fa)
+        return '\\displaystyle ' + self._print(func.expr)
 
 
 myLatexPrinter = MyLatexPrinter()
