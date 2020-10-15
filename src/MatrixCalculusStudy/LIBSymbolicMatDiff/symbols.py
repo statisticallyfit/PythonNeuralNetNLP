@@ -1,4 +1,4 @@
-from sympy import (Symbol, MatrixSymbol, Matrix, ZeroMatrix, Identity, Add, Mul, MatAdd, MatMul, Determinant, Inverse, Trace, Transpose, Function, derive_by_array, Lambda, Derivative, symbols, diff, sympify)
+from sympy import (Symbol, MatrixSymbol, Matrix, ZeroMatrix, Identity, Add, Mul, Pow, MatAdd, MatMul, Determinant, Inverse, Trace, Transpose, Function, derive_by_array, Lambda, Derivative, symbols, diff, sympify)
 
 from sympy.core import Expr, Basic # Basic is base class for all sympy objects
 from sympy.matrices.expressions import MatrixExpr
@@ -44,20 +44,23 @@ class d(MatrixExpr):
 # NOTE: need this to extend Expr not MatrixExpr so can multiply by ANY MatrixSymbol. Can now do func * Deriv(A, B) where func = RealValuedMatrixFunc(f(A,B,R))
 class RealValuedMatrixFunc(Expr):
     def __init__(self, func):
-        self.expr = func 
+        self.expr = func
         #self.f = func.__class__ #get function letter name
-        #self.variables = func.args 
+        #self.variables = func.args
 
     def __new__(cls, func):
         func = sympify(func)
 
-        if not isinstance(func, Application) and not isinstance(func, Add) and not isinstance(func, Mul):
+        if not isinstance(func, Application) and not \
+                isinstance(func, Add) and not \
+                isinstance(func, Mul) and not \
+                isinstance(func, Pow):
             raise TypeError("must pass in an applied UndefinedFunction")
-        
+
         return Basic.__new__(cls, func)
 
-    # this shape doesn't work when want to multiply by actual shaped MatrixSymbols. 
-    #@property 
+    # this shape doesn't work when want to multiply by actual shaped MatrixSymbols.
+    #@property
     #def shape(self):
     #    return (1, 1) # assuming real-valued function that takes matrix argument
 
@@ -84,17 +87,17 @@ class Deriv(MatrixExpr):
             raise TypeError("input to matrix derivative, %s, is not a MatrixSymbol or Application (applied UndefinedFunction) or an element in byVar" % str(expr))
 
         elif isinstance(expr, Application):
-            func = expr 
+            func = expr
 
             # TODO: what if functino has ssclar argument and that scalar is an element of another argumnt matrix?
             if not func.has(byVar):
                 raise AttributeError("Applied function must contain the argument by which we differentiate")
 
-            # If not all arguments are matrix type throw error    
+            # If not all arguments are matrix type throw error
             elif not all(map(lambda theArg: isinstance(theArg, MatrixSymbol), func.args)):
                 raise TypeError("function must have MatrixSymbol argument only")
 
-        
+
 
         return Basic.__new__(cls, expr, byVar)
 
@@ -104,7 +107,7 @@ class Deriv(MatrixExpr):
         if isinstance(self.expr, Application):
             return (self.byVar.rows, self.byVar.cols)
 
-        # This else case satisfies both cases of when expr is MatrixSymbol and when it is matrix element. 
+        # This else case satisfies both cases of when expr is MatrixSymbol and when it is matrix element.
         else: #if isinstance(self.expr, MatrixSymbol):
             mat = self.expr
 
