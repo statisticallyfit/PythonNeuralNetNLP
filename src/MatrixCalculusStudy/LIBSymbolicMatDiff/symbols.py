@@ -42,6 +42,11 @@ class d(MatrixExpr):
 
 # GOal: make functions multiplyable with matrix symbols
 # NOTE: need this to extend Expr not MatrixExpr so can multiply by ANY MatrixSymbol. Can now do func * Deriv(A, B) where func = RealValuedMatrixFunc(f(A,B,R))
+
+# TODO how will this be simplified further? 
+# case 1: RealValuedMatrixFunc( (f(A)*h(A))*(f(A)*h(A)) )
+# case 2: rm * rm, where rm = RealValuedMatrixFunc(f(A)*h(A) ) 
+# case 2 gives power printout while case 1 gives regulare valuation of power. 
 class RealValuedMatrixFunc(Expr):
     def __init__(self, func):
         self.expr = func
@@ -51,9 +56,9 @@ class RealValuedMatrixFunc(Expr):
     def __new__(cls, func):
         func = sympify(func)
 
-        if not isinstance(func, Application) and not \
-                isinstance(func, Add) and not \
-                isinstance(func, Mul) and not \
+        if not isinstance(func, Application) or not \
+                isinstance(func, Add) or not \
+                isinstance(func, Mul) or not \
                 isinstance(func, Pow):
             raise TypeError("must pass in an applied UndefinedFunction")
 
@@ -83,7 +88,7 @@ class Deriv(MatrixExpr):
 
         # NOTE: assuming the applied function takes in a matrix symbol only or multiple matrix symbols or an element in the byVar MatrixSymbol
 
-        if not isinstance(expr, MatrixSymbol) and not isinstance(expr, Application) and not (expr in Matrix(byVar)):
+        if not isinstance(expr, MatrixSymbol) or not isinstance(expr, Application) or not (expr in Matrix(byVar)):
             raise TypeError("input to matrix derivative, %s, is not a MatrixSymbol or Application (applied UndefinedFunction) or an element in byVar" % str(expr))
 
         elif isinstance(expr, Application):
@@ -104,18 +109,19 @@ class Deriv(MatrixExpr):
 
     @property
     def shape(self):
-        if isinstance(self.expr, Application):
+        if isinstance(self.expr, Application) or Matrix(self.byVar).has(self.expr):
             return (self.byVar.rows, self.byVar.cols)
 
         # This else case satisfies both cases of when expr is MatrixSymbol and when it is matrix element.
-        else: #if isinstance(self.expr, MatrixSymbol):
-            mat = self.expr
+        #else: #if isinstance(self.expr, MatrixSymbol):
+        mat = self.expr
 
-            if(mat != self.byVar):
-                return (mat.rows * self.byVar.rows, mat.cols * self.byVar.cols)
+        if(mat != self.byVar):
+            return (mat.rows * self.byVar.rows, mat.cols * self.byVar.cols)
 
-            # NOTE wrong implementation here below, just copying d(A) implementation to satisfy the matrix multiplication of Deriv(A, A) * B
-            return (self.byVar.rows, self.byVar.cols)
+        # NOTE wrong implementation here below, just copying d(A) implementation to satisfy the matrix multiplication of Deriv(A, A) * B
+        return (self.byVar.rows, self.byVar.cols)
+
 
 # NOTE: copying just d(A)'s shape implementation even if not accurate for dA / dA shape because need to get multiplication working. Need to be able to write Deriv(A, A) * B but my implementation below won't l et me due to squaring of the shapes ...
 '''        

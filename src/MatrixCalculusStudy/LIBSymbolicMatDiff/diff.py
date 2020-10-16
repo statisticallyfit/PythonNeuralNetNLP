@@ -247,10 +247,31 @@ def main():
 
     display(matDiff_RULES(A*B, A))
 
+
+    # -----------------------------
     f = Function('f')
     g = Function('g')
+    h = Function('h')
 
-    matDiff_RULES(f(A)*g(A), A)
+    RV = RealValuedMatrixFunc
+    ra = RV(f(A) + h(A) + g(A))
+    rm = RV(f(A) * h(A) * g(A))
+    df1 = Deriv(f(A), A)
+    df2 = Deriv(g(B), B)
+    da1 = Deriv(A, A)
+    da2 = Deriv(B, B)
+    de1 = Deriv(Matrix(A)[0,0], A)
+    de2 = Deriv(Matrix(B)[2,1], B)
+
+    # Duplicate entries (for Pow case) so that dimensions match: 
+    xs_dup = [ra * ra, rm * rm, df1 * df2, da1 * da2, de1 * de2]
+
+    # Trying to create combinations between elements so that dimensions match (sometimes using instead de or da instead of correct combination order to ensure dimensions match)
+    xs = [ra * rm, ra * df1, ra * da1, ra * de1, rm * df1, rm * da1, rm * de1, df1 * de2, da1 * da2, de1 * de2]
+
+    xs_swap = [rm * ra, df1 * ra, da1 * ra, de1 * ra, df1 * rm, da1 * rm, de1 * rm, de1 * df2]
+
+    #matDiff_RULES(f(A)*g(A), A)
 
 
 if __name__ == "__main__":
