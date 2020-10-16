@@ -39,7 +39,7 @@ sys.path.append(UTIL_PATH)
 #from symbols import d, Kron, SymmetricMatrixSymbol
 #from simplifications import simplify_matdiff
 # NOTE: need these imports below when executing in Python Interactive. Here these imports don't really work for the file itself, only in interactive.
-from src.MatrixCalculusStudy.LIBSymbolicMatDiff.symbols import d, Kron, SymmetricMatrixSymbol, Deriv, RealValuedMatrixFunc # my deriv here
+from src.MatrixCalculusStudy.LIBSymbolicMatDiff.symbols import d, Kron, SymmetricMatrixSymbol, Deriv#, RealValuedMatrixFunc # my deriv here
 from src.MatrixCalculusStudy.LIBSymbolicMatDiff.simplifications import simplify_matdiff
 
 
@@ -75,11 +75,9 @@ MY_RULES = {
     #MatrixSymbol: lambda e, s: d(e) if (e in s) else ZeroMatrix(*e.shape),
     #SymmetricMatrixSymbol: lambda e, s: d(e) if (e in s) else ZeroMatrix(*e.shape),
 
-    Application: lambda appFunc, S: _matDiff_apply_RULES(RealValuedMatrixFunc(appFunc), S),
-    #lambda appFunc, S: Deriv(appFunc, S) if (appFunc.has(S)) else ZeroMatrix(*S.shape),
-    #Deriv(appFunc, S) if (appFunc.has(S)) else ZeroMatrix(*S.shape),
+    Application: lambda appFunc, S:  Deriv(appFunc, S) if (appFunc.has(S)) else ZeroMatrix(*S.shape),
 
-    RealValuedMatrixFunc: lambda rvmf, S: Deriv(rvmf.fa, S) if (rvmf.fa.has(S)) else ZeroMatrix(*S.shape),
+    #RealValuedMatrixFunc: lambda rvmf, S: Deriv(rvmf.fa, S) if (rvmf.fa.has(S)) else ZeroMatrix(*S.shape),
 
     Add: lambda e, S: Add(*[_matDiff_apply_RULES(arg, S) for arg in e.args]),
 
@@ -240,22 +238,32 @@ def main():
     A = MatrixSymbol("A", 4, 3)
     B = MatrixSymbol("B", 3, 2)
     R = MatrixSymbol("R", 3,3)
+    C = MatrixSymbol('C', 2, 2)
+    D = MatrixSymbol('D', 2, 4)
+    L = MatrixSymbol('L', 4, 3)
+    E = MatrixSymbol('E', 3, 2)
 
     #matDiff(A * Inverse(R) * B, R)
+    # TODO ERROR
+    #assert matDiff_RULES(A*B, A) == matDiff(A*B, A)[0].xreplace({d(A) : Deriv(A,A)})
 
-    assert matDiff_RULES(A*B, A) == matDiff(A*B, A)[0].xreplace({d(A) : Deriv(A,A)})
-
-    display(matDiff_RULES(A*B, A))
+    #display(matDiff_RULES(A*B, A))
 
 
     # -----------------------------
-    f = Function('f')
-    g = Function('g')
-    h = Function('h')
+    # Bad noncommutative functions have underscore, won't be able to use them in multiplications with Deriv ...
+    f_ = Function('f')
+    g_ = Function('g')
+    h_ = Function('h')
+    f = Function('f', commutative=True) # commutative to signify that result is a scalar!
+    g = Function('g', commutative=True)
+    h = Function('h', commutative=True)
 
-    RV = RealValuedMatrixFunc
-    ra = RV(f(A) + h(A) + g(A))
-    rm = RV(f(A) * h(A) * g(A))
+    #RV = RealValuedMatrixFunc
+    #ra = RV(f(A) + h(A) + g(A))
+    a = f(A) + h(A) + g(A)
+    #rm = RV(f(A) * h(A) * g(A))
+    m = f(A) * h(A) * g(A)
     df1 = Deriv(f(A), A)
     df2 = Deriv(g(B), B)
     da1 = Deriv(A, A)
@@ -264,14 +272,21 @@ def main():
     de2 = Deriv(Matrix(B)[2,1], B)
 
     # Duplicate entries (for Pow case) so that dimensions match: 
-    xs_dup = [ra * ra, rm * rm, df1 * df2, da1 * da2, de1 * de2]
+    #xs_dup = [ra * ra, rm * rm, df1 * df2, da1 * da2, de1 * de2]
+    xs_dup = [a * a, m * m, df1 * df2, da1 * da2, de1 * de2]
 
     # Trying to create combinations between elements so that dimensions match (sometimes using instead de or da instead of correct combination order to ensure dimensions match)
-    xs = [ra * rm, ra * df1, ra * da1, ra * de1, rm * df1, rm * da1, rm * de1, df1 * de2, da1 * da2, de1 * de2]
+    xs = [a * m, a * df1, a * da1, a * de1, m * df1, m * da1, m * de1, df1 * de2, da1 * da2, de1 * de2]
+    #xs = [ra * rm, ra * df1, ra * da1, ra * de1, rm * df1, rm * da1, rm * de1, df1 * de2, da1 * da2, de1 * de2]
 
-    xs_swap = [rm * ra, df1 * ra, da1 * ra, de1 * ra, df1 * rm, da1 * rm, de1 * rm, de1 * df2]
+    xs_swap = [m * a, df1 * a, da1 * a, de1 * a, df1 * m, da1 * m, de1 * m, de1 * df2]
+    #xs_swap = [rm * ra, df1 * ra, da1 * ra, de1 * ra, df1 * rm, da1 * rm, de1 * rm, de1 * df2]
 
     #matDiff_RULES(f(A)*g(A), A)
+    # Test this if parentheses are printed right: 
+    # TODO later for now just print the Deriv(f(A), A) on top of the numerator instead of on the side, to avoid having to place parentheses. 
+    testPrint = de1 * df2 * C * D * de1 * (B + E) * D * A * df2 * E.T
+    testPrint_am = de1 * df2 * C * D * de1 * a * R * m * df2 * E.T
 
 
 if __name__ == "__main__":

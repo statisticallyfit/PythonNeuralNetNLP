@@ -47,37 +47,61 @@ class d(MatrixExpr):
 # case 1: RealValuedMatrixFunc( (f(A)*h(A))*(f(A)*h(A)) )
 # case 2: rm * rm, where rm = RealValuedMatrixFunc(f(A)*h(A) ) 
 # case 2 gives power printout while case 1 gives regulare valuation of power. 
+
+# TODO problem: ra * B * rm gives error (non commutative scalars in MatMul not supported) but replacing B with f(B) is fine. 
+# TODO REASON ??????: ra * B is a MatMul expression but rm is a Mul expression (because of all the functions inside and Mul and none are matrices) so cannot combine MatMul(ra, B) with Mul(f,g,h)....????
+# But otherwise these work: 
+# ---> C * ra * ra * D * de1 (since de1 is matrixexpr too)
+# ---> C * ra * ra * D * A
+# ---> C * ra * ra * D * ra (maybe since ra is Add not Mul??)
+# ---> C * rm * rm * D * de1 
+# ---> C * rm * rm * D * A
+# ---> C * rm * rm * D * rm 
+# --->   ra * de1 * ra
+# --->   rm * de1 * rm
+## NOT WORKING: 
+# ---x   rm * A * ra
+# ---x   ra * A * rm
+# ---x   ra * de1 * rm
+# ---x   rm * de1 * ra
+
+# ## So can never combine another Add or Mul after MatMul expr. 
+
+# NOTE: RESOLVED: !!! Just need to make each function you deal with COMMUTATIVE! when creating the function. Don't even need the RealValuedMatrixFunc class anymore! Sheesh. 
+
+
+'''
 class RealValuedMatrixFunc(Expr):
-    def __init__(self, func):
-        self.expr = func
+    def __init__(self, fExpr):
+        self.fExpr = fExpr
         #self.f = func.__class__ #get function letter name
         #self.variables = func.args
 
-    def __new__(cls, func):
-        func = sympify(func)
+    def __new__(cls, fExpr):
+        fExpr = sympify(fExpr)
 
-        if not isinstance(func, Application) or not \
-                isinstance(func, Add) or not \
-                isinstance(func, Mul) or not \
-                isinstance(func, Pow):
+        if not isinstance(fExpr, Application) or not \
+                isinstance(fExpr, Add) or not \
+                isinstance(fExpr, Mul) or not \
+                isinstance(fExpr, Pow):
             raise TypeError("must pass in an applied UndefinedFunction")
 
-        return Basic.__new__(cls, func)
+        return Basic.__new__(cls, fExpr)
 
     # this shape doesn't work when want to multiply by actual shaped MatrixSymbols.
     #@property
     #def shape(self):
     #    return (1, 1) # assuming real-valued function that takes matrix argument
-
+'''
 
 # My class that stands in place of above d() to represent derivative as fraction for only function or matrixsymbol arguments:
 class Deriv(MatrixExpr):
-    def __init__(self, expr, byVar: MatrixSymbol):
-        self.expr = expr
+    def __init__(self, exprDeriv, byVar: MatrixSymbol):
+        self.dExpr = exprDeriv
         self.byVar = byVar
 
-    def __new__(cls, expr, byVar: MatrixSymbol):
-        expr = sympify(expr)
+    def __new__(cls, dExpr, byVar: MatrixSymbol):
+        dExpr = sympify(dExpr)
         byVar = sympify(byVar)
 
         # If numerator is not a matrixsymbol or applied function, throw error
@@ -88,11 +112,11 @@ class Deriv(MatrixExpr):
 
         # NOTE: assuming the applied function takes in a matrix symbol only or multiple matrix symbols or an element in the byVar MatrixSymbol
 
-        if not isinstance(expr, MatrixSymbol) or not isinstance(expr, Application) or not (expr in Matrix(byVar)):
-            raise TypeError("input to matrix derivative, %s, is not a MatrixSymbol or Application (applied UndefinedFunction) or an element in byVar" % str(expr))
+        if not isinstance(dExpr, MatrixSymbol) and not isinstance(dExpr, Application) and not (dExpr in Matrix(byVar)):
+            raise TypeError("input to matrix derivative, %s, is not a MatrixSymbol or Application (applied UndefinedFunction) or an element in byVar" % str(dExpr))
 
-        elif isinstance(expr, Application):
-            func = expr
+        elif isinstance(dExpr, Application):
+            func = dExpr
 
             # TODO: what if functino has ssclar argument and that scalar is an element of another argumnt matrix?
             if not func.has(byVar):
@@ -104,17 +128,17 @@ class Deriv(MatrixExpr):
 
 
 
-        return Basic.__new__(cls, expr, byVar)
+        return Basic.__new__(cls, dExpr, byVar)
 
 
     @property
     def shape(self):
-        if isinstance(self.expr, Application) or Matrix(self.byVar).has(self.expr):
+        if isinstance(self.dExpr, Application) or Matrix(self.byVar).has(self.dExpr):
             return (self.byVar.rows, self.byVar.cols)
 
         # This else case satisfies both cases of when expr is MatrixSymbol and when it is matrix element.
         #else: #if isinstance(self.expr, MatrixSymbol):
-        mat = self.expr
+        mat = self.dExpr
 
         if(mat != self.byVar):
             return (mat.rows * self.byVar.rows, mat.cols * self.byVar.cols)
