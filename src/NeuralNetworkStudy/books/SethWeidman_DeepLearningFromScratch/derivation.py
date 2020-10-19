@@ -2,53 +2,50 @@
 # # Derivations For Matrix Derivative Rule of $L = \lambda( \sigma_{\text{apply}}( \nu(X, W) ) )$
 
 # %%
-from typing import * 
+from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity, Derivative, symbols, diff
+from sympy.abc import x, i, j, a, b
+
+# %%
+from typing import *
 import sys
 import os
 
 PATH: str = '/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP'
 
-UTIL_DISPLAY_PATH: str = PATH + "/src/utils/DisplaySympyResultsAsGroup"
+UTIL_DISPLAY_PATH: str = PATH + "/src/utils/GeneralUtil/"
 
 NEURALNET_PATH: str = PATH + '/src/NeuralNetworkStudy/books/SethWeidman_DeepLearningFromScratch'
 
 #os.chdir(PATH)
 #assert os.getcwd() == NEURALNET_PATH
 
-#sys.path.append(PATH)
+sys.path.append(PATH)
 #assert PATH in sys.path
 
-#sys.path.append(UTIL_DISPLAY_PATH)
-#assert UTIL_DISPLAY_PATH in sys.path 
+sys.path.append(UTIL_DISPLAY_PATH)
+#assert UTIL_DISPLAY_PATH in sys.path
 
-#sys.path.append(NEURALNET_PATH)#
+sys.path.append(NEURALNET_PATH)#
 #assert NEURALNET_PATH in sys.path
 
-#from src.utils.DisplaySympyResultsAsGroup import showGroup1
-def showGroup(group: List[Any]) -> None:
-    list(map(lambda elem : display(elem), group))
 
-    return None
 
-    # TODO how to import this function from the above file? 
-# %%
-#showGroup1([xi, xi, beta])
-#from src.Neural
 # %% codecell
-from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity, Derivative, symbols, diff
-from sympy.abc import x, i, j, a, b
+from src.utils.GeneralUtil import *
+from src.MatrixCalculusStudy.MatrixDerivLib.symbols import Deriv
+from src.MatrixCalculusStudy.MatrixDerivLib.diff import diffMatrix
+from src.MatrixCalculusStudy.MatrixDerivLib.printingLatex import myLatexPrinter
 
-# NOTE no need to call display manually anymore! Just import display from ipython and manually init printing for sympy and then we can render equations nicely in python interactive window!
-# SOURCE = https://hyp.is/Czfddgk8EeuVNlfac98M0w/confluence.jetbrains.com/display/PYH/Using+IPython+Notebook+with+PyCharm
-from IPython.display import display 
+from IPython.display import display, Math
 from sympy.interactive import printing
-printing.init_printing(use_latex='mathjax')
+printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLatexPrinter.doprint(e))
 
-import itertools 
+# %%
+import itertools
 
 from functools import reduce
 
-from typing import * 
+from typing import *
 # %% codecell
 def composeTwoFunctions(f, g):
     return lambda *a, **kw: f(g(*a, **kw))
@@ -57,20 +54,6 @@ def compose(*fs):
     return reduce(composeTwoFunctions, fs)
 
 
-def var_i(letter: str, i: int) -> Symbol:
-    letter_i = Symbol('{}_{}'.format(letter, i), is_commutative=True)
-    return letter_i
-
-
-def var_ij(letter: str, i: int, j: int) -> Symbol:
-    letter_ij = Symbol('{}_{}{}'.format(letter, i+1, j+1), is_commutative=True)
-    return letter_ij
-
-
-def func(fLetter: str, i: int, xLetter, xLen):
-    xs = [var_i(xLetter, i+1) for i in range(xLen)]
-    func_i = Function('{}_{}'.format(fLetter, i + 1))(*xs)
-    return func_i
 
 # %% codecell
 n,m,p = 3,3,2
@@ -210,7 +193,7 @@ dL_dW_abstract = L.replace(v,v_).replace(sigmaApply, sigmaApply_).diff(B)
 
 showGroup([
     dL_dW_abstract,
-    dL_dW_abstract.subs({lambd : lambd_L}) 
+    dL_dW_abstract.subs({lambd : lambd_L})
 ])
 
 # %%
@@ -232,12 +215,12 @@ dL_dX_direct
 
 # %%
 unapplied = sigmaApply_L(vN(A,B))
-# Also works: same as above: 
+# Also works: same as above:
 #compose(sigmaApply, v)(A,B).replace(v, vN).replace(sigmaApply , sigmaApply_L)
 applied = unapplied.doit()
 
 showGroup([
-    unapplied, 
+    unapplied,
     applied
 ])
 
@@ -247,14 +230,14 @@ dL_dW_step = compose(lambd, sigmaApply, v)(A,B).replace(v, v_).replace(sigmaAppl
 showGroup([
     dL_dW_step,
     dL_dW_step.replace(unapplied, applied),
-    # Carrying out the multplication: 
+    # Carrying out the multplication:
     dL_dW_step.subs({A:X}).doit(), # replace won't work here
     dL_dW_step.subs({A:X}).doit().replace(unapplied, applied)
 ])
 
 
 
-# %% 
+# %%
 dL_dX_step = compose(lambd, sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(A).subs({A*B : vN(A,B)}).doit()
 
 
@@ -284,14 +267,14 @@ showGroup([
     dL_dW_abstract.replace(sigmaApply_L(A*B), xi).doit().replace(dle, dle_repl) #.doit())
 ])
 
-# NOTE here it says the matrices are not aligned if we execute doit() to reveal the ones matrix that is dL_dS. True since assumption here is matrix multplication with dL_dS and right hand side, but in fact it is hadamard multiplication. 
+# NOTE here it says the matrices are not aligned if we execute doit() to reveal the ones matrix that is dL_dS. True since assumption here is matrix multplication with dL_dS and right hand side, but in fact it is hadamard multiplication.
 
 
 
 # %% markdown
 # The first part: $\frac{dL}{dS}$
 #
-# Direct substitution way: 
+# Direct substitution way:
 # %%
 showGroup([
     lambd(xi).diff(xi).subs(xi, applied),
@@ -300,7 +283,7 @@ showGroup([
 ])
 
 # %% markdown
-# The substitute into derivative way: 
+# The substitute into derivative way:
 # %%
 showGroup([
     lambd(xi).diff(xi).subs(xi, unapplied),
@@ -321,7 +304,7 @@ dN_dW_times_dS_dN = compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaAppl
 showGroup([
     dN_dW_times_dS_dN,
     dN_dW_times_dS_dN.subs({A:X}), # replace won't work here
-    # Carrying out the multplication: 
+    # Carrying out the multplication:
     dN_dW_times_dS_dN.subs({A:X}).doit() # replace won't work here
 ])
 
@@ -329,9 +312,9 @@ showGroup([
 dN_dX_times_dS_dN = compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(A).subs({A*B : vN(A,B)}).doit()
 
 showGroup([
-    dN_dX_times_dS_dN, 
+    dN_dX_times_dS_dN,
     dN_dX_times_dS_dN.subs({B:W}), # replace won't work here
-    # Carrying out the multplication: 
+    # Carrying out the multplication:
     dN_dX_times_dS_dN.subs({B:W}).doit() # replace won't work here
 ])
 
@@ -362,7 +345,7 @@ showGroup([
     dS_dN_abstract
 ])
 
-    
+
 # %% codecell
 from sympy import HadamardProduct
 
@@ -380,7 +363,7 @@ display(dS_dW.subs(A, X).doit())
 display(dL_dW)
 
 
-assert dL_dW == HadamardProduct(dL_dS, dN_dW * dS_dN ) 
+assert dL_dW == HadamardProduct(dL_dS, dN_dW * dS_dN )
 
 
 # %%

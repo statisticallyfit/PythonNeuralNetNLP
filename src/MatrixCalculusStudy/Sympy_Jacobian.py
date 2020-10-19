@@ -2,12 +2,19 @@
 # # Review: Jacobian Matrix
 
 # %% codecell
-from sympy import Matrix, MatrixSymbol, Symbol, derive_by_array
+from sympy import Matrix, MatrixSymbol, Symbol, derive_by_array, diff, sin, exp, symbols, Function
 from sympy.abc import i, j
 
-from IPython.display import display 
 
+# %%
+from src.utils.GeneralUtil import *
+from src.MatrixCalculusStudy.MatrixDerivLib.symbols import Deriv
+from src.MatrixCalculusStudy.MatrixDerivLib.diff import diffMatrix
+from src.MatrixCalculusStudy.MatrixDerivLib.printingLatex import myLatexPrinter
 
+from IPython.display import display, Math
+from sympy.interactive import printing
+printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLatexPrinter.doprint(e))
 
 # %% markdown
 # ### Jacobian Matrix and Multivariable Functions
@@ -60,44 +67,41 @@ from IPython.display import display
 
 # %%
 X = Matrix(MatrixSymbol('x', 3,3))
+X
+# %%
 W = Matrix(MatrixSymbol('w', 3,2))
-
-display(X)
-display(W)
+W
 # %% codecell
-display(X*W)
+X*W
 
 # %% codecell
-display(derive_by_array(X*W, X))
+derive_by_array(X*W, X)
 # %% codecell
-display((X*W).diff(X))
+(X*W).diff(X)
 
 
 
 
 # %% codecell
-from sympy import diff, sin, exp, symbols, Function
-#from sympy.core.multidimensional import vectorize #
 
 x, y, z = symbols('x y z')
 f, g, h = list(map(Function, 'fgh'))
 
 xv = x,y,z
-#f(xv).subs({x:1, y:2,z:3})
+xv
+# %%
 yv = [f(*xv), g(*xv), h(*xv)]
-
-display(xv)
-display(yv)
+yv
 # %% codecell
-display(Matrix(yv))
+Matrix(yv)
 
 # %% codecell
 #display(Matrix(yv).jacobian(xv))
-display(Matrix(yv).jacobian(Matrix(xv)))
+Matrix(yv).jacobian(Matrix(xv))
 #display(yv.jacobian(xv))
 
 # %% codecell
-display(derive_by_array(yv, xv))
+derive_by_array(yv, xv)
 
 # %% codecell
 assert Matrix(derive_by_array(yv, xv)).transpose() == Matrix(yv).jacobian(xv)
@@ -105,57 +109,43 @@ assert Matrix(derive_by_array(yv, xv)).transpose() == Matrix(yv).jacobian(xv)
 # %% codecell
 ### TEST 2: substituting values
 m = Matrix(yv).jacobian(xv)
-display(m.subs({x:1, y:2, z:3}))
+m.subs({x:1, y:2, z:3})
 
 # %% codecell
-display(m.subs({f(*xv):x**2 * y*z, g(*xv):sin(x*y*z*3), h(*xv):y + z*exp(x)}))
+m.subs({f(*xv):x**2 * y*z, g(*xv):sin(x*y*z*3), h(*xv):y + z*exp(x)})
 
 # %% codecell
 m_subs = m.subs({f(*xv):x**2 * y*z, g(*xv):sin(x*y*z*3), h(*xv):y + z*exp(x)})
 
-display(m_subs.doit())
+m_subs.doit()
 
 # %% codecell
-display(m_subs.doit().subs({x:1, y:2, z:3}))
+m_subs.doit().subs({x:1, y:2, z:3})
 
-
-
-# %% codecell
-# More general / abstract example: 
-
-
-# 2) Dynamic way of declaring the vector variables
-def var(letter: str, i: int) -> Symbol:
-    letter_i = Symbol('{}_{}'.format(letter, i), is_commutative=True)
-    return letter_i
-
-def func(funcName, fIndex, xName, xLen):
-    xs = [var(xName, i+1) for i in range(xLen)]
-    func_i = Function('{}_{}'.format(funcName, fIndex + 1))(*xs)
-    return func_i
 
 
 # %% codecell
+# More general / abstract example:
+
 n,m = 5,7
 
-xv = Matrix(n, 1, lambda i,j : var('x', i+1))
+xv = Matrix(n, 1, lambda i,j : var_i('x', i+1))
 
-fs = Matrix(m, 1, lambda i,_ : var('f', i+1))
+fs = Matrix(m, 1, lambda i,_ : var_i('f', i+1))
 
-fv = Matrix(m, 1, lambda i,_: func('f', fIndex = i, xName = 'x', xLen = n))
+fv = Matrix(m, 1, lambda i,_: func_i('f', i, xLetter = 'x', xLen = n))
 
 mapFFuncToF = dict(zip(fv, fs))
 mapFToFFunc = dict(zip(fs, fv))
 
-display(xv)
-display(fv)
-display(fs)
+showGroup([xv, fv, fs])
+
 # %% codecell
-display(fv.jacobian(xv))
+fv.jacobian(xv)
 
 # The final jacobian (simplified)
 jacF = fv.jacobian(xv).subs(mapFFuncToF)
-display(jacF)
+jacF
 
 
 # %% codecell
@@ -169,7 +159,8 @@ xv_list = list(itertools.chain(*xv.tolist()))
 
 jacF_derive = Matrix(derive_by_array(fv_list, xv_list)).transpose().subs(mapFFuncToF)
 
-display(jacF_derive)
+jacF_derive
+
 # %% codecell
 assert jacF == jacF_derive
 # %% codecell

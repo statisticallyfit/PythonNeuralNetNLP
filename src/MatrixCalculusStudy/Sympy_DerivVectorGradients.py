@@ -2,17 +2,35 @@
 # # Review: Gradient and Vector Chain Rule
 
 # %% codecell
-# TODO: keep using this display in vscode else latex sympy doesn't render
-from IPython.display import display
-
 from sympy import diff, sin, exp, symbols, Function, Matrix, MatrixSymbol, FunctionMatrix, derive_by_array, Symbol
 
 
 
-from sympy.interactive import init_printing
-init_printing(use_latex='mathjax')
+# %%
+import os, sys 
 
 
+PATH: str = '/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP'
+
+UTIL_DISPLAY_PATH: str = PATH + "/src/utils/GeneralUtil/"
+
+NEURALNET_PATH: str = PATH + '/src/NeuralNetworkStudy/books/SethWeidman_DeepLearningFromScratch'
+
+sys.path.append(UTIL_DISPLAY_PATH)
+sys.path.append(PATH)
+sys.path.append(NEURALNET_PATH)
+
+# %%
+from src.utils.GeneralUtil import *
+from src.MatrixCalculusStudy.MatrixDerivLib.symbols import Deriv
+from src.MatrixCalculusStudy.MatrixDerivLib.diff import diffMatrix
+from src.MatrixCalculusStudy.MatrixDerivLib.printingLatex import myLatexPrinter
+
+from IPython.display import display, Math
+from sympy.interactive import printing
+printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLatexPrinter.doprint(e))
+
+# %%
 x, y, z = symbols('x y z')
 f, g, h = list(map(Function, 'fgh'))
 
@@ -21,65 +39,48 @@ f, g, h = list(map(Function, 'fgh'))
 xv = x,y,z
 #f(xv).subs({x:1, y:2,z:3})
 #Matrix(xv)
-display(Matrix(xv))
+Matrix(xv)
 # %% codecell
 yv = [f(*xv), g(*xv), h(*xv)]
 
-display(yv)
-# %% codecell
-#Matrix(yv)
-display(yv)
+Matrix(yv)
 
 
-# %% codecell
-from sympy.abc import i,j
-
-# 2) Dynamic way of declaring the vector variables
-def var(letter: str, i: int) -> Symbol:
-    letter_i = Symbol('{}_{}'.format(letter, i), is_commutative=True)
-    return letter_i
-
-def func(funcName, fIndex, xName, xLen):
-    xs = [var(xName, i+1) for i in range(xLen)]
-    func_i = Function('{}_{}'.format(funcName, fIndex + 1))(*xs)
-    return func_i
 
 
 # %% codecell
 n,m,p = 5,7,4
 
-xv = Matrix(n, 1, lambda i,j : var('x', i+1))
-
-display(xv)
+xv = Matrix(n, 1, lambda i,j : var_i('x', i+1))
+xv
 
 # %% codecell
-yv = Matrix( m, 1, lambda i,_:  func('y', fIndex = i, xName='x', xLen = n))
-
-display(yv)
+yv = Matrix( m, 1, lambda i,_:  func_i('y', i, xLetter = 'x', xLen = n))
+yv
 
 
 # %% markdown
 # ### Derivative of Real-Valued, Multivariate Function with Respect to Vector: The Gradient Vector
-# 
+#
 # Let the multivariate and real-valued function $f(\mathbf{x}) = f(x_1,x_2,...,x_n)$ from $\mathbb{R}^n \longrightarrow \mathbb{R}$  be a function of the real $n \times 1$ vector $\mathbf{x} = \begin{pmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{pmatrix}$.
 #
 # Then the **vector of first order partial derivative**s $\frac{\partial f}{\partial \mathbf{x}}$, also called the **gradient vector**, is defined as:
-# 
-# * Notation with arguments: 
-# 
+#
+# * Notation with arguments:
+#
 # $$
 # \nabla f(\mathbf{x}) = \frac{\partial}{\partial \mathbf{x}} f(\mathbf{x})
 # {\Large
 # = \begin{pmatrix}
 #         \frac{\partial }{\partial x_1} f(\mathbf{x}) \\
-#         \frac{\partial }{\partial x_2} f(\mathbf{x}) \\ 
-#         \vdots \\  
+#         \frac{\partial }{\partial x_2} f(\mathbf{x}) \\
+#         \vdots \\
 #         \frac{\partial }{\partial x_n} f(\mathbf{x})
 # \end{pmatrix} }
 # $$
-# 
-# * Notation without arguments: 
-# 
+#
+# * Notation without arguments:
+#
 # $$
 # \nabla f = \frac{\partial f}{\partial \mathbf{x}} = \Large\begin{pmatrix}
 #    \frac{\partial f}{\partial x_1} \\
@@ -94,7 +95,7 @@ display(yv)
 
 # %% markdown
 # ### Vector of First Order Partial Derivatives
-# 
+#
 # The **vector of first order partial derivative**s $\frac{\partial f}{\partial \mathbf{x}^T}$ is defined as the transpose of the **gradient** of $f$:
 # $$
 # \frac{\partial f}{\partial \mathbf{x}^T}
@@ -117,11 +118,11 @@ display(yv)
 
 #f(*xv).diff(xv)
 
-display(f(*xv).diff(xv))
+f(*xv).diff(xv)
 
 # %% codecell
 #derive_by_array(f(*xv), xv)
-display(derive_by_array(f(*xv), xv))
+derive_by_array(f(*xv), xv)
 
 # %% codecell
 assert Matrix(derive_by_array(f(*xv), xv)) == f(*xv).diff(xv)
@@ -145,14 +146,11 @@ assert Matrix(derive_by_array(f(*xv), xv)) == f(*xv).diff(xv)
 from sympy.abc import x
 
 yv = Matrix( 1, m, lambda _, j:  Function('y_{}'.format(j+1))(x))
-
-display(yv)
+yv
 
 
 # %% codecell
-#yv.diff(x)
-
-display(yv.diff(x))
+yv.diff(x)
 
  # NOTE: incorrect shape (is column-wise, must be row-wise like below) when defining the yv matrix to be m x 1 instead of 1 x m. Ideally want to define a regular m x 1 y-vector of functions y_i and to have the diff by x to be 1 x m.
 
@@ -162,7 +160,7 @@ display(yv.diff(x))
 # NOTE: this displays double matrix dimension, so no need for it here, need to convert result to matrix as below
 # %% codecell
 #Matrix(derive_by_array(yv, x))
-display(Matrix(derive_by_array(yv, x)))
+Matrix(derive_by_array(yv, x))
 # %% codecell
 assert Matrix(derive_by_array(yv, x)) == Matrix(yv).diff(x)
 
@@ -265,78 +263,83 @@ assert Matrix(derive_by_array(yv, x)) == Matrix(yv).diff(x)
 # %% codecell
 n, k, m = 3, 4, 5
 
-xv = Matrix(n, 1, lambda i,j : var('x', i+1))
-
-display(xv)
+xv = Matrix(n, 1, lambda i,j : var_i('x', i+1))
+xv
 
 # %% codecell
-gv = Matrix( k, 1, lambda i,_:  func('g', fIndex = i, xName = 'x', xLen = n))
-
-display(gv)
+gv = Matrix( k, 1, lambda i,_:  func_i('g', i, xLetter = 'x', xLen = n))
+gv
 
 # %% codecell
 
-fv = Matrix(m, 1, lambda i,_: func('f', fIndex = i, xName = 'y', xLen = k))
-
-display(fv)
+fv = Matrix(m, 1, lambda i,_: func_i('f', i, xLetter = 'y', xLen = k))
+fv
 
 
 # %% codecell
-ys = Matrix(k, 1, lambda i,_: var('y', i+1))
-fs = Matrix(m, 1, lambda i, _: var('f', i+1))
-gs = Matrix(k, 1, lambda i, _: var('g', i+1))
+ys = Matrix(k, 1, lambda i,_: var_i('y', i+1))
+fs = Matrix(m, 1, lambda i, _: var_i('f', i+1))
+gs = Matrix(k, 1, lambda i, _: var_i('g', i+1))
 
 mapYToGFunc = dict(zip(ys, gv))
 mapGFuncToY = dict(zip(gv, ys))
-display(mapYToGFunc)
+
+zv = fv.subs(mapYToGFunc)
 
 mapFToFGFunc = dict(zip(fs, zv))
 mapFGFuncToF = dict(zip(zv, fs))
-display(mapFGFuncToF)
 
-mapGToGFunct = dict(zip(gs, gv))
+mapGToGFunc = dict(zip(gs, gv))
 mapGFuncToG = dict(zip(gv, gs))
-display(mapGFuncToG)
+
+showGroup([
+    mapYToGFunc, 
+    mapFToFGFunc, 
+    mapGToGFunc
+])
 
 assert zv.subs(mapFGFuncToF) == fs
 assert fv.subs(mapYToGFunc) == zv
 
-
-
-# %% codecell
-#jacG = gv.jacobian(xv)
-#display(jacG)
-# %% 
-display(jacG.subs(mapGFuncToG))
-display(jacG.subs(mapGFuncToY))
-# %% codecell
-zv = fv.subs(mapYToGFunc)
-display(zv)
-# %% codecell
 assert zv.shape == fv.shape == (m, 1)
 assert ys.shape == gv.shape == (k, 1)
 assert xv.shape == (n, 1)
+
+
+# %% codecell
+jacG = gv.jacobian(xv)
+
+showGroup([
+    jacG, 
+    jacG.subs(mapGFuncToG),
+    jacG.subs(mapGFuncToY)
+])
+
+
 # %% codecell
 jacFY = fv.jacobian(ys)
-display(jacFY)
-# %% 
+jacFY
+# %%
 jacFG = fv.jacobian(ys).subs(mapYToGFunc)
-display(jacFG)
+jacFG
 
 # %% codecell
 jacComposed = fv.subs(mapYToGFunc).jacobian(xv)
 # %%
-display(jacComposed)
+jacComposed
 
 # %% codecell
 df_dg = jacFG.subs(mapFGFuncToF).subs(mapGFuncToG)
 dg_dx = gv.jacobian(xv).subs(mapGFuncToG)
 dfg_x = jacComposed.subs(mapFGFuncToF).subs(mapGFuncToG)
 
-display(df_dg)
-display(dg_dx)
-display(dfg_x)
+showGroup([
+    df_dg, 
+    dg_dx, 
+    dfg_x
+])
+
 # %% codecell
-# The final test: 
+# The final test:
 assert dfg_x == df_dg * dg_dx
 # %% codecell

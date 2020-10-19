@@ -41,41 +41,41 @@ class d(MatrixExpr):
 
 
 # GOal: make functions multiplyable with matrix symbols
-# NOTE: need this to extend Expr not MatrixExpr so can multiply by ANY MatrixSymbol. Can now do func * Deriv(A, B) where func = RealValuedMatrixFunc(f(A,B,R))
+# NOTE: need this to extend Expr not MatrixExpr so can multiply by ANY MatrixSymbol. Can now do func_i * Deriv(A, B) where func_i = RealValuedMatrixFunc(f(A,B,R))
 
-# TODO how will this be simplified further? 
+# TODO how will this be simplified further?
 # case 1: RealValuedMatrixFunc( (f(A)*h(A))*(f(A)*h(A)) )
-# case 2: rm * rm, where rm = RealValuedMatrixFunc(f(A)*h(A) ) 
-# case 2 gives power printout while case 1 gives regulare valuation of power. 
+# case 2: rm * rm, where rm = RealValuedMatrixFunc(f(A)*h(A) )
+# case 2 gives power printout while case 1 gives regulare valuation of power.
 
-# TODO problem: ra * B * rm gives error (non commutative scalars in MatMul not supported) but replacing B with f(B) is fine. 
+# TODO problem: ra * B * rm gives error (non commutative scalars in MatMul not supported) but replacing B with f(B) is fine.
 # TODO REASON ??????: ra * B is a MatMul expression but rm is a Mul expression (because of all the functions inside and Mul and none are matrices) so cannot combine MatMul(ra, B) with Mul(f,g,h)....????
-# But otherwise these work: 
+# But otherwise these work:
 # ---> C * ra * ra * D * de1 (since de1 is matrixexpr too)
 # ---> C * ra * ra * D * A
 # ---> C * ra * ra * D * ra (maybe since ra is Add not Mul??)
-# ---> C * rm * rm * D * de1 
+# ---> C * rm * rm * D * de1
 # ---> C * rm * rm * D * A
-# ---> C * rm * rm * D * rm 
+# ---> C * rm * rm * D * rm
 # --->   ra * de1 * ra
 # --->   rm * de1 * rm
-## NOT WORKING: 
+## NOT WORKING:
 # ---x   rm * A * ra
 # ---x   ra * A * rm
 # ---x   ra * de1 * rm
 # ---x   rm * de1 * ra
 
-# ## So can never combine another Add or Mul after MatMul expr. 
+# ## So can never combine another Add or Mul after MatMul expr.
 
-# NOTE: RESOLVED: !!! Just need to make each function you deal with COMMUTATIVE! when creating the function. Don't even need the RealValuedMatrixFunc class anymore! Sheesh. 
+# NOTE: RESOLVED: !!! Just need to make each function you deal with COMMUTATIVE! when creating the function. Don't even need the RealValuedMatrixFunc class anymore! Sheesh.
 
 
 '''
 class RealValuedMatrixFunc(Expr):
     def __init__(self, fExpr):
         self.fExpr = fExpr
-        #self.f = func.__class__ #get function letter name
-        #self.variables = func.args
+        #self.f = func_i.__class__ #get function letter name
+        #self.variables = func_i.args
 
     def __new__(cls, fExpr):
         fExpr = sympify(fExpr)
@@ -152,7 +152,7 @@ class Deriv(MatrixExpr):
         # TODO using the block matrix dimension result here (using result of diff's matrix shape instead of the TensorPRoduct diff shape)
         if isinstance(self.expr, Application):
 
-            # Squaring since we differentiate by the argument inside func, which is the same as the byVar
+            # Squaring since we differentiate by the argument inside func_i, which is the same as the byVar
             return (self.byVar.rows**2, self.byVar.cols**2)
 
         elif isinstance(self.expr, MatrixSymbol):

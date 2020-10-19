@@ -4,38 +4,35 @@
 # %% codecell
 from sympy import diff, sin, exp, symbols, Function, Matrix, MatrixSymbol, FunctionMatrix, derive_by_array, Symbol
 
-# TODO Need this now when in VSCode otherwise sympy math latex won't render. Need to upgrade vscode perhaps they fix it? (see evernote for link)
-from IPython.display import display
+# %%
+from src.utils.GeneralUtil import *
+from src.MatrixCalculusStudy.MatrixDerivLib.symbols import Deriv
+from src.MatrixCalculusStudy.MatrixDerivLib.diff import diffMatrix
+from src.MatrixCalculusStudy.MatrixDerivLib.printingLatex import myLatexPrinter
+
+from IPython.display import display, Math
+from sympy.interactive import printing
+printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLatexPrinter.doprint(e))
 
 
 
 # %% codecell
-from sympy import Symbol
-
-def var(letter: str, i: int, j: int) -> Symbol:
-     letter_ij = Symbol('{}_{}{}'.format(letter, i+1, j+1), is_commutative=True)
-     return letter_ij
-
-def func(i, j):
-     y_ij = Function('y_{}{}'.format(i+1,j+1))(*X)
-     return y_ij
-
 
 n,m,p = 3,3,2
 
-X = Matrix(n, m, lambda i, j: var('x', i, j))
-#X
-display(X)
-# %% codecell
-
-Yfunc = Matrix(m, p, lambda i,j:  func(i, j))
-#Y
-display(Yfunc)
-
+X = Matrix(n, m, lambda i, j: var_ij('x', i, j))
+X
 
 # %% codecell
-Yelem = Matrix(m, p, lambda i, j: var('y', i, j))
-display(Yelem)
+
+Yfunc = Matrix(m, p, lambda i,j:  func_ij('y', i, j, X))
+Yfunc
+
+
+
+# %% codecell
+Yelem = Matrix(m, p, lambda i, j: var_ij('y', i, j))
+Yelem
 # %% codecell
 import itertools
 
@@ -48,7 +45,7 @@ funcArgsToElemD = {v : k for k, v in elemToFuncArgsD.items()}
 funcArgsToElem = list(funcArgsToElemD.items())
 
 # Matrix(funcArgsToElem)
-display(Matrix(funcArgsToElem))
+Matrix(funcArgsToElem)
 
 
 
@@ -82,7 +79,7 @@ display(Matrix(funcArgsToElem))
 #display(derive_by_array(Y[0,0], X))
 derivScalarByMatrix = derive_by_array(Yfunc[0,0], X)
 
-display(derivScalarByMatrix.subs(funcArgsToElemD))
+derivScalarByMatrix.subs(funcArgsToElemD)
 
 
 # %% markdown
@@ -126,8 +123,7 @@ display(derivScalarByMatrix.subs(funcArgsToElemD))
 #derive_by_array(Y#, X[1-1,2-1])
 derivMatrixByScalar = derive_by_array(Yfunc, X[1-1,2-1])
 
-#display(derivMatrixByScalar.subs(funcArgsToElemD))
-display(derivMatrixByScalar.subs(funcArgsToElemD))
+derivMatrixByScalar.subs(funcArgsToElemD)
 
 
 

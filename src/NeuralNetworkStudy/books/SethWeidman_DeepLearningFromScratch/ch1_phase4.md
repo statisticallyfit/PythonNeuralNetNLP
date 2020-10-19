@@ -249,7 +249,7 @@ Lc.replace(n, v).replace(sigmaApply, sigmaApply_).diff(B)
 
 ```python title="codecell"
 
-funcToMat = lambda func: Matrix([func])
+funcToMat = lambda func_i: Matrix([func_i])
 funcToMat(f)
 A.applyfunc(sigma)
 #funcToMat(f).applyfunc(sigma)

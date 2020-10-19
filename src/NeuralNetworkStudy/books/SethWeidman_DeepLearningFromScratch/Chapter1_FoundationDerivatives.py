@@ -45,7 +45,7 @@ def deriv(func: TensorFunction, #Callable[[Tensor], Tensor],
      inputTensor: Tensor,
      delta: float = 0.001) -> Tensor:
      '''
-     Evaluates the derivative of a function "func" at every element in the "inputTensor" array.
+     Evaluates the derivative of a function "func_i" at every element in the "inputTensor" array.
      '''
      return (func(inputTensor + delta) - func(inputTensor - delta)) / (2 * delta)
 

@@ -209,9 +209,9 @@ assert partiallyNamedTensor.names == (None, None, 'H', 'W')
 
 ```python
 # Function to catch the errors from the passed function argument
-def catchError(func):
+def catchError(func_i):
     try:
-        func() # execute the function passed as argument
+        func_i() # execute the function passed as argument
         # assert False # TODO what is the point of this? If the function works, this assertion fails, so it messes up the partiallyNamedTensor test below...
     except RuntimeError as err:
         err: str = str(err) # make the error into string form

@@ -6,17 +6,17 @@ from sympy.matrices.expressions import MatrixExpr
 from sympy.abc import x, i, j, a, b
 from sympy.core.function import UndefinedFunction, Application
 
-from src.MatrixCalculusStudy.LIBSymbolicMatDiff.symbols import Deriv# , RealValuedMatrixFunc
+from src.MatrixCalculusStudy.MatrixDerivLib.symbols import Deriv# , RealValuedMatrixFunc
 
 
-from functools import reduce 
-from operator import add 
+from functools import reduce
+from operator import add
 
 # TODO continue using foldl: https://hyp.is/b9hFGg8lEeutuBP4rylAmQ/www.burgaud.com/foldl-foldr-python
 
-# TODO: for this to work with fold, need to have the left ACC arg1 to be a string, so need to first split the ENTIRE expression by MatMul and Pow and Mul until all are flattened and then apply the parentheses around each deriv operation that has a function application and around each RVFM that is an Add. 
+# TODO: for this to work with fold, need to have the left ACC arg1 to be a string, so need to first split the ENTIRE expression by MatMul and Pow and Mul until all are flattened and then apply the parentheses around each deriv operation that has a function application and around each RVFM that is an Add.
 
-    # TODO two major rules only for simplicity: 
+    # TODO two major rules only for simplicity:
     # RULE 1: if listified expr contains RVFM (Add(_)) then need to wrap that Add expr inside parentheses.
     # RULE 2: same for Pow
     # RULE 3: same for Deriv(f(_), M)
@@ -92,9 +92,9 @@ class MyLatexPrinter(LatexPrinter):
             return '\\frac {\\partial ' + self._print(mat) + '} {\\partial ' + self._print(deriv.byVar) + '}'
 
         elif (isinstance(deriv.dExpr, Application)): 
-            func = deriv.dExpr
+            func_i = deriv.dExpr
 
-            return '\\frac {\\partial } {\\partial ' + self._print(deriv.byVar) + '} ' + self._print(func) #+ ' )'
+            return '\\frac {\\partial } {\\partial ' + self._print(deriv.byVar) + '} ' + self._print(func_i) #+ ' )'
 
         elif (deriv.dExpr in Matrix(deriv.byVar)):
             elem = deriv.dExpr 
@@ -103,9 +103,9 @@ class MyLatexPrinter(LatexPrinter):
         '''
 
 '''
-    def _print_RealValuedMatrixFunc(self, func: RealValuedMatrixFunc):
+    def _print_RealValuedMatrixFunc(self, func_i: RealValuedMatrixFunc):
 
-        return self._print(func.fExpr)
+        return self._print(func_i.fExpr)
 
     def _print_MatMul(self, matmul: MatMul):
         # printing two at once: split by args and then pass to the twomul function and fold (order will be accounted for so  for instance additions are always printed to left of deriv expressions)
