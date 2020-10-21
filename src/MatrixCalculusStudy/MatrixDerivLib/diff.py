@@ -48,6 +48,9 @@ printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLat
 #printing.init_printing(use_latex='mathjax')
 
 
+# NOTE verified the tensor product rule B x A^T from Alexander Graham book example 5.1: 
+# Matrix(derive_by_array(y, x)) == Matrix(TensorProduct(W, eye(3,3)))
+# But it seems this needs to be unvectorized to get result W^T (as in add every third row and then add every third column to get W^T. Question here: how does this folding process relate to W^T in the dl_dW_abstract formula from derivtion.py? )
 
 MATRIX_DIFF_RULES = {
     # e = expression, s = SINGLE symbol  respsect to which
