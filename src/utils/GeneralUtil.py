@@ -54,7 +54,7 @@ def func_i(fLetter: str, i: int, xLetter: str, xLen: int):
 
 def func_ij(fLetter: str, i: int, j: int, X: Matrix):
     #xs = [var_i(xLetter, i+1) for i in range(xLen)]
-    func_ij = Function('{}_{}{}'.format(fLetter, i + 1))(*X)
+    func_ij = Function('{}_{}{}'.format(fLetter, i + 1, j + 1))(*X)
     return func_ij
 
 

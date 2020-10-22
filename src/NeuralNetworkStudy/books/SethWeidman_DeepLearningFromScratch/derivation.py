@@ -205,11 +205,11 @@ dL_dX_abstract
 # %% codecell
 dL_dW_direct = L.replace(v, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(W).subs(specToElemD)
 
-dL_dW_direct
+dL_dW_direct.doit()
 # %%
 dL_dX_direct = L.replace(v, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(X).subs(specToElemD)
 
-dL_dX_direct
+dL_dX_direct.doit()
 
 
 
@@ -349,121 +349,91 @@ showGroup([
 # %% codecell
 from sympy import HadamardProduct
 
-dN_dX = B.transpose()
 dN_dW = A.transpose()
 
 dS_dW = dN_dW * dS_dN
 dS_dW_abstract = compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B)
 
 dL_dW = HadamardProduct(dL_dS, dS_dW)
-
-display(dS_dW)
-display(dS_dW.subs(A, X).doit())
-
-display(dL_dW)
-
+dL_dW_hadamard = dL_dW.subs(A,X).doit()
 
 assert dL_dW == HadamardProduct(dL_dS, dN_dW * dS_dN )
 
+showGroup([
+    dS_dW, 
+    dS_dW_abstract, 
+    dS_dW.subs(A, X).doit(), 
+    dL_dW, 
+    dL_dW_hadamard
+])
+
 
 # %%
-dL_dW_hadamard = dL_dW.subs(A,X).doit()
-# %%
-display(dL_dW_abstract)
-display(dL_dW_step)
-display(dL_dW)
-display(dL_dW_hadamard)
+dN_dX = B.transpose()
+
+dS_dX = dS_dN * dN_dX
+dS_dX_abstract = compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(A)
+
+dL_dN = HadamardProduct(dL_dS, dS_dN)
+
+dL_dX = dL_dN * dN_dX #).subs(B, W).doit()
+dL_dX_hadamard = dL_dX.subs(B, W).doit()
+
+assert dL_dX == HadamardProduct(dL_dS, dS_dN) * dN_dX
+
+showGroup([
+    dS_dX, 
+    dS_dX.subs(B, W),
+    dS_dX_abstract, 
+    dL_dN, 
+#    dS_dX.subs(B, W).doit(), 
+    dL_dX, 
+    dL_dX_hadamard
+])
 
 # %% markdown
-# One more time as complete symbolic form:
 # $$
 # \begin{aligned}
-# \frac{\partial L}{\partial W} &= \frac{\partial N}{\partial W} \times \frac{\partial S}{\partial N} \odot \frac{\partial L}{\partial S} \\
-# &= X^T \times  \frac{\partial S}{\partial N} \odot \frac{\partial L}{\partial S}
+# \frac{\partial L}{\partial X} &= \bigg( \frac{\partial L}{\partial S} \odot  \frac{\partial S}{\partial N} \bigg) \times \frac{\partial N}{\partial X}  \\
+# &= \bigg( \frac{\partial L}{\partial S} \odot \frac{\partial S}{\partial N} \bigg) \times W^T 
 # \end{aligned}
 # $$
 # where $\odot$ signifies the Hadamard product and $\times$ is matrix multiplication.
-# %% codecell
-HadamardProduct(dN_dW * dS_dN, dL_dS)
-# %% codecell
-direct
-# %% codecell
-assert HadamardProduct(dN_dW * dS_dN, dL_dS).equals(direct)
-# %% codecell
-# too long to see in editor:
-symb.subs({A*B : vN(A,B)}).subs({A:X}).doit().replace(lambd, lambd_L)
-# %% codecell
-symb.subs({lambd: lambd_L})
-# %% codecell
-print(symb.subs({lambd: lambd_L}))
+# %%
+showGroup([
+    dL_dX_abstract, 
+    dL_dX_step, 
+    dL_dX, 
+    dL_dX_hadamard
+])
+# %% markdown
+# $$
+# \begin{aligned}
+# \frac{\partial L}{\partial W} &= \frac{\partial L}{\partial S} \odot \bigg( \frac{\partial N}{\partial W} \times \frac{\partial S}{\partial N} \bigg) \\
+# &= \frac{\partial L}{\partial S} \odot \bigg( X^T \times  \frac{\partial S}{\partial N} \bigg)
+# \end{aligned}
+# $$
+# where $\odot$ signifies the Hadamard product and $\times$ is matrix multiplication.
+# %%
+showGroup([
+    dL_dW_abstract, 
+    dL_dW_step, 
+    dL_dW, 
+    dL_dW_hadamard
+])
 
-
 # %% codecell
-LcL = compose(lambd_L, sigmaApply, v)(A, B)
-LcL
-# %% codecell
-symbL = LcL.replace(v, v_).replace(sigmaApply, sigmaApply_)#.diff(A)
-symbL
+compose(lambd, sigmaApply, v)(A,B).replace(lambd, lambd_L)
 # %% codecell
 compose(lambd, sigmaApply, v)(A,B).replace(v,v_).subs({lambd:lambd_L})#.subs({sigmaApply : sigmaApply_L})
 # %% codecell
 compose(lambd, sigmaApply, v)(A,B).replace(v,v_).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_L)
+# %% codecell
+compose(lambd, sigmaApply, v)(A,B).replace(lambd, lambd_L).replace(v, v_).replace(sigmaApply, sigmaApply_)
+
 # %% codecell
 compose(lambd, sigmaApply, v)(A,B).replace(v,v_).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_L).doit()
 # %% codecell
 compose(lambd, sigmaApply, v)(A,B).replace(v,v_).diff(B).doit()#replace(sigmaApply, sigmaApply_)#.replace(lambd, lambd_L).diff(B)
 # %% codecell
 compose(lambd, sigmaApply, v)(A,B).replace(v,v_).diff(B).replace(lambd, lambd_L)
-# %% codecell
-compose(lambd, sigmaApply, v)(A,B).replace(lambd, lambd_L)
-# %% codecell
-compose(lambd, sigmaApply, v)(A,B).replace(lambd, lambd_L).replace(v, v_).replace(sigmaApply, sigmaApply_)
-# %% codecell
-compose(lambd, sigmaApply, v)(A,B).replace(lambd, lambd_L).replace(v, v_).replace(sigmaApply, sigmaApply_).doit()#.diff(B)
-# %% codecell
-compose(lambd, sigmaApply, v)(A,B).replace(lambd, lambd_L).replace(v, v_).replace(sigmaApply, sigmaApply_).doit().diff(Matrix(B)).doit()
-
-# %% codecell
-sigmaApply = Function("sigma_apply", subscriptable=True)
-
-#compose(lambd, sigmaApply, n)(A,B).replace(n,v).diff(B).replace(lambd, lambd_L).doit()# ERROR sigma apply is not subscriptable
-
-#compose(lambd, sigmaApply, n)(A,B).replace(n,v).diff(B).subs({sigmaApply: sigmaApply_L})
-
-
-
-
-
-
-
-
-
-# %% codecell
-compose(sigmaApply_L, sigmaApply_L)(A)
-# %% codecell
-x = Symbol('x', applyfunc=True)
-#compose(sigmaApply_, sigmaApply_)(x)##ERROR
-compose(sigmaApply_, sigmaApply_)(A)#.replace(A,f(x))
-# %% codecell
-compose(lambda_L, nL)(A,B)
-
-# %% codecell
-VL = Lambda((A,B), Lambda((A,B), MatrixSymbol("V", A.shape[0], B.shape[1])))
-VL
-# %% codecell
-VL(A,B)
-# %% codecell
-#saL = Lambda(A, Lambda(A, sigma(A)))
-saL = Lambda(x, Lambda(x, sigma(x)))
-#saL(n(A,B))## ERROR : the ultimate test failed: cannot even make this take an arbitrary function
-#saL(n)
-#s = lambda x : Lambda(x, sigma(x))
-s = lambda x : sigma(x)
-s(v(A,B))
-# %% codecell
-#sL = lambda x : Lambda(x, sigma(x))
-#sL = Lambda(x, lambda x: sigma(x))
-
-sL = Lambda(x, Lambda(x, sigma(x)))
-sL
-#sL(A)
