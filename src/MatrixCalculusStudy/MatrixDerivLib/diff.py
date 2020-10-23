@@ -63,6 +63,7 @@ MATRIX_DIFF_RULES = {
 
     SymmetricMatrixSymbol: lambda e, S: Deriv(e, S) if (e == S) else ZeroMatrix(*e.shape),
 
+    # TODO: need to change this so that only the below acts for when a MatrixSymbol arg but to carry out the matrix chain rules when there are nested functions with different typed arguments (different return type results)
     Application: lambda appFunc, S:  Deriv(appFunc, S) if (appFunc.has(S)) else ZeroMatrix(*S.shape),
 
     Add: lambda e, S: Add(*[_applyDiffMat(arg, S) for arg in e.args]),
