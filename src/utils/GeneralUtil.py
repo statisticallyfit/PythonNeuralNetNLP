@@ -4,9 +4,9 @@
 
 from IPython.display import display
 
-from typing import List, Any
+from typing import * 
 
-from sympy import Symbol, Function, Matrix, MatrixSymbol
+from sympy import Symbol, Function, Matrix, MatrixSymbol, ZeroMatrix
 
 
 
@@ -64,3 +64,12 @@ import itertools
 #vec = lambda M : list(itertools.chain(*M.T.tolist()))
 def vec(matrix: Matrix) -> List[Symbol]:
     return list(itertools.chain(*matrix.T.tolist()))
+
+
+
+
+def elemMat(shape: Tuple[int, int], i: int, j: int) -> Matrix:
+    Z: Matrix = Matrix(ZeroMatrix(*shape))
+    Z[i, j] = 1
+    return Z 
+
