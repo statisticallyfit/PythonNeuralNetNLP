@@ -86,6 +86,7 @@ showGroup([
 v = Function("nu",applyfunc=True)
 v_ = lambda a,b: a*b
 vL = Lambda((a,b), a*b)
+VL = Lambda((A,B), MatrixSymbol('V', A.shape[0], B.shape[1]))
 vN = lambda mat1, mat2: Matrix(mat1.shape[0], mat2.shape[1], lambda i, j: Symbol("n_{}{}".format(i+1, j+1))); vN
 
 Nelem = vN(X, W)
@@ -94,7 +95,7 @@ N = v(A,B)
 
 
 showGroup([
-    Nelem, Nspec, N
+    Nelem, Nspec, N, VL
 ])
 
 
@@ -183,8 +184,16 @@ nmatfuncToSpec = list(nmatfuncToSpecD.items())
 Matrix(nmatfuncToSpec)
 
 
+# %% 
 
 
+# TODO LEFT OFF HERE
+# Overall abstract
+dL_dX_overallAbstract = lambd(sigmaApply(VL)).diff(A).replace(VL, n(A,B))
+
+# %%
+#compose(lambd, sigmaApply, v)(A, B).replace(v, VL).diff(A).replace(VL, v(A, B))
+lambd(sigmaApply(VL)).diff(A).replace(VL, v(A,B))
 
 # %% codecell
 #L.replace(v,v_).replace(sigmaApply, sigmaApply_).diff(B)
@@ -205,24 +214,24 @@ dL_dX_abstract
 # %% codecell
 dL_dW_direct = L.replace(v, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(W).subs(specToElemD)
 
-dL_dW_direct.doit()
+dL_dW_direct = dL_dW_direct.doit()
+
+dL_dW_direct
 # %%
 dL_dX_direct = L.replace(v, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD).diff(X).subs(specToElemD)
 
-dL_dX_direct.doit()
+dL_dX_direct = dL_dX_direct.doit()
 
-
+dL_dX_direct
 
 # %%
 unapplied = sigmaApply_L(vN(A,B))
+unapplied
 # Also works: same as above:
 #compose(sigmaApply, v)(A,B).replace(v, vN).replace(sigmaApply , sigmaApply_L)
+# %%
 applied = unapplied.doit()
-
-showGroup([
-    unapplied,
-    applied
-])
+applied
 
 # %%
 dL_dW_step = compose(lambd, sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B).subs({A*B : vN(A,B)}).doit()
@@ -251,7 +260,7 @@ showGroup([
 
 
 # %% markdown
-# Trying to replace further to get the ones matrix for the deriv of lambda expression, but doesn't work, see code below for why (hadamard is not present, just matrix multiplication. Chain rule in this form doesn't know there should be hadamard product between deriv of lambda expression and dsdx expression)
+# Trying to replace further to get the ones matrix for the deriv of lambda expression, but doesn't work, see code below for why (hadamard is not present, just matrix multiplication. Chain rule in this form doesn't know there should be hadamard product between deriv of $\lambda$ expression and $\frac{dS}{dX}$ expression)
 # %%
 dle = lambd(xi).diff(xi)
 dle_repl = lambd(xi).diff(xi).subs(xi, applied).replace(lambd, lambd_L)
@@ -295,8 +304,8 @@ showGroup([
 
 
 # %% markdown
-# The second part: dndx * dsdn
-# %% codecell
+# The second part: $\frac{\partial N}{\partial X} \times \frac{\partial S}{\partial N}$
+
 
 # %% codecell
 dN_dW_times_dS_dN = compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B).subs({A*B : vN(A,B)}).doit()
