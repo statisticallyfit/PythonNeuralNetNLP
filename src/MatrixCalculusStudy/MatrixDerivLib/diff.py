@@ -179,6 +179,10 @@ def main():
     g = Function('g', commutative=True)
     h = Function('h', commutative=True)
 
+    # Product Rule for Matrices: 
+    diffMatrix(f(A,B)*g(A,B), A)
+
+
     #RV = RealValuedMatrixFunc
     #ra = RV(f(A) + h(A) + g(A))
     a = f(A) + h(A) + g(A)

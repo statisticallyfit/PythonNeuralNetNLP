@@ -186,14 +186,15 @@ Matrix(nmatfuncToSpec)
 
 # %% 
 
-
-# TODO LEFT OFF HERE
 # Overall abstract
-dL_dX_overallAbstract = lambd(sigmaApply(VL)).diff(A).replace(VL, n(A,B))
+dL_dX_overallAbstract = compose(lambd, sigmaApply)(VL).diff(A).replace(VL, v(A, B))
 
-# %%
-#compose(lambd, sigmaApply, v)(A, B).replace(v, VL).diff(A).replace(VL, v(A, B))
-lambd(sigmaApply(VL)).diff(A).replace(VL, v(A,B))
+dL_dW_overallAbstract = compose(lambd, sigmaApply)(VL).diff(B).replace(VL, v(A, B))
+
+showGroup([
+    dL_dX_overallAbstract, 
+    dL_dW_overallAbstract
+])
 
 # %% codecell
 #L.replace(v,v_).replace(sigmaApply, sigmaApply_).diff(B)
@@ -441,8 +442,22 @@ compose(lambd, sigmaApply, v)(A,B).replace(v,v_).replace(sigmaApply, sigmaApply_
 compose(lambd, sigmaApply, v)(A,B).replace(lambd, lambd_L).replace(v, v_).replace(sigmaApply, sigmaApply_)
 
 # %% codecell
+
 compose(lambd, sigmaApply, v)(A,B).replace(v,v_).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_L).doit()
+
+# %%
+# Alternative to the above: using the lower case matrix element names rather than upper case (from MatrixSymbol)
+compose(lambd, sigmaApply, v)(A, B).replace(v, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD)
+
+
 # %% codecell
 compose(lambd, sigmaApply, v)(A,B).replace(v,v_).diff(B).doit()#replace(sigmaApply, sigmaApply_)#.replace(lambd, lambd_L).diff(B)
 # %% codecell
 compose(lambd, sigmaApply, v)(A,B).replace(v,v_).diff(B).replace(lambd, lambd_L)
+
+
+
+
+# %%
+# TODO
+L.replace(n, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD)
