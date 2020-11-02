@@ -1,4 +1,5 @@
 
+
 # %% codecell
 import matplotlib.pyplot as plt
 import matplotlib
@@ -6,11 +7,23 @@ import numpy as np
 from numpy import ndarray
 #%matplotlib inline
 from typing import *
+import itertools
+from functools import reduce
+
+from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity, Derivative, symbols, diff
+from sympy.abc import x, i, j, a, b
+
+# %%
 
 import torch
-import torch.tensor as Tensor
+import torch.tensor as tensor
 
+# Types
 
+# Declaring some simple type aliases:
+Tensor = torch.Tensor 
+LongTensor = torch.LongTensor
+FloatTensor = torch.FloatTensor
 
 # %% codecell
 import sys
@@ -18,14 +31,17 @@ import os
 
 PATH: str = '/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP'
 
+UTIL_DISPLAY_PATH: str = PATH + "/src/utils/GeneralUtil/"
+
 NEURALNET_PATH: str = PATH + '/src/NeuralNetworkStudy/books/SethWeidman_DeepLearningFromScratch'
 
-os.chdir(NEURALNET_PATH)
-assert os.getcwd() == NEURALNET_PATH
+#os.chdir(NEURALNET_PATH)
+#assert os.getcwd() == NEURALNET_PATH
 
 sys.path.append(PATH)
+sys.path.append(UTIL_DISPLAY_PATH)
 sys.path.append(NEURALNET_PATH)
-assert NEURALNET_PATH in sys.path
+#assert NEURALNET_PATH in sys.path
 
 
 #from FunctionUtil import *
@@ -33,6 +49,21 @@ assert NEURALNET_PATH in sys.path
 from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.FunctionUtil import *
 
 from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.TypeUtil import *
+#from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.Chapter1_FoundationDerivatives import *
+
+from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.FunctionUtil import *
+
+
+from src.utils.GeneralUtil import *
+from src.MatrixCalculusStudy.MatrixDerivLib.symbols import Deriv
+from src.MatrixCalculusStudy.MatrixDerivLib.diff import diffMatrix
+from src.MatrixCalculusStudy.MatrixDerivLib.printingLatex import myLatexPrinter
+
+# %% 
+# For displaying
+from IPython.display import display, Math
+from sympy.interactive import printing
+printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLatexPrinter.doprint(e))
 
 # %% markdown [markdown]
 # ## Derivative Function:
@@ -176,7 +207,7 @@ def plotChainDeriv_2_3(ax, chain: Chain, inputRange: Tensor) -> None:
 
 
 # %% codecell
-PLOT_RANGE: Tensor = Tensor(np.arange(-3, 3, 0.01))
+PLOT_RANGE: Tensor = tensor(np.arange(-3, 3, 0.01))
 
 chainSquareSigmoid: Chain = [square, sigmoid]
 chainSigmoidSquare: Chain = [sigmoid, square]
@@ -381,7 +412,7 @@ def chainDeriv_OneInputTensorFunc(chain: Chain, X: Tensor) -> List[Tensor]:
 # %% markdown [markdown]
 # Testing the abstract functions chainFunction and chainDeriv:
 # %% codecell
-x: Tensor = Tensor(np.arange(-3, 8)); x
+x: Tensor = tensor(np.arange(-3, 8)); x
 chain: List[TensorFunction] = [leakyRelu, sigmoid, square, cubic, quartic, quintic, sinT, cosT]
 
 # %% codecell
@@ -420,7 +451,7 @@ def plotChainDeriv(ax, chain: Chain, inputRange: Tensor) -> None:
 
 
 # %% codecell
-PLOT_RANGE: Tensor = Tensor(np.arange(-3, 3, 0.01))
+PLOT_RANGE: Tensor = tensor(np.arange(-3, 3, 0.01))
 
 chainReluSquareSigmoid: Chain = [leakyRelu, square, sigmoid]
 chainReluSigmoidSquare: Chain = [leakyRelu, sigmoid, square]
@@ -534,7 +565,7 @@ def multipleInputsAddDeriv(x: Tensor, y: Tensor,
     ds_da: Tensor = deriv(func = sigma, inputTensor = a)
     da_dx: Tensor = 1 # same as replicating tensor 1
     da_dy: Tensor = 1
-    #da_dx: Tensor = Tensor([1] * len(ds_da))
+    #da_dx: Tensor = tensor([1] * len(ds_da))
 
     df_dx: Tensor = ds_da * da_dx
     df_dy: Tensor = ds_da * da_dy
@@ -542,12 +573,12 @@ def multipleInputsAddDeriv(x: Tensor, y: Tensor,
     return df_dx, df_dy
 
 # %% codecell
-x = Tensor(np.arange(-3, 8))
-assert torch.equal(x, Tensor([-3, -2, -1,  0,  1,  2,  3,  4,  5,  6,  7]))
+x = tensor(np.arange(-3, 8))
+assert torch.equal(x, tensor([-3, -2, -1,  0,  1,  2,  3,  4,  5,  6,  7]))
 
 
-y = Tensor(np.arange(-5,6));  y
-assert torch.equal(y, Tensor([-5, -4, -3, -2, -1,  0,  1,  2,  3,  4,  5]))
+y = tensor(np.arange(-5,6));  y
+assert torch.equal(y, tensor([-5, -4, -3, -2, -1,  0,  1,  2,  3,  4,  5]))
 
 assert x.shape == y.shape
 
@@ -555,7 +586,7 @@ assert x.shape == y.shape
 sigma: TensorFunction = lambda tensor: tensor**3
 
 res: Tensor = multipleInputsAdd(x, y, sigma)
-assert torch.equal(res , Tensor([-512, -216,  -64,   -8,  0,8,   64,  216,  512, 1000, 1728]))
+assert torch.equal(res , tensor([-512, -216,  -64,   -8,  0,8,   64,  216,  512, 1000, 1728]))
 
 # %% markdown [markdown]
 # Printing out value of the derivatives with respect to $x$ and $y$:
@@ -571,9 +602,9 @@ multipleInputsAddDeriv(x, y, sigma)
 
 # %% markdown [markdown]
 # ## Functions with Multiple Inputs (Case: Multiplication)
-# Defining the following function $\alpha(x,y)$ with inputs $x$ and $y$:
+# Defining the following function $\beta(x,y)$ with inputs $x$ and $y$:
 # $$
-# a = \beta(x, y) = x * y
+# \beta = \beta(x, y) = x * y
 # $$
 # Going to feed this function through another function `sigmoid` or $\sigma$:
 # $$
@@ -664,12 +695,12 @@ def multipleInputsMultiplyDeriv(x: Tensor, y: Tensor,
     return df_dx, df_dy
 
 # %% codecell
-x = Tensor(np.arange(-3, 8))
-assert torch.equal(x, Tensor([-3, -2, -1,  0,  1,  2,  3,  4,  5,  6,  7]))
+x = tensor(np.arange(-3, 8))
+assert torch.equal(x, tensor([-3, -2, -1,  0,  1,  2,  3,  4,  5,  6,  7]))
 
 
-y = Tensor(np.arange(-5,6));  y
-assert torch.equal(y, Tensor([-5, -4, -3, -2, -1,  0,  1,  2,  3,  4,  5]))
+y = tensor(np.arange(-5,6));  y
+assert torch.equal(y, tensor([-5, -4, -3, -2, -1,  0,  1,  2,  3,  4,  5]))
 
 assert x.shape == y.shape
 
@@ -730,7 +761,7 @@ def matrixForward(X: Tensor, W: Tensor) -> Tensor:
     #N: Tensor = np.dot(X, W) # same as torch.matmul
     N: Tensor = torch.matmul(X, W)
 
-    assert torch.equal(Tensor(np.dot(X, W)), N)
+    assert torch.equal(tensor(np.dot(X, W)), N)
 
     return N
 
@@ -816,7 +847,7 @@ assert torch.equal(dN_dX, torch.transpose(W, 0, 1))
 # Assert: numpy transpose equals torch transpose
 ### NOTE: in numpy transpose, we need to specify ALL dimension IDs (1,0,2) even when just transposing through
 # some of the  dimensions (1,0).
-assert torch.equal(Tensor(dN_dX.numpy().transpose((1,0,2))), torch.transpose(dN_dX,1,0))
+assert torch.equal(tensor(dN_dX.numpy().transpose((1,0,2))), torch.transpose(dN_dX,1,0))
 
 
 # %% markdown [markdown]
@@ -877,10 +908,9 @@ assert matrixForwardSigma(X, W, sigma).shape == (3, 2, 4, 4)
 # $$
 # \begin{align}
 # \frac{\partial f}{\partial X} \bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n}
-#   &= \frac{\partial \sigma}{\partial \nu} \bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n} \times \frac{\partial \nu}{\partial X}  \\
-#   &= \frac{\partial \sigma}{\partial \nu}\bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n} \times W^T \\
-#   &= \frac{\partial}{\partial \nu}(\sigma(\nu(X,W))) \bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n} \times W^T \\
-#   &= \frac{\partial}{\partial \nu}(\sigma(x_1 \times w_1 + ... + x_n \times w_n)) \times W^T
+#   &= \frac{\partial \sigma }{\partial \nu} \bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n} \times \frac{\partial \nu}{\partial X}  \\
+#   &= \frac{\partial }{\partial \nu}\sigma(\nu) \bigg|_{\large \nu = x_1 \times w_1 + ... + x_n \times w_n} \times W^T \\
+#   &= \frac{\partial}{\partial (x_1 \times w_1 + ... + x_n \times w_n)}(\sigma(x_1 \times w_1 + ... + x_n \times w_n)) \times W^T
 # \end{align}
 # $$
 
@@ -1008,3 +1038,52 @@ incNot: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = 
 print(torch.sum((inc - incNot) / increment))
 
 print(matrixBackwardSigma_X(X, W, sigma)[indices])
+
+
+
+
+
+
+
+
+# %% markdown
+# Defining variable-element matrices $X \in \mathbb{R}^{n \times m}$ and $W \in \mathbb{R}^{m \times p}$:
+
+# %% markdown [markdown]
+#
+# Defining $N = \nu(X, W) = X \times W$
+#
+# * $\nu : \mathbb{R}^{(n \times m) \times (m \times p)} \rightarrow \mathbb{R}^{n \times p}$
+# * $N \in \mathbb{R}^{n \times p}$
+# %% markdown [markdown]
+#
+# Defining $S = \sigma_{\text{apply}}(N) = \sigma_{\text{apply}}(\nu(X,W)) = \sigma_\text{apply}(X \times W) = \Big \{ \sigma(XW_{ij}) \Big\}$.
+#
+#
+# Assume that $\sigma_{\text{apply}} : \mathbb{R}^{n \times p} \rightarrow \mathbb{R}^{n \times p}$ while $\sigma : \mathbb{R} \rightarrow \mathbb{R}$, so the function $\sigma_{\text{apply}}$ takes in a matrix and returns a matrix while the simple $\sigma$ acts on the individual elements $N_{ij} = XW_{ij}$ in the matrix argument $N$ of $\sigma_{\text{apply}}$.
+#
+# * $\sigma : \mathbb{R} \rightarrow \mathbb{R}$
+# * $\sigma_\text{apply} : \mathbb{R}^{n \times p} \rightarrow \mathbb{R}^{n \times p}$
+# * $S \in \mathbb{R}^{n \times p}$
+
+
+# %% markdown [markdown]
+#
+# Defining $L = \Lambda(S) = \Lambda(\sigma_\text{apply}(\nu(X,W))) = \Lambda \Big(\Big \{ \sigma(XW_{ij}) \Big\} \Big)$. In general, let the function be defined as:
+#
+# $$
+# \begin{aligned}
+# L &= \Lambda \begin{pmatrix}
+#    \sigma(XW_{11}) & \sigma(XW_{12}) & ... & \sigma(XW_{1p}) \\
+#    \sigma(XW_{21}) & \sigma(XW_{22}) & ... & \sigma(XW_{2p}) \\
+#    \vdots & \vdots & & \vdots \\
+#    \sigma(XW_{n1}) & \sigma(XW_{n2}) & ... & \sigma(XW_{np})
+# \end{pmatrix} \\
+# &= \sum_{i=1}^p \sum_{j = 1}^n  \sigma(XW_{ij}) \\
+# &= \sigma(XW_{11}) + \sigma{XW_{12}} + ... + \sigma(XW_{np})
+# \end{aligned}
+# $$
+# %% markdown [markdown]
+# NOTE HERE:
+# * $\Lambda: \mathbb{R}^{n \times p} \rightarrow \mathbb{R}$
+# * $L \in \mathbb{R}$

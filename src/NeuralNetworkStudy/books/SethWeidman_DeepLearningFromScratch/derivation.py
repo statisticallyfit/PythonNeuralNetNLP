@@ -46,14 +46,6 @@ import itertools
 from functools import reduce
 
 from typing import *
-# %% codecell
-def composeTwoFunctions(f, g):
-    return lambda *a, **kw: f(g(*a, **kw))
-
-def compose(*fs):
-    return reduce(composeTwoFunctions, fs)
-
-
 
 # %% codecell
 n,m,p = 3,3,2
@@ -457,7 +449,3 @@ compose(lambd, sigmaApply, v)(A,B).replace(v,v_).diff(B).replace(lambd, lambd_L)
 
 
 
-
-# %%
-# TODO
-L.replace(n, vN).replace(sigmaApply, sigmaApply_).replace(lambd, lambd_).subs(elemToSpecD)

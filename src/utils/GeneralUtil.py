@@ -73,3 +73,11 @@ def elemMat(shape: Tuple[int, int], i: int, j: int) -> Matrix:
     Z[i, j] = 1
     return Z 
 
+
+
+def composeTwoFunctions(f, g):
+    return lambda *a, **kw: f(g(*a, **kw))
+
+def compose(*fs):
+    return reduce(composeTwoFunctions, fs)
+
