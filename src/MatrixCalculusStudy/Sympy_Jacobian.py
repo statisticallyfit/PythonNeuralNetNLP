@@ -1,5 +1,21 @@
-# %% markdown
+# %% [markdown]
 # # Review: Jacobian Matrix
+
+
+
+# %% codecell
+import sys
+import os
+
+PATH: str = '/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP'
+
+NEURALNET_PATH: str = PATH + '/src/MatrixCalculusStudy'
+
+sys.path.append(PATH)
+sys.path.append(NEURALNET_PATH)
+
+# TODO temporarily commenting out the above to test if the file can be run without manual path setting, using just command line. NOW: does not work, must fix. 
+# TODO: erase the start/end print statements after you succeed. 
 
 # %% codecell
 from sympy import Matrix, MatrixSymbol, Symbol, derive_by_array, diff, sin, exp, symbols, Function
@@ -8,15 +24,21 @@ from sympy.abc import i, j
 
 # %%
 from src.utils.GeneralUtil import *
+#from ..utils.GeneralUtil import * 
+
 from src.MatrixCalculusStudy.MatrixDerivLib.symbols import Deriv
+#from MatrixDerivLib.symbols import Deriv
+
 from src.MatrixCalculusStudy.MatrixDerivLib.diff import diffMatrix
+#from ..MatrixCalculusStudy.MatrixDerivLib.diff import diffMatrix
 from src.MatrixCalculusStudy.MatrixDerivLib.printingLatex import myLatexPrinter
+#from ..MatrixCalculusStudy.MatrixDerivLib.printingLatex import myLatexPrinter
 
 from IPython.display import display, Math
 from sympy.interactive import printing
 printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLatexPrinter.doprint(e))
 
-# %% markdown
+# %% [markdown]
 # ### Jacobian Matrix and Multivariable Functions
 # A vector $\mathbf{f} = \big( f_1, f_2, ..., f_m \big)$ of $m$ functions, each depending on $n$ variables $\mathbf{x} = \big(x_1, x_2, ..., x_n \big)$ defines a transformation or function from $\mathbb{R}^n$ to $\mathbb{R}^m$. Specifically, if $\mathbf{x} \in \mathbb{R}^n$ and if:
 # $$
@@ -79,7 +101,8 @@ derive_by_array(X*W, X)
 # %% codecell
 (X*W).diff(X)
 
-
+# %%
+print("START")
 
 
 # %% codecell
@@ -164,3 +187,7 @@ jacF_derive
 # %% codecell
 assert jacF == jacF_derive
 # %% codecell
+
+
+
+print("END")

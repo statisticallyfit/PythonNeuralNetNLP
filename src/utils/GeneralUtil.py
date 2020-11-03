@@ -8,6 +8,8 @@ from typing import *
 
 from sympy import Symbol, Function, Matrix, MatrixSymbol, ZeroMatrix
 
+import itertools
+from functools import reduce
 
 
 

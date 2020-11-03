@@ -1,5 +1,18 @@
-# %% markdown
+# %% [markdown]
 # # Review: Derivative of a Scalar Function with Respect to a Matrix
+
+
+# %% codecell
+import sys
+import os
+
+PATH: str = '/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP'
+
+NEURALNET_PATH: str = PATH + '/src/MatrixCalculusStudy'
+
+sys.path.append(PATH)
+sys.path.append(NEURALNET_PATH)
+
 
 # %% codecell
 from sympy import diff, sin, exp, symbols, Function, Matrix, MatrixSymbol, FunctionMatrix, derive_by_array, Symbol
@@ -49,7 +62,7 @@ Matrix(funcArgsToElem)
 
 
 
-# %% markdown
+# %% [markdown]
 # ### Derivative of Scalar Function of a Matrix with Respect to the Matrix
 # Let $X = \{ x_{ij} \}$ be a matrix of order $m \times n$ and let
 # $$
@@ -82,7 +95,7 @@ derivScalarByMatrix = derive_by_array(Yfunc[0,0], X)
 derivScalarByMatrix.subs(funcArgsToElemD)
 
 
-# %% markdown
+# %% [markdown]
 # ### Derivative of Matrix With Respect to Scalar Element of Matrix
 # Let $X = \{ x_{ij} \}$ be a matrix of order $m \times n$ and let
 # $$

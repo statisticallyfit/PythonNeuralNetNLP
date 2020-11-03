@@ -1,4 +1,4 @@
-# %% markdown
+# %% [markdown]
 # # Review: Gradient and Vector Chain Rule
 
 # %% codecell
@@ -12,11 +12,11 @@ import os, sys
 
 PATH: str = '/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP'
 
-UTIL_DISPLAY_PATH: str = PATH + "/src/utils/GeneralUtil/"
+#UTIL_DISPLAY_PATH: str = PATH + "/src/utils/GeneralUtil/"
 
 NEURALNET_PATH: str = PATH + '/src/NeuralNetworkStudy/books/SethWeidman_DeepLearningFromScratch'
 
-sys.path.append(UTIL_DISPLAY_PATH)
+#sys.path.append(UTIL_DISPLAY_PATH)
 sys.path.append(PATH)
 sys.path.append(NEURALNET_PATH)
 
@@ -59,7 +59,7 @@ yv = Matrix( m, 1, lambda i,_:  func_i('y', i, xLetter = 'x', xLen = n))
 yv
 
 
-# %% markdown
+# %% [markdown]
 # ### Derivative of Real-Valued, Multivariate Function with Respect to Vector: The Gradient Vector
 #
 # Let the multivariate and real-valued function $f(\mathbf{x}) = f(x_1,x_2,...,x_n)$ from $\mathbb{R}^n \longrightarrow \mathbb{R}$  be a function of the real $n \times 1$ vector $\mathbf{x} = \begin{pmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{pmatrix}$.
@@ -93,7 +93,7 @@ yv
 
 
 
-# %% markdown
+# %% [markdown]
 # ### Vector of First Order Partial Derivatives
 #
 # The **vector of first order partial derivative**s $\frac{\partial f}{\partial \mathbf{x}^T}$ is defined as the transpose of the **gradient** of $f$:
@@ -129,7 +129,7 @@ assert Matrix(derive_by_array(f(*xv), xv)) == f(*xv).diff(xv)
 
 
 
-# %% markdown
+# %% [markdown]
 # ### Derivative of Vector-Valued, Single Variable Function with Respect to Scalar
 # Let $\mathbf{y}(x) = \begin{pmatrix} y_1(x) \\ y_2(x) \\ \vdots \\ y_m(x) \end{pmatrix}$ be a vector of order $m$, where each of the elements $y_i$ are functions of the scalar variable $x$. Specifically, $y_i = f_i(x), 1 \leq i \leq m$, where $f_i : \mathbb{R} \rightarrow \mathbb{R}$ and $\mathbf{y} : \mathbb{R} \rightarrow \mathbb{R}^m$.
 #
@@ -168,7 +168,7 @@ assert Matrix(derive_by_array(yv, x)) == Matrix(yv).diff(x)
 
 
 
-# %% markdown
+# %% [markdown]
 # ### Vector Chain Rule
 # In general the Jacobian matrix of the composition of two vector-valued functions of a vector variable is the matrix product of their Jacobian matrices.
 #
