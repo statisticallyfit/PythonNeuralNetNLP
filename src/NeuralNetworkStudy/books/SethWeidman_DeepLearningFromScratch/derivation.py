@@ -192,9 +192,8 @@ showGroup([
 ])
 
 # %% codecell
+dL_dW_abstract = compose(lambd, sigmaApply, v)(A, B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B)
 #L.replace(v,v_).replace(sigmaApply, sigmaApply_).diff(B)
-
-dL_dW_abstract = L.replace(v,v_).replace(sigmaApply, sigmaApply_).diff(B)
 
 showGroup([
     dL_dW_abstract,
@@ -202,7 +201,8 @@ showGroup([
 ])
 
 # %%
-dL_dX_abstract = L.replace(v, v_).replace(sigmaApply, sigmaApply_).diff(A)
+dL_dX_abstract = compose(lambd, sigmaApply, v)(A, B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(A)
+#L.replace(v, v_).replace(sigmaApply, sigmaApply_).diff(A)
 
 dL_dX_abstract
 

@@ -3,6 +3,8 @@
 # %% codecell
 import matplotlib.pyplot as plt
 import matplotlib
+%matplotlib inline 
+
 import numpy as np
 from numpy import ndarray
 #%matplotlib inline
@@ -10,17 +12,15 @@ from typing import *
 import itertools
 from functools import reduce
 
-from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity, Derivative, symbols, diff
+from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity, Derivative, symbols, diff, HadamardProduct
 from sympy.abc import x, i, j, a, b
 
 # %%
-
 import torch
 import torch.tensor as tensor
 
 # Types
 
-# Declaring some simple type aliases:
 Tensor = torch.Tensor 
 LongTensor = torch.LongTensor
 FloatTensor = torch.FloatTensor
@@ -43,7 +43,7 @@ sys.path.append(UTIL_DISPLAY_PATH)
 sys.path.append(NEURALNET_PATH)
 #assert NEURALNET_PATH in sys.path
 
-
+# %%
 #from FunctionUtil import *
 
 from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.FunctionUtil import *
@@ -59,13 +59,12 @@ from src.MatrixCalculusStudy.MatrixDerivLib.symbols import Deriv
 from src.MatrixCalculusStudy.MatrixDerivLib.diff import diffMatrix
 from src.MatrixCalculusStudy.MatrixDerivLib.printingLatex import myLatexPrinter
 
-# %% 
 # For displaying
 from IPython.display import display, Math
 from sympy.interactive import printing
 printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLatexPrinter.doprint(e))
 
-# %% markdown [markdown]
+# %% markdown
 # ## Derivative Function:
 # $$
 # \frac{df}{du}(a) = \lim_{\Delta \leftarrow 0} \frac{f(a + \Delta) - f(a - \Delta)}{2 \times \Delta}
@@ -80,7 +79,7 @@ def deriv(func: TensorFunction, #Callable[[Tensor], Tensor],
      '''
      return (func(inputTensor + delta) - func(inputTensor - delta)) / (2 * delta)
 
-# %% markdown [markdown]
+# %% markdown
 # ## Nested (Composite) Functions:
 # $$
 # g(f(x)) = y
@@ -99,7 +98,7 @@ def chainTwoFunctions(chain: Chain, x: Tensor) -> Tensor:
 
 
 
-# %% markdown [markdown]
+# %% markdown
 # ## Chain Rule
 # Leibniz notation:
 # $$
@@ -139,7 +138,7 @@ def chainDerivTwo(chain: Chain,  inputRange: Tensor) -> Tensor:
 
 
 
-# %% markdown [markdown]
+# %% markdown
 # Plot the results to show the chain rule works:
 # %% codecell
 
@@ -231,7 +230,7 @@ ax[1].set_title("Function and derivative for\n$f(x) = square(sigmoid(x))$");
 
 
 
-# %% markdown [markdown]
+# %% markdown
 # ### Chain Rule For Three Composed Functions:
 # The function:
 # $$
@@ -309,7 +308,7 @@ def chainDerivThree(chain: Chain, inputRange: Tensor) -> Tensor:
 
 
 
-# %% markdown [markdown]
+# %% markdown
 # Creating functions to calculate compositions and chain rule for any-length chain:
 #
 # ### Chain Rule An Arbitrary Number of Composed Functions:
@@ -409,7 +408,7 @@ def chainDeriv_OneInputTensorFunc(chain: Chain, X: Tensor) -> List[Tensor]:
 
      return chainRuleResult
 
-# %% markdown [markdown]
+# %% markdown
 # Testing the abstract functions chainFunction and chainDeriv:
 # %% codecell
 x: Tensor = tensor(np.arange(-3, 8)); x
@@ -428,7 +427,7 @@ chainDerivThree(chain[0:3], x)
 
 
 
-# %% markdown [markdown]
+# %% markdown
 # Plot the results to show the chain rule works:
 # %% codecell
 
@@ -477,7 +476,7 @@ ax[1].set_title("Function and derivative for\n$f(x) = square(sigmoid(leakyRelu(x
 
 
 
-# %% markdown [markdown]
+# %% markdown
 # ## Functions with Multiple Inputs (Case: Addition)
 # Defining the following function $\alpha(x,y)$ with inputs $x$ and $y$:
 # $$
@@ -498,14 +497,14 @@ def multipleInputsAdd(x: Tensor, y: Tensor, sigma: TensorFunction) -> float:
 
     return sigma(a)
 
-# %% markdown [markdown]
+# %% markdown
 # ## Derivatives of Functions with Multiple Inputs (Case: Addition)
 # Goal is to compute the derivative of each constituent function "going backward" through the computational graph and then multiply the result together to get the total derivative (as per chain rule).
 # Given the function from before (calling it `f` now instead of `s`):
 # $$
 # f(x,y) = \sigma(\alpha(x,y)) = \sigma(x + y)
 # $$
-# %% markdown [markdown]
+# %% markdown
 # 1. Derivative with respect to $x$ is:
 #
 # Leibniz (simple) Notation:
@@ -542,7 +541,7 @@ def multipleInputsAdd(x: Tensor, y: Tensor, sigma: TensorFunction) -> float:
 # $$
 # f'(x,y) = \sigma'(\alpha(x,y)) \times \alpha'(x,y)
 # $$
-# %% markdown [markdown]
+# %% markdown
 # #### Derivative of $\alpha$ function:
 # $$
 # \frac{\partial \alpha}{\partial x} = \frac{\partial}{\partial x}(x + y) = 1
@@ -588,7 +587,7 @@ sigma: TensorFunction = lambda tensor: tensor**3
 res: Tensor = multipleInputsAdd(x, y, sigma)
 assert torch.equal(res , tensor([-512, -216,  -64,   -8,  0,8,   64,  216,  512, 1000, 1728]))
 
-# %% markdown [markdown]
+# %% markdown
 # Printing out value of the derivatives with respect to $x$ and $y$:
 
 # %% codecell
@@ -600,7 +599,7 @@ multipleInputsAddDeriv(x, y, sigma)
 
 
 
-# %% markdown [markdown]
+# %% markdown
 # ## Functions with Multiple Inputs (Case: Multiplication)
 # Defining the following function $\beta(x,y)$ with inputs $x$ and $y$:
 # $$
@@ -621,7 +620,7 @@ def multipleInputsMultiply(x: Tensor, y: Tensor, sigma: TensorFunction) -> float
 
     return sigma(beta)
 
-# %% markdown [markdown]
+# %% markdown
 # ## Derivatives of Functions with Multiple Inputs (Case: Multiplication)
 # Goal is to compute the derivative of each constituent function "going backward" through the computational graph and then multiply the result together to get the total derivative (as per chain rule).
 # Given the function from before (calling it `f` now instead of `s`):
@@ -665,7 +664,7 @@ def multipleInputsMultiply(x: Tensor, y: Tensor, sigma: TensorFunction) -> float
 # $$
 # f'(x,y) = \sigma'(\beta(x,y)) \times \beta'(x,y)
 # $$
-# %% markdown [markdown]
+# %% markdown
 # #### Derivative of $\beta$ function:
 # $$
 # \frac{\partial \beta}{\partial x} = \frac{\partial}{\partial x}(x * y) = y
@@ -718,7 +717,7 @@ multipleInputsMultiply(x, y, sigma)
 
 
 
-# %% markdown [markdown]
+# %% markdown
 # ## Functions with Multiple Matrix Inputs
 # Here, inputs are multi-dimensional tensors, not just 1-dim tensors as in the above two examples.
 #
@@ -768,7 +767,7 @@ def matrixForward(X: Tensor, W: Tensor) -> Tensor:
 
     return N
 
-# %% markdown [markdown]
+# %% markdown
 # ## Derivatives of Functions with Multiple Tensor Inputs (Gradient)
 # Doing derivatives of tensors and matrices (2-dim tensors).
 #
@@ -799,7 +798,7 @@ def matrixForward(X: Tensor, W: Tensor) -> Tensor:
 # \end{align}
 # $$
 
-# %% markdown [markdown]
+# %% markdown
 # #### Calculating Derivative with Respect to a Matrix (Gradient):
 # Since each $\frac {\partial \nu} {\partial x_i} = \frac{\partial}{\partial x_i}(\nu(X, W)) = \frac{\partial}{\partial x_i} (x_1 \times w_1 + x_2 \times w_2 + ... + x_i \times w_i + ... + x_n \times w_n) = w_i$,
 #
@@ -836,7 +835,7 @@ def matrixBackward_X(X: Tensor, W: Tensor) -> Tensor:
     dN_dX: Tensor = torch.transpose(W, 1, 0)
 
     return dN_dX
-# %% markdown [markdown]
+# %% markdown
 # Checking the numpy transpose correspondence with torch transpose:
 # %% codecell
 X: Tensor = torch.arange(2*3*4).reshape(3,2,4)
@@ -853,7 +852,7 @@ assert torch.equal(dN_dX, torch.transpose(W, 0, 1))
 assert torch.equal(tensor(dN_dX.numpy().transpose((1,0,2))), torch.transpose(dN_dX,1,0))
 
 
-# %% markdown [markdown]
+# %% markdown
 # ## Vector Functions with Multiple Tensor Inputs (Extra Output Function)
 # Using $N = \nu(X, W)$ from previously, define the following function $s = f(X, W)$ which passes $\nu$ through an extra function $\sigma$::
 # $$
@@ -896,7 +895,7 @@ assert matrixForwardSigma(X, W, sigma).shape == (3, 2, 4, 4)
 
 
 
-# %% markdown [markdown]
+# %% markdown
 # ## Derivative of Functions with Multiple Tensor Inputs (Extra Function)
 # #### Abstract Calculation:
 # Since $s = f(X, W) = \sigma(\nu(X, Y))$, we apply the chain rule to find $\frac{\partial f}{\partial X}$:
@@ -976,7 +975,7 @@ x: Tensor = torch.rand(2,10)
 w: Tensor = torch.rand(10,2)
 
 matrixBackwardSigma_X(x, w, sigmoid)
-# %% markdown [markdown]
+# %% markdown
 # #### Testing if the derivatives computed are correct:
 # A simple test is to perturb the array and observe the resulting change in output. If we increase $x_{2,1,3}$ by 0.01 from -1.726 to -1.716 we should see an increase in the value porduced by the forward function of the *gradient of the output with respect to $x_{2,1,3}$*.
 # %% codecell
@@ -995,7 +994,7 @@ def doForwardSigmaIncr(X: Tensor, W: Tensor, sigma: TensorFunction, indices: Tup
     return matrixForwardSigma(X_, W, sigma)
 
 
-# %% markdown [markdown]
+# %% markdown
 # Testing with 2-dim tensors:
 # %% codecell
 X: Tensor = torch.arange(5*4).reshape(5,4).type(torch.FloatTensor)
@@ -1009,7 +1008,7 @@ incNot: Tensor = doForwardSigmaIncr(X, W, sigma, indices = indices, increment = 
 print(torch.sum((inc - incNot) / increment))
 
 print(matrixBackwardSigma_X(X, W, sigma)[indices])
-# %% markdown [markdown]
+# %% markdown
 # Testing with 3-dim tensors:
 
 # %% codecell
@@ -1026,7 +1025,7 @@ print(torch.sum((inc - incNot) / increment))
 print(matrixBackwardSigma_X(X, W, sigma)[indices])
 
 
-# %% markdown [markdown]
+# %% markdown
 # Testing with 4-dim tensors:
 
 # %% codecell
@@ -1273,8 +1272,10 @@ def matrixForwardSum(Xa: Tensor, Wa: Tensor, sigma: TensorFunction) -> float:
 #
 # We have a number $L$ and we want to find out the gradient of $L$ with respect to $X$ and $W$; how much changing *each element* of these input matrices (so each $x_{ij}$ and each $w_{ij}$) would change $L$. This is written as:
 #
-# **Direct Way:**
+# ### Direct Way:
 #
+# **Derivative with respect to $X$: **
+# 
 # $$
 # \large
 # \frac{\partial \Lambda}{\partial X} = \begin{pmatrix}
@@ -1285,17 +1286,236 @@ def matrixForwardSum(Xa: Tensor, Wa: Tensor, sigma: TensorFunction) -> float:
 # \end{pmatrix}
 # $$
 #
+# 
+# **Derivative with respect to $W$: **
+# 
+# $$
+# \large
+# \frac{\partial \Lambda}{\partial W} = \begin{pmatrix}
+#   \frac{\partial \Lambda}{\partial w_{11}} & \frac{\partial \Lambda}{\partial w_{12}} & ... & \frac{\partial \Lambda}{\partial w_{1p}} \\
+#   \frac{\partial \Lambda}{\partial w_{21}} & \frac{\partial \Lambda}{\partial w_{22}} & ... & \frac{\partial \Lambda}{\partial w_{2p}} \\
+#   \vdots & \vdots & \vdots & \vdots \\
+#   \frac{\partial \Lambda}{\partial w_{m1}} & \frac{\partial \Lambda}{\partial w_{m2}} & ... & \frac{\partial \Lambda}{\partial w_{mp}}
+# \end{pmatrix}
+# $$
 #
-# **Chain Rule way (Backward pass):**
+# 
+# 
+# 
+# ### Chain Rule way (Backward pass):
+# 
 # The chain rule gives the same result as the direct way above but is simpler for the user to calculate:
-# $$
-# \frac{\partial \Lambda}{\partial X} = \frac{\partial N}{\}
-# $$
+# 
+# #### Preliminary Variable Set-up: 
+# %% codecell
+n,m,p = 3,3,2
+
+# Variables
+X = Matrix(n, m, lambda i,j : var_ij('x', i, j))
+W = Matrix(m, p, lambda i,j : var_ij('w', i, j))
+A = MatrixSymbol('X',n,m)
+B = MatrixSymbol('W',m,p)
+# matrix variable for sympy Lambda function arguments
+M = MatrixSymbol('M', i, j)# abstract shape
+
+
+# N function
+v = Function("nu",applyfunc=True)
+v_ = lambda a,b: a*b
+vL = Lambda((a,b), a*b)
+VL = Lambda((A,B), MatrixSymbol('V', A.shape[0], B.shape[1]))
+vN = lambda mat1, mat2: Matrix(mat1.shape[0], mat2.shape[1], lambda i, j: Symbol("n_{}{}".format(i+1, j+1))); vN
+
+Nelem = vN(X, W)
+Nspec = v_(X,W)
+N = v(A,B)
+
+
+# S function
+sigma = Function('sigma')
+sigmaApply = Function("sigma_apply") #lambda matrix:  matrix.applyfunc(sigma)
+sigmaApply_ = lambda matrix: matrix.applyfunc(sigma)
+sigmaApply_L = Lambda(M, M.applyfunc(sigma))
+
+S = sigmaApply(N)
+Sspec = S.subs({A:X, B:W}).replace(v, v_).replace(sigmaApply, sigmaApply_)
+Selem = S.replace(v, vN).replace(sigmaApply, sigmaApply_)
+
+
+
+# L function
+lambd = Function("lambda")
+lambd_ = lambda matrix : sum(matrix)
+# Declaring appropriate matrix shape so that it is argument of lambda function
+ABres = MatrixSymbol("AB", A.shape[0], B.shape[1])
+lambd_L = Lambda(ABres, sum(ABres))
+
+L = compose(lambd, sigmaApply, v)(A, B)
+L
+
+
+# %% markdown
+# ### Chain Rule Derivative with respect to $X$
+# 
+# **Derivative with respect to $X$: The Abstract Way**
+# %%
+dL_dX_overallAbstract = compose(lambd, sigmaApply)(VL).diff(A).replace(VL, v(A, B))
+dL_dX_overallAbstract
 
 
 
 
+# %% markdown
+# **Derivative with respect to $X$: The Matrix-Derivative Abstract Way**
+# %%
+dL_dX_abstract = compose(lambd, sigmaApply, v)(A, B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(A)
+dL_dX_abstract
 
+
+
+# %% markdown
+# **Derivative with respect to $X$: The Step by Step Way**
+# %%
+# Step by step version
+unapplied = sigmaApply_L(vN(A,B))
+applied = unapplied.doit()
+
+showGroup([
+     unapplied, applied
+])
+
+# %%
+dL_dX_step = compose(lambd, sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(A).subs({A*B : vN(A,B)}).doit()
+
+showGroup([
+    dL_dX_step,
+    dL_dX_step.replace(unapplied, applied),
+    dL_dX_step.subs({B:W}).doit(),
+    dL_dX_step.subs({B:W}).doit().replace(unapplied, applied)
+])
+
+
+
+
+# %% markdown
+# **Derivative with respect to $X$: The Hadamard Way**
+# %% 
+# BUIDLING up the pieces manually: 
+dL_dS = lambd(Selem).replace(lambd, lambd_L).diff(Selem)
+
+dS_dN = compose(sigmaApply)(M).replace(sigmaApply, sigmaApply_).diff(M).subs({M : vN(A,B)}).doit()
+
+
+# Observe how X^T and W^T end up in different spots. 
+# TODO show this with the matrix diff calculuator library
+
+
+dN_dX = B.transpose()
+
+dS_dX = dS_dN * dN_dX
+dS_dX_abstract = compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(A)
+
+dL_dN = HadamardProduct(dL_dS, dS_dN)
+
+# This is the end product, the above pieces need to be combined properly to yield this result below, testing with assert...
+dL_dX = dL_dN * dN_dX #).subs(B, W).doit()
+dL_dX_hadamard = dL_dX.subs(B, W).doit()
+
+assert dL_dX == HadamardProduct(dL_dS, dS_dN) * dN_dX
+# %%
+showGroup([
+    dL_dS, 
+    dL_dN, 
+    dS_dN
+])
+# %%
+showGroup([
+    dS_dX, 
+    dS_dX.subs(B, W),
+    dS_dX_abstract
+])
+# %%
+showGroup([
+    dL_dX, 
+    dL_dX_hadamard
+])
+
+
+
+
+# %% markdown
+# ### Chain Rule Derivative with respect to $W$:
+#
+# **Derivative with respect to $W$: The Abstract Way**
+# %%
+dL_dW_overallAbstract = compose(lambd, sigmaApply)(VL).diff(B).replace(VL, v(A, B))
+
+dL_dW_overallAbstract
+
+
+# %% markdown
+# **Derivative with respect to $W$: The Matrix-Derivative Abstract Way**
+# %%
+dL_dW_abstract = compose(lambd, sigmaApply, v)(A, B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B)
+dL_dW_abstract
+
+
+
+# %% markdown
+# **Derivative with respect to $W$: The Step by Step Way**
+# %%
+unapplied = sigmaApply_L(vN(A,B))
+applied = unapplied.doit()
+
+showGroup([
+     unapplied,
+     applied
+])
+
+# %%
+dL_dW_step = compose(lambd, sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B).subs({A*B : vN(A,B)}).doit()
+
+showGroup([
+    dL_dW_step,
+    dL_dW_step.replace(unapplied, applied),
+    # Carrying out the multplication:
+    dL_dW_step.subs({A:X}).doit(), # replace won't work here
+    dL_dW_step.subs({A:X}).doit().replace(unapplied, applied)
+])
+
+
+
+# %% markdown
+# **Derivative with respect to $W$: The Hadamard Way**
+# %%
+dN_dW = A.transpose()
+
+dS_dW = dN_dW * dS_dN
+dS_dW_abstract = compose(sigmaApply, v)(A,B).replace(v, v_).replace(sigmaApply, sigmaApply_).diff(B)
+
+# This is the end product, the above pieces need to be combined properly to yield this result below, testing with assert...
+dL_dW = HadamardProduct(dL_dS, dS_dW)
+dL_dW_hadamard = dL_dW.subs(A,X).doit()
+
+assert dL_dW == HadamardProduct(dL_dS, dN_dW * dS_dN )
+
+# %%
+showGroup([
+    dS_dW, 
+    dS_dW.subs(A, X).doit(), 
+    dS_dW_abstract
+])
+# %%
+showGroup([
+     dL_dS,
+    dL_dW, 
+    dL_dW_hadamard
+])
+
+
+
+# %% markdown
+# ### Chain Rule Derivative in Code: 
 # %% codecell
 
 # TODO: equivalent for the matrix W (understand why dot first then matmul in the chain rule)
