@@ -351,6 +351,17 @@ showGroup([
 ])
 
 
+# %% [markdown]
+# $$
+# \begin{aligned}
+# \frac{\partial L}{\partial W} &= \frac{\partial L}{\partial S} \odot \bigg( \frac{\partial N}{\partial W} \times \frac{\partial S}{\partial N} \bigg) \\
+# &= \frac{\partial L}{\partial S} \odot \bigg( X^T \times  \frac{\partial S}{\partial N} \bigg)
+# \end{aligned}
+# $$
+# where $\odot$ signifies the Hadamard product and $\times$ is matrix multiplication.
+
+
+
 # %% codecell
 from sympy import HadamardProduct
 
@@ -372,6 +383,16 @@ showGroup([
     dL_dW_hadamard
 ])
 
+
+
+# %% [markdown]
+# $$
+# \begin{aligned}
+# \frac{\partial L}{\partial X} &= \bigg( \frac{\partial L}{\partial S} \odot  \frac{\partial S}{\partial N} \bigg) \times \frac{\partial N}{\partial X}  \\
+# &= \bigg( \frac{\partial L}{\partial S} \odot \frac{\partial S}{\partial N} \bigg) \times W^T 
+# \end{aligned}
+# $$
+# where $\odot$ signifies the Hadamard product and $\times$ is matrix multiplication.
 
 # %%
 dN_dX = B.transpose()
@@ -396,14 +417,7 @@ showGroup([
     dL_dX_hadamard
 ])
 
-# %% [markdown]
-# $$
-# \begin{aligned}
-# \frac{\partial L}{\partial X} &= \bigg( \frac{\partial L}{\partial S} \odot  \frac{\partial S}{\partial N} \bigg) \times \frac{\partial N}{\partial X}  \\
-# &= \bigg( \frac{\partial L}{\partial S} \odot \frac{\partial S}{\partial N} \bigg) \times W^T 
-# \end{aligned}
-# $$
-# where $\odot$ signifies the Hadamard product and $\times$ is matrix multiplication.
+
 # %%
 showGroup([
     dL_dX_abstract, 
@@ -411,14 +425,7 @@ showGroup([
     dL_dX, 
     dL_dX_hadamard
 ])
-# %% [markdown]
-# $$
-# \begin{aligned}
-# \frac{\partial L}{\partial W} &= \frac{\partial L}{\partial S} \odot \bigg( \frac{\partial N}{\partial W} \times \frac{\partial S}{\partial N} \bigg) \\
-# &= \frac{\partial L}{\partial S} \odot \bigg( X^T \times  \frac{\partial S}{\partial N} \bigg)
-# \end{aligned}
-# $$
-# where $\odot$ signifies the Hadamard product and $\times$ is matrix multiplication.
+
 # %%
 showGroup([
     dL_dW_abstract, 
