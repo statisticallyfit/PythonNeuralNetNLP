@@ -1358,8 +1358,18 @@ L
 # ### Chain Rule Derivative with respect to $X$
 # 
 # **Derivative with respect to $X$: The Abstract Way**
+#
+# $$
+# \begin{aligned}
+# \frac{\partial L}{\partial X} &= \bigg( \frac{\partial L}{\partial S} \odot  \frac{\partial S}{\partial N} \bigg) \times \frac{\partial N}{\partial X}  \\
+# &= \bigg( \frac{\partial L}{\partial S} \odot \frac{\partial S}{\partial N} \bigg) \times W^T 
+# \end{aligned}
+# $$
+# where $\odot$ signifies the Hadamard product and $\times$ is matrix multiplication.
+
 # %%
 dL_dX_overallAbstract = compose(lambd, sigmaApply)(VL).diff(A).replace(VL, v(A, B))
+
 dL_dX_overallAbstract
 
 
@@ -1395,18 +1405,8 @@ showGroup([
 ])
 
 
-
-
 # %% [markdown]
 # **Derivative with respect to $X$: The Hadamard Way**
-# 
-# $$
-# \begin{aligned}
-# \frac{\partial L}{\partial X} &= \bigg( \frac{\partial L}{\partial S} \odot  \frac{\partial S}{\partial N} \bigg) \times \frac{\partial N}{\partial X}  \\
-# &= \bigg( \frac{\partial L}{\partial S} \odot \frac{\partial S}{\partial N} \bigg) \times W^T 
-# \end{aligned}
-# $$
-# where $\odot$ signifies the Hadamard product and $\times$ is matrix multiplication.
 
 # %% 
 # BUIDLING up the pieces manually: 
@@ -1456,6 +1456,14 @@ showGroup([
 # ### Chain Rule Derivative with respect to $W$:
 #
 # **Derivative with respect to $W$: The Abstract Way**
+#
+# $$
+# \begin{aligned}
+# \frac{\partial L}{\partial W} &= \frac{\partial L}{\partial S} \odot \bigg( \frac{\partial N}{\partial W} \times \frac{\partial S}{\partial N} \bigg) \\
+# &= \frac{\partial L}{\partial S} \odot \bigg( X^T \times  \frac{\partial S}{\partial N} \bigg)
+# \end{aligned}
+# $$
+# where $\odot$ signifies the Hadamard product and $\times$ is matrix multiplication.
 # %%
 dL_dW_overallAbstract = compose(lambd, sigmaApply)(VL).diff(B).replace(VL, v(A, B))
 
@@ -1496,14 +1504,7 @@ showGroup([
 
 # %% [markdown]
 # **Derivative with respect to $W$: The Hadamard Way**
-# 
-# $$
-# \begin{aligned}
-# \frac{\partial L}{\partial W} &= \frac{\partial L}{\partial S} \odot \bigg( \frac{\partial N}{\partial W} \times \frac{\partial S}{\partial N} \bigg) \\
-# &= \frac{\partial L}{\partial S} \odot \bigg( X^T \times  \frac{\partial S}{\partial N} \bigg)
-# \end{aligned}
-# $$
-# where $\odot$ signifies the Hadamard product and $\times$ is matrix multiplication.
+
 # %%
 dN_dW = A.transpose()
 

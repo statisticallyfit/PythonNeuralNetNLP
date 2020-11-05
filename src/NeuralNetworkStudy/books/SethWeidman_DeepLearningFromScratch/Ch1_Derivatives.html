@@ -15893,10 +15893,10 @@ $$
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>tensor([[0.0538, 0.0503, 0.0726, 0.0549, 0.0237, 0.0668, 0.0656, 0.1164, 0.0496,
-         0.0373],
-        [0.0482, 0.0320, 0.0502, 0.0420, 0.0166, 0.0496, 0.0527, 0.0919, 0.0331,
-         0.0299]])</pre>
+<pre>tensor([[0.0325, 0.0384, 0.0449, 0.0555, 0.0748, 0.0556, 0.0784, 0.0503, 0.0527,
+         0.0816],
+        [0.0099, 0.0126, 0.0163, 0.0242, 0.0400, 0.0277, 0.0470, 0.0256, 0.0316,
+         0.0491]])</pre>
 </div>
 
 </div>
@@ -15978,8 +15978,8 @@ $$
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>tensor(915.5396)
-tensor(915.0986)
+<pre>tensor(2043.7256)
+tensor(2042.3853)
 </pre>
 </div>
 </div>
@@ -16030,8 +16030,8 @@ tensor(915.0986)
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>tensor(2526.8801)
-tensor(2525.7551)
+<pre>tensor(2979.6387)
+tensor(2978.7788)
 </pre>
 </div>
 </div>
@@ -16082,8 +16082,8 @@ tensor(2525.7551)
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>tensor(3476.5625)
-tensor(3473.7227)
+<pre>tensor(11412.5000)
+tensor(11414.6191)
 </pre>
 </div>
 </div>
@@ -16400,6 +16400,12 @@ $\displaystyle \lambda{\left(\sigma_{apply}{\left(\nu{\left(X,W \right)} \right)
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h3 id="Chain-Rule-Derivative-with-respect-to-$X$">Chain Rule Derivative with respect to $X$<a class="anchor-link" href="#Chain-Rule-Derivative-with-respect-to-$X$">&#182;</a></h3><p><strong>Derivative with respect to $X$: The Abstract Way</strong></p>
+$$
+\begin{aligned}
+\frac{\partial L}{\partial X} &amp;= \bigg( \frac{\partial L}{\partial S} \odot  \frac{\partial S}{\partial N} \bigg) \times \frac{\partial N}{\partial X}  \\
+&amp;= \bigg( \frac{\partial L}{\partial S} \odot \frac{\partial S}{\partial N} \bigg) \times W^T 
+\end{aligned}
+$$<p>where $\odot$ signifies the Hadamard product and $\times$ is matrix multiplication.</p>
 
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -16409,6 +16415,7 @@ $\displaystyle \lambda{\left(\sigma_{apply}{\left(\nu{\left(X,W \right)} \right)
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">dL_dX_overallAbstract</span> <span class="o">=</span> <span class="n">compose</span><span class="p">(</span><span class="n">lambd</span><span class="p">,</span> <span class="n">sigmaApply</span><span class="p">)(</span><span class="n">VL</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">VL</span><span class="p">,</span> <span class="n">v</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">))</span>
+
 <span class="n">dL_dX_overallAbstract</span>
 </pre></div>
 
@@ -16637,12 +16644,6 @@ $\displaystyle \left. \frac{d}{d \xi_{1}} \lambda{\left(\xi_{1} \right)} \right|
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p><strong>Derivative with respect to $X$: The Hadamard Way</strong></p>
-$$
-\begin{aligned}
-\frac{\partial L}{\partial X} &amp;= \bigg( \frac{\partial L}{\partial S} \odot  \frac{\partial S}{\partial N} \bigg) \times \frac{\partial N}{\partial X}  \\
-&amp;= \bigg( \frac{\partial L}{\partial S} \odot \frac{\partial S}{\partial N} \bigg) \times W^T 
-\end{aligned}
-$$<p>where $\odot$ signifies the Hadamard product and $\times$ is matrix multiplication.</p>
 
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
@@ -16876,6 +16877,12 @@ $\displaystyle \left[\begin{matrix}w_{11} \frac{d}{d n_{11}} \sigma{\left(n_{11}
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h3 id="Chain-Rule-Derivative-with-respect-to-$W$:">Chain Rule Derivative with respect to $W$:<a class="anchor-link" href="#Chain-Rule-Derivative-with-respect-to-$W$:">&#182;</a></h3><p><strong>Derivative with respect to $W$: The Abstract Way</strong></p>
+$$
+\begin{aligned}
+\frac{\partial L}{\partial W} &amp;= \frac{\partial L}{\partial S} \odot \bigg( \frac{\partial N}{\partial W} \times \frac{\partial S}{\partial N} \bigg) \\
+&amp;= \frac{\partial L}{\partial S} \odot \bigg( X^T \times  \frac{\partial S}{\partial N} \bigg)
+\end{aligned}
+$$<p>where $\odot$ signifies the Hadamard product and $\times$ is matrix multiplication.</p>
 
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -17115,12 +17122,6 @@ $\displaystyle \left. \frac{d}{d \xi_{1}} \lambda{\left(\xi_{1} \right)} \right|
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p><strong>Derivative with respect to $W$: The Hadamard Way</strong></p>
-$$
-\begin{aligned}
-\frac{\partial L}{\partial W} &amp;= \frac{\partial L}{\partial S} \odot \bigg( \frac{\partial N}{\partial W} \times \frac{\partial S}{\partial N} \bigg) \\
-&amp;= \frac{\partial L}{\partial S} \odot \bigg( X^T \times  \frac{\partial S}{\partial N} \bigg)
-\end{aligned}
-$$<p>where $\odot$ signifies the Hadamard product and $\times$ is matrix multiplication.</p>
 
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
@@ -17502,10 +17503,10 @@ $\displaystyle \left[\begin{matrix}x_{11} \frac{d}{d n_{11}} \sigma{\left(n_{11}
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>tensor([[0.0293, 0.1377, 0.0780, 0.0797, 0.0760, 0.0516, 0.0706, 0.0540, 0.0402,
-         0.0503],
-        [0.0441, 0.1770, 0.1075, 0.0881, 0.0971, 0.0728, 0.0949, 0.0597, 0.0499,
-         0.0707]])</pre>
+<pre>tensor([[0.0450, 0.0148, 0.0721, 0.1183, 0.0881, 0.0899, 0.0505, 0.0491, 0.0624,
+         0.1068],
+        [0.0322, 0.0106, 0.0547, 0.0965, 0.0752, 0.0677, 0.0423, 0.0406, 0.0451,
+         0.0826]])</pre>
 </div>
 
 </div>
@@ -17613,8 +17614,8 @@ $\displaystyle \left[\begin{matrix}x_{11} \frac{d}{d n_{11}} \sigma{\left(n_{11}
 AFTER: -1.715999960899353
 BEFORE: 9.0
 AFTER: -1.7259999513626099
-tensor(5.6885)
-tensor(5.6929)
+tensor(6.1035)
+tensor(6.0991)
 </pre>
 </div>
 </div>
@@ -17670,8 +17671,8 @@ tensor(5.6929)
 AFTER: -1.715999960899353
 BEFORE: 29.0
 AFTER: -1.7259999513626099
-tensor(3.7109)
-tensor(3.6159)
+tensor(4.8828)
+tensor(4.8994)
 </pre>
 </div>
 </div>
@@ -17727,8 +17728,8 @@ tensor(3.6159)
 AFTER: -1.715999960899353
 BEFORE: 66.0
 AFTER: -1.7259999513626099
-tensor(1.8555)
-tensor(1.8776)
+tensor(2.1484)
+tensor(2.1813)
 </pre>
 </div>
 </div>
