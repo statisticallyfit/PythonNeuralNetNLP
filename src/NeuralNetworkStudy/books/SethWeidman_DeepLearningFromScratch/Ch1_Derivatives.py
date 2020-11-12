@@ -3,11 +3,11 @@
 # %% codecell
 import matplotlib.pyplot as plt
 import matplotlib
-%matplotlib inline 
+#%matplotlib inline # need to comment out when debugging
 
 import numpy as np
 from numpy import ndarray
-#%matplotlib inline
+
 from typing import *
 import itertools
 from functools import reduce
@@ -1547,10 +1547,12 @@ def matrixBackwardSum_X(Xa: Tensor, Wa: Tensor, sigma: TensorFunction) -> Tensor
     W: Tensor = Wa.clone()
     # Now X and W are either float or long tensor
 
-    if(Xa.type() == 'torch.FloatTensor' and Wa.type() == 'torch.LongTensor'):
-         W: FloatTensor = W.type(torch.FloatTensor)
-    elif(Xa.type() == 'torch.LongTensor' and Wa.type() == 'torch.FloatTensor'):
-         X: FloatTensor = X.type(torch.FloatTensor)
+    TYPE_CAST = ['torch.FloatTensor', 'torch.DoubleTensor']
+
+    if(Xa.type() in TYPE_CAST and Wa.type() == 'torch.LongTensor'):
+         W = W.type(Xa.type())
+    elif(Xa.type() == 'torch.LongTensor' and Wa.type() in TYPE_CAST):
+         X = X.type(Wa.type())
 
     # Now X, W are either BOTH Long or BOTH Float tensors.
 
@@ -1579,13 +1581,14 @@ def matrixBackwardSum_X(Xa: Tensor, Wa: Tensor, sigma: TensorFunction) -> Tensor
 
 
     ### Backward pass: chain rule for matrix (df/dX) or (dS/dX)
-    dL_dS: Tensor = torch.ones(S.shape)
+    dL_dS: FloatTensor = torch.ones(S.shape)
     # dL_dS.shape == S.shape == (...,n, p)
 
-    dS_dN: FloatTensor = deriv(sigma, N) # NOTE: result is always a float tensor since deriv() is an approximation.
+    dS_dN = deriv(sigma, N) # NOTE: result is always a float tensor since deriv() is an approximation.
     # dS_dN.shape = N.shape = (...,n, p)
+    dS_dN: FloatTensor = dS_dN.type(torch.FloatTensor) #  in case it is DoubleTensor so that no error when multiplying dlds and dsdn
 
-    # TODO FIGURE OUT why we have element-wise multiplication here:
+    # TODO FIGURE OUT why we have element-wise multiplication here (Hadamard product):
     dL_dN: FloatTensor = dL_dS * dS_dN
     # dL_dN.shape == (...,n, p)
     ## NOTE: Matrix multiplication with "*" is allowed even when the tensors have different types, so no need to convert dL_dS to type Float here, to match type float of dS_dN
@@ -1609,28 +1612,13 @@ def matrixBackwardSum_X(Xa: Tensor, Wa: Tensor, sigma: TensorFunction) -> Tensor
     return dL_dX ## shape == (...,n,m)
 
 
-# %% codecell
-X: Tensor = torch.arange(3*4*2*7).reshape(3,2,4,7)
-W: Tensor = torch.arange(3*5*2*7).reshape(3,2,7,5) + 30
 
-sigma: TensorFunction = lambda t: 2*t + t
-
-assert matrixBackwardSum_X(X, W, sigma).shape == (3, 2, 4, 7)
-
-matrixBackwardSum_X(X, W, sigma)
-
-
-# %% codecell
-x: Tensor = torch.rand(2,10)
-w: Tensor = torch.rand(10,2)
-
-matrixBackwardSum_X(x, w, sigmoid)
 # %% [markdown]
 # #### Testing if the derivatives computed are correct:
-# A simple test is to perturb the array and observe the resulting change in output. If we increase $x_{2,1,3}$ by 0.01 from -1.726 to -1.716 we should see an increase in the value porduced by the forward function of the *gradient of the output with respect to $x_{2,1,3}$*.
+# A simple test is to perturb the array and observe the resulting change in output. If we increase $x_{i,j,k}$ by 0.001  we should see an increase in the value porduced by the forward function of the *gradient of the output with respect to $x_{i,j,k}$*.
 # %% codecell
 
-def doForwardSumIncr_X(Xa: Tensor, Wa: Tensor, sigma: TensorFunction, indices: Tuple[int], increment: float) -> Tensor:
+def doForwardSumIncr_X(Xa: Tensor, Wa: Tensor, sigma: TensorFunction, indices: Tuple[int]) -> Tensor:
 
      ## WARNING: the X must be FloatType tensors or else the later assertions here will fail! (only integer part of decimal gets copied)
 
@@ -1639,39 +1627,95 @@ def doForwardSumIncr_X(Xa: Tensor, Wa: Tensor, sigma: TensorFunction, indices: T
      W: Tensor = Wa.clone()
      # Now X and W are either float or long tensor
 
-     if(Xa.type() == 'torch.FloatTensor' and Wa.type() == 'torch.LongTensor'):
-         W: FloatTensor = W.type(torch.FloatTensor)
-     elif(Xa.type() == 'torch.LongTensor' and Wa.type() == 'torch.FloatTensor'):
-         X: FloatTensor = X.type(torch.FloatTensor)
+     TYPE_CAST = ['torch.FloatTensor', 'torch.DoubleTensor']
+
+     if(Xa.type() in TYPE_CAST and Wa.type() == 'torch.LongTensor'):
+          W = W.type(Xa.type())
+     elif(Xa.type() == 'torch.LongTensor' and Wa.type() in TYPE_CAST):
+          X = X.type(Wa.type())
 
      # Now X, W are either BOTH Long or BOTH Float tensors.
-
-     ##
-     FLAG_NUM: int = -1.726
-
-
      print("BEFORE: {}".format(X[indices]))
-     X[indices] = FLAG_NUM # setting the starting value for sake of example
-     X_ = X.clone()
+     
+     Xclone = X.clone()
+
+     # Creating the increment to be same size as the X[indices] shape: 
+     increment = torch.tensor([0.001]).repeat_interleave(Xclone[indices].numel()).reshape(Xclone[indices].shape)
 
      # Increasing the value at that point by 0.01
-     X_[indices] = X[indices] + increment
+     Xclone[indices] = X[indices] + increment
 
-     print("AFTER: {}".format(X_[indices]))
-     assert X[indices] == FLAG_NUM
-     assert X_[indices] == X[indices] + increment
+     print("AFTER: {}".format(Xclone[indices]))
+     #assert X[indices] == FLAG_NUM
+     #assert Xclone[indices] == X[indices] + increment
 
-     return matrixForwardSum(X_, W, sigma)
+     return (matrixForwardSum(Xclone, W, sigma) - matrixForwardSum(X, W, sigma)) / increment 
+
+
 
 
 # %% [markdown]
 # Testing with 2-dim tensors:
 # %% codecell
-X: Tensor = torch.arange(5*4).reshape(5,4)
-W: Tensor = torch.rand(4,5)
-Xc: Tensor = X.clone()
+np.random.seed(190204)
 
-indices = (2,1)
+
+X: Tensor = Tensor(np.random.randn(3,3))
+W: Tensor = Tensor(np.random.randn(3,2))
+
+#sigma: TensorFunction = lambda t: 2*t + t
+
+print("X: ")
+print(X)
+
+print("\nL: ")
+print(matrixForwardSum(Xa = X, Wa = W, sigma = sigmoid))
+
+print("\ndL_dX: ")
+dLdX = matrixBackwardSum_X(Xa = X, Wa = W, sigma = sigmoid)
+print(dLdX)
+# First element 0.2489 is exactly like in the book: 
+#assert dLdX[0,0] == Tensor([0.2489])
+# TODO why doesn't this work????? 
+# %%
+# Testing whether the first element is the same as in dLdX
+doForwardSumIncr_X(X, W, sigmoid, indices = (0,0))
+
+
+
+
+
+# %% [markdown]
+# Testing with 4-dim tensors: 
+
+# %% codecell
+X: Tensor = torch.arange(3*4*2*7).reshape(3,2,4,7)
+W: Tensor = torch.arange(3*5*2*7).reshape(3,2,7,5) + 30
+
+sigma: TensorFunction = lambda t: 2*t + t
+
+print("X: ")
+print(X)
+
+print("\nL: ")
+print(matrixForwardSum(Xa = X, Wa = W, sigma = sigma))
+
+print("\ndL_dX: ")
+dLdX = matrixBackwardSum_X(Xa = X, Wa = W, sigma = sigma)
+print(dLdX)
+
+
+assert dLdX.shape == (3, 2, 4, 7)
+
+
+
+
+
+
+
+
+
+# %%
 increment = 0.01
 inc: Tensor = doForwardSumIncr_X(Xc, W, sigma, indices = indices, increment = increment)
 incNot: Tensor = doForwardSumIncr_X(Xc, W, sigma, indices = indices, increment = 0)
@@ -1713,3 +1757,4 @@ print(torch.sum((inc - incNot) / increment))
 
 print(matrixBackwardSum_X(X, W, sigma)[indices])
 
+# %%
