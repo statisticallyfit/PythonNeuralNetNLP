@@ -1,9 +1,16 @@
-
+# %% [markdown]
+# # Chapter 1: Foundations (Basic Matrix Derivatives)
+# 
+# Chapter 1 of Seth Weidman's Deep Learning from Scratch - Building with Python from First Principles. 
+# 
+# **My Enrichment:** Studying basic matrix derivatives with `sympy` and `torch`, using my appendix from `MatrixCalculusStudy` folder as background knowledge. 
 
 # %% codecell
 import matplotlib.pyplot as plt
 import matplotlib
-#%matplotlib inline # need to comment out when debugging
+# NOTE: must comment out this inline statement below when debugging cells in VSCode else error occurs. 
+%matplotlib inline 
+
 
 import numpy as np
 from numpy import ndarray
@@ -1459,8 +1466,8 @@ showGroup([
 #
 # $$
 # \begin{aligned}
-# \frac{\partial L}{\partial W} &= \frac{\partial L}{\partial S} \odot \bigg( \frac{\partial N}{\partial W} \times \frac{\partial S}{\partial N} \bigg) \\
-# &= \frac{\partial L}{\partial S} \odot \bigg( X^T \times  \frac{\partial S}{\partial N} \bigg)
+# \frac{\partial L}{\partial W} &= \frac{\partial N}{\partial W} \times \bigg( \frac{\partial L}{\partial S} \odot \frac{\partial S}{\partial N} \bigg) \\
+# &= X^T \times \bigg( \frac{\partial L}{\partial S} \odot \frac{\partial S}{\partial N} \bigg)
 # \end{aligned}
 # $$
 # where $\odot$ signifies the Hadamard product and $\times$ is matrix multiplication.
@@ -1534,8 +1541,6 @@ showGroup([
 
 # %% [markdown]
 # ### Chain Rule Derivative in Code for $\frac{\partial L}{\partial X}$: 
-# 
-# **Derivative with respect to $X$: The Abstract Way**
 #
 # $$
 # \begin{aligned}
@@ -1646,7 +1651,7 @@ def doForwardSumIncr_X(Xa: Tensor, Wa: Tensor, sigma: TensorFunction, indices: T
           X = X.type(Wa.type())
 
      # Now X, W are either BOTH Long or BOTH Float tensors.
-     print("BEFORE: {}".format(X[indices]))
+     #print("BEFORE: {}".format(X[indices]))
      
      Xclone = X.clone()
 
@@ -1656,7 +1661,7 @@ def doForwardSumIncr_X(Xa: Tensor, Wa: Tensor, sigma: TensorFunction, indices: T
      # Increasing the value at that point by 0.01
      Xclone[indices] = X[indices] + increment
 
-     print("AFTER: {}".format(Xclone[indices]))
+     #print("AFTER: {}".format(Xclone[indices]))
      #assert X[indices] == FLAG_NUM
      #assert Xclone[indices] == X[indices] + increment
 
@@ -1798,8 +1803,6 @@ assert dLdX.shape == X.shape
 
 # %% [markdown]
 # ### Chain Rule Derivative in Code for $\frac{\partial L}{\partial W}$: 
-# 
-# **Derivative with respect to $W$: The Abstract Way**
 #
 # $$
 # \begin{aligned}
@@ -1900,7 +1903,7 @@ def doForwardSumIncr_W(Xa: Tensor, Wa: Tensor, sigma: TensorFunction, indices: T
           W = W.type(Xa.type())
 
      # Now X, W are either BOTH Long or BOTH Float tensors.
-     print("BEFORE: {}".format(W[indices]))
+     #print("BEFORE: {}".format(W[indices]))
      
      Wclone = W.clone()
 
@@ -1910,7 +1913,7 @@ def doForwardSumIncr_W(Xa: Tensor, Wa: Tensor, sigma: TensorFunction, indices: T
      # Increasing the value at that point by 0.01
      Wclone[indices] = W[indices] + increment
 
-     print("AFTER: {}".format(Wclone[indices]))
+     #print("AFTER: {}".format(Wclone[indices]))
      #assert X[indices] == FLAG_NUM
      #assert Xclone[indices] == X[indices] + increment
 
