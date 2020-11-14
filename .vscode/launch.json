@@ -51,6 +51,18 @@
             "pythonPath": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
 
             "internalConsoleOptions":"neverOpen"
+        },
+        {
+            "name": "ch1_derivation",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/NeuralNetworkStudy/books/SethWeidman_DeepLearningFromScratch/ch1_derivation.py",
+
+            "console": "integratedTerminal",
+
+            "pythonPath": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
+
+            "internalConsoleOptions":"neverOpen"
         }
     ]
 }
