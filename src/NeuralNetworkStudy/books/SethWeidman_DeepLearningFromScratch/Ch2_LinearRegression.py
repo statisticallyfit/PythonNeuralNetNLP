@@ -118,11 +118,7 @@ printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLat
 # $$
 # where $b$ = batch size. 
 # 
-# 
-# ## Prediction Representation
-# The goal of supervised learning is to build a function that takes input batches of observations with the structure of $X_\text{batch}$ and produce vectors of predictions $\overrightarrow{p}_\text{batch} = \begin{pmatrix} p_1 \\ p_2 \\ \vdots \\ p_b \end{pmatrix}$ with values $p_i$. Each of these prediction numbers $p_i$ should be close to the target values $y_i$. 
-# 
-# 
+#
 # ## Linear Regression Formulation
 # 
 # Linear regression is often shown as: 
@@ -131,4 +127,166 @@ printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLat
 # $$
 # 
 # This representation describes the belief that the numeric value of each target is a linear combination of the $k$ features (predictors) of $X$, where the $\beta_0$ term adjusts the "baseline" value of the prediction (this means it is the prediction made when all other features equal $\overrightarrow{0}$).
+#
+# 
+#  
+# ## Prediction Representation
+# The goal of supervised learning is to build a function that takes input batches of observations with the structure of $X_\text{batch}$ and produce vectors of predictions $\overrightarrow{p}_\text{batch} = \begin{pmatrix} p_1 \\ p_2 \\ \vdots \\ p_b \end{pmatrix}$ with values $p_i$. Each of these prediction numbers $p_i$ should be close to the target values $y_i$. 
+# 
+# For simplicity assume first there is no intercept term $\beta_0$. We can represent the output of a linear regression model as the *dot product* of each **observation vector** $\overrightarrow{x}_i = \begin{pmatrix} x_{i1} & x_{i2} & ... & x_{ik} \end{pmatrix}$ with another **vector of parameters** that we will call $W$: 
+# $$
+# W = \begin{pmatrix}
+#   w_1 \\ 
+#   w_2 \\
+#   \vdots \\
+#   w_k
+# \end{pmatrix}
+# $$
+# 
+# Then our prediction is written as: 
+# $$
+# p_i = \overrightarrow{x}_i \times W = w_1 \cdot x_{i1} + w_2 \cdot x_{i2} + ... + w_k \cdot x_{ik}
+# $$
+# 
+# But we want to make predictions using linear regression with a *batch of observations* so we must use matrix multiplication instead of dot product to generate predictions. Given a batch of size $b$, the data matrix is: 
+# $$
+# X_\text{batch} = \begin{pmatrix}
+#   x_{11} & x_{12} & ... & x_{1k} \\
+#   x_{21} & x_{22} & ... & x_{2k} \\
+#   \vdots & \vdots & ... & \vdots \\
+#   x_{b1} & x_{b2} & ... & x_{bk} 
+# \end{pmatrix}
+# $$
+# where ... 
+# * $k$ = number of data features or predictors
+# * $n$ = number of rows or number of data observations
+# * $b$ = number of batches
+# 
+# 
+# 
+# ... then performing the *matrix multiplication* of this batch $X_\text{batch}$ with $W$ gives a *vector of predictions for the batch* as desired: 
+# $$
+# \begin{aligned}
+# p_\text{batch} 
+# :&= X_\text{batch} \times W  \\
+# &= \begin{pmatrix}
+#   x_{11} & x_{12} & ... & x_{1k} \\
+#   x_{21} & x_{22} & ... & x_{2k} \\
+#   \vdots & \vdots & ... & \vdots \\
+#   x_{b1} & x_{b2} & ... & x_{bk} 
+# \end{pmatrix} 
+# \times
+# \begin{pmatrix}
+#   w_1 \\ 
+#   w_2 \\
+#   \vdots \\
+#   w_k
+# \end{pmatrix} \\
+# &= \begin{pmatrix}
+#   x_{11} \cdot w_1 & x_{12} \cdot w_2  & ... & x_{1k} \cdot w_k  \\
+#   x_{21} \cdot w_1  & x_{22} \cdot w_2  & ... & x_{2k} \cdot w_k  \\
+#   \vdots & \vdots & ... & \vdots \\
+#   x_{b1} \cdot w_1  & x_{b2} \cdot w_2  & ... & x_{bk} \cdot w_k  
+# \end{pmatrix} \\
+# &=: \begin{pmatrix}  p_1 \\ p_2 \\ \vdots \\ p_b \end{pmatrix}
+# \end{aligned}
+# $$
+# 
+# 
+# To include an actual intercept term (which we will call the "bias"), we must add the intercept to the $\overrightarrow{p}_\text{batch}$. Each element of the model's prediction $p_i$ will be the dot product of the row observation vector $\overrightarrow{x}_i$ with each element in the parameter tensor $W$, added to the intercept $\overrightarrow{\beta_0}$:
+# $\color{red}{\text{TODO: intercept vector issue}}$
+# $$
+# \begin{aligned}
+# p_{\text{batch_with_bias}} 
+# :&= X_\text{batch} \times W + \overrightarrow{\beta_0} \\
+# &= \begin{pmatrix}
+#   x_{11} & x_{12} & ... & x_{1k} \\
+#   x_{21} & x_{22} & ... & x_{2k} \\
+#   \vdots & \vdots & ... & \vdots \\
+#   x_{b1} & x_{b2} & ... & x_{bk} 
+# \end{pmatrix} 
+# \times
+# \begin{pmatrix}
+#   w_1 \\ 
+#   w_2 \\
+#   \vdots \\
+#   w_k
+# \end{pmatrix}
+# + 
+# \begin{pmatrix}
+#   \beta_0 \\ \beta_0 \\ \vdots \\ \beta_0
+# \end{pmatrix} \\
+# &= \begin{pmatrix}
+#   x_{11} \cdot w_1 & x_{12} \cdot w_2  & ... & x_{1k} \cdot w_k  + \beta_0 \\
+#   x_{21} \cdot w_1  & x_{22} \cdot w_2  & ... & x_{2k} \cdot w_k  + \beta_0 \\
+#   \vdots & \vdots & ... & \vdots \\
+#   x_{b1} \cdot w_1  & x_{b2} \cdot w_2  & ... & x_{bk} \cdot w_k  + \beta_0
+# \end{pmatrix} \\
+# &=: \begin{pmatrix}  p_1 \\ p_2 \\ \vdots \\ p_b \end{pmatrix}
+# \end{aligned}
+# $$
+# 
+# 
+# 
+# ## Training the Model
+# To compare the predictions to a standard, we need to use a vector of *targets* $\overrightarrow{y}_\text{batch}$ associated with the batch of observations $X_\text{batch}$ fed into the function. Then we compute a single number that is a function of $\overrightarrow{y}_\text{batch}$ and $\overrightarrow{p}_\text{batch}$ that represents the model's penalty for making predictions that it did. We can choose the **mean squared error** which is the average squared value that our model's predictions were off target: 
+# $$
+# \begin{aligned}
+# L &= \text{MSE}(\overrightarrow{p}_\text{batch}, \overrightarrow{y}_\text{batch})  \\
+# &= \text{MSE} \Bigg( \begin{pmatrix} p_1 \\ p_2 \\ \vdots \\ p_b \end{pmatrix}, \begin{pmatrix} y_1 \\ y_2 \\ \vdots \\ y_b \end{pmatrix} \Bigg) \\
+# &= \frac {(y_1 - p_1)^2 + (y_2 - p_2)^2 + ... + (y_b - p_b)^2 } {b}
+# \end{aligned}
+# $$
+# 
+# This number $L$ is the loss and we will compute the *gradient* of this number with respect to each element of the parameter tensor $W$. In training the model, we will use these derivatives to update each element of $W$ in the direction that would cause $L$ to decrease. 
+# 
+# The loss value $L$ that we ultimately compute is: 
+# $$
+# L = \Lambda(\nu(X, W), Y)
+# $$
+# 
+# 
+# ## Linear Regression: The Code
+# Computing derivatives for nested functions using the chain rule involves two sets of steps: **first** we perform a "forward pass", passing the input successively forward through a series of operations and saving the quantities computed as we go; **second**, we use those quantities to compute the appropriate derivatives during the "backward pass". 
+# 
+# Below in the code, the forward function computes quantities in the forward pass and saves them in a dictionary, which serves the additional purpose of differentiating between forward pass quantities computed her and the parameters themselves. 
+
+
 # %% codecell
+def forwardLinearRegression(X_batch: Tensor, y_batch: Tensor, weights: Dict[str, Tensor]) -> Tuple[float, Dict[str, Tensor]]:
+    '''
+    Forward pass for the step-by-step linear regression.
+
+    weights = dictionary of parameters, with parameters 1 through k under the key 'W' and intercept under key 'B'
+    X_batch = data matrix of observations for a particular batch size.
+        size == (b x k)
+    W = weights or parameters
+        size == (k x 1)
+    y_batch = targets
+        size == (b x 1)
+    '''
+    beta_0: float = weights['B']
+    W: FloatTensor = weights['W'].type(FloatTensor)
+    X_batch: FloatTensor = X_batch.type(FloatTensor)
+    y_batch: FloatTensor = y_batch.type(FloatTensor)
+
+
+    # Check: to multiply higher-dim tensors, then the first few dimensions (as specified below) of the matrices to be multiplied, should equal each other. 
+    isFirstPartEqualShape: bool = X_batch.shape[0 : X_batch.ndim - 2] == W.shape[0:W.ndim - 2]
+    
+    assert isFirstPartEqualShape
+
+
+    # Check batch sizes of X and y are equal: 
+    # TODO check if the batch size is ever not on the first dimension
+    isBatchSizeConsistent = X_batch.shape[0] == y_batch.shape[0]
+    
+    assert isBatchSizeConsistent
+
+
+    # Check: to do matrix multiplication, the last dim of X must equal the second-last dim of W. 
+    canDoMatMul: bool = X_batch.shape[-1] == W.shape[-2]
+    # NOTE: for 2-dim tensors X and W, we would check X.shape[1] == W.shape[0]
+
+    # Assert batch sizes of X and y are equal
+    assert X_batch.shape[]
