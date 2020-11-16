@@ -160,6 +160,20 @@ assert torch.equal(namedTensor.sum(dim = 'C'), namedTensor.sum(dim = 1))
 assert torch.equal(namedTensor.select(dim = 0, index = 0), namedTensor.select(dim = 'N', index = 0))
 
 
+# %% [markdown]
+# Another test to show significance of using `select()` versus simple array accessor: 
+# %%
+X = torch.arange(7*8*2*4*5).reshape(2,8,5,7,4)
+X.names = ['two', 'eight', 'five', 'seven', 'four']
+
+assert torch.equal( X[:,:,:,3,:], X.select('seven', 3) )
+assert torch.equal( X[:,:,:,:,2], X.select('four', 2) )
+assert torch.equal( X[0,:,:,:,:], X.select('two', 0) )
+assert torch.equal( X[1,:,:,:,:], X.select('two', 1) )
+assert torch.equal( X[:,7,:,:,:], X.select('eight', 7) )
+
+assert torch.equal( X[0,:,3,:,:], X.select('two', 0).select('five', 3) )
+assert torch.equal( X[0,6,2,1,3], X.select('two', 0).select('eight', 6).select('five', 2).select('seven', 1).select('four', 3) )
 
 # %% markdown [markdown]
 # ### Propagation of Names
