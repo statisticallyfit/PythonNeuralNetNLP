@@ -1,14 +1,13 @@
 # %% markdown [markdown]
 # #### Conda Environment: pytensorly_env (for most recent version of pytorch 1.4.0)
 #
-# #### SOURCES:
-# [(experimental) Named Tensors Introduction)](https://pytorch.org/tutorials/intermediate/named_tensor_tutorial.html#annotations:VOh11nKBEeqlHi8b3rPBxg)
-# $\hspace{1em}$ | $\hspace{1em}$
-# [Named Tensors (API doc)](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_to)
-# $\hspace{1em}$ | $\hspace{1em}$
-# [Named Tensor Operator Coverage](https://pytorch.org/docs/stable/name_inference.html)
-# $\hspace{1em}$ | $\hspace{1em}$
-# [PyTorch Tensors (API Doc)](https://pytorch.org/docs/stable/tensors.html)
+# #### Tutorial Sources:
+# * [(experimental) Named Tensors Introduction)](https://pytorch.org/tutorials/intermediate/named_tensor_tutorial.html#annotations:VOh11nKBEeqlHi8b3rPBxg)
+# * [Named Tensors (API doc)](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_to)
+# 
+# #### API Documentation Sources:
+# * [Named Tensor Operator Coverage](https://pytorch.org/docs/stable/name_inference.html)
+# * [PyTorch Tensors (API Doc)](https://pytorch.org/docs/stable/tensors.html)
 #
 #
 # # Tutorial: Named Tensors and Named Inference in PyTorch
@@ -175,13 +174,44 @@ assert torch.equal( X[:,7,:,:,:], X.select('eight', 7) )
 assert torch.equal( X[0,:,3,:,:], X.select('two', 0).select('five', 3) )
 assert torch.equal( X[0,6,2,1,3], X.select('two', 0).select('eight', 6).select('five', 2).select('seven', 1).select('four', 3) )
 
+
+# %% [markdown]
+# ### Size Accessing
+# Can check the size of the entire tensor and even of a single dimension. 
+# %%
+X = torch.arange(7*8*2*4*5).reshape(2,8,5,7,4)
+X.names = ['two', 'eight', 'five', 'seven', 'four']
+
+assert X.size() == X.shape == torch.Size([2, 8, 5, 7, 4])
+
+assert X.size('two') == 2
+assert X.size('eight') == 8
+assert X.size('five') == 5
+assert X.size('seven') == 7
+assert X.size('four') == 4
+
+
+
+
+
 # %% markdown [markdown]
-# ### Propagation of Names
+# ## Name Inference
+# Names are propagated on operations in a two-step process called **name inference:**
+#
+# 1. **Check names:** an operator may perform automatic checks at runtime that check that certain dimension names must match.
+# 2. **Propagate names:** name inference propagates output names to output tensors.
+#
+#
+# ## Rules of Name Inference
+# 
+# ### 1/ Propagation of Names (Keeps input names)
 # Most simple operations propagate names. The ultimate goal for named tensors is for all operations to propagate names in a reasonable, intuitive manner.
 # %% codecell
 assert namedTensor.abs().names == ('N', 'C', 'H', 'W')
 
 assert namedTensor.transpose(0, 1).names == ('C', 'N', 'H', 'W')
+# Transposing dims later on: 
+assert namedTensor.transpose(2, 3).names == ('N', 'C', 'W', 'H')
 
 assert namedTensor.align_to('W', 'N', 'H', 'C').names == ('W', 'N', 'H', 'C')
 
@@ -274,13 +304,103 @@ assert namedTensor.names == ('N', 'C', 'H', 'W') \
 # namedTensor.trace() # not supported with named tensors
 
 
-# %% markdown [markdown]
-# ### Name Inference
-# Names are propagated on operations in a two-step process called **name inference:**
+
+
+# %% [markdown]
+# ### 2/ Removes Dimensions
 #
-# 1. **Check names:** an operator may perform automatic checks at runtime that check that certain dimension names must match.
-# 2. **Propagate names:** name inference propagates output names to output tensors.
+# A general rule: Wheneover integer dimensions can be passed as indices to ano operator, one can also pass a dimension name instead of that integer index. Same goes for lists of dimension indices that can be replaced for lists of dimension names. 
+# 
+# **How the Remove Dimensions Rule is Obeyed:**
+# 
+# * **Check Names:** if `dim` or `dims` is passed in as a list of names, check that those names exist in `self`. 
+# * **Propagate names:** if the dimensions of the input tensor specified by `dim` or `dims` are not present in the output tensor, then the corresponding names of those dimensions do not appear in `output.names`. 
+# 
+# 
+# Reduction operations like [`sum()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.sum) remove dimensions by reducing over the desired dimensions. Other operations like [`select()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.select) and [`squeeze()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.squeeze) simply remove dimensions by returning the other relevant parts of the tensor. 
+# %% 
+X = torch.arange(7*1*2*4*5).reshape(2,1,5,7,4)
+X.names = ['two', 'one', 'five', 'seven', 'four']
+
+
+assert X.squeeze('one').names == ('two', 'five', 'seven', 'four')
+assert 'one' not in X.squeeze('one').names
+
+assert X.sum(['five', 'four']).names == ('two', 'one', 'seven')
+assert 'five' not in X.sum(['five', 'four']).names and \
+    'four' not in X.sum(['five', 'four']).names 
+assert X.sum(['five', 'four']).shape != X.shape 
+
+# %% [markdown]
+# Reduction operations with `keepdim=True` don't actually remove dimensions: 
+# %%
+X = torch.arange(7*8*2*4*5).reshape(2,8,5,7,4)
+X.names = ['two', 'eight', 'five', 'seven', 'four']
+
+assert X.sum(['eight', 'four'], keepdim=True).names == X.names
+# Showing that the shape has tensors of size 1 in place wher ethe summing occurred: 
+assert X.sum(['eight', 'four'], keepdim=True).shape == torch.Size([2,1,5,7,1])
+assert X.sum(['eight', 'four'], keepdim=True).shape != X.shape 
+
+
+
+
+
+# %% [markdown]
+# ### 3/ Unifies Names from Inputs
+# All binary arithmetic operations follow the rule of "unifying names from inputs". 
+# 
+# Operations that instead broadcast will broadcast positionally from the right to preserve compatibility with unnamed tensors. 
 #
+# **How the Unify Names Rule is Obeyed:**
+# 
+# * **Check names:** for names to be unified, the names of the tensors pre-operation must match positionally from the right. For instance: in `tensor + other`, the condition `match(tensor.names[i], other.names[i])` must be true for all `i` in `(-min(tensor.dim(), other.dim()) + 1,   -1]`. 
+# %%
+# Small example of how names are checked: 
+X = torch.arange(12*7*8*2*4*5).reshape(12,2,8,5,7,4)
+X.names = ['twelve', 'two', 'eight', 'five', 'seven', 'four']
+
+Y = torch.arange(7*8*2*4*5*3*6*1).reshape(3,6,1,2,8,5,7,4)
+Y.names = ['three', 'six', 'one', 'two', 'eight', 'five', 'seven', 'four']
+
+getIndicesRange = lambda A, B: list(range(-min(A.dim(), B.dim()) + 1, -1))
+rs = getIndicesRange(X, Y)
+assert rs == [-5, -4, -3, -2]
+
+# Getting the dimensions that correspond to the indices in the range rs
+xrs = tuple([X.names[i] for i in rs] )
+yrs = tuple([Y.names[i] for i in rs] )
+
+assert xrs == yrs == ('two', 'eight', 'five', 'seven')
+
+assert xrs != X.names 
+assert ('twelve', ) + xrs + ('four', ) == X.names
+
+assert yrs != Y.names
+assert ('three', 'six', 'one') + yrs + ('four', ) == Y.names 
+
+
+
+
+# The above indices show how to fix X and Y so they can be summed: 
+X = torch.arange(12*7*8*2*4*5).reshape(12,2,8,5,7,4)
+X.names = ['twelve', 'two', 'eight', 'five', 'seven', 'four']
+
+Y = torch.arange(7*8*2*4*5*3*6*1).reshape(3,6,1,2,8,5,7,4)
+Y.names = ['three', 'six', 'one', 'two', 'eight', 'five', 'seven', 'four']
+# %% [markdown]
+# In this second example of checking names, the range of indices is calculated to be empty  (so no dimensions must be equal to each other to do the addition): 
+# %%
+tensor = torch.randn(3, 3, names=('N', None))
+other = torch.randn(3, 3, names=(None, 'C'))
+
+rs = getIndicesRange(tensor, other)
+assert rs == []
+
+# So it is safe to add them: 
+assert (tensor + other).names == ('N', 'C')
+# %% [markdown]
+# * **Check names:** Furthermore, all named dimensions must be aligned from the right. During matching, if we match a named dimension called `A` with an unnamed dimension `None`, then `A` must NOT appear in the tensor with the unnamed dimensions
 # Example of adding two $1$-dim tensors with no broadcasting.
 # %% codecell
 x: Tensor = torch.randn(3, names = ('X', ))
@@ -292,9 +412,16 @@ z: Tensor = torch.randn(3, names = ('Z',))
 catchError(lambda: x + z)
 
 # %% markdown [markdown]
-# **Example: Propagate names:** *unify* the two names by returning the most refined name of the two. With `x + y`, the name `X` is more refined than `None`.
+# **Example: Propagate names:** *unify* the two names by returning the most refined name of the two. With `x + y`, the name `X` is more refined than `None` and addition works while above it does not because `X` and `Z` have different names on the same axis while the names of `X` and `Y` do not conflict. 
 # %% codecell
 assert (x + y).names == ('X',)
+
+
+
+
+
+
+
 
 
 # %% markdown [markdown]
