@@ -4,7 +4,7 @@
 # #### Tutorial Sources:
 # * [(experimental) Named Tensors Introduction)](https://pytorch.org/tutorials/intermediate/named_tensor_tutorial.html#annotations:VOh11nKBEeqlHi8b3rPBxg)
 # * [Named Tensors (API doc)](https://pytorch.org/docs/stable/named_tensor.html#torch.Tensor.align_to)
-# 
+#
 # #### API Documentation Sources:
 # * [Named Tensor Operator Coverage](https://pytorch.org/docs/stable/name_inference.html)
 # * [PyTorch Tensors (API Doc)](https://pytorch.org/docs/stable/tensors.html)
@@ -160,7 +160,7 @@ assert torch.equal(namedTensor.select(dim = 0, index = 0), namedTensor.select(di
 
 
 # %% [markdown]
-# Another test to show significance of using `select()` versus simple array accessor: 
+# Another test to show significance of using `select()` versus simple array accessor:
 # %%
 X = torch.arange(7*8*2*4*5).reshape(2,8,5,7,4)
 X.names = ['two', 'eight', 'five', 'seven', 'four']
@@ -177,7 +177,7 @@ assert torch.equal( X[0,6,2,1,3], X.select('two', 0).select('eight', 6).select('
 
 # %% [markdown]
 # ### Size Accessing
-# Can check the size of the entire tensor and even of a single dimension. 
+# Can check the size of the entire tensor and even of a single dimension.
 # %%
 X = torch.arange(7*8*2*4*5).reshape(2,8,5,7,4)
 X.names = ['two', 'eight', 'five', 'seven', 'four']
@@ -203,14 +203,14 @@ assert X.size('four') == 4
 #
 #
 # ## Rules of Name Inference
-# 
+#
 # ### 1/ Propagation of Names (Keeps input names)
 # Most simple operations propagate names. The ultimate goal for named tensors is for all operations to propagate names in a reasonable, intuitive manner.
 # %% codecell
 assert namedTensor.abs().names == ('N', 'C', 'H', 'W')
 
 assert namedTensor.transpose(0, 1).names == ('C', 'N', 'H', 'W')
-# Transposing dims later on: 
+# Transposing dims later on:
 assert namedTensor.transpose(2, 3).names == ('N', 'C', 'W', 'H')
 
 assert namedTensor.align_to('W', 'N', 'H', 'C').names == ('W', 'N', 'H', 'C')
@@ -309,16 +309,16 @@ assert namedTensor.names == ('N', 'C', 'H', 'W') \
 # %% [markdown]
 # ### 2/ Removes Dimensions
 #
-# A general rule: Wheneover integer dimensions can be passed as indices to ano operator, one can also pass a dimension name instead of that integer index. Same goes for lists of dimension indices that can be replaced for lists of dimension names. 
-# 
+# A general rule: Wheneover integer dimensions can be passed as indices to ano operator, one can also pass a dimension name instead of that integer index. Same goes for lists of dimension indices that can be replaced for lists of dimension names.
+#
 # **How the Remove Dimensions Rule is Obeyed:**
-# 
-# * **Check Names:** if `dim` or `dims` is passed in as a list of names, check that those names exist in `self`. 
-# * **Propagate names:** if the dimensions of the input tensor specified by `dim` or `dims` are not present in the output tensor, then the corresponding names of those dimensions do not appear in `output.names`. 
-# 
-# 
-# Reduction operations like [`sum()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.sum) remove dimensions by reducing over the desired dimensions. Other operations like [`select()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.select) and [`squeeze()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.squeeze) simply remove dimensions by returning the other relevant parts of the tensor. 
-# %% 
+#
+# * **Check Names:** if `dim` or `dims` is passed in as a list of names, check that those names exist in `self`.
+# * **Propagate names:** if the dimensions of the input tensor specified by `dim` or `dims` are not present in the output tensor, then the corresponding names of those dimensions do not appear in `output.names`.
+#
+#
+# Reduction operations like [`sum()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.sum) remove dimensions by reducing over the desired dimensions. Other operations like [`select()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.select) and [`squeeze()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.squeeze) simply remove dimensions by returning the other relevant parts of the tensor.
+# %%
 X = torch.arange(7*1*2*4*5).reshape(2,1,5,7,4)
 X.names = ['two', 'one', 'five', 'seven', 'four']
 
@@ -328,19 +328,19 @@ assert 'one' not in X.squeeze('one').names
 
 assert X.sum(['five', 'four']).names == ('two', 'one', 'seven')
 assert 'five' not in X.sum(['five', 'four']).names and \
-    'four' not in X.sum(['five', 'four']).names 
-assert X.sum(['five', 'four']).shape != X.shape 
+    'four' not in X.sum(['five', 'four']).names
+assert X.sum(['five', 'four']).shape != X.shape
 
 # %% [markdown]
-# Reduction operations with `keepdim=True` don't actually remove dimensions: 
+# Reduction operations with `keepdim=True` don't actually remove dimensions:
 # %%
 X = torch.arange(7*8*2*4*5).reshape(2,8,5,7,4)
 X.names = ['two', 'eight', 'five', 'seven', 'four']
 
 assert X.sum(['eight', 'four'], keepdim=True).names == X.names
-# Showing that the shape has tensors of size 1 in place wher ethe summing occurred: 
+# Showing that the shape has tensors of size 1 in place wher ethe summing occurred:
 assert X.sum(['eight', 'four'], keepdim=True).shape == torch.Size([2,1,5,7,1])
-assert X.sum(['eight', 'four'], keepdim=True).shape != X.shape 
+assert X.sum(['eight', 'four'], keepdim=True).shape != X.shape
 
 
 
@@ -348,15 +348,18 @@ assert X.sum(['eight', 'four'], keepdim=True).shape != X.shape
 
 # %% [markdown]
 # ### 3/ Unifies Names from Inputs
-# All binary arithmetic operations follow the rule of "unifying names from inputs". 
-# 
-# Operations that instead broadcast will broadcast positionally from the right to preserve compatibility with unnamed tensors. 
+# All binary arithmetic operations follow the rule of "unifying names from inputs".
+#
+# Operations that instead broadcast will broadcast positionally from the right to preserve compatibility with unnamed tensors.
 #
 # **How the Unify Names Rule is Obeyed:**
+#
+# * **Check names:** 
+#   1. for names to be unified, the names of the tensors pre-operation must match positionally from the right. For instance: in `tensor + other`, the condition `match(tensor.names[i], other.names[i])` must be true for all `i` in `(-min(tensor.dim(), other.dim()) + 1,   -1]`.
 # 
-# * **Check names:** for names to be unified, the names of the tensors pre-operation must match positionally from the right. For instance: in `tensor + other`, the condition `match(tensor.names[i], other.names[i])` must be true for all `i` in `(-min(tensor.dim(), other.dim()) + 1,   -1]`. 
+# $\color{red}{\text{TODO: how to test this, below tries are NOT working ...}}$
 # %%
-# Small example of how names are checked: 
+# Small example of how names are checked:
 X = torch.arange(12*7*8*2*4*5).reshape(12,2,8,5,7,4)
 X.names = ['twelve', 'two', 'eight', 'five', 'seven', 'four']
 
@@ -373,23 +376,38 @@ yrs = tuple([Y.names[i] for i in rs] )
 
 assert xrs == yrs == ('two', 'eight', 'five', 'seven')
 
-assert xrs != X.names 
+assert xrs != X.names
 assert ('twelve', ) + xrs + ('four', ) == X.names
 
 assert yrs != Y.names
-assert ('three', 'six', 'one') + yrs + ('four', ) == Y.names 
+assert ('three', 'six', 'one') + yrs + ('four', ) == Y.names
 
 
 
 
-# The above indices show how to fix X and Y so they can be summed: 
-X = torch.arange(12*7*8*2*4*5).reshape(12,2,8,5,7,4)
-X.names = ['twelve', 'two', 'eight', 'five', 'seven', 'four']
+# %%
+# The above indices show how to fix X and Y so they can be summed:
+#Xs = torch.arange(12*7*8*2*4*5).reshape(12,2,8,5,7,4)
+Xs = torch.arange(12*7*8*2*5).reshape(12,2,8,5,7)
+Xs.names = ['twelve', 'two', 'eight', 'five', 'seven']
 
-Y = torch.arange(7*8*2*4*5*3*6*1).reshape(3,6,1,2,8,5,7,4)
-Y.names = ['three', 'six', 'one', 'two', 'eight', 'five', 'seven', 'four']
+Ys = torch.arange(7*8*2*5*3*6).reshape(3,6,2,8,5,7)
+Ys.names = ['three', 'six', 'two', 'eight', 'five', 'seven']
+
+rs = getIndicesRange(Xs, Ys)
+
+# TODO why is the last dimension always missing? What does that mean???
+xrs = tuple([Xs.names[i] for i in rs] )
+yrs = tuple([Ys.names[i] for i in rs] )
+
+# TODO now I want to find a way to add X and Y because things should be alright / legal by rules 1) and 2) but for some reason it doesn't work: why??
+# Xs + Ys
 # %% [markdown]
-# In this second example of checking names, the range of indices is calculated to be empty  (so no dimensions must be equal to each other to do the addition): 
+# * **Check names:**
+#   2. Also, all named dimensions must be aligned from the right. Durin gmatching, if we match a named dimension `A` with an unnamed dimension `None` then `A` must not appear in the tensor with the unnamed dimension. For example below, since we matched `None` in `tensor` with `C` in `other`, then `C` should not be present in `tensor`, and since we matched `other`'s `N` against `tensor`'s `None`, then `N` should not be present in `other`. 
+# 
+# 
+# * **Propagate names:** unify pairs of names from the right from both tensors to produce output names. 
 # %%
 tensor = torch.randn(3, 3, names=('N', None))
 other = torch.randn(3, 3, names=(None, 'C'))
@@ -397,11 +415,35 @@ other = torch.randn(3, 3, names=(None, 'C'))
 rs = getIndicesRange(tensor, other)
 assert rs == []
 
-# So it is safe to add them: 
+# So it is safe to add them:
 assert (tensor + other).names == ('N', 'C')
+
 # %% [markdown]
-# * **Check names:** Furthermore, all named dimensions must be aligned from the right. During matching, if we match a named dimension called `A` with an unnamed dimension `None`, then `A` must NOT appear in the tensor with the unnamed dimensions
-# Example of adding two $1$-dim tensors with no broadcasting.
+# An example of how dimensions don't match from the right: 
+# %%
+tensor = torch.randn(3, 3, names=('N', 'C'))
+other = torch.randn(3, names=('N',))
+
+rs = getIndicesRange(tensor, other)
+assert rs == []
+
+catchError(lambda: (tensor + other).names )
+#RuntimeError: Error when attempting to broadcast dims ['N', 'C'] and dims ['N']: dim 'C' and dim 'N' are at the same position from the right but do not match.
+
+# %% [markdown]
+# Example of how dimensions aren't aligned when matching from the right: 
+# %%
+# Dimensions aren't aligned when matching tensor.names[-1] and other.names[-1]:
+# tensor: Tensor[N, None]
+# other:  Tensor[      N]
+tensor = torch.randn(3, 3, names=('N', None))
+other = torch.randn(3, names=('N',))
+
+catchError(lambda:  (tensor + other).names )
+# RuntimeError: Misaligned dims when attempting to broadcast dims ['N'] and dims ['N', None]: dim 'N' appears in a different position from the right across both lists.
+
+# %% [markdown]
+# Another example of how names don't match: 
 # %% codecell
 x: Tensor = torch.randn(3, names = ('X', ))
 y: Tensor = torch.randn(3)
@@ -412,7 +454,7 @@ z: Tensor = torch.randn(3, names = ('Z',))
 catchError(lambda: x + z)
 
 # %% markdown [markdown]
-# **Example: Propagate names:** *unify* the two names by returning the most refined name of the two. With `x + y`, the name `X` is more refined than `None` and addition works while above it does not because `X` and `Z` have different names on the same axis while the names of `X` and `Y` do not conflict. 
+# **Example: Propagate names:** *unify* the two names by returning the most refined name of the two. With `x + y`, the name `X` is more refined than `None` and addition works while above it does not because `X` and `Z` have different names on the same axis while the names of `X` and `Y` do not conflict.
 # %% codecell
 assert (x + y).names == ('X',)
 
@@ -433,6 +475,8 @@ assert (x + y).names == ('X',)
 #
 # This results in named tensors preventing unintended alignment during operations that broadcast.
 #
+# 
+# 
 # **Example: Apply a `perBatchScale` to the `tensor`:** Below, without `names` the `perBatchScale` tensor is aligned with the last dimension of `tensor`, which is `W` but an error is thrown since this doesn't match the name of the dimension `N` of the `perBatchScale` tensor. (Later: will talk about explicit broadcasting by names for how to align tensors by name).
 # But what we wanted instead was to perform the operation by aligning `perBatchScale` with the batch dimension `N` of `tensor`.
 # %% codecell
@@ -469,7 +513,9 @@ print(f"perBatchScale = {perBatchScale_}\n\n")
 print(f"tensor = {tensor_}")
 
 # %% markdown [markdown]
-# Showing that [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view) and [`expand_as()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.expand_as) are not the same:
+# TODO left off here
+# 
+# * **NOTE:** Recognize as a sidenote that [`view()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view) and [`expand_as()`](https://pytorch.org/docs/stable/tensors.html#torch.Tensor.expand_as) are not the same:
 # %% codecell
 perBatchScale_.view(2,1,1,1)
 # %% codecell
@@ -944,3 +990,5 @@ query = torch.randn(T, D, names=('T', 'D'))
 mask = torch.ones(T, names=('T',))
 output = attn(query, mask=mask)
 assert output.names == ('T', 'D') and output.shape == (T, D)
+
+# %%
