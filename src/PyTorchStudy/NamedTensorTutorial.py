@@ -581,7 +581,7 @@ y = torch.empty(2, 2)
 
 catchError(lambda: x + y)
 # %% [markdown]
-# RULES: `x` and `y` are broadcastable: 
+# Below, it is clear that `x` and `y` are broadcastable because:
 # * 1st trailing dimension: both have size 1
 # * 2nd trailing dimension: `y` has size 1
 # * 3rd trailing dimension: `x` size == `y` size

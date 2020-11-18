@@ -251,6 +251,29 @@ printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLat
 #
 # Below in the code, the forward function computes quantities in the forward pass and saves them in a dictionary, which serves the additional purpose of differentiating between forward pass quantities computed her and the parameters themselves.
 
+# %%
+def checkBroadcastable(x: Tensor, y: Tensor) -> bool:
+    prependOnes = Tensor([1 for i in range(0, abs(x.ndim - y.ndim))])
+    (smallestTensor, largestTensor) = (y, x) if y.ndim < x.ndim else (x, y)
+    onesSmallestSize = torch.cat((prependOnes, Tensor(smallestTensor.size())), 0)
+    pairs = list(zip(Tensor(largestTensor.size()).tolist(), onesSmallestSize.tolist() )) 
+    batchDimPairs = pairs[0:-2] # all the dims except the last two are the batch dimension pairs
+    isBroadcastable = all(map(lambda p: p[0] == 1 or p[1] == 1 or p[0] == p[1], batchDimPairs))
+
+    return isBroadcastable
+
+# %%
+x = torch.randn(8,2,6,7,2,1,4,3, names = ('batch_one', 'batch_two', 'batch_three', 'batch_four', 'batch_five', 'batch_six', 'A', 'B'))
+y = torch.randn(        1,5,3,2, names = ('batch_five', 'batch_six', 'C', 'D'))
+
+assert checkBroadcastable(x, y)
+
+
+x = torch.empty(5, 2, 4, 1)
+y = torch.empty(   3, 1, 1)
+
+assert not checkBroadcastable(x, y)
+
 
 # %% codecell
 def forwardLinearRegression(X_batch: Tensor, y_batch: Tensor, weights: Dict[str, Tensor]) -> Tuple[float, Dict[str, Tensor]]:
@@ -271,23 +294,40 @@ def forwardLinearRegression(X_batch: Tensor, y_batch: Tensor, weights: Dict[str,
     y_batch: FloatTensor = y_batch.type(FloatTensor)
 
 
-    # Check: to multiply higher-dim tensors, then the first few dimensions (as specified below) of the matrices to be multiplied, should equal each other.
-    isFirstPartEqualShape: bool = X_batch.shape[0 : X_batch.ndim - 2] == W.shape[0:W.ndim - 2]
-
-
     # Check batch sizes of X and y are equal:
     # TODO check if the batch size is ever not on the first dimension
     isBatchSizeConsistent = X_batch.size('batchSize') == y_batch.size('batchSize')
+    assert isBatchSizeConsistent
 
 
-
+    # Check: to multiply higher-dim tensors, then the tensors need to be broadcastable (means: all the dimensions before the last two should obey the broadcasting rules, see name inference tutorial)
+    # isFirstPartEqualShape: bool = X_batch.shape[0 : X_batch.ndim - 2] == W.shape[0:W.ndim - 2]
+    assert checkBroadcastable(X_batch, W)
 
 
     # Check: to do matrix multiplication, the last dim of X must equal the second-last dim of W.
     canDoMatMul: bool = X_batch.shape[-1] == W.shape[-2]
-    # NOTE: for 2-dim tensors X and W, we would check X.shape[1] == W.shape[0]
+    assert canDoMatMul
 
 
+    # TODO should I keep beta as 1x1 array?
+    isInterceptANumber = beta_0.shape[0] == beta_0.shape[1] == 1
+    assert isInterceptANumber
 
-    assert isFirstPartEqualShape and \
-           isBatchSizeConsistent 
+
+    ### Compute the forward pass operations
+    N: Tensor = torch.matmul(X_batch, W)
+
+    P: Tensor = N + beta_0 
+
+    loss: Tensor = torch.mean(torch.pow(y_batch - P, 2))
+
+    # Save the information computed on the forward pass
+    forwardInfo: Dict[str, Tensor] = {}
+    forwardInfo['X'] = X_batch 
+    forwardInfo['N'] = N 
+    forwardInfo['P'] = P 
+    forwardInfo['y'] = y_batch 
+
+    return loss, forwardInfo 
+# %% codecell
