@@ -496,14 +496,14 @@ def forwardLinearRegression(X_batch: Tensor, y_batch: Tensor, weights: Dict[str,
 # %% [markdown]
 # Preliminary variable Set-up: 
 # %%
-b, k = 5, 8
+b, k, one = 5, 8, 2
 
 # Variables
 X = Matrix(b, k, lambda i,j : var_ij('x', i, j))
 Xm = MatrixSymbol('X', X.shape[0], X.shape[1]) 
 Xs = Symbol('X', commutative=True)
 
-w = Matrix(k, 1, lambda i,j : var_i('w', i))
+w = Matrix(k, one, lambda i,j : var_i('w', i))
 wm = MatrixSymbol('\overrightarrow{w}', w.shape[0], w.shape[1]) #,is_commutative=True)
 ws = Symbol('\overrightarrow{w}', commutative=True)
 
@@ -518,7 +518,7 @@ v_ = lambda a,b: a*b
 VL = Lambda((Xm,wm), MatrixSymbol('V', Xm.shape[0], wm.shape[1]))
 vN = lambda mat1, mat2: Matrix(mat1.shape[0], mat2.shape[1], lambda i, j: Symbol("n_{}{}".format(i+1, j+1)), is_commutative=True)
 
-Nm = MatrixSymbol('N', b, 1) #, is_commutative=True)
+Nm = MatrixSymbol('N', b, one) #, is_commutative=True)
 Ns = Symbol('\overrightarrow{N}', commutative=True)
 Nelem = vN(X, w)
 Nspec = v_(X, w)
@@ -528,7 +528,7 @@ N = v(Xm,wm)
 # Alpha = N + B = X*w + beta_0
 Bs = Symbol('beta_0', is_commutative=True)
 Belem = Matrix(b, 1, lambda i, j : Bs, is_commutative=True)
-Bm = MatrixSymbol('\overrightarrow{\\beta_0}', b , 1)
+Bm = MatrixSymbol('\overrightarrow{\\beta_0}', b , one)
 
 alpha = Function('alpha')
 alpha_ = lambda N, B: N + B 
@@ -536,7 +536,7 @@ alpha_ = lambda N, B: N + B
 
 P = alpha(N, Bm)
 Ps = Symbol('\overrightarrow{P}', commutative=True)
-Pm = MatrixSymbol('\overrightarrow{P}', b, 1) #, is_commutative=True)
+Pm = MatrixSymbol('\overrightarrow{P}', b, one) #, is_commutative=True)
 Pelem = Matrix(b, 1, lambda i, _: var_i('p', i), is_commutative=True)
 Pspec = P.subs({Xm: X, wm:w}).replace(v, v_).subs(Bs, Belem).replace(alpha, alpha_)
 #alpha_(Nspec, B)
@@ -544,8 +544,8 @@ Pspec = P.subs({Xm: X, wm:w}).replace(v, v_).subs(Bs, Belem).replace(alpha, alph
 
 # Lambda function: L = Lambda(P, Y)
 Ys = Symbol('\overrightarrow{Y}', commutative=True)
-Ym = MatrixSymbol('\overrightarrow{Y}', b, 1) #, is_commutative=True)
-Yelem = Matrix(b, 1, lambda i, _: var_i('y', i), is_commutative=True)
+Ym = MatrixSymbol('\overrightarrow{Y}', b, one) #, is_commutative=True)
+Yelem = Matrix(b, one, lambda i, _: var_i('y', i), is_commutative=True)
 
 lambd = Function("lambda")
 bs = Symbol('b', is_commutative=True)
@@ -574,20 +574,26 @@ showGroup([
 
 # %%
 # dL_dw_abstract = # TODO how to get the matrices rules to apply like in Ch1?
+showGroup([
+    Ls.replace(v, v_).diff(ws), 
+    Ls.replace(v, v_).diff(ws).replace(alpha(Xs*ws, Bs), Ps)
+])
 # %% codecell
 # Chain rule component way: 
-dL_dP = Ls.replace(alpha(v(Xs, ws), Bs), Ps).diff(Ps)
+dL_dP = Ls.diff(alpha(v(Xs, ws), Bs))
+# Ls.replace(alpha(v(Xs, ws), Bs), Ps).diff(Ps)
 
 showGroup([
     dL_dP, 
-    dL_dP.replace(Ps, alpha(v(Xs, ws), Bs))
+    dL_dP.replace( alpha(v(Xs, ws), Bs), Ps)
 ])
 # %% codecell
 da_dN = alpha(v(Xs, ws), Bs).diff(v(Xs, ws))
 
 showGroup([
     da_dN, 
-    da_dN.replace(v(Xs, ws), Ns)
+    da_dN.replace(v(Xs, ws), Ns), 
+    da_dN.replace(v(Xs, ws), Ns).replace(alpha(Ns, Bs), Ps)
 ])
 
 # %% codecell
