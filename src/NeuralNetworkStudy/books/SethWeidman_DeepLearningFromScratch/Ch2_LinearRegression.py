@@ -496,7 +496,7 @@ def forwardLinearRegression(X_batch: Tensor, y_batch: Tensor, weights: Dict[str,
 # %% [markdown]
 # Preliminary variable Set-up: 
 # %%
-b, k, one = 5, 8, 2
+b, k, one = 5, 8, 1
 
 # Variables
 X = Matrix(b, k, lambda i,j : var_ij('x', i, j))
@@ -518,7 +518,7 @@ v_ = lambda a,b: a*b
 VL = Lambda((Xm,wm), MatrixSymbol('V', Xm.shape[0], wm.shape[1]))
 vN = lambda mat1, mat2: Matrix(mat1.shape[0], mat2.shape[1], lambda i, j: Symbol("n_{}{}".format(i+1, j+1)), is_commutative=True)
 
-Nm = MatrixSymbol('N', b, one) #, is_commutative=True)
+Nm = MatrixSymbol('\overrightarrow{N}', b, one) #, is_commutative=True)
 Ns = Symbol('\overrightarrow{N}', commutative=True)
 Nelem = vN(X, w)
 Nspec = v_(X, w)
@@ -527,7 +527,7 @@ N = v(Xm,wm)
 
 # Alpha = N + B = X*w + beta_0
 Bs = Symbol('beta_0', is_commutative=True)
-Belem = Matrix(b, 1, lambda i, j : Bs, is_commutative=True)
+Belem = Matrix(b, 1, lambda i, j : Bs)
 Bm = MatrixSymbol('\overrightarrow{\\beta_0}', b , one)
 
 alpha = Function('alpha')
@@ -549,7 +549,7 @@ Yelem = Matrix(b, one, lambda i, _: var_i('y', i), is_commutative=True)
 
 lambd = Function("lambda")
 bs = Symbol('b', is_commutative=True)
-lambd_ = lambda P, Y : (P - Y)**2 / bs
+lambd_ = lambda P, Y : (Y - P)**2 / bs
 
 #L = lambd(alpha(v(Xs, ws), B), Ys)
 #Lfunc = lambda X_mat, w_vec, B, Y_vec: lambd(alpha(v(X_mat, w_vec), B), Y_vec)
@@ -585,7 +585,9 @@ dL_dP = Ls.diff(alpha(v(Xs, ws), Bs))
 
 showGroup([
     dL_dP, 
-    dL_dP.replace( alpha(v(Xs, ws), Bs), Ps)
+    dL_dP.replace( alpha(v(Xs, ws), Bs), Ps),
+    dL_dP.replace( alpha(v(Xs, ws), Bs), Ps).replace(lambd, lambd_),
+    dL_dP.replace( alpha(v(Xs, ws), Bs), Ps).replace(lambd, lambd_).doit()
 ])
 # %% codecell
 da_dN = alpha(v(Xs, ws), Bs).diff(v(Xs, ws))
@@ -593,10 +595,32 @@ da_dN = alpha(v(Xs, ws), Bs).diff(v(Xs, ws))
 showGroup([
     da_dN, 
     da_dN.replace(v(Xs, ws), Ns), 
-    da_dN.replace(v(Xs, ws), Ns).replace(alpha(Ns, Bs), Ps)
+    da_dN.replace(v(Xs, ws), Ns).replace(alpha(Ns, Bs), Ps),
+    da_dN.replace(v(Xs, ws), Ns).replace(alpha, alpha_).replace(Bs, Bm).replace(Ns, Nm),
+    da_dN.replace(v(Xs, ws), Ns).replace(alpha, alpha_).replace(Bs, Bm).replace(Ns, Nm).doit()
 ])
+# TODO left off here need to find a way to make this a matrix of ones not a tensor of tensors. 
+from sympy import tensorcontraction
+ex = alpha(Nelem, Belem).replace(alpha, alpha_).diff(Nelem)
+#ex.shape
+contr = tensorcontraction(ex, (0,))
+#contr.shape
+contr2 = tensorcontraction(contr, (0,))
+#contr2.shape
 
+
+### TODO URGENT HERE
+# TODO try the old way matrix deriv then do the tensor contraction to see if the result is the same with multiplying by parts manually and substituting the matrix there. 
 # %% codecell
 dN_dw = v(Xs, ws).sub({Xs:Xm, ws:wm}).replace(v, v_).diff(wm)
 
 dN_dw
+# %%
+# Putting them together: 
+dL_dP * da_dN * dN_dw
+# %%
+# TODO left off here
+# TODO testing how the matrix multiplication occurs -- not sure this product here is correct
+test = Xs * dL_dP * da_dN
+test
+test.replace(Xs, X).doit().replace(X, Xs).replace(v(Xs, ws), Ns).replace(alpha(Ns, Bs), Ps)
