@@ -12,7 +12,7 @@
 
             "console": "integratedTerminal",
 
-            "pythonPath": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
+            "python": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
 
             "internalConsoleOptions":"neverOpen"
         },
@@ -24,7 +24,7 @@
 
             "console": "integratedTerminal",
 
-            "pythonPath": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
+            "python": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
 
             "internalConsoleOptions":"neverOpen"
         },
@@ -36,7 +36,7 @@
 
             "console": "integratedTerminal",
 
-            "pythonPath": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
+            "python": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
 
             "internalConsoleOptions":"neverOpen"
         },
@@ -48,7 +48,7 @@
 
             "console": "integratedTerminal",
 
-            "pythonPath": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
+            "python": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
 
             "internalConsoleOptions":"neverOpen"
         },
@@ -60,7 +60,7 @@
 
             "console": "integratedTerminal",
 
-            "pythonPath": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
+            "python": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
 
             "internalConsoleOptions":"neverOpen"
         }

@@ -133,9 +133,9 @@ printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLat
 # ## Prediction Representation
 # The goal of supervised learning is to build a function that takes input batches of observations with the structure of $X_\text{batch}$ and produce vectors of predictions $\overrightarrow{p}_\text{batch} = \begin{pmatrix} p_1 \\ p_2 \\ \vdots \\ p_b \end{pmatrix}$ with values $p_i$. Each of these prediction numbers $p_i$ should be close to the target values $y_i$.
 #
-# For simplicity assume first there is no intercept term $\beta_0$. We can represent the output of a linear regression model as the *dot product* of each **observation vector** $\overrightarrow{x}_i = \begin{pmatrix} x_{i1} & x_{i2} & ... & x_{ik} \end{pmatrix}$ with another **vector of parameters** that we will call $W$:
+# For simplicity assume first there is no intercept term $\beta_0$. We can represent the output of a linear regression model as the *dot product* of each **observation vector** $\overrightarrow{x}_i = \begin{pmatrix} x_{i1} & x_{i2} & ... & x_{ik} \end{pmatrix}$ with another **vector of parameters** that we will call $\overrightarrow{w}$:
 # $$
-# W = \begin{pmatrix}
+# \overrightarrow{w} = \begin{pmatrix}
 #   w_1 \\
 #   w_2 \\
 #   \vdots \\
@@ -145,7 +145,7 @@ printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLat
 #
 # Then our prediction is written as:
 # $$
-# p_i = \overrightarrow{x}_i \times W = w_1 \cdot x_{i1} + w_2 \cdot x_{i2} + ... + w_k \cdot x_{ik}
+# p_i = \overrightarrow{x}_i \times \overrightarrow{w} = w_1 \cdot x_{i1} + w_2 \cdot x_{i2} + ... + w_k \cdot x_{ik}
 # $$
 #
 # But we want to make predictions using linear regression with a *batch of observations* so we must use matrix multiplication instead of dot product to generate predictions. Given a batch of size $b$, the data matrix is:
@@ -168,7 +168,7 @@ printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLat
 # $$
 # \begin{aligned}
 # p_\text{batch}
-# :&= X_\text{batch} \times W  \\
+# :&= X_\text{batch} \times \overrightarrow{w}  \\
 # &= \begin{pmatrix}
 #   x_{11} & x_{12} & ... & x_{1k} \\
 #   x_{21} & x_{22} & ... & x_{2k} \\
@@ -193,12 +193,12 @@ printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLat
 # $$
 #
 #
-# To include an actual intercept term (which we will call the "bias"), we must add the intercept to the $\overrightarrow{p}_\text{batch}$. Each element of the model's prediction $p_i$ will be the dot product of the row observation vector $\overrightarrow{x}_i$ with each element in the parameter tensor $W$, added to the intercept $\overrightarrow{\beta_0}$:
+# To include an actual intercept term (which we will call the "bias"), we must add the intercept to the $\overrightarrow{p}_\text{batch}$. Each element of the model's prediction $p_i$ will be the dot product of the row observation vector $\overrightarrow{x}_i$ with each element in the parameter vector $\overrightarrow{w}$, added to the intercept $\overrightarrow{\beta_0}$:
 # $\color{red}{\text{TODO: intercept vector issue}}$
 # $$
 # \begin{aligned}
 # p_{\text{batch_with_bias}}
-# :&= X_\text{batch} \times W + \overrightarrow{\beta_0} \\
+# :&= X_\text{batch} \times \overrightarrow{w} + \overrightarrow{\beta_0} \\
 # &= \begin{pmatrix}
 #   x_{11} & x_{12} & ... & x_{1k} \\
 #   x_{21} & x_{22} & ... & x_{2k} \\
@@ -229,51 +229,159 @@ printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLat
 #
 #
 # ## Training the Model
+# 
 # To compare the predictions to a standard, we need to use a vector of *targets* $\overrightarrow{y}_\text{batch}$ associated with the batch of observations $X_\text{batch}$ fed into the function. Then we compute a single number that is a function of $\overrightarrow{y}_\text{batch}$ and $\overrightarrow{p}_\text{batch}$ that represents the model's penalty for making predictions that it did. We can choose the **mean squared error** which is the average squared value that our model's predictions were off target:
 # $$
 # \begin{aligned}
-# L &= \text{MSE}(\overrightarrow{p}_\text{batch}, \overrightarrow{y}_\text{batch})  \\
+# L &= \text{MSE}(\overrightarrow{p}_\text{batch_with_bias}, \overrightarrow{y}_\text{batch})  \\
 # &= \text{MSE} \Bigg( \begin{pmatrix} p_1 \\ p_2 \\ \vdots \\ p_b \end{pmatrix}, \begin{pmatrix} y_1 \\ y_2 \\ \vdots \\ y_b \end{pmatrix} \Bigg) \\
 # &= \frac {(y_1 - p_1)^2 + (y_2 - p_2)^2 + ... + (y_b - p_b)^2 } {b}
 # \end{aligned}
 # $$
 #
-# This number $L$ is the loss and we will compute the *gradient* of this number with respect to each element of the parameter tensor $W$. In training the model, we will use these derivatives to update each element of $W$ in the direction that would cause $L$ to decrease.
-#
-# The loss value $L$ that we ultimately compute is:
-# $$
-# L = \Lambda(\nu(X, W), Y)
-# $$
-#
-#
+# This number $L$ is the loss and we will compute the *gradient* of this number with respect to each element of the parameter tensor $\overrightarrow{w}$. In training the model, we will use these derivatives to update each element of $\overrightarrow{w}$ in the direction that would cause $L$ to decrease.
+
+
+
+
+
+# %% [markdown]
 # ## Linear Regression: The Code
+# 
 # Computing derivatives for nested functions using the chain rule involves two sets of steps: **first** we perform a "forward pass", passing the input successively forward through a series of operations and saving the quantities computed as we go; **second**, we use those quantities to compute the appropriate derivatives during the "backward pass".
 #
+# 
+# ## Forward Pass for Linear Regression
+# 
 # Below in the code, the forward function computes quantities in the forward pass and saves them in a dictionary, which serves the additional purpose of differentiating between forward pass quantities computed her and the parameters themselves.
+# 
+# The equations that are computed in the forward pass are as follows: 
+# 
+# Let: 
+# * $k$ = number of data features or predictors
+# * $n$ = number of rows or number of data observations
+# * $b$ = number of batches
+# 
+# 
+# ### Step 1: Matrix Multiplication: $N = \nu(X, \overrightarrow{w}) = X \times \overrightarrow{w}$
+# 
+# 
+# Assume,
+# * $X_\text{batch} \in \mathbb{R}^{b \times k}$
+# * $\overrightarrow{w} \in \mathbb{R}^{k \times 1}$
+# * $\nu : \mathbb{R}^{(b \times k) \times (k \times 1)} \rightarrow \mathbb{R}^{b \times 1}$
+# * $N = \overrightarrow{N} \in \mathbb{R}^{b \times 1}$
+# 
+# 
+# Multiply the matrix $X_\text{batch}$ and the vector of parameters $\overrightarrow{w}$
+# $$
+# \begin{aligned}
+# \overrightarrow{N} &= \nu(X, \overrightarrow{w}) \\
+# &= X_\text{batch} \times \overrightarrow{w} \\
+# &= \begin{pmatrix}
+#   x_{11} & x_{12} & ... & x_{1k} \\
+#   x_{21} & x_{22} & ... & x_{2k} \\
+#   \vdots & \vdots & ... & \vdots \\
+#   x_{b1} & x_{b2} & ... & x_{bk}
+# \end{pmatrix}
+# \times
+# \begin{pmatrix}
+#   w_1 \\
+#   w_2 \\
+#   \vdots \\
+#   w_k
+# \end{pmatrix} \\
+# &= \begin{pmatrix}
+#   x_{11} \cdot w_1 & x_{12} \cdot w_2  & ... & x_{1k} \cdot w_k  \\
+#   x_{21} \cdot w_1  & x_{22} \cdot w_2  & ... & x_{2k} \cdot w_k  \\
+#   \vdots & \vdots & ... & \vdots \\
+#   x_{b1} \cdot w_1  & x_{b2} \cdot w_2  & ... & x_{bk} \cdot w_k
+# \end{pmatrix} 
+# \end{aligned}
+# $$
 
-# %%
-def checkBroadcastable(x: Tensor, y: Tensor) -> bool:
-    prependOnes = Tensor([1 for i in range(0, abs(x.ndim - y.ndim))])
-    (smallestTensor, largestTensor) = (y, x) if y.ndim < x.ndim else (x, y)
-    onesSmallestSize = torch.cat((prependOnes, Tensor(smallestTensor.size())), 0)
-    pairs = list(zip(Tensor(largestTensor.size()).tolist(), onesSmallestSize.tolist() )) 
-    batchDimPairs = pairs[0:-2] # all the dims except the last two are the batch dimension pairs
-    isBroadcastable = all(map(lambda p: p[0] == 1 or p[1] == 1 or p[0] == p[1], batchDimPairs))
+# %% [markdown]
+# ### Step 2: Predictions: $P = \alpha(N, B) = N + B$
+# 
+# 
+# Assume: 
+# * $N = \overrightarrow{N} \in \mathbb{R}^{b \times 1}$
+# * $B = \overrightarrow{\beta_0} \in \mathbb{R}$ so this intercept is a constant.
+# $\color{red}{\text{TODO: vector intercept issue to fix}}$
+# * $\alpha: \mathbb{R}^{(b \times 1) \times (1 \times 1)} \rightarrow \mathbb{R}^{b \times 1}$
+# * $\overrightarrow{P} \in \mathbb{R}^{b \times 1}$
+# 
+# 
+# $$
+# \begin{aligned}
+# \overrightarrow{P} &= \alpha(N, B) \\
+# &= N + B \\
+# &= \overrightarrow{N} + \overrightarrow{\beta_0} \\
+# &= X_\text{batch} \times \overrightarrow{w} + \overrightarrow{\beta_0} \\
+# &= \begin{pmatrix}
+#   x_{11} & x_{12} & ... & x_{1k} \\
+#   x_{21} & x_{22} & ... & x_{2k} \\
+#   \vdots & \vdots & ... & \vdots \\
+#   x_{b1} & x_{b2} & ... & x_{bk}
+# \end{pmatrix}
+# \times
+# \begin{pmatrix}
+#   w_1 \\
+#   w_2 \\
+#   \vdots \\
+#   w_k
+# \end{pmatrix}
+# +
+# \begin{pmatrix}
+#   \beta_0 \\ \beta_0 \\ \vdots \\ \beta_0
+# \end{pmatrix} \\
+# &= \begin{pmatrix}
+#   x_{11} \cdot w_1 & x_{12} \cdot w_2  & ... & x_{1k} \cdot w_k  + \beta_0 \\
+#   x_{21} \cdot w_1  & x_{22} \cdot w_2  & ... & x_{2k} \cdot w_k  + \beta_0 \\
+#   \vdots & \vdots & ... & \vdots \\
+#   x_{b1} \cdot w_1  & x_{b2} \cdot w_2  & ... & x_{bk} \cdot w_k  + \beta_0
+# \end{pmatrix} \\
+# &=: \begin{pmatrix}  p_1 \\ p_2 \\ \vdots \\ p_b \end{pmatrix}
+# \end{aligned}
+# $$
 
-    return isBroadcastable
-
-# %%
-x = torch.randn(8,2,6,7,2,1,4,3, names = ('batch_one', 'batch_two', 'batch_three', 'batch_four', 'batch_five', 'batch_six', 'A', 'B'))
-y = torch.randn(        1,5,3,2, names = ('batch_five', 'batch_six', 'C', 'D'))
-
-assert checkBroadcastable(x, y)
-
-
-x = torch.empty(5, 2, 4, 1)
-y = torch.empty(   3, 1, 1)
-
-assert not checkBroadcastable(x, y)
-
+# %% [markdown]
+# ### Step 3: Loss: $L = \Lambda(P, Y) = \text{MSE}(P, Y)$
+# 
+# Assume: 
+# * $X \in \mathbb{R}^{b \times k}$
+# * $\overrightarrow{w} \in \mathbb{R}^{k \times 1}$
+# * $B = \overrightarrow{\beta_0} \in \mathbb{R}$ so this intercept is a constant.
+# $\color{red}{\text{TODO vector intercept issue}}$
+# * $Y = \overrightarrow{Y} \in \mathbb{R}^{b \times 1}$
+# * $N = \overrightarrow{N} \in \mathbb{R}^{b \times 1}$
+# * $\alpha: \mathbb{R}^{(b \times 1) \times (1 \times 1)} \rightarrow \mathbb{R}^{b \times 1}$
+# * $P = \overrightarrow{P} \in \mathbb{R}^{b \times 1}$
+# * $\Lambda: \mathbb{R}^{(b \times 1) \times (b \times 1)} \rightarrow \mathbb{R}$
+# * $L \in \mathbb{R}$
+# 
+# 
+# 
+# $$
+# \begin{aligned}
+# L &= \Lambda(\alpha(\nu(X, \overrightarrow{w}), B), Y) \\
+#   &= \Lambda(\alpha(N, B), Y) \\
+#   &= \Lambda(P, Y) \\
+#   &= \text{MSE}(\overrightarrow{P}, \overrightarrow{Y})  \\
+#   &= \text{MSE} \Bigg( \begin{pmatrix} p_1 \\ p_2 \\ \vdots \\ p_b \end{pmatrix}, \begin{pmatrix} y_1 \\ y_2 \\ \vdots \\ y_b \end{pmatrix} \Bigg) \\
+#   &= \frac{(\overrightarrow{P} - \overrightarrow{Y})^2} {b} \\
+#   &= \frac {\begin{pmatrix}
+# \begin{pmatrix}  y_1 \\ y_2 \\ \vdots \\ y_b \end{pmatrix} 
+# - 
+# \begin{pmatrix}  p_1 \\ p_2 \\ \vdots \\ p_b \end{pmatrix}
+#   \end{pmatrix}^2 } {b} \\
+#   &= \frac {(y_1 - p_1)^2 + (y_2 - p_2)^2 + ... + (y_b - p_b)^2 } {b}
+# \end{aligned}
+# $$
+# 
+# 
+# * **NOTE:** in the above steps, we use $N := \overrightarrow{N}$, $P := \overrightarrow{P} := \overrightarrow{p}_\text{batch_with_bias}$ and $Y := \overrightarrow{Y} := \overrightarrow{y}_\text{batch}$ and $X := X_\text{batch}$. 
+#   * $\color{red}{\text{Reason (?) maybe because we want to say that more batches can fit inside each of the symbols X, P, Y ...}}$
 
 # %% codecell
 def forwardLinearRegression(X_batch: Tensor, y_batch: Tensor, weights: Dict[str, Tensor]) -> Tuple[float, Dict[str, Tensor]]:
@@ -283,13 +391,13 @@ def forwardLinearRegression(X_batch: Tensor, y_batch: Tensor, weights: Dict[str,
     weights = dictionary of parameters, with parameters 1 through k under the key 'W' and intercept under key 'B'
     X_batch = data matrix of observations for a particular batch size.
         size == (b x k)
-    W = weights or parameters
+    w = weights or parameters
         size == (k x 1)
     y_batch = targets
         size == (b x 1)
     '''
     beta_0: float = weights['B']
-    W: FloatTensor = weights['W'].type(FloatTensor)
+    w: FloatTensor = weights['w'].type(FloatTensor)
     X_batch: FloatTensor = X_batch.type(FloatTensor)
     y_batch: FloatTensor = y_batch.type(FloatTensor)
 
@@ -302,11 +410,11 @@ def forwardLinearRegression(X_batch: Tensor, y_batch: Tensor, weights: Dict[str,
 
     # Check: to multiply higher-dim tensors, then the tensors need to be broadcastable (means: all the dimensions before the last two should obey the broadcasting rules, see name inference tutorial)
     # isFirstPartEqualShape: bool = X_batch.shape[0 : X_batch.ndim - 2] == W.shape[0:W.ndim - 2]
-    assert checkBroadcastable(X_batch, W)
+    assert checkBroadcastable(X_batch, w)
 
 
     # Check: to do matrix multiplication, the last dim of X must equal the second-last dim of W.
-    canDoMatMul: bool = X_batch.shape[-1] == W.shape[-2]
+    canDoMatMul: bool = X_batch.shape[-1] == w.shape[-2]
     assert canDoMatMul
 
 
@@ -316,18 +424,173 @@ def forwardLinearRegression(X_batch: Tensor, y_batch: Tensor, weights: Dict[str,
 
 
     ### Compute the forward pass operations
-    N: Tensor = torch.matmul(X_batch, W)
+    N_batch: Tensor = X_batch.matmul(w)
+    # torch.mv() only works if w.shape == (dim1, ) instaed of (dim1, dim2) so we have to use matmul here, even though w is a vector so dim2 == 1. 
 
-    P: Tensor = N + beta_0 
+    # TODO: In pytorch it IS possible to add a tensor and scalar together but in a vector space it is NOT possible ... 
+    P_batch_with_bias: Tensor = N_batch + beta_0 
 
-    loss: Tensor = torch.mean(torch.pow(y_batch - P, 2))
+    # This is the MSE formula: 
+    loss: Tensor = torch.mean(torch.pow(y_batch - P_batch_with_bias, 2))
 
     # Save the information computed on the forward pass
     forwardInfo: Dict[str, Tensor] = {}
     forwardInfo['X'] = X_batch 
-    forwardInfo['N'] = N 
-    forwardInfo['P'] = P 
+    forwardInfo['N'] = N_batch 
+    forwardInfo['P'] = P_batch_with_bias 
     forwardInfo['y'] = y_batch 
 
     return loss, forwardInfo 
+
+
+
+
+
+
+# %% [markdown]
+# ## Training the Model: The Code
+# 
+# We must compute $\frac{\partial L} {\partial w_i}$ for every parameter $w_i$ in the vector of parameters $\overrightarrow{w}$, and we must additionally compute $\frac{\partial L}{\partial \beta_0}$. 
+# $\color{red}{\text{TODO: intercept vector issue}}$
+# The forward pass simply calculated the loss via a series of nested functions, and the backward pass will now compute the partial derivatives of each function, evaluating those derivatives at the functions' inputs and multiplying them together. 
+# 
+# 
+# ## Backward Pass for Linear Regression
+# In the backward pass, we compute the derivative of each constituent function and evaluate those derivatives at the inputs that those functions received on the forward pass, and then multiply all these derivatives together as the chain rule dictates. 
+# 
+# The derivative product we must compute is: 
+# $$ 
+# \begin{aligned}
+# \frac{\partial L}{\partial \overrightarrow{w}} 
+#   &= \frac{\partial }{\partial P}\Lambda(P, Y) \times \frac{\partial }{\partial N} \alpha(N, B)  \times \frac{\partial }{\partial \overrightarrow{w}} \nu(X, \overrightarrow{w}) \\
+#   &= \frac{\partial }{\partial \overrightarrow{P}} \Lambda(\overrightarrow{P}, \overrightarrow{Y}) \times \frac{\partial}{\partial \overrightarrow{N}} \alpha(\overrightarrow{N}, \overrightarrow{\beta_0}) \times \frac{\partial }{\partial \overrightarrow{w}} \nu(X, \overrightarrow{w}) \\
+#   &= \frac{\partial \Lambda}{\partial \overrightarrow{P}} \times \frac{\partial \alpha}{\partial \overrightarrow{N}} \times \frac{\partial \nu}{\partial \overrightarrow{w}} 
+# \end{aligned}
+# $$
+# 
+# 
+# ### Calculating Loss Gradient $\frac{\partial \Lambda}{\partial \overrightarrow{w}}$: 
+# 
+# **The Direct Way**
+# 
+# $$
+# \frac{\partial \Lambda}{\partial \overrightarrow{w}} = \begin{pmatrix}
+#   w_1 \\ w_2 \\ \vdots \\ w_k
+# \end{pmatrix}
+# $$
+# 
+# 
+# **The Chain Rule Way**
+# 
+# 1. **Step 1:** Compute $\frac{\partial \Lambda}{\partial \overrightarrow{P}}$
+# 
+# $$
+# \begin{aligned}
+# \frac{\partial }{\partial \overrightarrow{P}} \Lambda(\overrightarrow{P}, \overrightarrow{Y}) 
+#   &= \frac{\partial}{\partial \overrightarrow{P}} \Bigg( \frac{(\overrightarrow{Y} - \overrightarrow{P})^2} {b} \Bigg) \\
+#   &= \frac{-1 \cdot (2 \cdot (\overrightarrow{Y} - \overrightarrow{P})) } {b}
+# \end{aligned}
+# $$
+
+
+# %% [markdown]
+# Preliminary variable Set-up: 
+# %%
+b, k = 5, 8
+
+# Variables
+X = Matrix(b, k, lambda i,j : var_ij('x', i, j))
+Xm = MatrixSymbol('X', X.shape[0], X.shape[1]) 
+Xs = Symbol('X', commutative=True)
+
+w = Matrix(k, 1, lambda i,j : var_i('w', i))
+wm = MatrixSymbol('\overrightarrow{w}', w.shape[0], w.shape[1]) #,is_commutative=True)
+ws = Symbol('\overrightarrow{w}', commutative=True)
+
+# matrix variable for sympy Lambda function arguments
+Mm = MatrixSymbol('M', i, j) #, is_commutative=True)# abstract shape
+
+
+# N = X * w
+v = Function("nu",applyfunc=True)
+v_ = lambda a,b: a*b
+#vL = Lambda((a,b), a*b)
+VL = Lambda((Xm,wm), MatrixSymbol('V', Xm.shape[0], wm.shape[1]))
+vN = lambda mat1, mat2: Matrix(mat1.shape[0], mat2.shape[1], lambda i, j: Symbol("n_{}{}".format(i+1, j+1)), is_commutative=True)
+
+Nm = MatrixSymbol('N', b, 1) #, is_commutative=True)
+Ns = Symbol('\overrightarrow{N}', commutative=True)
+Nelem = vN(X, w)
+Nspec = v_(X, w)
+N = v(Xm,wm)
+
+
+# Alpha = N + B = X*w + beta_0
+Bs = Symbol('beta_0', is_commutative=True)
+Belem = Matrix(b, 1, lambda i, j : Bs, is_commutative=True)
+Bm = MatrixSymbol('\overrightarrow{\\beta_0}', b , 1)
+
+alpha = Function('alpha')
+alpha_ = lambda N, B: N + B 
+#alphaL = Lambda( ())
+
+P = alpha(N, Bm)
+Ps = Symbol('\overrightarrow{P}', commutative=True)
+Pm = MatrixSymbol('\overrightarrow{P}', b, 1) #, is_commutative=True)
+Pelem = Matrix(b, 1, lambda i, _: var_i('p', i), is_commutative=True)
+Pspec = P.subs({Xm: X, wm:w}).replace(v, v_).subs(Bs, Belem).replace(alpha, alpha_)
+#alpha_(Nspec, B)
+
+
+# Lambda function: L = Lambda(P, Y)
+Ys = Symbol('\overrightarrow{Y}', commutative=True)
+Ym = MatrixSymbol('\overrightarrow{Y}', b, 1) #, is_commutative=True)
+Yelem = Matrix(b, 1, lambda i, _: var_i('y', i), is_commutative=True)
+
+lambd = Function("lambda")
+bs = Symbol('b', is_commutative=True)
+lambd_ = lambda P, Y : (P - Y)**2 / bs
+
+#L = lambd(alpha(v(Xs, ws), B), Ys)
+#Lfunc = lambda X_mat, w_vec, B, Y_vec: lambd(alpha(v(X_mat, w_vec), B), Y_vec)
+#L = Lfunc(Xm, wm, B, Ym)
+Lm = lambd(alpha(v(Xm, wm), Bm), Ym)
+# TODO: need this symbol, non-matrix version because otherwise replacing and derivating results in error" noncommutative scalars in matmul are not supported (even if ANY one of the arguments here are Matrix or MatrixSymbol)
+# TODO so now I don't know whether the following derivations with the SYMBOLS instead of MATRIX SYMBOL forms (as in ch1) are actually correct (meaning I don't think the correct matrix calculus rules are being applied)
+Ls = lambd(alpha(v(Xs, ws), Bs), Ys)
+
+showGroup([Lm, Ls])
+
+
 # %% codecell
+dL_dw_overallAbstract = Ls.diff(ws)
+
+showGroup([
+    dL_dw_overallAbstract,
+    dL_dw_overallAbstract.replace(v(Xs, ws), Ns),
+    dL_dw_overallAbstract.replace(alpha(v(Xs, ws), Bs), Ps),
+    dL_dw_overallAbstract.replace(alpha(v(Xs, ws), Bs), Ps).replace(v(Xs, ws), Ns)
+])
+
+# %%
+# dL_dw_abstract = # TODO how to get the matrices rules to apply like in Ch1?
+# %% codecell
+# Chain rule component way: 
+dL_dP = Ls.replace(alpha(v(Xs, ws), Bs), Ps).diff(Ps)
+
+showGroup([
+    dL_dP, 
+    dL_dP.replace(Ps, alpha(v(Xs, ws), Bs))
+])
+# %% codecell
+da_dN = alpha(v(Xs, ws), Bs).diff(v(Xs, ws))
+
+showGroup([
+    da_dN, 
+    da_dN.replace(v(Xs, ws), Ns)
+])
+
+# %% codecell
+dN_dw = v(Xs, ws).sub({Xs:Xm, ws:wm}).replace(v, v_).diff(wm)
+
+dN_dw
