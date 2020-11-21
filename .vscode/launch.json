@@ -63,6 +63,18 @@
             "python": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
 
             "internalConsoleOptions":"neverOpen"
+        },
+        {
+            "name": "Ch2_LinearRegression",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/NeuralNetworkStudy/books/SethWeidman_DeepLearningFromScratch/Ch2_LinearRegression.py",
+
+            "console": "integratedTerminal",
+
+            "python": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
+
+            "internalConsoleOptions":"neverOpen"
         }
     ]
 }
