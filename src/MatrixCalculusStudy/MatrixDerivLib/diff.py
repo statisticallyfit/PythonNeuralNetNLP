@@ -111,14 +111,14 @@ def _applyDiffMat(expression, byVar: MatrixSymbol):
         raise TypeError("Don't know how to differentiate class %s", expression.__class__)
 
 
-def diffMatrix(expression, variable: MatrixSymbol):
+def diffMatrix(expression, byVar: MatrixSymbol):
 
     def diffAndSimplify(expression, byVar: MatrixSymbol):
         expr = _applyDiffMat(expression, byVar)
         expr = simplify_matdiff(expr, Deriv(byVar, byVar))
         return expr
 
-    return diffAndSimplify(expression, variable)
+    return diffAndSimplify(expression, byVar)
     #return [diff_and_simplify(expression, v).doit() for v in variables]
 
 
@@ -153,16 +153,29 @@ def main():
     X = Matrix(n, m, lambda i,j : var_ij('x', i, j))
     W = Matrix(m, p, lambda i,j : var_ij('w', i, j))
 
-    #A = MatrixSymbol('X',n,m)
-    #B = MatrixSymbol('W',m,p)
-    A = MatrixSymbol("A", 4, 3)
-    B = MatrixSymbol("B", 3, 2)
-    R = MatrixSymbol("R", 3,3)
-    C = MatrixSymbol('C', 2, 2)
-    D = MatrixSymbol('D', 2, 4)
-    L = MatrixSymbol('L', 4, 3)
-    E = MatrixSymbol('E', 3, 2)
+    A = MatrixSymbol("A", a, c)
+    B = MatrixSymbol("B", c, b)
+    R = MatrixSymbol("R", c,c)
+    C = MatrixSymbol('C', b, b)
+    D = MatrixSymbol('D', b, a)
+    L = MatrixSymbol('L', a, c)
+    E = MatrixSymbol('E', c, b)
 
+    # Testing with real numbers because the matrix diff function needs real number dimensions 
+    # TODO make diffmatrix convert symbolic dims into real dims that match just for the sake of keeping symbolic dims at the end (then replace)
+    A_ = MatrixSymbol("A", 4, 3)
+    B_ = MatrixSymbol("B", 3, 2)
+    R_ = MatrixSymbol("R", 3,3)
+    C_ = MatrixSymbol('C', 2, 2)
+    D_ = MatrixSymbol('D', 2, 4)
+    L_ = MatrixSymbol('L', 4, 3)
+    E_ = MatrixSymbol('E', 3, 2)
+
+    # TODO: this doesn't seem correct
+    display(diffMatrix(B_ * Inverse(C_) * E_.T, byVar = E_) )
+
+    # TODO this doesn't seem correct --- just puts the diff operator on the A, why doesn't it compare to the diff(X*w) = X^T ???
+    display(diffMatrix(B_ * Inverse(C_) * E_.T * L_.T * A_ * E_ * D_ , A_))
     #diffMatrix(A * Inverse(R) * B, R)
     # TODO ERROR
     #assert matDiff_RULES(A*B, A) == diffMatrix(A*B, A)[0].xreplace({d(A) : Deriv(A,A)})
