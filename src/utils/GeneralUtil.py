@@ -14,7 +14,8 @@ from sympy.abc import x, i, j, a, b
 ### Python tools
 from typing import * 
 import itertools
-from functools import reduce
+from functools import reduce # for folding
+import operator # for folding
 
 
 ### Tensors
@@ -134,3 +135,36 @@ def checkBroadcastable(x: Tensor, y: Tensor) -> bool:
 
 #assert not checkBroadcastable(x, y)
 
+
+
+# -------------------------------------------
+
+# Fold left
+# Source: https://hyp.is/b9hFGg8lEeutuBP4rylAmQ/www.burgaud.com/foldl-foldr-python
+
+foldLeft = lambda f, acc, xs: reduce(f, xs, acc)
+
+# Tests
+#assert foldLeft(operator.sub, 0, [1,2,3]) == -6
+#assert foldLeft(operator.add, 'L', ['1', '2', '3']) == 'L123'
+
+
+# Lambda way: 
+# foldr = lambda f, acc, xs: reduce(lambda x, y: f(y, x), xs[::-1], acc)
+# Function (readable) way: 
+def flip(f):
+    #TODO is this correct or same as below? 
+    # return lambda x, y: f(y, x)
+    @functools.wraps(f)
+    def newFunc(x, y):
+        return f(y, x)
+    return newFunc 
+
+
+# TODO: understand fold right better
+def foldRight(f, acc, xs):
+    return reduce(flip(f), reversed(xs), acc)
+
+# Tests
+#assert foldRight(operator.sub, 0, [1,2,3]) == 2
+#assert foldRight(operator.add, 'R', ['1', '2', '3']) == '123R'

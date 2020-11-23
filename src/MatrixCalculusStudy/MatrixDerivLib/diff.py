@@ -176,6 +176,9 @@ def main():
 
     # TODO this doesn't seem correct --- just puts the diff operator on the A, why doesn't it compare to the diff(X*w) = X^T ???
     display(diffMatrix(B_ * Inverse(C_) * E_.T * L_.T * A_ * E_ * D_ , A_))
+    # TODO make the diffmatrix function be able to operate on MatrixSymbol type that has symbols for dimensions, not just real numbers: 
+    # B * Inverse(C) * E.T * L.T * A * E * D
+
     #diffMatrix(A * Inverse(R) * B, R)
     # TODO ERROR
     #assert matDiff_RULES(A*B, A) == diffMatrix(A*B, A)[0].xreplace({d(A) : Deriv(A,A)})

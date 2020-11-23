@@ -19,7 +19,7 @@ from typing import *
 import itertools
 from functools import reduce
 
-from sympy import Matrix, MatrixExpr, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity,  Derivative, symbols, diff, HadamardProduct, tensorcontraction, Inverse
+from sympy import Matrix, MatrixExpr, Expr, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity,  Derivative, symbols, diff, HadamardProduct, tensorcontraction, Inverse
 from sympy.abc import x, i, j, a, b, c
 
 # %%
@@ -622,20 +622,60 @@ Lambda(_d, sigma(_d).diff(_d))
 
 
 # %%
-def derivMatmul(mat1: MatrixSymbol, mat2: MatrixSymbol, byVar: MatrixSymbol) -> MatrixExpr: 
+def derivMatexpr(expr: MatrixExpr, 
+    #mat1: MatrixSymbol, mat2: MatrixSymbol, 
+    byVar: MatrixSymbol) -> MatrixExpr: 
     
-    expr = mat1 * mat2 
+    #expr = mat1 * mat2 
     
 
     # STEP 1: if the arguments have symbolic shape, then need to create fake ones for this function (since the R Matrix will replace a MatrixSymbol M, and we need actual numbers from the arguments' shapes to construct the Matrix R, which represents their multiplication)
-    isAnyDimASymbol = any(map(lambda dim_i: isinstance(dim_i, Symbol), expr.shape))
+
+    # Get the dimensions
+    syms: List[MatrixSymbol] = list(expr.free_symbols)
+    # Get shape tuples
+    dimTuples: List[Tuple[Symbol, Symbol]] = list(map(lambda s: s.shape, syms))
+    # Remove the tuples, just get all dimensions in a flat list. 
+    dimsFlat: List[Symbol] = [dimension for shapeTuple in dimTuples for dimension in shapeTuple]
+    # Get alll the dimensions multiplied into one product
+    dimsProduct: Expr = foldLeft(operator.mul, 1, dimsFlat)
+    #mat1.shape + mat2.shape + byVar.shape)
+    # Get all the unique symbols from the product of dimension symbols
+    dims: Set[Symbol] = dimsProduct.free_symbols
+
+    isAnyDimASymbol = any(map(lambda dim_i : isinstance(dim_i, Symbol), dims))
+
+    #any(map(lambda dim_i: isinstance(dim_i, Symbol), expr.shape))
 
     if isAnyDimASymbol: 
-        (DIM_1, DIM_2, DIM_3) = (5, 2, 3) # arbitrary dimensions we choose, doesn't matter, just used later for substitution.
-        realMat1 = MatrixSymbol(mat1.name, DIM_1, DIM_2)
-        realMat2 = MatrixSymbol(mat2.name, DIM_2, DIM_3)
-        expr = realMat1 * realMat2 
-        byVar = realMat2 
+        #(DIM_1, DIM_2, DIM_3) = (5, 2, 3) # 
+
+        # # Choose some arbitrary integer dimensions: (to be used later for substitution)
+        ds: List[int] = list(range(2, len(dims) + 2, 1))
+        numDims: List[int] = list(np.random.choice(ds, len(dims), replace=False))
+        # Map the integer dimensions to each symbol dimension (dict)
+        symdimToNumdim: Dict[Symbol, int] = dict(zip(dims, numDims))
+        # Create its inverse for later use
+        numdimToSymdim: Dict[int, Symbol] = dict( [(v, k) for k, v in symdimToNumdim.items()] )
+
+        # Now make the matrix symbols using those fake integer dimensions: 
+        syms_ = [MatrixSymbol(m.name, symdimToNumdim[m.shape[0]], symdimToNumdim[m.shape[1]] ) for m in syms]
+
+        # Create a dictionary mapping the symbol-dim matrices to the num-dim matrices
+        symmatToNummat: Dict[MatrixSymbol, MatrixSymbol] = dict(zip(syms, syms_))
+        # Make inverse of the symbolic-dim to num-dim dictionary: 
+        nummatToSymmat: Dict[MatrixSymbol, MatrixSymbol] = dict( [(v, k) for k, v in symmatToNummat.items()] )
+
+        # Create another expression from the given argument expr, but with all symbols having the number dimension not symbol dimension (as was given)
+
+        expr_: MatrixExpr = expr.xreplace(symmatToNummat)
+
+        byVar_ : MatrixSymbol = MatrixSymbol(byVar.name, symdimToNumdim[byVar.shape[0]], symdimToNumdim[byVar.shape[1]])
+
+    else: 
+        # If any of the dims are NOT symbols then it means all of the dims are numbers, so just rename as follows: 
+        expr_ = expr
+        byVar_ = byVar 
 
     # STEP 2: create the intermediary replacer functions
     t = Function('t', commutative=True)
@@ -644,83 +684,66 @@ def derivMatmul(mat1: MatrixSymbol, mat2: MatrixSymbol, byVar: MatrixSymbol) -> 
     tL = Lambda(M, M.applyfunc(t)) # apply the miniature inner function to the matrix (to get that lambda symbol using an arbitrary function t())
 
     # Create shape of the resulting matrix multiplication of arguments. Will use this to substitute; shape must match because it interacts with derivative involving the arguments, which have related shape. 
-    R = Matrix(MatrixSymbol('R', *expr.shape) )
+    R = Matrix(MatrixSymbol('R', *expr_.shape) )
 
     # STEP 3: Do derivative: 
-    deriv = t(expr).replace(t, tL).diff(byVar)
+    deriv = t(expr_).replace(t, tL).diff(byVar_)
 
     cutExpr = diff(tL(M), M).subs(M, R).doit()
 
-    derivToCut = deriv.subs(expr, R).doit()
+    derivWithCutExpr = deriv.subs(expr_, R).doit()
 
-    derivID = derivToCut.replace(cutExpr, 1).doit()
+    # TODO don't know if this is correct as matrix calculus rule. 
+    # # Create the invisible matrix to substitute in place of the lambda expression thing (substituting just 1 works when expr_ = A * B, simple matrix product, and substituting results in correct answer: d(A*B)/dB = A^T * 1 = A^T but not sure if the result is correct here for arbitrary matrix expression expr)
+    INVIS_ = MatrixSymbol(' ', *expr_.shape)
+    # Create the symbolic-dim companion for later use
+    INVIS = MatrixSymbol(' ', *expr.shape) #numdimToSymdim[INVIS_.shape[0]], numdimToSymdim[INVIS_.shape[1]])
 
-    # STEP 4: replace the original variables if any dimension was a symbol, so that the result expression dimensions are still symbols
-    if isAnyDimASymbol:
-        derivID = derivID.subs({realMat1: mat1, realMat2: mat2})
-
-        # Asserting that all dims now are symbols, as we want: 
-        assert all(map(lambda dim_i: isinstance(dim_i, Symbol), derivID.shape))
-
-    return derivID
-# %%
-derivMatmul(X, A, A)
-# %% 
-derivMatmul(X, w, w)
-# %% 
-derivMatmul(X, w, X)
-
-
-# %%
-def derivMatmul(expr: MatrixExpr, byVar: MatrixSymbol) -> MatrixExpr: 
-    
-
-    # STEP 1: if the arguments have symbolic shape, then need to create fake ones for this function (since the R Matrix will replace a MatrixSymbol M, and we need actual numbers from the arguments' shapes to construct the Matrix R, which represents their multiplication)
-    isAnyDimASymbol = any(map(lambda dim_i: isinstance(dim_i, Symbol), expr.shape))
-
-    if isAnyDimASymbol: 
-        (DIM_1, DIM_2, DIM_3) = (5, 2, 3) # arbitrary dimensions we choose, doesn't matter, just used later for substitution.
-        realMat1 = MatrixSymbol(mat1.name, DIM_1, DIM_2)
-        realMat2 = MatrixSymbol(mat2.name, DIM_2, DIM_3)
-        expr = realMat1 * realMat2 
-        byVar = realMat2 
-
-    # STEP 2: create the intermediary replacer functions
-    t = Function('t', commutative=True)
-    # Create the lambd apply func
-    M = MatrixSymbol('M', i, j) # abstract shape, doesn't matter
-    tL = Lambda(M, M.applyfunc(t)) # apply the miniature inner function to the matrix (to get that lambda symbol using an arbitrary function t())
-
-    # Create shape of the resulting matrix multiplication of arguments. Will use this to substitute; shape must match because it interacts with derivative involving the arguments, which have related shape. 
-    R = Matrix(MatrixSymbol('R', *expr.shape) )
-
-    # STEP 3: Do derivative: 
-    deriv = t(expr).replace(t, tL).diff(byVar)
-
-    cutExpr = diff(tL(M), M).subs(M, R).doit()
-
-    derivToCut = deriv.subs(expr, R).doit()
-
-    derivID = derivToCut.replace(cutExpr, 1).doit()
+    # TODO (this is the questionable part) Substitute the expression to cut with the invisible, correctly-shaped matrix
+    derivResult_ = derivWithCutExpr.xreplace({cutExpr : INVIS_}).doit()
 
     # STEP 4: replace the original variables if any dimension was a symbol, so that the result expression dimensions are still symbols
     if isAnyDimASymbol:
-        derivID = derivID.subs({realMat1: mat1, realMat2: mat2})
+        # Add the invisible matrix: 
+        nummatToSymmat_with_invis = dict( list(nummatToSymmat.items() ) + [(INVIS_, INVIS)] )
+
+        derivResult: MatrixExpr = derivResult_.xreplace(nummatToSymmat_with_invis)
+        # NOTE: use xreplace when want to replace all the variables all at ONCE (this seems to be the effect with xreplace rather than subs). Else replacing MatrixSymbols happens one-by-one and alignment error gets thrown. 
+        #derivResult_.subs(nummatToSymmat_with_invis)
 
         # Asserting that all dims now are symbols, as we want: 
-        assert all(map(lambda dim_i: isinstance(dim_i, Symbol), derivID.shape))
+        assert all(map(lambda dim_i: isinstance(dim_i, Symbol), derivResult.shape))
 
-    return derivID
+        return derivResult
 
-
-
-
-
-
+    return derivResult_ # else if no dim was symbol, return the num-dim result. 
 # %%
-# TODO left off here trying to find a way to replace the sigma composition to result just in the X^T derivative ...
-matdiff = sigma(v(X, w)).replace(v, v_).replace(sigma, sigma_).diff(w)
-matdiff.replace(X*w, Identity(b))
+A = MatrixSymbol("A", a, c)
+B = MatrixSymbol("B", c, b)
+R = MatrixSymbol("R", c,c)
+C = MatrixSymbol('C', b, b)
+D = MatrixSymbol('D', b, a)
+L = MatrixSymbol('L', a, c)
+E = MatrixSymbol('E', c, b)
+
+# Testing with real numbers because the matrix diff function needs real number dimensions 
+# TODO make diffmatrix convert symbolic dims into real dims that match just for the sake of keeping symbolic dims at the end (then replace)
+A_ = MatrixSymbol("A", 4, 3)
+B_ = MatrixSymbol("B", 3, 2)
+R_ = MatrixSymbol("R", 3,3)
+C_ = MatrixSymbol('C', 2, 2)
+D_ = MatrixSymbol('D', 2, 4)
+L_ = MatrixSymbol('L', 4, 3)
+E_ = MatrixSymbol('E', 3, 2)
+# %%
+derivMatexpr(A * B, A)
+# %%
+derivMatexpr(A * B, B)
+# %% 
+derivMatexpr(X*w, w)
+# %% 
+derivMatexpr(X*w, X)
+
 
 
 
@@ -747,7 +770,7 @@ showGroup([
     dP_dN.replace(v(Xs, ws), Ns).replace(alpha, alpha_).replace(Bs, B).replace(Ns, N).doit()
 ])
 # TODO left off here need to find a way to make this a matrix of ones not a tensor of tensors.
-from sympy import tensorcontraction
+
 ex = alpha(Nelem, Belem).replace(alpha, alpha_).diff(Nelem)
 #ex.shape
 contr = tensorcontraction(ex, (0,))
