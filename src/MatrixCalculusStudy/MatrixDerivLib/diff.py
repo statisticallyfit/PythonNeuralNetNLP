@@ -111,7 +111,7 @@ def _applyDiffMat(expression, byVar: MatrixSymbol):
         raise TypeError("Don't know how to differentiate class %s", expression.__class__)
 
 
-def diffMatrix(expression, byVar: MatrixSymbol):
+def diffMatrix(expression: MatrixExpr, byVar: MatrixSymbol):
 
     def diffAndSimplify(expression, byVar: MatrixSymbol):
         expr = _applyDiffMat(expression, byVar)
