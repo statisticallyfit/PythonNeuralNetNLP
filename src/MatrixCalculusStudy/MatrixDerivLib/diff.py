@@ -57,6 +57,45 @@ MATRIX_DIFF_RULES = {
     # we want to differentiate. ASSUME S is a MatrixSymbol
 
     # NOTE: if symbol e is an element of the matrixsymbol s then can do derivative else is just zero.
+    Symbol: lambda e, s: d(e) if (s.has(e)) else 0,
+
+    MatrixSymbol: lambda e, S: d(e) if (S.has(e)) else ZeroMatrix(*e.shape),
+
+    SymmetricMatrixSymbol: lambda e, S: d(e) if (S.has(e)) else ZeroMatrix(*e.shape),
+
+    # TODO: need to change this so that only the below acts for when a MatrixSymbol arg but to carry out the matrix chain rules when there are nested functions with different typed arguments (different return type results)
+    #### Application: lambda appFunc, S:  Deriv(appFunc, S) if (appFunc.has(S)) else ZeroMatrix(*S.shape),
+
+    Add: lambda e, S: Add(*[_applyDiffMat(arg, S) for arg in e.args]),
+
+    Mul: lambda e, S: _applyDiffMat(e.args[0], S) if len(e.args) == 1 else Mul(_applyDiffMat(e.args[0], S), Mul(*e.args[1:])) + Mul(e.args[0], _applyDiffMat(Mul(*e.args[1:]), S)),
+
+    MatAdd: lambda e, S: MatAdd(*[_applyDiffMat(arg, S) for arg in e.args]),
+
+    MatMul: lambda e, S: _applyDiffMat(e.args[0], S) if len(e.args) == 1 else MatMul(_applyDiffMat(e.args[0], S), MatMul(*e.args[1:])) + MatMul(e.args[0], _applyDiffMat(MatMul(*e.args[1:]), S)),
+
+    Kron: lambda e, S: _applyDiffMat(e.args[0], S) if len(e.args) == 1 else Kron(_applyDiffMat(e.args[0], S), Kron(*e.args[1:])) + Kron(e.args[0], _applyDiffMat(Kron(*e.args[1:]), S)),
+
+    Determinant: lambda e, S: MatMul(Determinant(e.args[0]), Trace(e.args[0].I * _applyDiffMat(e.args[0], S))),
+
+    # inverse always has 1 arg, so we index
+    Inverse: lambda e, S: -Inverse(e.args[0]) * _applyDiffMat(e.args[0], S) * Inverse(e.args[0]),
+
+    # trace always has 1 arg
+    Trace: lambda e, S: Trace(_applyDiffMat(e.args[0], S)),
+    # transpose also always has 1 arg, index
+
+    Transpose: lambda e, S: Transpose(_applyDiffMat(e.args[0], S))
+}
+
+
+# NOTE: had changed this to use Deriv(,) class but need to change back to use differential d() class
+'''
+MATRIX_DIFF_RULES = {
+    # e = expression, s = SINGLE symbol  respsect to which
+    # we want to differentiate. ASSUME S is a MatrixSymbol
+
+    # NOTE: if symbol e is an element of the matrixsymbol s then can do derivative else is just zero.
     Symbol: lambda e, S: Deriv(e, S) if (e in Matrix(S)) else ZeroMatrix(*S.shape),
 
     MatrixSymbol: lambda e, S: Deriv(e, S) if (e == S) else ZeroMatrix(*e.shape),
@@ -87,7 +126,7 @@ MATRIX_DIFF_RULES = {
 
     Transpose: lambda e, S: Transpose(_applyDiffMat(e.args[0], S))
 }
-
+'''
 
 
 def _applyDiffMat(expression, byVar: MatrixSymbol):
@@ -115,7 +154,7 @@ def diffMatrix(expression: MatrixExpr, byVar: MatrixSymbol):
 
     def diffAndSimplify(expression, byVar: MatrixSymbol):
         expr = _applyDiffMat(expression, byVar)
-        expr = simplify_matdiff(expr, Deriv(byVar, byVar))
+        expr = simplify_matdiff(expr, d(byVar))
         return expr
 
     return diffAndSimplify(expression, byVar)
@@ -135,11 +174,11 @@ def _diffToGrad(expr, s):
 
 
 
-def gradientMatrix(expr, syms):
+def gradientMatrix(expr, byVar):
     """Compute matrix gradient by matrix differentiation
     """
-    diff = diffMatrix(expr, syms)
-    grad = [_diffToGrad(e, s) for e, s in zip(diff, syms)]
+    matDeriv = diffMatrix(expr, byVar)
+    grad = [_diffToGrad(e, s) for e, s in zip(matDeriv, byVar)]
     return grad
 
 # -----------------------------------
@@ -154,6 +193,7 @@ def main():
     W = Matrix(m, p, lambda i,j : var_ij('w', i, j))
 
     A = MatrixSymbol("A", a, c)
+    J = MatrixSymbol('J', a, c)
     B = MatrixSymbol("B", c, b)
     R = MatrixSymbol("R", c,c)
     C = MatrixSymbol('C', b, b)
@@ -164,6 +204,7 @@ def main():
     # Testing with real numbers because the matrix diff function needs real number dimensions 
     # TODO make diffmatrix convert symbolic dims into real dims that match just for the sake of keeping symbolic dims at the end (then replace)
     A_ = MatrixSymbol("A", 4, 3)
+    J_ = MatrixSymbol('J', 4, 3)
     B_ = MatrixSymbol("B", 3, 2)
     R_ = MatrixSymbol("R", 3,3)
     C_ = MatrixSymbol('C', 2, 2)
