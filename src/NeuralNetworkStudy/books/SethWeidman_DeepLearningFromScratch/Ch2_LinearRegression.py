@@ -19,7 +19,9 @@ from typing import *
 import itertools
 from functools import reduce
 
-from sympy import det, Trace, Inverse, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity,  Derivative, symbols, diff, HadamardProduct, tensorcontraction
+from sympy import det, Determinant, Trace, Transpose, Inverse, HadamardProduct, TensorProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity,  Derivative, symbols, diff, tensorcontraction
+
+
 
 from sympy.abc import x, i, j, a, b, c
 

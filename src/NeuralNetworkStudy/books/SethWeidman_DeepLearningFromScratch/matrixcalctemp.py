@@ -6,7 +6,8 @@ from typing import *
 import itertools
 from functools import reduce
 
-from sympy import det, Trace, Inverse, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity,  Derivative, symbols, diff, HadamardProduct, tensorcontraction
+
+from sympy import det, Determinant, Trace, Transpose, Inverse, HadamardProduct, TensorProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity,  Derivative, symbols, diff, tensorcontraction
 
 from sympy.abc import x, i, j, a, b, c
 
@@ -192,15 +193,15 @@ def derivMatmul(expr: MatrixExpr,
         # TODO questionable hacky action here (ref: seth book pg 43 and 54): If the expr was a product of two matrices then result should not have the "I" matrix but should equal transpose of other matrix: 
         exprIsProdOfTwoMatrices = len(expr.args) == 2 and isinstance(expr, MatMul) and all(map(lambda anArg: isinstance(anArg, MatrixSymbol), expr.args))
 
-        if exprIsProdOfTwoMatrices:
-            derivResult: MatrixExpr = derivResult.xreplace({IDENT : INVIS})
+        #if exprIsProdOfTwoMatrices:
+        #    derivResult: MatrixExpr = derivResult.xreplace({IDENT : INVIS})
 
         return derivResult
 
     exprIsProdOfTwoMatrices = len(expr.args) == 2 and isinstance(expr, MatMul) and all(map(lambda anArg: isinstance(anArg, MatrixSymbol), expr.args))
 
-    if exprIsProdOfTwoMatrices:
-        derivResult_: MatrixExpr = derivResult_.xreplace({IDENT_ : INVIS_}) 
+    #if exprIsProdOfTwoMatrices:
+    #    derivResult_: MatrixExpr = derivResult_.xreplace({IDENT_ : INVIS_}) 
 
     return derivResult_ # else if no dim was symbol, return the num-dim result. 
 # %%
@@ -253,15 +254,20 @@ derivMatmul(A*B - D.T, A)
 # %%
 derivMatmul(B * Inverse(C) * E.T * L.T * A * E * D, E)
 # %%
+derivMatmul(B * Inverse(C) * E.T * L.T * A * E * D, C)
+# %%
+derivMatmul(B * Inverse(C) * E.T * L.T * A * E * D, A)
+# %%
+derivMatmul(B * Inverse(C) * E.T * L.T * A * E * D, D)
+# %%
+derivMatmul(B * Inverse(C) * E.T * L.T * A * E * D, L)
+# %%
+diffMatrix(B_ * Inverse(C_) * E_.T * L_.T * A_ * E_ * D_, C_)
+# %%
 derivMatmul(B_ * Inverse(C_) * E_.T * L_.T * A_ * E_ * D_,   E_)
 
-
-
-
-
-
-
-
+# %% 
+derivMatmul(X*Y*A*X*B, A)
 
 
 # %%
@@ -279,8 +285,9 @@ diff(Trace(A*J), J)
 # %%
 diff(Trace(A*J), A)
 # %%
-diff(A*J, A)
+diffMatrix(A*J, A)
 # %%
+derivMatmul(A*J, A)
 
 
 
