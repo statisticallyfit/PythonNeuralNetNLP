@@ -2,5 +2,11 @@
     "python.pythonPath": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
     "python.linting.pylintEnabled": false,
     "python.linting.mypyEnabled": true,
-    "python.linting.enabled": true
+    "python.linting.enabled": true,
+    "markdown.preview.fontFamily": "Artifika",
+    "[markdown]": {
+    
+        "editor.wordWrap": "on",
+        "editor.quickSuggestions": false
+    }
 }

@@ -269,9 +269,18 @@ diffMatrix(X, X)
 # %%
 diffMatrix(a*X, X)
 # %%
-diffMatrix(Trace(R_), R_)
+# TODO error with cyclic permute 
+# # diffMatrix(Trace(R_), R_)
 
-
+diff(Trace(R), R)
+# %%
+#diff(Trace(X*w), X)
+diff(Trace(A*J), J)
+# %%
+diff(Trace(A*J), A)
+# %%
+diff(A*J, A)
+# %%
 
 
 

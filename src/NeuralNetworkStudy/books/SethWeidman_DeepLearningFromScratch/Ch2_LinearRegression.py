@@ -77,13 +77,15 @@ from IPython.display import display, Math
 from sympy.interactive import printing
 printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLatexPrinter.doprint(e))
 
-
+#from IPython.display import HTML
+#display(HTML('<style>.text_cell .CodeMirror{font-family:Qarmic sans}</style>'))
 # %% markdown
 # ## Linear Regression Formulas
 #
 # ### Data Representation
 #
 # The data is represented in a matrix $X$ with $n$ rows, each of which represents an observation with $k$ features, all of which are numbers. Each row observation is a vector $\overrightarrow{x}_i = \begin{pmatrix}x_{i1}  &  x_{i2}  &  x_{i3} & ... & x_{ik} \end{pmatrix}$. Each of these row observation vectors will be stacked on top of one another to form a $b \times k$ batch matrix, $X_{\text{batch}}$.
+# %% [markdown]
 #
 # For instance a batch of size $b$ would look like this:
 # $$
