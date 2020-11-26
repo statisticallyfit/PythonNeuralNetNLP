@@ -7,14 +7,17 @@ import itertools
 from functools import reduce
 
 
-from sympy import det, Determinant, Trace, Transpose, Inverse, HadamardProduct, TensorProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity,  Derivative, symbols, diff, tensorcontraction
+from sympy import det, Determinant, Trace, Transpose, Inverse, HadamardProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity,  Derivative, symbols, diff 
+
+from sympy import tensorcontraction, tensorproduct
+from sympy.physics.quantum.tensorproduct import TensorProduct
 
 from sympy.abc import x, i, j, a, b, c
 
 from sympy.matrices.expressions.matadd import MatAdd
 from sympy.matrices.expressions.matmul import MatMul
 
-from sympy.physics.quantum.tensorproduct import TensorProduct
+
 
 # %%
 import torch
@@ -213,6 +216,7 @@ C = MatrixSymbol('C', b, b)
 D = MatrixSymbol('D', b, a)
 L = MatrixSymbol('L', a, c)
 E = MatrixSymbol('E', c, b)
+G = MatrixSymbol('G', b, b) # pair of C
 
 b, k, l = symbols('b k l', commutative=True)
 X = MatrixSymbol('X', b, k)
@@ -228,6 +232,7 @@ C_ = MatrixSymbol('C', 2, 2)
 D_ = MatrixSymbol('D', 2, 4)
 L_ = MatrixSymbol('L', 4, 3)
 E_ = MatrixSymbol('E', 3, 2)
+G_ = MatrixSymbol('G', 2, 2) # pair of C
 
 X_ = MatrixSymbol('X', 2, 5)
 w_ = MatrixSymbol('\overrightarrow{w}', 5, 6)
@@ -310,4 +315,146 @@ g = Function('g', commutative=True)
 #diffMatrix(f(A) * g(A), A)
 # TODO I removed the application function part so this won't work anymore (need to add it back in)
 
+
+
+
+
+
+
 # %% codecell
+from sympy.codegen.array_utils import CodegenArrayPermuteDims, CodegenArrayElementwiseAdd, CodegenArrayContraction, CodegenArrayTensorProduct, recognize_matrix_expression, nest_permutation
+
+from sympy.combinatorics import Permutation
+# %%
+# TRANSPOSE
+recognize_matrix_expression(CodegenArrayPermuteDims(A, [1, 0]))
+# %% codecell
+# ADDITION
+recognize_matrix_expression(CodegenArrayElementwiseAdd(A + L))
+# %%
+# MULTIPLICATION of matricees
+# %%
+# Nesting transpose: 
+cg = CodegenArrayPermuteDims(CodegenArrayTensorProduct(A, R), [1, 0, 3, 2])
+
+showGroup([
+    cg, 
+    recognize_matrix_expression(cg)
+])
+# %%
+nested = nest_permutation(cg)
+
+showGroup([
+    nested,
+    recognize_matrix_expression(nested)
+])
+
+# %% codecell
+CodegenArrayContraction.from_MatMul(A*R*B)
+# %% codecell
+# PARSING: Indexed expression ---> codegen ---> symbolic matrix
+from sympy.codegen.array_utils import parse_indexed_expression
+from sympy import Sum
+
+
+# %% codecell
+
+# PARSING: Trace 
+
+expr = Sum(R[i,i], (i, 0, c - 1))
+
+cgExpr = parse_indexed_expression(expr)
+
+showGroup([
+    expr, 
+    cgExpr, 
+    recognize_matrix_expression(cgExpr)
+])
+# %%
+# PARSING: More complex traces: 
+expr = Sum(A[i, j] * J[j, i])
+# %% codecell
+# PARSING: Extraction of diagonal --- DID NOT WORK
+expr = R[i, i]
+
+cgexpr = parse_indexed_expression(expr)
+
+showGroup([
+    expr, 
+    cgexpr, 
+    recognize_matrix_expression(cgexpr)
+])
+# %% codecell
+# PARSING: Matrix multiplication
+expr = Sum(A[i, j] * B[j, k], (j, 0, c - 1))
+
+cgexpr = parse_indexed_expression(expr)
+
+rec = recognize_matrix_expression(cgexpr)
+
+showGroup([
+    expr, 
+    cgexpr, 
+    rec
+])
+
+assert cgexpr.shape == (A.shape[0], B.shape[1])
+assert all(map(lambda a: isinstance(a, MatrixSymbol), rec.args))
+assert rec.shape == (A.shape[0], B.shape[1])
+# %% codecell
+# Specify that k = starting index (result is transpose of product while before it is just matrix product)
+expr = Sum(A[i, j] * B[j, k], (j, 0, c - 1))
+
+cgexpr = parse_indexed_expression(expr, first_indices=[k])
+
+rec = recognize_matrix_expression(cgexpr)
+
+showGroup([
+    expr, cgexpr, rec
+])
+
+
+
+# %% 
+# PARSING: Transpose (multiple ways)
+expr = Sum(C[j, i] * G[j, k], (j, 0, b - 1))
+
+cg = parse_indexed_expression(expr)
+
+rec = recognize_matrix_expression(cg)
+
+showGroup([expr, cg, rec])
+# %%
+# PARSING: Transpose (multiple ways)
+expr = Sum(C[i, j] * G[k, j], (j, 0, b - 1))
+
+cg = parse_indexed_expression(expr)
+
+rec = recognize_matrix_expression(cg)
+
+showGroup([expr, cg, rec])
+# %%
+# PARSING: Transpose (multiple ways)
+expr = Sum(C[j, i] * G[k, j], (j, 0, b - 1))
+
+cg = parse_indexed_expression(expr)
+
+rec = recognize_matrix_expression(cg)
+
+showGroup([expr, cg, rec])
+# %%
+# %%
+# PARSING: Transpose (multiple ways)
+expr = Sum(C[j,i] * G[k, j], (j, 0, b - 1))
+
+cg = parse_indexed_expression(expr, first_indices= [k])
+
+rec = recognize_matrix_expression(cg)
+
+showGroup([expr, 
+    cg, 
+    rec, 
+    rec.doit()
+])
+# %% codecell
+# PARSING TRACE

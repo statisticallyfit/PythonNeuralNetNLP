@@ -19,16 +19,16 @@ from typing import *
 import itertools
 from functools import reduce
 
-from sympy import det, Determinant, Trace, Transpose, Inverse, HadamardProduct, TensorProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity,  Derivative, symbols, diff, tensorcontraction
+from sympy import det, Determinant, Trace, Transpose, Inverse, HadamardProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity,  Derivative, symbols, diff 
 
-
+from sympy import tensorcontraction, tensorproduct
+from sympy.physics.quantum.tensorproduct import TensorProduct
 
 from sympy.abc import x, i, j, a, b, c
 
 from sympy.matrices.expressions.matadd import MatAdd
 from sympy.matrices.expressions.matmul import MatMul
 
-from sympy.physics.quantum.tensorproduct import TensorProduct
 
 # %%
 import torch
