@@ -657,6 +657,7 @@ showGroup([
     dP_dN.replace(v(Xs, ws), Ns).replace(alpha, alpha_).replace(Bs, B).replace(Ns, N),
     dP_dN.replace(v(Xs, ws), Ns).replace(alpha, alpha_).replace(Bs, B).replace(Ns, N).doit()
 ])
+# %%
 # TODO left off here need to find a way to make this a matrix of ones not a tensor of tensors.
 
 ex = alpha(Nelem, Belem).replace(alpha, alpha_).diff(Nelem)
@@ -669,17 +670,14 @@ contr2 = tensorcontraction(contr, (0,))
 
 ### TODO URGENT HERE
 # TODO try the old way matrix deriv then do the tensor contraction to see if the result is the same with multiplying by parts manually and substituting the matrix there.
+showGroup([
+    ex, contr, contr2
+])
 # %% codecell
 dN_dw = v(Xs, ws).subs({Xs:X, ws:w}).replace(v, v_).diff(w)
 
-dN_dw
+dN_dw # TODO fix not correct, need to actually evaluate this. 
 # %%
 # Putting them together:
 dL_dP * dP_dN * dN_dw
 # %%
-# TODO left off here
-# TODO testing how the matrix multiplication occurs -- not sure this product here is correct
-test = Xs * dL_dP * dP_dN
-test
-#test.replace(Xs, X).doit().replace(X, Xs).replace(v(Xs, ws), Ns).replace(alpha(Ns, Bs), Ps)
-# %% codecell
