@@ -217,6 +217,8 @@ D = MatrixSymbol('D', b, a)
 L = MatrixSymbol('L', a, c)
 E = MatrixSymbol('E', c, b)
 G = MatrixSymbol('G', b, b) # pair of C
+H = MatrixSymbol('H', b, c)
+K = MatrixSymbol('K', a, b) # pair of D
 
 b, k, l = symbols('b k l', commutative=True)
 X = MatrixSymbol('X', b, k)
@@ -233,6 +235,8 @@ D_ = MatrixSymbol('D', 2, 4)
 L_ = MatrixSymbol('L', 4, 3)
 E_ = MatrixSymbol('E', 3, 2)
 G_ = MatrixSymbol('G', 2, 2) # pair of C
+H_ = MatrixSymbol('H', 2, 3)
+K_ = MatrixSymbol('K', 4, 2) # pair of D
 
 X_ = MatrixSymbol('X', 2, 5)
 w_ = MatrixSymbol('\overrightarrow{w}', 5, 6)
@@ -272,7 +276,7 @@ diffMatrix(B_ * Inverse(C_) * E_.T * L_.T * A_ * E_ * D_, C_)
 derivMatmul(B_ * Inverse(C_) * E_.T * L_.T * A_ * E_ * D_,   E_)
 
 # %% 
-derivMatmul(X*Y*A*X*B, A)
+
 
 
 # %%
@@ -322,43 +326,23 @@ g = Function('g', commutative=True)
 
 
 # %% codecell
-from sympy.codegen.array_utils import CodegenArrayPermuteDims, CodegenArrayElementwiseAdd, CodegenArrayContraction, CodegenArrayTensorProduct, recognize_matrix_expression, nest_permutation
+from sympy.codegen.array_utils import CodegenArrayPermuteDims, CodegenArrayElementwiseAdd, CodegenArrayContraction, CodegenArrayTensorProduct, recognize_matrix_expression, nest_permutation, parse_indexed_expression
 
 from sympy.combinatorics import Permutation
-# %%
-# TRANSPOSE
-recognize_matrix_expression(CodegenArrayPermuteDims(A, [1, 0]))
-# %% codecell
-# ADDITION
-recognize_matrix_expression(CodegenArrayElementwiseAdd(A + L))
-# %%
-# MULTIPLICATION of matricees
-# %%
-# Nesting transpose: 
-cg = CodegenArrayPermuteDims(CodegenArrayTensorProduct(A, R), [1, 0, 3, 2])
 
-showGroup([
-    cg, 
-    recognize_matrix_expression(cg)
-])
-# %%
-nested = nest_permutation(cg)
+from sympy import Sum
 
-showGroup([
-    nested,
-    recognize_matrix_expression(nested)
-])
 
 # %% codecell
-CodegenArrayContraction.from_MatMul(A*R*B)
-# %% codecell
+# CODEGEN TUTORIAL SOURCE: https://docs.sympy.org/latest/modules/codegen.html?highlight=tensorproduct#sympy.codegen.array_utils.CodegenArrayTensorProduct
+
+
 # PARSING: Indexed expression ---> codegen ---> symbolic matrix
 from sympy.codegen.array_utils import parse_indexed_expression
 from sympy import Sum
 
 
 # %% codecell
-
 # PARSING: Trace 
 
 expr = Sum(R[i,i], (i, 0, c - 1))
@@ -372,7 +356,19 @@ showGroup([
 ])
 # %%
 # PARSING: More complex traces: 
-expr = Sum(A[i, j] * J[j, i])
+expr = Sum(A[i, j] * J[j, i], (i, 0, a-1), (j, 0, c-1))
+
+cgexpr = parse_indexed_expression(expr)
+
+rec = recognize_matrix_expression(cgexpr)
+
+showGroup([
+    expr, 
+    cgexpr, 
+    rec
+])
+
+
 # %% codecell
 # PARSING: Extraction of diagonal --- DID NOT WORK
 expr = R[i, i]
@@ -384,6 +380,17 @@ showGroup([
     cgexpr, 
     recognize_matrix_expression(cgexpr)
 ])
+
+
+
+
+# %% codecell
+# ADDITION
+recognize_matrix_expression(CodegenArrayElementwiseAdd(A + L))
+
+
+
+
 # %% codecell
 # PARSING: Matrix multiplication
 expr = Sum(A[i, j] * B[j, k], (j, 0, c - 1))
@@ -413,8 +420,55 @@ showGroup([
     expr, cgexpr, rec
 ])
 
+# %%
+# PARSING: Symbolic matrix multiplication (not from indexing notation)
+expr = A*R*B
+
+cgexpr = CodegenArrayContraction.from_MatMul(expr)
+
+rec = recognize_matrix_expression(cgexpr)
+
+showGroup([
+    expr, 
+    cgexpr, 
+    rec
+])
+
+# %%
+# PARSING: Matrix Multiplication (resulting in multiple matrix factors, as specified by the passed dimension tuples)
+cgexpr = CodegenArrayContraction(CodegenArrayTensorProduct(A, B, C, D), (1,2), (5,6))
+
+rec = recognize_matrix_expression(cgexpr)
+
+showGroup([
+    cgexpr, rec
+])
+# NOTE: meaning of the indices
+# Each matrix is assigned an index: 
+# 0_A_1
+# 2_B_3
+# 4_C_5
+# 6_D_7
+# So specifying which matrices get multiplied implies passing in the tuples holding the dims that correspond to each matrix side. Ex: (3,4) means to multiply: B*C
 
 
+
+
+# %%
+# TRANSPOSE
+recognize_matrix_expression(CodegenArrayPermuteDims(A, [1, 0]))
+# %%
+# PARSING: Nested Transpose
+cg = CodegenArrayPermuteDims(CodegenArrayTensorProduct(A, R), [1, 0, 3, 2])
+
+nested = nest_permutation(cg)
+
+showGroup([
+    cg, 
+    recognize_matrix_expression(cg),
+    nested,
+    recognize_matrix_expression(nested)
+])
 # %% 
 # PARSING: Transpose (multiple ways)
 expr = Sum(C[j, i] * G[j, k], (j, 0, b - 1))
@@ -456,5 +510,30 @@ showGroup([expr,
     rec, 
     rec.doit()
 ])
+
+
+
 # %% codecell
-# PARSING TRACE
+# PARSING: Mix of multiplication and Trace
+
+# TRANSPOSED DIMS:  (a, c) * (c,c) * (b, c)
+# REGULAR DIMS:     (a, c) * (c, c) * (c, b)
+#expr = Sum(A[i, j] * R[k, j] * H[l, k], (j, 0, c-1), (k, 0, c-1))
+
+# TRANSPOSED DIMS:  (a, c) * (b, c) * (a, b) 
+# REGULAR DIMS:     (a,c) * (c, b) * (b, a)
+
+expr = Sum(A[i, j] * H[k, j] * K[l, k], (j, 0, c-1), (k, 0, b-1))
+
+# NOTE: need to put the interval endings so that the iterators inside the array correspond to the transposed dims locations
+
+cgexpr = parse_indexed_expression(expr)
+
+rec = recognize_matrix_expression(cgexpr)
+
+showGroup([
+    expr, 
+    cgexpr, 
+    rec
+])
+# %% codecell
