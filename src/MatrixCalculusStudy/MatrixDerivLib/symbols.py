@@ -1,3 +1,7 @@
+# SOURCE for this code = https://github.com/mshvartsman/symbolic-mat-diff/blob/master/symbdiff/symbols.py
+
+
+
 from sympy import (Symbol, MatrixSymbol, Matrix, ZeroMatrix, Identity, Add, Mul, Pow, MatAdd, MatMul, Determinant, Inverse, Trace, Transpose, Function, derive_by_array, Lambda, Derivative, symbols, diff, sympify)
 
 from sympy.core import Expr, Basic # Basic is base class for all sympy objects

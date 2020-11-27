@@ -75,6 +75,30 @@
             "python": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
 
             "internalConsoleOptions":"neverOpen"
+        },
+        {
+            "name": "matrxicalctemp",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/NeuralNetworkStudy/books/SethWeidman_DeepLearningFromScratch/matrxicalctemp.py",
+
+            "console": "integratedTerminal",
+
+            "python": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
+
+            "internalConsoleOptions":"neverOpen"
+        },
+        {
+            "name": "simplifications",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/MatrixCalculusStudy/MatrixDerivLib/simplifications.py",
+
+            "console": "integratedTerminal",
+
+            "python": "/development/bin/python/miniconda3/envs/pymatrix_env/bin/python",
+
+            "internalConsoleOptions":"neverOpen"
         }
     ]
 }

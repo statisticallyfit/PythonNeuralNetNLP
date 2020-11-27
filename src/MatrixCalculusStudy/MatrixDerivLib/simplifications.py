@@ -1,35 +1,13 @@
+## SOURCE for this code = https://github.com/mshvartsman/symbolic-mat-diff/blob/master/symbdiff/simplifications.py
+
+
 from sympy import Trace, MatMul, preorder_traversal, MatAdd, Add
 from collections import OrderedDict
 
 
-def simplify_matdiff(expr, dX):
-    for cond, repl in rules.items():
-        expr = _conditional_replace(expr, cond(dX), repl(dX))
-    return expr
+### CONDITIONS AND REPLACEMENTS ----------------------------------
 
 
-# simplification rules
-def _cyclic_permute(expr):
-    if expr.is_Trace and expr.arg.is_MatMul:
-        prods = expr.arg.args
-        newprods = [prods[-1], *prods[:-1]]
-        return Trace(MatMul(*newprods))
-    else:
-        print(expr)
-        raise RuntimeError("Only know how to cyclic permute products inside traces!")
-
-
-def _conditional_replace(expr, condition, replacement):
-    for x in preorder_traversal(expr):
-        try:
-            if condition(x):
-                expr = expr.xreplace({x: replacement(x)})
-        except AttributeError:  # scalar ops like Add won't have is_Trace
-            pass
-    return expr
-
-
-# conditions
 def transpose_traces_cond(dX):
     def cond(x):
         return x.is_Trace and x.arg.is_MatMul and x.has(dX.T)
@@ -43,7 +21,7 @@ def transpose_traces_repl(dX):
 def trace_sum_distribute_cond(dX):
     return lambda x: x.is_Trace and x.arg.is_MatAdd
 
-
+# NOTE: this probably assumes each of the matrix 'args' are Square Matrices (else putting them as arg to Trace would NOT be allowed)
 def trace_sum_distribute_repl(dX):
     return lambda x: Add(*[Trace(A) for A in x.arg.args])
 
@@ -80,9 +58,26 @@ def inverse_transpose_repl(dX):
     return lambda x: x.arg
 
 
+
+
+def _cyclic_permute(expr):
+    # TODO changing 
+    # if expr.is_Trace and expr.arg.is_MatMul:
+    if expr.arg.is_MatMul:
+        prods = expr.arg.args
+        newprods = [prods[-1], *prods[:-1]]
+        #return Trace(MatMul(*newprods))
+        return MatMul(*newprods)
+    else:
+        print(expr)
+        raise RuntimeError("Only know how to cyclic permute products inside traces!")
+
+
 def cyclic_permute_dX_cond(dX):
     def cond(x):
-        return x.is_Trace and x.has(dX) and x.arg.args[-1] != dX
+        #return x.is_Trace and x.has(dX) and x.arg.args[-1] != dX
+        # TODO changing
+        return x.has(dX) and x.arg.args[-1] != dX
     return cond
 
 
@@ -98,9 +93,37 @@ def cyclic_permute_dX_repl(dX):
         return newx
     return repl
 
+
+
+
+### RULE MANAGEMENT ----------------------------------------------
+
+def _conditional_replace(expr, condition, replacement):
+    for x in preorder_traversal(expr):
+        try:
+            if condition(x):
+                expr = expr.xreplace({x: replacement(x)})
+        except AttributeError:  # scalar ops like Add won't have is_Trace
+            pass
+    return expr
+    
+
+
+def simplify_matdiff(expr, dX):
+    for cond, repl in rules.items():
+        expr = _conditional_replace(expr, cond(dX), repl(dX))
+    return expr
+
+
+
+
+### RULES -------------------------------------------------------
+
+
 # rules applied in order, this should hopefully work to simplify
 rules = OrderedDict([(matmul_distribute_cond, matmul_distribute_repl),
                     (trace_sum_distribute_cond, trace_sum_distribute_repl),
                     (transpose_traces_cond, transpose_traces_repl),
                     (inverse_transpose_cond, inverse_transpose_repl),
                     (cyclic_permute_dX_cond, cyclic_permute_dX_repl)])
+

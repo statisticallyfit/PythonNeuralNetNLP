@@ -59,6 +59,7 @@ from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.FunctionUt
 
 
 from src.utils.GeneralUtil import *
+
 from src.MatrixCalculusStudy.MatrixDerivLib.symbols import Deriv
 from src.MatrixCalculusStudy.MatrixDerivLib.diff import diffMatrix
 from src.MatrixCalculusStudy.MatrixDerivLib.printingLatex import myLatexPrinter
@@ -84,7 +85,7 @@ def derivMatadd(expr: MatrixExpr, byVar: MatrixSymbol) -> MatrixExpr:
     # Filter all components and make sure they have the byVar argument inside. If they don't keep them out to signify that derivative is 0. (Ex: d(A)/d(C) = 0)
     componentsToDeriv: List[MatMul] = list(filter(lambda c: c.has(A), components))
 
-# TODO left off here matrix add so that expression like AB + D^T can be differentiated (by A) to equal B^T and another one AB + A should result in B^T + I (assuming appropriate sizes). 
+# TODO NOT DONE YET with this function, left off here matrix add so that expression like AB + D^T can be differentiated (by A) to equal B^T and another one AB + A should result in B^T + I (assuming appropriate sizes). 
 
 
 
@@ -591,4 +592,27 @@ compose(f, g_a, v)(Matrix(X_), Matrix(w_)).replace(v, v_).replace(g_a, g_)
 # %% codecell
 compose(f, g_a, v)(X_, w_).replace(v, v_).replace(g_a, g_).diff(w_)
 
+
+
+
+
+
+
+
+
+
+
+# %% codecell
+
+# TODO debugging the functions in 'simplifications.py' file, normally wouldn't need to import here so erase after done
+from src.MatrixCalculusStudy.MatrixDerivLib.simplifications import _conditional_replace, cyclic_permute_dX_cond, cyclic_permute_dX_repl, _cyclic_permute
+
+
+
+# STRATEGY 3: DIFFERENTIAL APPROACH -------------------------------
+de = diffMatrix(A*R*J, R)
+de
+# %%
+# TODO left off here to fix these functions
+_conditional_replace(de, cyclic_permute_dX_cond(de), cyclic_permute_dX_repl(de))
 # %% codecell

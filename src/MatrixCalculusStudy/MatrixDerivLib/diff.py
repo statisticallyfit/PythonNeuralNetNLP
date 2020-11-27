@@ -1,4 +1,4 @@
-# Source of code for this library: https://github.com/mshvartsman/symbolic-mat-diff/blob/master/symbdiff/diff.py
+# SOURCE for this code = https://github.com/mshvartsman/symbolic-mat-diff/blob/master/symbdiff/diff.py
 
 
 from sympy import (Symbol, MatrixSymbol, Matrix, MatrixExpr, ZeroMatrix, Identity, Add, Mul, MatAdd, MatMul, Determinant, Inverse, Trace, Transpose, Function, derive_by_array, Lambda, Derivative, symbols, diff, sympify)
