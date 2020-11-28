@@ -150,7 +150,7 @@ def _applyDiffMat(expression, byVar: MatrixSymbol):
         raise TypeError("Don't know how to differentiate class %s", expression.__class__)
 
 
-def diffMatrix(expression: MatrixExpr, byVar: MatrixSymbol):
+def matrixDifferential(expression: MatrixExpr, byVar: MatrixSymbol):
 
     def diffAndSimplify(expression, byVar: MatrixSymbol):
         expr = _applyDiffMat(expression, byVar)
@@ -177,7 +177,7 @@ def _diffToGrad(expr, s):
 def gradientMatrix(expr, byVar):
     """Compute matrix gradient by matrix differentiation
     """
-    matDeriv = diffMatrix(expr, byVar)
+    matDeriv = matrixDifferential(expr, byVar)
     grad = [_diffToGrad(e, s) for e, s in zip(matDeriv, byVar)]
     return grad
 
@@ -213,10 +213,10 @@ def main():
     E_ = MatrixSymbol('E', 3, 2)
 
     # TODO: this doesn't seem correct
-    display(diffMatrix(B_ * Inverse(C_) * E_.T, byVar = E_) )
+    display(matrixDifferential(B_ * Inverse(C_) * E_.T, byVar = E_) )
 
     # TODO this doesn't seem correct --- just puts the diff operator on the A, why doesn't it compare to the diff(X*w) = X^T ???
-    display(diffMatrix(B_ * Inverse(C_) * E_.T * L_.T * A_ * E_ * D_ , A_))
+    display(matrixDifferential(B_ * Inverse(C_) * E_.T * L_.T * A_ * E_ * D_ , A_))
     # TODO make the diffmatrix function be able to operate on MatrixSymbol type that has symbols for dimensions, not just real numbers: 
     # B * Inverse(C) * E.T * L.T * A * E * D
 
@@ -237,7 +237,7 @@ def main():
     h = Function('h', commutative=True)
 
     # Product Rule for Matrices: 
-    diffMatrix(f(A,B)*g(A,B), A)
+    matrixDifferential(f(A,B)*g(A,B), A)
 
 
     #RV = RealValuedMatrixFunc

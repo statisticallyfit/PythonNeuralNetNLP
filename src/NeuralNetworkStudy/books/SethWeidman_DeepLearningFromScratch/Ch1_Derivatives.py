@@ -63,7 +63,7 @@ from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.FunctionUt
 
 from src.utils.GeneralUtil import *
 from src.MatrixCalculusStudy.MatrixDerivLib.symbols import Deriv
-from src.MatrixCalculusStudy.MatrixDerivLib.diff import diffMatrix
+from src.MatrixCalculusStudy.MatrixDerivLib.diff import matrixDifferential
 from src.MatrixCalculusStudy.MatrixDerivLib.printingLatex import myLatexPrinter
 
 # For displaying

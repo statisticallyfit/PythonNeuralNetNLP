@@ -29,7 +29,7 @@ from src.utils.GeneralUtil import *
 from src.MatrixCalculusStudy.MatrixDerivLib.symbols import Deriv
 #from MatrixDerivLib.symbols import Deriv
 
-from src.MatrixCalculusStudy.MatrixDerivLib.diff import diffMatrix
+from src.MatrixCalculusStudy.MatrixDerivLib.diff import matrixDifferential
 #from ..MatrixCalculusStudy.MatrixDerivLib.diff import diffMatrix
 from src.MatrixCalculusStudy.MatrixDerivLib.printingLatex import myLatexPrinter
 #from ..MatrixCalculusStudy.MatrixDerivLib.printingLatex import myLatexPrinter

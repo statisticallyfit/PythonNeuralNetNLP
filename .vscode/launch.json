@@ -77,10 +77,10 @@
             "internalConsoleOptions":"neverOpen"
         },
         {
-            "name": "matrxicalctemp",
+            "name": "try_matrixcalcrules",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/src/NeuralNetworkStudy/books/SethWeidman_DeepLearningFromScratch/matrxicalctemp.py",
+            "program": "${workspaceFolder}/src/NeuralNetworkStudy/books/SethWeidman_DeepLearningFromScratch/try_matrixcalcrules.py",
 
             "console": "integratedTerminal",
 

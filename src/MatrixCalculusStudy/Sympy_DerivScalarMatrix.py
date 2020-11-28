@@ -20,7 +20,7 @@ from sympy import diff, sin, exp, symbols, Function, Matrix, MatrixSymbol, Funct
 # %%
 from src.utils.GeneralUtil import *
 from src.MatrixCalculusStudy.MatrixDerivLib.symbols import Deriv
-from src.MatrixCalculusStudy.MatrixDerivLib.diff import diffMatrix
+from src.MatrixCalculusStudy.MatrixDerivLib.diff import matrixDifferential
 from src.MatrixCalculusStudy.MatrixDerivLib.printingLatex import myLatexPrinter
 
 from IPython.display import display, Math

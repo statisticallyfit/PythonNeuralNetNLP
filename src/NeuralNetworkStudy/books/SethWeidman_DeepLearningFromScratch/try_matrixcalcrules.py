@@ -1,4 +1,5 @@
 
+# %%
 import numpy as np
 from numpy import ndarray
 
@@ -61,7 +62,7 @@ from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.FunctionUt
 from src.utils.GeneralUtil import *
 
 from src.MatrixCalculusStudy.MatrixDerivLib.symbols import Deriv
-from src.MatrixCalculusStudy.MatrixDerivLib.diff import diffMatrix
+from src.MatrixCalculusStudy.MatrixDerivLib.diff import matrixDifferential
 from src.MatrixCalculusStudy.MatrixDerivLib.printingLatex import myLatexPrinter
 
 # For displaying
@@ -74,7 +75,7 @@ printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLat
 
 
 # %%
-def derivMatadd(expr: MatrixExpr, byVar: MatrixSymbol) -> MatrixExpr: 
+def mataddDeriv(expr: MatrixExpr, byVar: MatrixSymbol) -> MatrixExpr: 
     assert isinstance(expr, MatAdd), "The expression is not of type MatAdd"
 
     # Split at the plus / minus sign
@@ -93,7 +94,7 @@ def derivMatadd(expr: MatrixExpr, byVar: MatrixSymbol) -> MatrixExpr:
 # TODO 1) incorporate rules from here: https://hyp.is/6EQ8FC5YEeujn1dcCVtPZw/en.wikipedia.org/wiki/Matrix_calculus
 # TODO 2) incorporate rules from Helmut book
 # TODO 3) test-check with matrixcalculus.org and get its code ...?
-def derivMatmul(expr: MatrixExpr, 
+def matmulDeriv(expr: MatrixExpr, 
     #mat1: MatrixSymbol, mat2: MatrixSymbol, 
     byVar: MatrixSymbol) -> MatrixExpr: 
     
@@ -245,294 +246,45 @@ w_ = MatrixSymbol('\overrightarrow{w}', 5, 6)
 
 
 
-
-
-# %% codecell
-
-# CODEGEN TUTORIAL SOURCE: https://docs.sympy.org/latest/modules/codegen.html?highlight=tensorproduct#sympy.codegen.array_utils.CodegenArrayTensorProduct
-
-
-from sympy.codegen.array_utils import CodegenArrayPermuteDims, CodegenArrayElementwiseAdd, CodegenArrayContraction, CodegenArrayTensorProduct, recognize_matrix_expression, nest_permutation, parse_indexed_expression
-
-from sympy.combinatorics import Permutation
-
-from sympy import Sum
-
-
-
-# %% codecell
-# PARSING: Trace 
-
-expr = Sum(R[i,i], (i, 0, c - 1))
-
-cgExpr = parse_indexed_expression(expr)
-
-showGroup([
-    expr, 
-    cgExpr, 
-    recognize_matrix_expression(cgExpr)
-])
 # %%
-# PARSING: More complex traces: 
-expr = Sum(A[i, j] * J[j, i], (i, 0, a-1), (j, 0, c-1))
-
-cgexpr = parse_indexed_expression(expr)
-
-rec = recognize_matrix_expression(cgexpr)
-
-showGroup([
-    expr, 
-    cgexpr, 
-    rec
-])
-
-
-# %% codecell
-# PARSING: Extraction of diagonal --- DID NOT WORK
-expr = R[i, i]
-
-cgexpr = parse_indexed_expression(expr)
-
-showGroup([
-    expr, 
-    cgexpr, 
-    recognize_matrix_expression(cgexpr)
-])
-
-
-
-
-# %% codecell
-# ADDITION
-recognize_matrix_expression(CodegenArrayElementwiseAdd(A + L))
-
-
-
-
-# %% codecell
-# PARSING: Matrix multiplication
-expr = Sum(A[i, j] * B[j, k], (j, 0, c - 1))
-
-cgexpr = parse_indexed_expression(expr)
-
-rec = recognize_matrix_expression(cgexpr)
-
-showGroup([
-    expr, 
-    cgexpr, 
-    rec
-])
-
-assert cgexpr.shape == (A.shape[0], B.shape[1])
-assert all(map(lambda a: isinstance(a, MatrixSymbol), rec.args))
-assert rec.shape == (A.shape[0], B.shape[1])
-
-# %% codecell
-# Specify that k = starting index (result is transpose of product while before it is just matrix product)
-expr = Sum(A[i, j] * B[j, k], (j, 0, c - 1))
-
-cgexpr = parse_indexed_expression(expr, first_indices=[k])
-
-rec = recognize_matrix_expression(cgexpr)
-
-showGroup([
-    expr, cgexpr, rec
-])
-
+matmulDeriv(A * B, A)
 # %%
-# PARSING: Symbolic matrix multiplication (not from indexing notation)
-expr = A*R*B
-
-cgexpr = CodegenArrayContraction.from_MatMul(expr)
-
-rec = recognize_matrix_expression(cgexpr)
-
-showGroup([
-    expr, 
-    cgexpr, 
-    rec
-])
-
-# %%
-# PARSING: Matrix Multiplication (resulting in multiple matrix factors, as specified by the passed dimension tuples)
-cgexpr = CodegenArrayContraction(CodegenArrayTensorProduct(A, B, C, D), (1,2), (5,6))
-
-rec = recognize_matrix_expression(cgexpr)
-
-showGroup([
-    cgexpr, rec
-])
-# NOTE: meaning of the indices
-# Each matrix is assigned an index: 
-# 0_A_1
-# 2_B_3
-# 4_C_5
-# 6_D_7
-# So specifying which matrices get multiplied implies passing in the tuples holding the dims that correspond to each matrix side. Ex: (3,4) means to multiply: B*C
-
-
-
-
-# %%
-# PARSING: Tensor product
-expr = TensorProduct(A, B)
-
-cg = CodegenArrayContraction.from_MatMul(expr)
-
-rec = recognize_matrix_expression(cg)
-
-showGroup([
-    expr, 
-    cg, 
-    rec
-    # TODO why does this result in simple matrix multiplication? Tensor product is NOT regular matrix multiplication!
-])
-
-
-
-
-# %%
-# TRANSPOSE
-recognize_matrix_expression(CodegenArrayPermuteDims(A, [1, 0]))
-# %%
-# PARSING: Nested Transpose
-cg = CodegenArrayPermuteDims(CodegenArrayTensorProduct(A, R), [1, 0, 3, 2])
-
-nested = nest_permutation(cg)
-
-showGroup([
-    cg, 
-    recognize_matrix_expression(cg),
-    nested,
-    recognize_matrix_expression(nested)
-])
-# %%
-# TODO try to get dims for tensor contraction 
-
-
-
+matmulDeriv(A * B, B)
 # %% 
-# PARSING: Transpose (multiple ways)
-expr = Sum(C[j, i] * G[j, k], (j, 0, b - 1))
-
-cg = parse_indexed_expression(expr)
-
-rec = recognize_matrix_expression(cg)
-
-showGroup([expr, cg, rec])
-# %%
-# PARSING: Transpose (multiple ways)
-expr = Sum(C[i, j] * G[k, j], (j, 0, b - 1))
-
-cg = parse_indexed_expression(expr)
-
-rec = recognize_matrix_expression(cg)
-
-showGroup([expr, cg, rec])
-# %%
-# PARSING: Transpose (multiple ways)
-expr = Sum(C[j, i] * G[k, j], (j, 0, b - 1))
-
-cg = parse_indexed_expression(expr)
-
-rec = recognize_matrix_expression(cg)
-
-showGroup([expr, cg, rec])
-# %%
-# %%
-# PARSING: Transpose (multiple ways)
-expr = Sum(C[j,i] * G[k, j], (j, 0, b - 1))
-
-cg = parse_indexed_expression(expr, first_indices= [k])
-
-rec = recognize_matrix_expression(cg)
-
-showGroup([expr, 
-    cg, 
-    rec, 
-    rec.doit()
-])
-
-
-
-# %% codecell
-# PARSING: Mix of multiplication and Trace
-
-# TRANSPOSED DIMS:  (a, c) * (c,c) * (b, c)
-# REGULAR DIMS:     (a, c) * (c, c) * (c, b)
-#expr = Sum(A[i, j] * R[k, j] * H[l, k], (j, 0, c-1), (k, 0, c-1))
-
-# TRANSPOSED DIMS:  (a, c) * (b, c) * (a, b) 
-# REGULAR DIMS:     (a,c) * (c, b) * (b, a)
-
-expr = Sum(A[i, j] * H[k, j] * K[l, k], (j, 0, c-1), (k, 0, b-1))
-
-# NOTE: need to put the interval endings so that the iterators inside the array correspond to the transposed dims locations
-
-cgexpr = parse_indexed_expression(expr)
-
-rec = recognize_matrix_expression(cgexpr)
-
-showGroup([
-    expr, 
-    cgexpr, 
-    rec
-])
-
-
-
-
-
-
-
-
-
-# %%
-derivMatmul(A * B, A)
-# %%
-derivMatmul(A * B, B)
+matmulDeriv(X*w, w)
 # %% 
-derivMatmul(X*w, w)
-# %% 
-derivMatmul(X*w, X)
+matmulDeriv(X*w, X)
 # %%
-derivMatmul(Inverse(R), R)
+matmulDeriv(Inverse(R), R)
 
 # TODO result seems exactly the same as this calculator gives except my result here does not say it is tensor product, just wrongly assumes matrix product. 
 # TODO figure out which is correct
 # %%
-derivMatmul(A, A)
+matmulDeriv(A, A)
 # TODO this doesn't work
 # %%
-derivMatmul(A + A, A)
+matmulDeriv(A + A, A)
 # %%
-derivMatmul(A*B - D.T, A)
+matmulDeriv(A*B - D.T, A)
 # %%
-derivMatmul(B * Inverse(C) * E.T * L.T * A * E * D, E)
+matmulDeriv(B * Inverse(C) * E.T * L.T * A * E * D, E)
 # %%
-derivMatmul(B * Inverse(C) * E.T * L.T * A * E * D, C)
+matmulDeriv(B * Inverse(C) * E.T * L.T * A * E * D, C)
 # %%
-derivMatmul(B * Inverse(C) * E.T * L.T * A * E * D, A)
+matmulDeriv(B * Inverse(C) * E.T * L.T * A * E * D, A)
 # %%
-derivMatmul(B * Inverse(C) * E.T * L.T * A * E * D, D)
+matmulDeriv(B * Inverse(C) * E.T * L.T * A * E * D, D)
 # %%
-derivMatmul(B * Inverse(C) * E.T * L.T * A * E * D, L)
+matmulDeriv(B * Inverse(C) * E.T * L.T * A * E * D, L)
 # %%
-diffMatrix(B_ * Inverse(C_) * E_.T * L_.T * A_ * E_ * D_, C_)
+#diffMatrix(B_ * Inverse(C_) * E_.T * L_.T * A_ * E_ * D_, C_)
 # %%
-derivMatmul(B_ * Inverse(C_) * E_.T * L_.T * A_ * E_ * D_,   E_)
+matmulDeriv(B_ * Inverse(C_) * E_.T * L_.T * A_ * E_ * D_,   E_)
 
 # %% 
 
 
 
-# %%
-diffMatrix(X, X)
-# %%
-diffMatrix(a*X, X)
-# %%
-# TODO error with cyclic permute 
-# # diffMatrix(Trace(R_), R_)
 
 diff(Trace(R), R)
 # %%
@@ -541,26 +293,7 @@ diff(Trace(A*J), J)
 # %%
 diff(Trace(A*J), A)
 # %%
-diffMatrix(A*J, A)
-# %%
-derivMatmul(A*J, A)
-
-
-
-
-
-# %%
-# TODO fix this function so it can take symbolic matrices
-#diffMatrix(B * Inverse(C) * E.T * L.T * A * E * D,   E)
-
-diffMatrix(B_ * Inverse(C_) * E_.T * L_.T * A_ * E_ * D_,   E_)
-
-# TODO this function seems very wrong: just seems to add the differential operator to the byVar instead of actually doing anything to the expression. 
-
-# TODO: this function's result doesn't match the derivMatmul result of this expression
-
-
-
+matmulDeriv(A*J, A)
 
 
 
@@ -608,11 +341,43 @@ compose(f, g_a, v)(X_, w_).replace(v, v_).replace(g_a, g_).diff(w_)
 from src.MatrixCalculusStudy.MatrixDerivLib.simplifications import _conditional_replace, cyclic_permute_dX_cond, cyclic_permute_dX_repl, _cyclic_permute
 
 
-
+# %%
 # STRATEGY 3: DIFFERENTIAL APPROACH -------------------------------
-de = diffMatrix(A*R*J, R)
+
+from src.MatrixCalculusStudy.MatrixDerivLib.symbols import d 
+
+#de = diffMatrix(A*R*J, R)
+#de
+de = A*d(R)*J
 de
 # %%
 # TODO left off here to fix these functions
 _conditional_replace(de, cyclic_permute_dX_cond(de), cyclic_permute_dX_repl(de))
-# %% codecell
+
+
+
+
+
+# %%
+# TODO fix this function so it can take symbolic matrices
+#diffMatrix(B * Inverse(C) * E.T * L.T * A * E * D,   E)
+
+#diffMatrix(B_ * Inverse(C_) * E_.T * L_.T * A_ * E_ * D_,   E_)
+
+# TODO this function seems very wrong: just seems to add the differential operator to the byVar instead of actually doing anything to the expression. 
+
+# TODO: this function's result doesn't match the derivMatmul result of this expression
+
+
+# %%
+#TODO gives error
+# matrixDifferential(X, X)
+# %%
+# matrixDifferential(a*X, X)
+# %%
+# TODO error with cyclic permute 
+# # matrixDifferential(Trace(R_), R_)
+# %%
+# matrixDifferential(A*J, A)
+
+

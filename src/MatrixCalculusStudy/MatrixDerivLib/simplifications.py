@@ -77,7 +77,8 @@ def cyclic_permute_dX_cond(dX):
     def cond(x):
         #return x.is_Trace and x.has(dX) and x.arg.args[-1] != dX
         # TODO changing
-        return x.has(dX) and x.arg.args[-1] != dX
+        # TODO changed x.has(dX) into dX.has(x)
+        return dX.has(x) and x.arg.args[-1] != dX # TODO need to remove the x.arg.args[-1] and say instead x.args[-1] because the extra .arg accessor means x is assumed Trace() obj. 
     return cond
 
 
