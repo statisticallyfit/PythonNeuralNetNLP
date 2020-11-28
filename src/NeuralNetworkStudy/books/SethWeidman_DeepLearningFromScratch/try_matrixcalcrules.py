@@ -8,7 +8,7 @@ import itertools
 from functools import reduce
 
 
-from sympy import det, Determinant, Trace, Transpose, Inverse, HadamardProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity,  Derivative, symbols, diff 
+from sympy import det, Determinant, Trace, Transpose, Inverse, HadamardProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity,  Derivative, symbols, diff
 
 from sympy import tensorcontraction, tensorproduct
 from sympy.physics.quantum.tensorproduct import TensorProduct
@@ -75,7 +75,7 @@ printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLat
 
 
 # %%
-def mataddDeriv(expr: MatrixExpr, byVar: MatrixSymbol) -> MatrixExpr: 
+def mataddDeriv(expr: MatrixExpr, byVar: MatrixSymbol) -> MatrixExpr:
     assert isinstance(expr, MatAdd), "The expression is not of type MatAdd"
 
     # Split at the plus / minus sign
@@ -86,7 +86,7 @@ def mataddDeriv(expr: MatrixExpr, byVar: MatrixSymbol) -> MatrixExpr:
     # Filter all components and make sure they have the byVar argument inside. If they don't keep them out to signify that derivative is 0. (Ex: d(A)/d(C) = 0)
     componentsToDeriv: List[MatMul] = list(filter(lambda c: c.has(A), components))
 
-# TODO NOT DONE YET with this function, left off here matrix add so that expression like AB + D^T can be differentiated (by A) to equal B^T and another one AB + A should result in B^T + I (assuming appropriate sizes). 
+# TODO NOT DONE YET with this function, left off here matrix add so that expression like AB + D^T can be differentiated (by A) to equal B^T and another one AB + A should result in B^T + I (assuming appropriate sizes).
 
 
 
@@ -94,10 +94,10 @@ def mataddDeriv(expr: MatrixExpr, byVar: MatrixSymbol) -> MatrixExpr:
 # TODO 1) incorporate rules from here: https://hyp.is/6EQ8FC5YEeujn1dcCVtPZw/en.wikipedia.org/wiki/Matrix_calculus
 # TODO 2) incorporate rules from Helmut book
 # TODO 3) test-check with matrixcalculus.org and get its code ...?
-def matmulDeriv(expr: MatrixExpr, 
-    #mat1: MatrixSymbol, mat2: MatrixSymbol, 
-    byVar: MatrixSymbol) -> MatrixExpr: 
-    
+def matmulDeriv(expr: MatrixExpr,
+    #mat1: MatrixSymbol, mat2: MatrixSymbol,
+    byVar: MatrixSymbol) -> MatrixExpr:
+
     #assert (isinstance(expr, MatMul) or isinstance(expr, MatrixExpr)) and not isinstance(expr, MatAdd), "The expression is of type MatAdd - this is the wrong function to which to pass this expression."
 
     # STEP 1: if the arguments have symbolic shape, then need to create fake ones for this function (since the R Matrix will replace a MatrixSymbol M, and we need actual numbers from the arguments' shapes to construct the Matrix R, which represents their multiplication)
@@ -106,7 +106,7 @@ def matmulDeriv(expr: MatrixExpr,
     syms: List[MatrixSymbol] = list(expr.free_symbols)
     # Get shape tuples
     dimTuples: List[Tuple[Symbol, Symbol]] = list(map(lambda s: s.shape, syms))
-    # Remove the tuples, just get all dimensions in a flat list. 
+    # Remove the tuples, just get all dimensions in a flat list.
     dimsFlat: List[Symbol] = [dimension for shapeTuple in dimTuples for dimension in shapeTuple]
     # Get alll the dimensions multiplied into one product
     dimsProduct: Expr = foldLeft(operator.mul, 1, dimsFlat)
@@ -118,8 +118,8 @@ def matmulDeriv(expr: MatrixExpr,
 
     #any(map(lambda dim_i: isinstance(dim_i, Symbol), expr.shape))
 
-    if isAnyDimASymbol: 
-        #(DIM_1, DIM_2, DIM_3) = (5, 2, 3) # 
+    if isAnyDimASymbol:
+        #(DIM_1, DIM_2, DIM_3) = (5, 2, 3) #
 
         # # Choose some arbitrary integer dimensions: (to be used later for substitution)
         ds: List[int] = list(range(2, len(dims) + 2, 1))
@@ -129,12 +129,12 @@ def matmulDeriv(expr: MatrixExpr,
         # Create its inverse for later use
         numdimToSymdim: Dict[int, Symbol] = dict( [(v, k) for k, v in symdimToNumdim.items()] )
 
-        # Now make the matrix symbols using those fake integer dimensions: 
+        # Now make the matrix symbols using those fake integer dimensions:
         syms_ = [MatrixSymbol(m.name, symdimToNumdim[m.shape[0]], symdimToNumdim[m.shape[1]] ) for m in syms]
 
         # Create a dictionary mapping the symbol-dim matrices to the num-dim matrices
         symmatToNummat: Dict[MatrixSymbol, MatrixSymbol] = dict(zip(syms, syms_))
-        # Make inverse of the symbolic-dim to num-dim dictionary: 
+        # Make inverse of the symbolic-dim to num-dim dictionary:
         nummatToSymmat: Dict[MatrixSymbol, MatrixSymbol] = dict( [(v, k) for k, v in symmatToNummat.items()] )
 
         # Create another expression from the given argument expr, but with all symbols having the number dimension not symbol dimension (as was given)
@@ -143,8 +143,8 @@ def matmulDeriv(expr: MatrixExpr,
 
         byVar_ : MatrixSymbol = MatrixSymbol(byVar.name, symdimToNumdim[byVar.shape[0]], symdimToNumdim[byVar.shape[1]])
 
-    else: 
-        # If any of the dims are NOT symbols then it means all of the dims are numbers, so just rename as follows: 
+    else:
+        # If any of the dims are NOT symbols then it means all of the dims are numbers, so just rename as follows:
         (expr_, byVar_) = (expr, byVar)
 
     # STEP 2: create the intermediary replacer functions
@@ -153,13 +153,13 @@ def matmulDeriv(expr: MatrixExpr,
     M = MatrixSymbol('M', i, j) # abstract shape, doesn't matter
     tL = Lambda(M, M.applyfunc(t)) # apply the miniature inner function to the matrix (to get that lambda symbol using an arbitrary function t())
 
-    # Create shape of the resulting matrix multiplication of arguments. Will use this to substitute; shape must match because it interacts with derivative involving the arguments, which have related shape. 
+    # Create shape of the resulting matrix multiplication of arguments. Will use this to substitute; shape must match because it interacts with derivative involving the arguments, which have related shape.
     R = Matrix(MatrixSymbol('R', *expr_.shape) )
-    # TODO when using this example in link below, error occurs here because Trace has no attribute shape. TODO fix 
+    # TODO when using this example in link below, error occurs here because Trace has no attribute shape. TODO fix
     # TEST EXAMPLE: https://hyp.is/JQLtqi23EeuTI_v0yX2T9Q/www.kannon.link/free/category/research/mathematics/
     # TODO seems that diff(expr) can be done well when the expr is a Trace? Or a sympy function?
 
-    # STEP 3: Do derivative: 
+    # STEP 3: Do derivative:
     deriv = t(expr_).replace(t, tL).diff(byVar_)
 
     #cutMatrix = diff(tL(M), M).subs(M, R).doit()
@@ -167,7 +167,7 @@ def matmulDeriv(expr: MatrixExpr,
     #derivWithCutExpr = deriv.xreplace({expr_ : R}).doit()
 
 
-    # TODO don't know if this is correct as matrix calculus rule. 
+    # TODO don't know if this is correct as matrix calculus rule.
     # # Create the invisible matrix to substitute in place of the lambda expression thing (substituting just 1 works when expr_ = A * B, simple matrix product, and substituting results in correct answer: d(A*B)/dB = A^T * 1 = A^T but not sure if the result is correct here for arbitrary matrix expression expr)
     IDENT_ = MatrixSymbol('I', *expr_.shape)
     INVIS_ = MatrixSymbol(' ', *expr_.shape)
@@ -185,17 +185,17 @@ def matmulDeriv(expr: MatrixExpr,
 
     # STEP 4: replace the original variables if any dimension was a symbol, so that the result expression dimensions are still symbols
     if isAnyDimASymbol:
-        # Add the invisible matrix: 
+        # Add the invisible matrix:
         nummatToSymmat_with_invis = dict( list(nummatToSymmat.items() ) + [(IDENT_, IDENT)] )
 
         derivResult: MatrixExpr = derivResult_.xreplace(nummatToSymmat_with_invis)
-        # NOTE: use xreplace when want to replace all the variables all at ONCE (this seems to be the effect with xreplace rather than subs). Else replacing MatrixSymbols happens one-by-one and alignment error gets thrown. 
+        # NOTE: use xreplace when want to replace all the variables all at ONCE (this seems to be the effect with xreplace rather than subs). Else replacing MatrixSymbols happens one-by-one and alignment error gets thrown.
         #derivResult_.subs(nummatToSymmat_with_invis)
 
-        # Asserting that all dims now are symbols, as we want: 
+        # Asserting that all dims now are symbols, as we want:
         assert all(map(lambda dim_i: isinstance(dim_i, Symbol), derivResult.shape))
 
-        # TODO questionable hacky action here (ref: seth book pg 43 and 54): If the expr was a product of two matrices then result should not have the "I" matrix but should equal transpose of other matrix: 
+        # TODO questionable hacky action here (ref: seth book pg 43 and 54): If the expr was a product of two matrices then result should not have the "I" matrix but should equal transpose of other matrix:
         exprIsProdOfTwoMatrices = len(expr.args) == 2 and isinstance(expr, MatMul) and all(map(lambda anArg: isinstance(anArg, MatrixSymbol), expr.args))
 
         #if exprIsProdOfTwoMatrices:
@@ -206,9 +206,9 @@ def matmulDeriv(expr: MatrixExpr,
     exprIsProdOfTwoMatrices = len(expr.args) == 2 and isinstance(expr, MatMul) and all(map(lambda anArg: isinstance(anArg, MatrixSymbol), expr.args))
 
     #if exprIsProdOfTwoMatrices:
-    #    derivResult_: MatrixExpr = derivResult_.xreplace({IDENT_ : INVIS_}) 
+    #    derivResult_: MatrixExpr = derivResult_.xreplace({IDENT_ : INVIS_})
 
-    return derivResult_ # else if no dim was symbol, return the num-dim result. 
+    return derivResult_ # else if no dim was symbol, return the num-dim result.
 # %%
 A = MatrixSymbol("A", a, c)
 J = MatrixSymbol("J", c, a)
@@ -226,7 +226,7 @@ b, k, l = symbols('b k l', commutative=True)
 X = MatrixSymbol('X', b, k)
 w = MatrixSymbol('\overrightarrow{w}', k, l)
 
-# Testing with real numbers because the matrix diff function needs real number dimensions 
+# Testing with real numbers because the matrix diff function needs real number dimensions
 # TODO make diffmatrix convert symbolic dims into real dims that match just for the sake of keeping symbolic dims at the end (then replace)
 A_ = MatrixSymbol("A", 4, 3)
 J_ = MatrixSymbol("J", 3, 4)
@@ -250,14 +250,14 @@ w_ = MatrixSymbol('\overrightarrow{w}', 5, 6)
 matmulDeriv(A * B, A)
 # %%
 matmulDeriv(A * B, B)
-# %% 
+# %%
 matmulDeriv(X*w, w)
-# %% 
+# %%
 matmulDeriv(X*w, X)
 # %%
 matmulDeriv(Inverse(R), R)
 
-# TODO result seems exactly the same as this calculator gives except my result here does not say it is tensor product, just wrongly assumes matrix product. 
+# TODO result seems exactly the same as this calculator gives except my result here does not say it is tensor product, just wrongly assumes matrix product.
 # TODO figure out which is correct
 # %%
 matmulDeriv(A, A)
@@ -281,7 +281,7 @@ matmulDeriv(B * Inverse(C) * E.T * L.T * A * E * D, L)
 # %%
 matmulDeriv(B_ * Inverse(C_) * E_.T * L_.T * A_ * E_ * D_,   E_)
 
-# %% 
+# %%
 
 
 
@@ -307,13 +307,13 @@ g_ = lambda mat: mat.applyfunc(g)
 
 
 v = Function('nu', commutative=True)
-v_ = lambda a, b: a * b 
+v_ = lambda a, b: a * b
 #derivMatexpr(f(A) * g(A), A)
 #diffMatrix(f(A) * g(A), A)
 # TODO I removed the application function part so this won't work anymore (need to add it back in)
 
 # %%
-# NOTE Need to replace with the non-symbolic dim matrices X_ and w_ instead of the symbolic dim matrices X and w because else we can't apply Matrix to the X*w product thus we can't apply lambda f function as below: 
+# NOTE Need to replace with the non-symbolic dim matrices X_ and w_ instead of the symbolic dim matrices X and w because else we can't apply Matrix to the X*w product thus we can't apply lambda f function as below:
 compose(f, g_a, v)(X_, w_).replace(v, v_).replace(g_a, g_).replace(f, f_)
 
 # %% codecell
@@ -344,7 +344,7 @@ from src.MatrixCalculusStudy.MatrixDerivLib.simplifications import _conditional_
 # %%
 # STRATEGY 3: DIFFERENTIAL APPROACH -------------------------------
 
-from src.MatrixCalculusStudy.MatrixDerivLib.symbols import d 
+from src.MatrixCalculusStudy.MatrixDerivLib.symbols import d
 
 #de = diffMatrix(A*R*J, R)
 #de
@@ -352,7 +352,12 @@ de = A*d(R)*J
 de
 # %%
 # TODO left off here to fix these functions
-_conditional_replace(de, cyclic_permute_dX_cond(de), cyclic_permute_dX_repl(de))
+
+if __name__ == "__main__":
+
+    _conditional_replace(de,
+                         cyclic_permute_dX_cond(de),
+                         cyclic_permute_dX_repl(de))
 
 
 
@@ -364,7 +369,7 @@ _conditional_replace(de, cyclic_permute_dX_cond(de), cyclic_permute_dX_repl(de))
 
 #diffMatrix(B_ * Inverse(C_) * E_.T * L_.T * A_ * E_ * D_,   E_)
 
-# TODO this function seems very wrong: just seems to add the differential operator to the byVar instead of actually doing anything to the expression. 
+# TODO this function seems very wrong: just seems to add the differential operator to the byVar instead of actually doing anything to the expression.
 
 # TODO: this function's result doesn't match the derivMatmul result of this expression
 
@@ -375,7 +380,7 @@ _conditional_replace(de, cyclic_permute_dX_cond(de), cyclic_permute_dX_repl(de))
 # %%
 # matrixDifferential(a*X, X)
 # %%
-# TODO error with cyclic permute 
+# TODO error with cyclic permute
 # # matrixDifferential(Trace(R_), R_)
 # %%
 # matrixDifferential(A*J, A)

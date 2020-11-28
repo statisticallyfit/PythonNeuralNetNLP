@@ -83,7 +83,10 @@ def cyclic_permute_dX_cond(dX):
 
 
 def cyclic_permute_dX_repl(dX):
+    # TODO trying to fix this since it doesn't return the right result: cyclic permute doesn't act on correct thing. 
     def repl(x):
+        
+    '''def repl(x):
         newx = x
         nperm = 0
         while newx.arg.args[-1] != dX:
@@ -92,6 +95,7 @@ def cyclic_permute_dX_repl(dX):
             if nperm > len(newx.arg.args):
                 raise RuntimeError("Cyclic permutation failed to move dX to end!")
         return newx
+    '''
     return repl
 
 

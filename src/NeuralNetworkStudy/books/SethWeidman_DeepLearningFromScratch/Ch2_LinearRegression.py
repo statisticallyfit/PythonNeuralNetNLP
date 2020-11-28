@@ -9,7 +9,7 @@
 import matplotlib.pyplot as plt
 import matplotlib
 # NOTE: must comment out this inline statement below when debugging cells in VSCode else error occurs.
-%matplotlib inline
+#%matplotlib inline
 
 
 import numpy as np
@@ -19,7 +19,7 @@ from typing import *
 import itertools
 from functools import reduce
 
-from sympy import det, Determinant, Trace, Transpose, Inverse, HadamardProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity,  Derivative, symbols, diff 
+from sympy import det, Determinant, Trace, Transpose, Inverse, HadamardProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity,  Derivative, symbols, diff
 
 from sympy import tensorcontraction, tensorproduct
 from sympy.physics.quantum.tensorproduct import TensorProduct
@@ -676,7 +676,7 @@ showGroup([
 # %% codecell
 dN_dw = v(Xs, ws).subs({Xs:X, ws:w}).replace(v, v_).diff(w)
 
-dN_dw # TODO fix not correct, need to actually evaluate this. 
+dN_dw # TODO fix not correct, need to actually evaluate this.
 # %%
 # Putting them together:
 dL_dP * dP_dN * dN_dw
