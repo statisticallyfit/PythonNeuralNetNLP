@@ -1,7 +1,7 @@
 ## SOURCE for this code = https://github.com/mshvartsman/symbolic-mat-diff/blob/master/symbdiff/simplifications.py
 
 
-from sympy import Trace, MatMul, preorder_traversal, MatAdd, Add
+from sympy import Trace, Transpose, Inverse, Function, Derivative, MatMul, preorder_traversal, MatAdd, Add
 from collections import OrderedDict
 
 
@@ -61,34 +61,93 @@ def inverse_transpose_repl(dX):
 
 
 def _cyclic_permute(expr):
-    # TODO changing 
-    # if expr.is_Trace and expr.arg.is_MatMul:
-    if expr.arg.is_MatMul:
-        prods = expr.arg.args
+    
+    #if expr.is_Trace and expr.arg.is_MatMul:
+    if expr.is_MatMul:
+        prods = expr.args 
         newprods = [prods[-1], *prods[:-1]]
-        #return Trace(MatMul(*newprods))
+        
         return MatMul(*newprods)
-    else:
-        print(expr)
-        raise RuntimeError("Only know how to cyclic permute products inside traces!")
+    
+def _cyclic_permute_constructor(expr):
+    '''
+    Expects a matmul argument inside either Inverse, Trace, Transpose, and it will permute the matmul arg elements. 
+    '''
+    
+    if (expr.is_Trace or expr.is_Inverse or expr.is_Transpose) and expr.arg.is_MatMul: # need .arg before checking matmul
+        prods = expr.arg.args 
+        newprods = [prods[-1], *prods[:-1]]
 
+        # Now must painstakingly control for each constructor
+        # TODO is there a better way to do this? To get the constructor dynamically at runtime and then wrap the result inside that variable constructor at runtime?
+        # TODO think so, see here: https://hyp.is/j9FwwDM-EeuhzIcSn7kZhg/docs.sympy.org/latest/tutorial/manipulation.html
+        if expr.is_Trace:
+            return Trace(MatMul(*newprods))
+        elif expr.is_Inverse:
+            return Inverse(MatMul(*newprods))
+        elif expr.is_Transpose:
+            return Transpose(MatMul(*newprods))
+        ## TODO do I need this?
+        #elif expr.is_Function:
+        #    return Function(MatMul(*newprods), commutative=True)
+        ## TODO do I need this?
+        #elif expr.is_Derivative:
+        #    return Derivative(MatMul(*newprods))
+    
 
 def cyclic_permute_dX_cond(dX):
     def cond(x):
-        #return x.is_Trace and x.has(dX) and x.arg.args[-1] != dX
-        # TODO changing
-        # TODO changed x.has(dX) into dX.has(x)
-        return dX.has(x) and x.arg.args[-1] != dX # TODO need to remove the x.arg.args[-1] and say instead x.args[-1] because the extra .arg accessor means x is assumed Trace() obj. 
+        '''
+        Expects a matmul on which it can verify if it contains dX and it dX is not last. 
+        '''
+        if x.is_MatMul: #  if not trace / inverse ... etc can avoid using .arg before .args
+            return x.has(dX) and x.args[-1] != dX 
+        # Else assume x is_Derivative, is_Inverse, is_Trace, is_Transpose, is_Dummy, is_Function , ... anything that is a constructor and thus requires calling .arg before .args
+        #return x.has(dX) and x.arg.args[-1] != dX 
+
     return cond
 
 
+def cyclic_permute_constructor_dX_cond(dX):
+    def cond(x):
+        '''
+        Expects a matmul inside a constructor
+        '''
+        if (x.is_Trace or x.is_Inverse or x.is_Transpose) and x.arg.is_MatMul:
+            return x.has(dX) and x.arg.args[-1] != dX 
+    
+    return cond 
+
+
 def cyclic_permute_dX_repl(dX):
-    # TODO trying to fix this since it doesn't return the right result: cyclic permute doesn't act on correct thing. 
     def repl(x):
+        '''
+        Expects a matmul argument, not surrounded in any constructor like Trace
+        '''
         newx = x
         nperm = 0
-        while newx.arg.args[-1] != dX:
+
+        while newx.args[-1] != dX:
             newx = _cyclic_permute(newx)
+            nperm = nperm + 1
+            if nperm > len(newx.args):
+                raise RuntimeError("Cyclic permutation failed to move dX to end!")
+        return newx
+    
+    return repl
+
+
+def cyclic_permute_constructor_dX_repl(dX):
+    def repl(x):
+        '''
+        Expects a constructor with matmul inside
+        '''
+        newx = x
+        nperm = 0
+
+        while newx.arg.args[-1] != dX:
+            #newx = _cyclic_permute(newx)
+            newx = _cyclic_permute_constructor(newx)
             nperm = nperm + 1
             if nperm > len(newx.arg.args):
                 raise RuntimeError("Cyclic permutation failed to move dX to end!")
@@ -107,6 +166,8 @@ def _conditional_replace(expr, condition, replacement):
             if condition(x):
                 expr = expr.xreplace({x: replacement(x)})
         except AttributeError:  # scalar ops like Add won't have is_Trace
+            # TODO remove this print statement after fixing the cyclic permute function
+            print("got attribute error")
             pass
     return expr
     
@@ -128,5 +189,6 @@ rules = OrderedDict([(matmul_distribute_cond, matmul_distribute_repl),
                     (trace_sum_distribute_cond, trace_sum_distribute_repl),
                     (transpose_traces_cond, transpose_traces_repl),
                     (inverse_transpose_cond, inverse_transpose_repl),
-                    (cyclic_permute_dX_cond, cyclic_permute_dX_repl)])
+                    (cyclic_permute_dX_cond, cyclic_permute_dX_repl),
+                    (cyclic_permute_constructor_dX_cond, cyclic_permute_constructor_dX_repl)])
 

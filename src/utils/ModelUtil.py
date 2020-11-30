@@ -27,7 +27,8 @@ import collections
 
 # Create named tuple class with names "Names" and "Objects"
 Info = collections.namedtuple("Info",
-                              ["Names", "Types", "Objects"], verbose=False, rename = False)
+                              ["Names", "Types", "Objects"], #verbose=False, 
+                              rename = False)
 
 
 #OuterInfo = collections.namedtuple("OuterInfo", ["OuterName", "InnerInfo"], verbose=False, rename = False)
@@ -170,7 +171,8 @@ def printLengthInfo(model: nn.Module):
 
 
 # Creating my named tuple to hold parameter information.
-ParameterInfo = collections.namedtuple("ParameterInfo", ["Names", "Sizes", "Tensors"], verbose=False, rename = False)
+ParameterInfo = collections.namedtuple("ParameterInfo", ["Names", "Sizes", "Tensors"], #verbose=False, 
+rename = False)
 
 
 def getParamInfo(model: nn.Module) -> ParameterInfo:

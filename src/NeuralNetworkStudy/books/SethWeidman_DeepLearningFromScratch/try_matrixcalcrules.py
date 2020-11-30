@@ -8,9 +8,10 @@ import itertools
 from functools import reduce
 
 
-from sympy import det, Determinant, Trace, Transpose, Inverse, HadamardProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, Identity,  Derivative, symbols, diff
+from sympy import det, Determinant, Trace, Transpose, Inverse, Function, Lambda, HadamardProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, MatrixSymbol, Identity,  Derivative, symbols, diff
 
 from sympy import tensorcontraction, tensorproduct
+from sympy.functions.elementary.piecewise import Undefined
 from sympy.physics.quantum.tensorproduct import TensorProduct
 
 from sympy.abc import x, i, j, a, b, c
@@ -348,17 +349,184 @@ from src.MatrixCalculusStudy.MatrixDerivLib.symbols import d
 
 #de = diffMatrix(A*R*J, R)
 #de
-de = A*d(R)*J
-de
 # %%
 # TODO left off here to fix these functions
 
-if __name__ == "__main__":
+showGroup([
+    _conditional_replace(Trace(A * d(R) * J), cyclic_permute_dX_cond(d(R)), cyclic_permute_dX_repl(d(R))),
 
-    _conditional_replace(de,
-                         cyclic_permute_dX_cond(de),
-                         cyclic_permute_dX_repl(de))
+    _conditional_replace(Inverse(A * d(R) * J), cyclic_permute_dX_cond(d(R)), cyclic_permute_dX_repl(d(R))),
 
+    _conditional_replace(Transpose(A * d(R) * J), cyclic_permute_dX_cond(d(R)), cyclic_permute_dX_repl(d(R))),
+])
+
+
+# %%
+
+# Examples of how permutating happens in different situations, just for testing: 
+
+B_sq = MatrixSymbol('B', a, a)
+C_sq = MatrixSymbol('C', a, a)
+E_sq = MatrixSymbol('E', a, a)
+L_sq = MatrixSymbol('L', a, a)
+A_sq = MatrixSymbol('A', a, a)
+D_sq = MatrixSymbol('D', a, a)
+
+
+exprDA = B_sq * Inverse(C_sq) * E_sq.T * L_sq.T * d(A_sq) * E_sq * D_sq
+
+exprDB = d(B_sq) * Inverse(C_sq) * E_sq.T * L_sq.T * d(A_sq) * E_sq * D_sq
+
+exprInvDC = B_sq * d(Inverse(C_sq)) * E_sq.T * L_sq.T * d(A_sq) * E_sq * D_sq
+
+showGroup([
+    exprDA, 
+
+    _conditional_replace(exprDA, cyclic_permute_dX_cond(d(A_sq)), cyclic_permute_dX_repl(d(A_sq))),
+
+    exprDB, 
+
+    _conditional_replace(exprDB, cyclic_permute_dX_cond(d(B_sq)), cyclic_permute_dX_repl(d(B_sq))),
+
+    exprInvDC, 
+
+    _conditional_replace(exprInvDC, cyclic_permute_dX_cond(d(Inverse(C_sq))), cyclic_permute_dX_repl(d(Inverse(C_sq))))
+
+])
+# %%
+a, b, c = symbols('a b c', commutative=True)
+
+Cm = MatrixSymbol('C', a, b)
+Em = MatrixSymbol('E', b, c)
+Bm = MatrixSymbol('B', c, b)
+Lm = MatrixSymbol('L', c, b)
+Dm = MatrixSymbol('D', c, a)
+
+Km = MatrixSymbol('K', a, a)
+
+diff(Trace(Cm * Em * Bm * Em * Lm * Em * Dm), Em)
+# %%
+expr = Cm * Em * Bm * Em * Lm * Em * Dm
+byVar = Em 
+
+expr.args
+# %%
+def splitOnce(theArgs: List[MatrixSymbol], signalVar: MatrixSymbol, n: int) -> Tuple[List[MatrixSymbol], List[MatrixSymbol]]: 
+
+    assert n <= len(theArgs) and abs(n) == n 
+
+    cumArgs = []
+    countSignal: int = 0
+
+    for i in range(0, len(theArgs)): 
+        arg = theArgs[i]
+
+        if arg == signalVar: 
+            countSignal += 1
+
+            if countSignal == n:
+                return (cumArgs, list(theArgs[i + 1: ]) )
+            
+
+        cumArgs.append(arg)    
+        
+    return ([], [])
+
+# %%
+# Testing
+assert splitOnce(expr.args, Em, 1) == ([Cm], [Bm, Em, Lm, Em, Dm])    
+assert splitOnce(expr.args, Em, 2) == ([Cm, Em, Bm], [Lm, Em, Dm])
+assert splitOnce(expr.args, Em, 3) == ([Cm, Em, Bm, Em, Lm], [Dm])
+assert splitOnce(expr.args, Em, 0) == ([], [])
+assert splitOnce(expr.args, Em, 4) == ([], [])
+# TODO how to assert error for negative number n?
+
+
+# %%
+# Now apply the trace deriv function per pair
+def traceDerivPair(pair: Tuple[List[MatrixSymbol], List[MatrixSymbol]]) -> MatrixExpr: 
+    (left, right) = pair
+
+    return MatMul( Transpose(MatMul(*left)) , Transpose(MatMul(*right)) )
+
+# %%
+def derivMatInsideTrace(expr: MatrixExpr, byVar: MatrixSymbol) -> MatMul:
+    # First check if not a matrix symbol; if it is then diff easily. 
+    if isinstance(expr, MatrixSymbol): 
+        return diff(Trace(expr), byVar)
+
+    # Check now that it is matmul
+    assert expr.is_MatMul
+
+    # Get how many of byVar are in the expression: 
+    numSignalVars = len(list(filter(lambda arg: arg == byVar, expr.args)))
+
+    # Get the split list applications: split by signal var for how many times it appears
+    signalSplits = list(map(lambda n: splitOnce(expr.args, byVar, n), range(1, numSignalVars + 1)))
+
+    # Apply the trace derivative function per pair
+    transposedMatMuls = list(map(lambda s: traceDerivPair(s), signalSplits))
+    
+    # Result is an addition of the transposed matmul combinations:
+    return MatAdd(* transposedMatMuls )
+
+
+# %%
+def derivTrace(trace: Trace, byVar: MatrixSymbol) -> MatrixExpr: 
+    assert trace.is_Trace 
+
+    # Case 1: trace of a single matrix symbol - easy
+    if isinstance(trace.arg, MatrixSymbol):
+        return diff(trace, byVar)
+    
+    # Case 2: if arg is matmul then just apply the trace matmul function:
+    elif trace.arg.is_MatMul:
+        return derivMatInsideTrace(trace.arg, byVar = byVar)    
+
+    # Case 3: split first by MatAdd to get MatMul pieces and feed in the pieces to the single function that gets applied to each MatMul piece. 
+    elif trace.arg.is_MatAdd: 
+        # Filter the matrixsymbols that are byVar and the matrixexprs that contain the byVar
+        addends: List[MatrixExpr] = list(filter(lambda m : m.has(byVar), trace.arg.args ))
+        # NOTE: can contain matrixsymbols mixed with matmul
+
+        # TODO this is a list of MatAdds; must flatten them to avoid brackets extra and to enhance simplification.
+        diffedAddends: List[MatrixExpr] = list(map(lambda m : derivMatInsideTrace(m, byVar), addends))
+
+        return MatAdd(*diffedAddends)
+
+    
+# %%
+t = Trace(expr + A*B*Em * R * J  + A*Dm + Km )
+
+derivTrace(t, Em)
+# %%
+from sympy import srepr 
+
+# TODO function to group transposes: 
+def groupTranspose(expr: MatrixExpr) -> MatrixExpr: 
+
+    hasTranspose = lambda expr : "Transpose" in srepr(expr)
+
+    if (not expr.is_Transpose) and hasTranspose(expr):
+
+        # TODO need to separate add and mul cases (try below examples added together, then won't work, need mul cases separate and then add on top)
+        Constr = expr.func # matadd or matmul # TODO check if correct
+
+        # Reverse the transpose operation
+
+        # TODO: expecting expr.args splits at either the + or * of MatAdd or MatMul (expects flattened version, so must fix deriv function above to return flat MatAdd for instance)
+        undoTransp = list(map(lambda t: t.T, reversed(expr.args)))
+
+        return Transpose( Constr(*undoTransp).doit() )
+    
+    return expr # as how it is
+
+# %%
+assert groupTranspose( MatMul( Transpose(MatMul(A, B)) , Transpose(MatMul(R, J)) ) ) == Transpose(MatMul(R, J, A, B))
+
+assert groupTranspose( B.T * A.T * J.T * R.T) == Transpose(MatMul(R, J, A, B))
+
+# %%
 
 
 
