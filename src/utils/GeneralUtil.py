@@ -7,11 +7,23 @@ from IPython.display import display
 
 
 ### Sympy 
-from sympy import Matrix, Symbol, derive_by_array, Lambda, Function, MatrixSymbol, ZeroMatrix, Identity, Derivative, symbols, diff, HadamardProduct
-from sympy.abc import x, i, j, a, b
+from sympy import det, Determinant, Trace, Transpose, Inverse, Function, Lambda, HadamardProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, MatrixSymbol, Identity,  Derivative, symbols, diff
+
+from sympy import srepr , simplify
+
+from sympy import tensorcontraction, tensorproduct, preorder_traversal
+from sympy.functions.elementary.piecewise import Undefined
+from sympy.physics.quantum.tensorproduct import TensorProduct
+
+from sympy.abc import x, i, j, a, b, c
+
+from sympy.matrices.expressions.matadd import MatAdd
+from sympy.matrices.expressions.matmul import MatMul
+
 
 
 ### Python tools
+
 from typing import * 
 import itertools
 from functools import reduce # for folding
@@ -168,3 +180,30 @@ def foldRight(f, acc, xs):
 # Tests
 #assert foldRight(operator.sub, 0, [1,2,3]) == 2
 #assert foldRight(operator.add, 'R', ['1', '2', '3']) == '123R'
+
+
+
+
+# Matrix Util area (symbolic) -------------------
+
+# SOURCE OF CODE = https://stackoverflow.com/a/52196005
+def expandMatmul(expr: MatrixExpr) -> MatrixExpr:
+    #import itertools
+#    from sympy import preorder_traversal
+    for a in preorder_traversal(expr):
+        if isinstance(a, MatMul) and any(isinstance(f, MatAdd) for f in a.args):
+            terms = [f.args if isinstance(f, MatAdd) else [f] for f in a.args]
+            expanded = MatAdd(*[MatMul(*t) for t in itertools.product(*terms)])
+            if a != expanded:
+                expr = expr.xreplace({a: expanded})
+                return expand_matmul(expr)
+    return expr
+
+
+def equal(mat1: MatrixExpr, mat2: MatrixExpr) -> bool:
+    if mat1.shape == mat2.shape:
+        zeroMat = ZeroMatrix(*mat1.shape)
+
+        return expandMatmul(mat1 - mat2).doit() == zeroMat
+
+    return False 

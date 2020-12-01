@@ -1,5 +1,6 @@
 ## SOURCE for this code = https://github.com/mshvartsman/symbolic-mat-diff/blob/master/symbdiff/simplifications.py
 
+import itertools 
 
 from sympy import Trace, Transpose, Inverse, Function, Derivative, MatMul, preorder_traversal, MatAdd, Add
 from collections import OrderedDict
@@ -157,7 +158,6 @@ def cyclic_permute_constructor_dX_repl(dX):
 
 
 
-
 ### RULE MANAGEMENT ----------------------------------------------
 
 def _conditional_replace(expr, condition, replacement):
@@ -173,10 +173,14 @@ def _conditional_replace(expr, condition, replacement):
     
 
 
+
 def simplify_matdiff(expr, dX):
     for cond, repl in rules.items():
         expr = _conditional_replace(expr, cond(dX), repl(dX))
     return expr
+
+
+
 
 
 

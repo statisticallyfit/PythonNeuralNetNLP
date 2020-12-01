@@ -10,9 +10,9 @@ from functools import reduce
 
 from sympy import det, Determinant, Trace, Transpose, Inverse, Function, Lambda, HadamardProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, MatrixSymbol, Identity,  Derivative, symbols, diff
 
-from sympy import srepr 
+from sympy import srepr , simplify
 
-from sympy import tensorcontraction, tensorproduct
+from sympy import tensorcontraction, tensorproduct, preorder_traversal
 from sympy.functions.elementary.piecewise import Undefined
 from sympy.physics.quantum.tensorproduct import TensorProduct
 
@@ -395,23 +395,8 @@ showGroup([
     _conditional_replace(exprInvDC, cyclic_permute_dX_cond(d(Inverse(C_sq))), cyclic_permute_dX_repl(d(Inverse(C_sq))))
 
 ])
-# %%
-a, b, c = symbols('a b c', commutative=True)
 
-Cm = MatrixSymbol('C', a, b)
-Em = MatrixSymbol('E', b, c)
-Bm = MatrixSymbol('B', c, b)
-Lm = MatrixSymbol('L', c, b)
-Dm = MatrixSymbol('D', c, a)
 
-Km = MatrixSymbol('K', a, a)
-
-diff(Trace(Cm * Em * Bm * Em * Lm * Em * Dm), Em)
-# %%
-expr = Cm * Em * Bm * Em * Lm * Em * Dm
-byVar = Em 
-
-expr.args
 # %%
 def splitOnce(theArgs: List[MatrixSymbol], signalVar: MatrixSymbol, n: int) -> Tuple[List[MatrixSymbol], List[MatrixSymbol]]: 
 
@@ -435,16 +420,205 @@ def splitOnce(theArgs: List[MatrixSymbol], signalVar: MatrixSymbol, n: int) -> T
     return ([], [])
 
 # %%
+C = MatrixSymbol('C', c, c)
+E = MatrixSymbol('E', c, c)
+B = MatrixSymbol('B', c, c)
+L = MatrixSymbol('L', c, c)
+D = MatrixSymbol('D', c, c)
+
 # Testing
-assert splitOnce(expr.args, Em, 1) == ([Cm], [Bm, Em, Lm, Em, Dm])    
-assert splitOnce(expr.args, Em, 2) == ([Cm, Em, Bm], [Lm, Em, Dm])
-assert splitOnce(expr.args, Em, 3) == ([Cm, Em, Bm, Em, Lm], [Dm])
-assert splitOnce(expr.args, Em, 0) == ([], [])
-assert splitOnce(expr.args, Em, 4) == ([], [])
+expr = C*E*B*E*L*E*D 
+
+assert splitOnce(expr.args, E, 1) == ([C], [B, E, L, E, D])    
+assert splitOnce(expr.args, E, 2) == ([C, E, B], [L, E, D])
+assert splitOnce(expr.args, E, 3) == ([C, E, B, E, L], [D])
+assert splitOnce(expr.args, E, 0) == ([], [])
+assert splitOnce(expr.args, E, 4) == ([], [])
 # TODO how to assert error for negative number n?
 
 
+
+
 # %%
+
+
+def groupTranspose(expr: MatrixExpr) -> MatrixExpr: 
+    '''Combines transposes when they are the outermost operations. 
+    
+    Brings the individual transpose operations out over the entire group (factors out the transpose and puts it as the outer operation)
+    
+    PRECONDITION: only is successful when the transposes are the outermost operation per expression. Otherwise a more successful result is obtained using transposeOut() because that one relies on inverting the transposes so they are outermost operations.'''
+
+    hasTranspose = lambda expr : "Transpose" in srepr(expr)
+
+    if (not expr.is_Transpose) and hasTranspose(expr):
+
+        # NOTE seems that there is no need of separating into MatAdd and MatMul cases (the undoTransp step below works for both!)
+        Constr = expr.func # matadd or matmul # TODO check if correct
+
+        # Reverse the transpose operation
+        # NOTE: must use Transpose rather than .T because the .T gets inside any Inverse , defeating the purpose
+        undoTransp = list(map(lambda t: Transpose(t), reversed(expr.args)))
+
+        return Transpose( Constr(*undoTransp).doit() )
+    
+    return expr # as how it is
+
+# TODO fix this function, red alert, see the transposeOut --- decide which function picks off from the other and what each function should do. 
+
+# TODO 2: fix areas of the last case (below) where the matadd args get reversed -- need to keep them in same order as was given. 
+
+# TODO 3: don't like how inverses get simplified because of the .doit() on constructor. Need to keep things the same as they were. 
+# %%
+A = MatrixSymbol("A", a, c)
+J = MatrixSymbol("J", c, a)
+B = MatrixSymbol("B", c, b)
+R = MatrixSymbol("R", c,c)
+D = MatrixSymbol('D', b, a)
+L = MatrixSymbol('L', a, c)
+E = MatrixSymbol('E', c, b)
+K = MatrixSymbol('K', a, b) # pair of D
+
+expr = MatMul( Transpose(MatMul(A, B)) , Transpose(MatMul(R, J)) )
+res = groupTranspose( expr )
+check = Transpose(MatMul(R, J, A, B))
+
+assert equal(res, check)
+
+showGroup([expr, res, check])
+# %%
+
+
+expr = B.T * A.T * J.T * R.T
+res = groupTranspose( expr)
+check = Transpose(MatMul(R, J, A, B))
+
+assert equal(res, check)
+
+showGroup([expr, res, check])
+# %%
+
+expr = A * R.T * L.T * K * E.T * B
+res = groupTranspose(expr)
+check = Transpose(MatMul(B.T, E, K.T, L, R, A.T))
+
+assert equal(res, check)
+
+showGroup([expr, res, check])
+
+# %%
+
+
+# NOTE WARNING: this below is false just simply because of the different position of D and K.T in the matadd expressioN!!!
+# assert groupTranspose(A * R.T * L.T * K * E.T * B + D.T + K) == Transpose( MatAdd(D,  K.T, MatMul(B.T, E, K.T, L, R, A.T)) )
+
+expr = A * R.T * L.T * K * E.T * B + D.T + K
+res = groupTranspose(expr)
+check = Transpose( MatAdd(MatMul(B.T, E, K.T, L, R, A.T), D, K.T) )
+
+assert equal(res, check)
+
+showGroup([expr, res, check])
+
+
+
+
+# %%
+# Component form: 
+def transposeOut_Part(exprGiven:  MatrixExpr) -> MatrixExpr: 
+    '''Returns a result where each part has the transpose on the outer side, if the inverse was inner and transpose was outer'''
+
+    expr = exprGiven.doit() # attempting to flatten an Inv(Trans(Matmul)) expression to bring the MatMul on the outside, so there are fewer cases to consider...
+
+    def transposeOut_Sym(sym: MatrixExpr) -> MatrixExpr:
+        if len(sym.free_symbols) == 1:
+            if sym.is_Inverse and sym.arg.is_Transpose:
+                letter = sym.arg.arg # matrix symbol
+                return Transpose(Inverse(letter))
+        return sym 
+
+    if len(expr.free_symbols) == 1:
+        return transposeOut_Sym(expr)
+
+    elif expr.is_MatMul: 
+        newComponents = list(map(lambda arg : transposeOut_Sym(arg), expr.args))
+        # TODO should I groupTranspose here? 
+        return MatMul(*newComponents)
+
+    # else just return the given value
+    return exprGiven
+
+
+
+def transposeOut_Grouped(matadd: MatAdd) -> MatAdd: 
+    '''Returns a matadd ensuring that each expression inside has the transpose on the outer, and inverse on the inner
+    
+    Returns the components always grouped under transpose, even if they weren't that way when given as argument'''
+
+    assert matadd.is_MatAdd 
+
+    # NOTE: the only component types can be: Inverse, Transpose, MatMul, or MatrixSymbol. 
+    # NOTE must bring out the matmul part if we get cases like Inverse(Transpose(MatMul)). Need to flatten so matmul is on the ousdie, using doit(). Need that so we pass in one matrixsymbol not a matmul, to the transposeOut function. 
+    # NOTE no need anymore since transposeOut does it
+    #flattenedAddends: List[MatrixExpr] = list(map(lambda a : a.doit(), matadd.args))
+
+    # Now these are either matmuls or matsymbols of individual matsymbols with Transpose or Inverse, but all have Transpose as the outer operation (according to lin alg laws)
+    matmulsWithTranspOut: List[MatrixExpr] = list(map(lambda a: transposeOut_Part(a), matadd.args))
+
+    # Grouping each individual part
+    matmulsGroupedTransp = list(map(lambda m: groupTranspose(m), matmulsWithTranspOut))
+
+    # Now return the transpose out of the entire addition: 
+    mataddsWithTranspOut = MatAdd(*matmulsGroupedTransp)
+
+    #return groupTranspose( mataddsWithTranspOut )
+    return mataddsWithTranspOut
+
+# %%
+C = MatrixSymbol('C', c, c)
+E = MatrixSymbol('E', c, c)
+B = MatrixSymbol('B', c, c)
+L = MatrixSymbol('L', c, c)
+D = MatrixSymbol('D', c, c)
+
+
+mataddExpr = MatAdd( Inverse(Transpose(C*D*E)) , D.I , Inverse(Transpose(C*D)) , E.T)
+
+'''
+check = Transpose(
+    MatAdd(
+        MatMul(D.I, C.I), 
+        MatMul(E.I, D.I, C.I), 
+        D.T.I, 
+        E
+    )
+)
+'''
+check = MatAdd(
+    D.I, 
+    Transpose(Inverse(MatMul(C, D))),
+    Transpose(Inverse(MatMul(C, D, E))), 
+    E.T
+)
+
+res = transposeOut_Grouped(mataddExpr)
+
+#assert equal(res, check)
+
+showGroup([
+    mataddExpr, 
+    check, 
+    groupTranspose(check),
+    res
+])
+# TODO fix groupTranspose because it doesn't leave expressions the same (see how the inverse got split)
+# TODO 2: fix transposeOut function because it doesn't leave expressions the same -- see how inverse gets split
+
+
+# %%
+
+
+
 # Now apply the trace deriv function per pair
 def traceDerivPair(pair: Tuple[List[MatrixSymbol], List[MatrixSymbol]]) -> MatrixExpr: 
     (left, right) = pair
@@ -464,9 +638,13 @@ def derivMatInsideTrace(expr: MatrixExpr, byVar: MatrixSymbol) -> MatMul:
 
     # Check now that it is matmul
     assert expr.is_MatMul
-
+    
     # Get how many of byVar are in the expression: 
-    numSignalVars = len(list(filter(lambda arg: arg == byVar, expr.args)))
+    # NOTE: arg may be under Transpose or Inverse here, not just a simple MatrixSymbol, so we need to detect the MatrixSymbol underneath using "has" test instead of the usual == test of arg == byVar. 
+    # This way we count the byVar underneath the Transp or Inverse.
+    numSignalVars = len(list(filter(lambda arg: arg.has(byVar), expr.args)))
+    # NOTE here is a way to get the underlying MatrixSymbol when there are Invs and Transposes (just the letters without the invs and transposes): 
+    # list(itertools.chain(*map(lambda a: a.free_symbols, trace.arg.args))), where expr := trace.arg
 
     # Get the split list applications: split by signal var for how many times it appears
     signalSplits = list(map(lambda n: splitOnce(expr.args, byVar, n), range(1, numSignalVars + 1)))
@@ -481,40 +659,13 @@ def derivMatInsideTrace(expr: MatrixExpr, byVar: MatrixSymbol) -> MatMul:
 
 # %%
 
-# TODO function to group transposes: 
-def groupTranspose(expr: MatrixExpr) -> MatrixExpr: 
-
-    hasTranspose = lambda expr : "Transpose" in srepr(expr)
-
-    if (not expr.is_Transpose) and hasTranspose(expr):
-
-        # NOTE seems that there is no need of separating into MatAdd and MatMul cases (the undoTransp step below works for both!)
-        Constr = expr.func # matadd or matmul # TODO check if correct
-
-        # Reverse the transpose operation
-        undoTransp = list(map(lambda t: t.T, reversed(expr.args)))
-
-        return Transpose( Constr(*undoTransp).doit() )
-    
-    return expr # as how it is
-
-# %%
-assert groupTranspose( MatMul( Transpose(MatMul(A, B)) , Transpose(MatMul(R, J)) ) ) == Transpose(MatMul(R, J, A, B))
-
-assert groupTranspose( B.T * A.T * J.T * R.T) == Transpose(MatMul(R, J, A, B))
-
-assert groupTranspose(A * R.T * L.T * K * E.T * B) == Transpose(MatMul(B.T, E, K.T, L, R, A.T))
-
-# NOTE WARNING: this below is false just simply because of the different position of D and K.T in the matadd expressioN!!!
-# assert groupTranspose(A * R.T * L.T * K * E.T * B + D.T + K) == Transpose( MatAdd(D,  K.T, MatMul(B.T, E, K.T, L, R, A.T)) )
-
-assert groupTranspose(A * R.T * L.T * K * E.T * B + D.T + K) == Transpose( MatAdd(MatMul(B.T, E, K.T, L, R, A.T), D, K.T) )
 
 
-
-# %%
 def derivTrace(trace: Trace, byVar: MatrixSymbol) -> MatrixExpr: 
-    
+    '''
+    Does derivative of a Trace expression. 
+    Equivalent to diff(trace, byVar). 
+    '''
     assert trace.is_Trace 
 
     # Case 1: trace of a single matrix symbol - easy
@@ -524,6 +675,7 @@ def derivTrace(trace: Trace, byVar: MatrixSymbol) -> MatrixExpr:
     # Case 2: if arg is matmul then just apply the trace matmul function:
     elif trace.arg.is_MatMul:
         return derivMatInsideTrace(trace.arg, byVar = byVar)    
+        #assert equal(result, diff(trace, byVar))
 
     # Case 3: split first by MatAdd to get MatMul pieces and feed in the pieces to the single function that gets applied to each MatMul piece. 
     elif trace.arg.is_MatAdd: 
@@ -544,20 +696,209 @@ def derivTrace(trace: Trace, byVar: MatrixSymbol) -> MatrixExpr:
         return MatAdd(*splitDiffedAddends)
 
     
-# %%
-derivTrace(Trace(expr + A*B*Em * R * J  + A*Dm + Km ),  Em) 
 
 
 # %%
+### TEST 1: simple case, with addition, no inverse or transpose in any of the variables
+a, b, c = symbols('a b c', commutative=True)
+
+C = MatrixSymbol('C', a, b)
+E = MatrixSymbol('E', b, c)
+B = MatrixSymbol('B', c, b)
+L = MatrixSymbol('L', c, b)
+D = MatrixSymbol('D', c, a)
+
+K = MatrixSymbol('K', a, a)
 
 
-assert derivTrace(Trace(expr + A*B*Em * R * J  + A*Dm + Km ),  Em) == MatAdd( MatMul(Cm.T, Transpose(MatMul(Bm, Em, Lm, Em, Dm))), MatMul(Transpose(MatMul(A, B)), Transpose(MatMul(R, J))), MatMul(Transpose(MatMul(Cm, Em, Bm)), Transpose(MatMul(Lm, Em, Dm))), MatMul(Transpose(MatMul(Cm, Em, Bm, Em, Lm)), D.T) )
+
+trace = Trace(expr + A*B*E * R * J  + A*D + K )
+byVar = E 
+
+
+res = derivTrace(trace, byVar) 
+
+check = MatAdd( 
+    MatMul(Transpose(MatMul(A, B)), Transpose(MatMul(R, J))), 
+    MatMul(C.T, Transpose(MatMul(B, E, L, E, D))), 
+    MatMul(Transpose(MatMul(C, E, B)), Transpose(MatMul(L, E, D))), 
+    MatMul(Transpose(MatMul(C, E, B, E, L)), D.T) 
+) 
+
+dcheck = diff(trace, byVar)
+
+# NOTE: doesn't work to simplify the check - res expression ! Leaves it in subtraction form, same with doit() in all kinds of combinations with simplify()
+#assert simplify(check - res) == 0
+
+assert equal(check, res)
+assert equal(res, dcheck)
+assert equal(check, dcheck)
+
+showGroup([
+    res, 
+    groupTranspose(res), 
+    dcheck
+])
+
+
 # %%
-assert 
+
+
+# TEST 2a: testing one inverse expression, not the byVar
+
+C = MatrixSymbol('C', a, c)
+E = MatrixSymbol('E', c, c)
+B = MatrixSymbol('B', c, c)
+L = MatrixSymbol('L', c, c)
+D = MatrixSymbol('D', c, a)
+
+trace = Trace(C * E * B * E * Inverse(L) * E * D)
+byVar = E 
+
+res = derivTrace( trace , byVar)
+
+check = Transpose( B * E * Inverse(L) * E * D * C + Inverse(L)*E*D*C*E*B +  D*C*E*B*E*Inverse(L))
+
+dcheck = diff(trace, byVar)
+
+assert equal(res, check)
+assert equal(res, dcheck)
+assert equal(check, dcheck)
+
+showGroup([
+    res, 
+    check, 
+    dcheck
+])
+
+# %%
+
+
+# TEST 2b: testing one inverse expression, not the byVar
+
+C = MatrixSymbol('C', c, c)
+A = MatrixSymbol('A', c, c)
+E = MatrixSymbol('E', c, c)
+B = MatrixSymbol('B', c, c)
+L = MatrixSymbol('L', c, c)
+D = MatrixSymbol('D', c, c)
+
+trace = Trace(B * Inverse(C) * E * L * A * E * D)
+byVar = E 
+
+res = derivTrace( trace , byVar)
+
+check = Transpose(L * A* E * D * B * Inverse(C) + D*B*Inverse(C)*E*L*A)
+
+dcheck = diff(trace, byVar)
+
+assert equal(res, check)
+assert equal(res, dcheck)
+assert equal(check, dcheck)
+
+showGroup([
+    res, 
+    check, 
+    dcheck
+]) 
+
+# %%
+
+
+# TEST 2c: testing one inverse expression, not the byVar, that is situated at the front of the expression. 
+
+C = MatrixSymbol('C', c, c)
+E = MatrixSymbol('E', c, b)
+B = MatrixSymbol('B', b, c)
+L = MatrixSymbol('L', b, c)
+D = MatrixSymbol('D', b, c)
+
+trace = Trace(Inverse(C) * E * B * E * L * E * D)
+byVar = E 
+
+res = derivTrace( trace , byVar)
+
+check = Transpose(B*E*L*E*D*Inverse(C) + L*E*D*Inverse(C)*E*B + D*Inverse(C)*E*B*E*L)
+
+dcheck = diff(trace, byVar)
+
+assert equal(res, check)
+assert equal(res, dcheck)
+assert equal(check, dcheck)
+
+showGroup([
+    res, 
+    check, 
+    dcheck
+]) 
+
+# %%
+
+
+# TEST 3a: testing mix of inverse and transpose expressions, not the byVar
+
+B = MatrixSymbol('B', c, c)
+C = MatrixSymbol('C', c, c)
+E = MatrixSymbol('E', c, c)
+L = MatrixSymbol('L', b, c)
+A = MatrixSymbol('A', b, c)
+D = MatrixSymbol('D', c, c)
+
+trace = Trace(B * C.I * E * L.T * A * E * D)
+byVar = E 
+
+res = derivTrace( trace , byVar)
+
+check = Transpose(L.T * A * E * D * B * C.I) + Transpose(D *B*C.I*E*L.T*A)
+
+dcheck = diff(trace, byVar)
+
+assert equal(res, check)
+assert equal(res, dcheck)
+assert equal(check, dcheck)
+
+showGroup([
+    res, 
+    check, 
+    dcheck, 
+    groupTranspose(res)
+]) 
+# %%
 
 
 
+### TEST 3b: testing mix of inverser and transpose expressions, and byVar is either an inverse of transpose. 
 
+B = MatrixSymbol('B', c, c)
+C = MatrixSymbol('C', c, c)
+E = MatrixSymbol('E', c, c)
+L = MatrixSymbol('L', b, c)
+A = MatrixSymbol('A', b, c)
+D = MatrixSymbol('D', c, c)
+
+trace = Trace(B * C.I * E.T * L.T * A * E * D)
+byVar = E 
+
+res = derivTrace( trace , byVar)
+
+check = L.T * A*E*D*B*C.I + A.T* L * E *(C.I).T * B.T * D.T
+
+dcheck = diff(trace, byVar)
+
+showGroup([
+    res, check, dcheck, groupTranspose(dcheck)
+])
+# %%
+assert equal(res, check)
+assert equal(res, dcheck)
+assert equal(check, dcheck)
+
+showGroup([
+    res, 
+    check, 
+    dcheck, 
+    groupTranspose(res)
+]) 
 # %%
 # TODO fix this function so it can take symbolic matrices
 #diffMatrix(B * Inverse(C) * E.T * L.T * A * E * D,   E)
@@ -579,5 +920,4 @@ assert
 # # matrixDifferential(Trace(R_), R_)
 # %%
 # matrixDifferential(A*J, A)
-
 
