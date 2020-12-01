@@ -10,6 +10,8 @@ from functools import reduce
 
 from sympy import det, Determinant, Trace, Transpose, Inverse, Function, Lambda, HadamardProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, MatrixSymbol, Identity,  Derivative, symbols, diff
 
+from sympy import srepr 
+
 from sympy import tensorcontraction, tensorproduct
 from sympy.functions.elementary.piecewise import Undefined
 from sympy.physics.quantum.tensorproduct import TensorProduct
@@ -473,6 +475,7 @@ def derivMatInsideTrace(expr: MatrixExpr, byVar: MatrixSymbol) -> MatMul:
 
 # %%
 def derivTrace(trace: Trace, byVar: MatrixSymbol) -> MatrixExpr: 
+    
     assert trace.is_Trace 
 
     # Case 1: trace of a single matrix symbol - easy
@@ -489,18 +492,25 @@ def derivTrace(trace: Trace, byVar: MatrixSymbol) -> MatrixExpr:
         addends: List[MatrixExpr] = list(filter(lambda m : m.has(byVar), trace.arg.args ))
         # NOTE: can contain matrixsymbols mixed with matmul
 
-        # TODO this is a list of MatAdds; must flatten them to avoid brackets extra and to enhance simplification.
+        # NOTE this is a list of MatAdds; must flatten them to avoid brackets extra and to enhance simplification.
         diffedAddends: List[MatrixExpr] = list(map(lambda m : derivMatInsideTrace(m, byVar), addends))
 
-        return MatAdd(*diffedAddends)
+        # Preparing to flatten the matrix additions into one overall matrix addition: 
+        splitMatAdd = lambda expr : list(expr.args) if expr.is_MatAdd else [expr]
+
+        # Splitting and flattening here: 
+        splitDiffedAddends = list(itertools.chain(*map(lambda d : splitMatAdd(d), diffedAddends)) ) 
+
+        # Now return the mat add
+        return MatAdd(*splitDiffedAddends)
 
     
 # %%
-t = Trace(expr + A*B*Em * R * J  + A*Dm + Km )
 
-derivTrace(t, Em)
+derivTrace(Trace(expr + A*B*Em * R * J  + A*Dm + Km ),  Em)
+
+
 # %%
-from sympy import srepr 
 
 # TODO function to group transposes: 
 def groupTranspose(expr: MatrixExpr) -> MatrixExpr: 
@@ -509,12 +519,10 @@ def groupTranspose(expr: MatrixExpr) -> MatrixExpr:
 
     if (not expr.is_Transpose) and hasTranspose(expr):
 
-        # TODO need to separate add and mul cases (try below examples added together, then won't work, need mul cases separate and then add on top)
+        # NOTE seems that there is no need of separating into MatAdd and MatMul cases (the undoTransp step below works for both!)
         Constr = expr.func # matadd or matmul # TODO check if correct
 
         # Reverse the transpose operation
-
-        # TODO: expecting expr.args splits at either the + or * of MatAdd or MatMul (expects flattened version, so must fix deriv function above to return flat MatAdd for instance)
         undoTransp = list(map(lambda t: t.T, reversed(expr.args)))
 
         return Transpose( Constr(*undoTransp).doit() )
@@ -525,6 +533,14 @@ def groupTranspose(expr: MatrixExpr) -> MatrixExpr:
 assert groupTranspose( MatMul( Transpose(MatMul(A, B)) , Transpose(MatMul(R, J)) ) ) == Transpose(MatMul(R, J, A, B))
 
 assert groupTranspose( B.T * A.T * J.T * R.T) == Transpose(MatMul(R, J, A, B))
+
+assert groupTranspose(A * R.T * L.T * K * E.T * B) == Transpose(MatMul(B.T, E, K.T, L, R, A.T))
+
+# NOTE WARNING: this below is false just simply because of the different position of D and K.T in the matadd expressioN!!!
+# assert groupTranspose(A * R.T * L.T * K * E.T * B + D.T + K) == Transpose( MatAdd(D,  K.T, MatMul(B.T, E, K.T, L, R, A.T)) )
+
+assert groupTranspose(A * R.T * L.T * K * E.T * B + D.T + K) == Transpose( MatAdd(MatMul(B.T, E, K.T, L, R, A.T), D, K.T) )
+
 
 # %%
 
