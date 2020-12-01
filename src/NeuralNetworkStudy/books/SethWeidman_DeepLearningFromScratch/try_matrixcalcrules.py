@@ -449,7 +449,12 @@ assert splitOnce(expr.args, Em, 4) == ([], [])
 def traceDerivPair(pair: Tuple[List[MatrixSymbol], List[MatrixSymbol]]) -> MatrixExpr: 
     (left, right) = pair
 
-    return MatMul( Transpose(MatMul(*left)) , Transpose(MatMul(*right)) )
+    # NOTE: separating operations based on the length of the element list because we don't want braces like (C)^T, instead we want C^T simply. If len == 1 then it is case C instaed of C,E,B,,... so need no MatMul inside Transpose: 
+    leftTransp = Transpose(*left) if len(left) == 1 else Transpose(MatMul(*left))
+
+    rightTransp = Transpose(*right) if len(right) == 1 else Transpose(MatMul(*right))
+
+    return MatMul( leftTransp, rightTransp )
 
 # %%
 def derivMatInsideTrace(expr: MatrixExpr, byVar: MatrixSymbol) -> MatMul:
@@ -471,6 +476,40 @@ def derivMatInsideTrace(expr: MatrixExpr, byVar: MatrixSymbol) -> MatMul:
     
     # Result is an addition of the transposed matmul combinations:
     return MatAdd(* transposedMatMuls )
+
+
+
+# %%
+
+# TODO function to group transposes: 
+def groupTranspose(expr: MatrixExpr) -> MatrixExpr: 
+
+    hasTranspose = lambda expr : "Transpose" in srepr(expr)
+
+    if (not expr.is_Transpose) and hasTranspose(expr):
+
+        # NOTE seems that there is no need of separating into MatAdd and MatMul cases (the undoTransp step below works for both!)
+        Constr = expr.func # matadd or matmul # TODO check if correct
+
+        # Reverse the transpose operation
+        undoTransp = list(map(lambda t: t.T, reversed(expr.args)))
+
+        return Transpose( Constr(*undoTransp).doit() )
+    
+    return expr # as how it is
+
+# %%
+assert groupTranspose( MatMul( Transpose(MatMul(A, B)) , Transpose(MatMul(R, J)) ) ) == Transpose(MatMul(R, J, A, B))
+
+assert groupTranspose( B.T * A.T * J.T * R.T) == Transpose(MatMul(R, J, A, B))
+
+assert groupTranspose(A * R.T * L.T * K * E.T * B) == Transpose(MatMul(B.T, E, K.T, L, R, A.T))
+
+# NOTE WARNING: this below is false just simply because of the different position of D and K.T in the matadd expressioN!!!
+# assert groupTranspose(A * R.T * L.T * K * E.T * B + D.T + K) == Transpose( MatAdd(D,  K.T, MatMul(B.T, E, K.T, L, R, A.T)) )
+
+assert groupTranspose(A * R.T * L.T * K * E.T * B + D.T + K) == Transpose( MatAdd(MatMul(B.T, E, K.T, L, R, A.T), D, K.T) )
+
 
 
 # %%
@@ -506,43 +545,15 @@ def derivTrace(trace: Trace, byVar: MatrixSymbol) -> MatrixExpr:
 
     
 # %%
-
-derivTrace(Trace(expr + A*B*Em * R * J  + A*Dm + Km ),  Em)
-
-
-# %%
-
-# TODO function to group transposes: 
-def groupTranspose(expr: MatrixExpr) -> MatrixExpr: 
-
-    hasTranspose = lambda expr : "Transpose" in srepr(expr)
-
-    if (not expr.is_Transpose) and hasTranspose(expr):
-
-        # NOTE seems that there is no need of separating into MatAdd and MatMul cases (the undoTransp step below works for both!)
-        Constr = expr.func # matadd or matmul # TODO check if correct
-
-        # Reverse the transpose operation
-        undoTransp = list(map(lambda t: t.T, reversed(expr.args)))
-
-        return Transpose( Constr(*undoTransp).doit() )
-    
-    return expr # as how it is
-
-# %%
-assert groupTranspose( MatMul( Transpose(MatMul(A, B)) , Transpose(MatMul(R, J)) ) ) == Transpose(MatMul(R, J, A, B))
-
-assert groupTranspose( B.T * A.T * J.T * R.T) == Transpose(MatMul(R, J, A, B))
-
-assert groupTranspose(A * R.T * L.T * K * E.T * B) == Transpose(MatMul(B.T, E, K.T, L, R, A.T))
-
-# NOTE WARNING: this below is false just simply because of the different position of D and K.T in the matadd expressioN!!!
-# assert groupTranspose(A * R.T * L.T * K * E.T * B + D.T + K) == Transpose( MatAdd(D,  K.T, MatMul(B.T, E, K.T, L, R, A.T)) )
-
-assert groupTranspose(A * R.T * L.T * K * E.T * B + D.T + K) == Transpose( MatAdd(MatMul(B.T, E, K.T, L, R, A.T), D, K.T) )
+derivTrace(Trace(expr + A*B*Em * R * J  + A*Dm + Km ),  Em) 
 
 
 # %%
+
+
+assert derivTrace(Trace(expr + A*B*Em * R * J  + A*Dm + Km ),  Em) == MatAdd( MatMul(Cm.T, Transpose(MatMul(Bm, Em, Lm, Em, Dm))), MatMul(Transpose(MatMul(A, B)), Transpose(MatMul(R, J))), MatMul(Transpose(MatMul(Cm, Em, Bm)), Transpose(MatMul(Lm, Em, Dm))), MatMul(Transpose(MatMul(Cm, Em, Bm, Em, Lm)), D.T) )
+# %%
+assert 
 
 
 
