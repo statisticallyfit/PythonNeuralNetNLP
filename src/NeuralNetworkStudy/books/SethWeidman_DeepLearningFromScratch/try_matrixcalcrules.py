@@ -498,6 +498,52 @@ showGroup([
 ])
 
 # %%
+def groupTranpose_MatMul_or_MatSym(expr: MatrixExpr) -> MatrixExpr:
+
+    def revTransposeAlgo(expr):
+        '''Converts B.T * A.T --> (A * B).T'''
+
+        hasTranspose = lambda e : "Transpose" in srepr(e)
+
+        if hasTranspose(expr) and expr.is_MatMul:
+            def pickOut(a):
+                if not hasTranspose(a):
+                    #return Transpose(MatMul(*a.args))
+                    return Transpose(a)
+                elif hasTranspose(a) and a.is_Transpose:
+                    return a.arg 
+                return Transpose(a) #TODO check 
+
+            revs = list(map(lambda a : pickOut(a), reversed(expr.args)))
+
+            return Transpose(MatMul(*revs))
+            
+        return expr 
+
+    ps = list(preorder_traversal(expr))
+    ms = list(filter(lambda p : p.is_MatMul, ps))
+    ts = list(map(lambda m : revTransposeAlgo(m), ms))
+
+    #ds = dict() # TODO use list instead ns
+    cs = []
+
+    t = expr # most complicated, first innermost (with potential rabbit holes, deeper innermosts)
+    for j in range(0, len(ms)):
+        m = ms[j]
+        if expr.has(m):
+            #newPair = [(m, ts[j])] #revTransposeAlgo(m))]
+            #ds[expr] = (ds.get(expr) + newPair) if expr in ds.keys() else newPair
+            ns.append( (m, ts[j]) )
+
+    # Apply the changes in the list of replacements we gathered above
+    exprToChange = expr
+    for (old, new) in ns:
+        exprToChange = exprToChange.xreplace({old : new})
+
+    return exprToChange 
+
+
+# %%
 
 
 # TEST 2: more than one innermost expression
@@ -516,117 +562,20 @@ expr = Transpose(Inverse(
     ) 
 ))))
 
-(inner, constrs) = digger(expr)
+res = groupTranpose_MatMul_or_MatSym(expr)
+
+assert equal(res.doit(), expr.doit())
 
 showGroup([
     expr, 
-    (inner, constrs)
+    res,  
+    expr.doit(),
+    res.doit()
 ])
-# %%
-# TODO stuck here with digger
 
-def revTransposeAlgo(expr):
-    hasTranspose = lambda e : "Transpose" in srepr(e)
-
-    if hasTranspose(expr) and expr.is_MatMul:
-        def pickOut(a):
-            if not hasTranspose(a):
-                #return Transpose(MatMul(*a.args))
-                return Transpose(a)
-            elif hasTranspose(a) and a.is_Transpose:
-                return a.arg 
-            return Transpose(a) #TODO check 
-
-        revs = list(map(lambda a : pickOut(a), reversed(expr.args)))
-
-        return Transpose(MatMul(*revs))
-        
-    return expr 
-
-ps = list(preorder_traversal(expr))
-ms = list(filter(lambda p : p.is_MatMul, ps))
-ts = list(map(lambda m : revTransposeAlgo(m), ms))
-
-# %%
-ms
-# %%
-ts
-# %%
-import copy # NOTE: using deepcopy to avoid this problem with list append: https://hyp.is/POjNFDTXEeuNRzdBT07tTA/thispointer.com/python-how-to-copy-a-dictionary-shallow-copy-vs-deep-copy/
-
-ds = dict()
-
-#for i in range(0, len(ts)):
-#    t = ts[i]
-#    for j in range(0, len(ms)):
-
-#        m = ms[j]
-
-#        if t.has(m):
-#            #ns.append( t.xreplace({m : revTransposeAlgo(m)}) )
-#            newPair = [(m, ts[j])] #revTransposeAlgo(m))]
-#            ds[t] = (ds.get(t) + newPair) if t in ds.keys() else newPair
-
-
-#t = ts[0]# most complicated, first innermost (with potential rabbit holes, deeper innermosts)
-t = expr # most complicated, first innermost (with potential rabbit holes, deeper innermosts)
-for j in range(0, len(ms)):
-    m = ms[j]
-    if t.has(m):
-        newPair = [(m, ts[j])] #revTransposeAlgo(m))]
-        ds[t] = (ds.get(t) + newPair) if t in ds.keys() else newPair
-        #ns[j] = (m, ts[j])
-ds
-# %%
-# Get the dict pair with longest values list
-#list(filter(lambda pair : , ds.items()))
-
-tToChange = t 
-for (old, new) in ds.get(t):
-    tToChange = tToChange.xreplace({old : new})
-
-assert equal(tToChange.doit(), expr.doit())
-
-showGroup([tToChange, tToChange.doit(), expr.doit() ])
 
 
 # %%
-
-
-
-
-
-(checkInner, checkConstrs) = (C*D*E, [Trace, Transpose, Inverse, Transpose])
-
-assert checkInner == inner 
-assert checkConstrs == constrs 
-
-showGroup([
-    expr, 
-    (inner, constrs), 
-    (checkInner, checkConstrs)
-])
-# %%
-
-def groupTranspose_MatMulOrSym(m: MatrixExpr) -> MatrixExpr: 
-    '''Given a matmul or a matsymbol or matsymbol with inv or transpose, returns the expression with transposes grouped together. 
-
-    Only works if transpose is the outermost operation; else this function doesn't make them the outermost. Do transposeOut() for that.'''
-
-    isMatSym = lambda expr : len(expr.free_symbols) == 1
-
-    #assert m.is_MatMul 
-    hasTranspose = lambda expr : "Transpose" in srepr(expr)
-
-    if (isMatSym(m) or m.is_MatMul) and hasTranspose(m):
-
-        # Reverse the transpose operation (useful for a matmul, that is the rule)
-        # NOTE: must use Transpose rather than .T because the .T gets inside any Inverse , defeating the purpose
-        undoTransp = list(map(lambda t: Transpose(t), reversed(expr.args)))
-
-        return Transpose( MatMul(*undoTransp) )
-    
-    return expr # as how it is
 
 
 
@@ -636,18 +585,20 @@ def groupTranspose(expr: MatrixExpr) -> MatrixExpr:
     Brings the individual transpose operations out over the entire group (factors out the transpose and puts it as the outer operation). 
     NOTE: This happens only when the transpose ops are at the same level. If they are nested, that "bringing out" task is left to the transposeOut function. '''
 
-    isMatSym = lambda s: len(s.free_symbols) == 1
+    #isMatSym = lambda s: len(s.free_symbols) == 1
 
-    if expr.is_MatAdd: 
-        addendsTransp: List[MatrixExpr] = list(map(lambda a: groupTranspose(a), expr.args))
+    if not expr.is_MatAdd: 
+        return groupTranpose_MatMul_or_MatSym(expr)
 
-        return MatAdd(*addendsTransp)
+    addendsTransp: List[MatrixExpr] = list(map(lambda a: groupTranspose(a), expr.args))
 
-    elif expr.is_MatMul or isMatSym(expr):
-        return groupTranspose(expr)
+    return MatAdd(*addendsTransp)
+
+    #elif expr.is_MatMul or isMatSym(expr):
+    #    return groupTranspose(expr)
 
     #else: # is transpose or inverse or trace etc and need to dig to get the innermost argument
-    return groupTranspose_Digger(expr)
+    
     
     
 
@@ -668,6 +619,8 @@ check = expr
 showGroup([
     expr, res, check 
 ])
+
+assert equal(res, check)
 # %%
 
 
@@ -684,6 +637,8 @@ check = expr
 showGroup([
     expr, res, check 
 ])
+
+assert equal(res, check)
 # %%
 
 
@@ -700,6 +655,8 @@ check = Inverse(Transpose(C*E*B))
 showGroup([
     expr, res, check 
 ])
+
+assert equal(res, check)
 # %%
 
 
@@ -717,16 +674,18 @@ showGroup([
     expr, res, check 
 ])
 
+assert equal(res, check)
 # %%
 
 
 # TEST 5: individual symbols
 
 A = MatrixSymbol("A", a, b)
+C = MatrixSymbol('C', c, c)
 
 (expr1, check1) = (A, A)
 (expr2, check2) = (A.T, A.T) 
-(expr3, check3) = (A.I, A.I) 
+(expr3, check3) = (C.I, C.I) 
 
 res1 = groupTranspose(expr1)
 res2 = groupTranspose(expr2)
@@ -738,6 +697,9 @@ showGroup([
     (expr3, res3, check3)
 ])
 
+assert equal(res1, check1)
+assert equal(res2, check2)
+assert equal(res3, check3)
 # %%
 
 
@@ -755,6 +717,9 @@ check = Transpose(R*J*A*B)
 showGroup([
     expr, res, check 
 ])
+
+# TODO if you want you should split the matmul case into a "simple matmul case" in that there are no innermost nestings and everything is on the first level. 
+assert equal(res, check)
 # %%
 
 
@@ -772,6 +737,8 @@ check = Transpose(R*J*A*B)
 showGroup([
     expr, res, check 
 ])
+
+assert equal(res, check)
 # %%
 
 
@@ -782,14 +749,22 @@ B = MatrixSymbol("B", a, a)
 L = MatrixSymbol('L', a, a)
 K = MatrixSymbol('K', a, a)
 E = MatrixSymbol('E', a, a)
+R = MatrixSymbol('R', a, a)
 
-expr = A * R.I.T * L.I.T * K * E * B.I 
+expr = MatMul(A , Transpose(Inverse(R)), Transpose(Inverse(L)) , K , E.T , B.I )
 res = groupTranspose(expr)
-check = Transpose(B.I.T * E * K.T * L.I * R.I * A.T)
+check = Transpose( 
+    MatMul( Transpose(Inverse(B)), E , K.T , Transpose(Inverse(L)) , Transpose(Inverse(R)) , A.T)
+)
+
 
 showGroup([
-    expr, res, check 
+    expr, res, check , 
+    res.doit(), 
+    check.doit()
 ])
+
+assert equal(res, check)
 # %%
 
 
@@ -802,15 +777,22 @@ L = MatrixSymbol('L', a, a)
 K = MatrixSymbol('K', a, a)
 E = MatrixSymbol('E', a, a)
 
-expr = A * R.I.T * L.T.I * K * E * B.I 
+
+expr = MatMul(A , Transpose(Inverse(R)), Inverse(Transpose(L)) , K , E.T , B.I )
+
 res = groupTranspose(expr)
-check = expr
+
+check = Transpose( 
+    MatMul( Transpose(Inverse(B)), E , K.T , Transpose(Inverse(Transpose(L))) , R.I , A.T)
+)
 
 showGroup([
-    expr, res, check 
+    expr, res, check , 
+    res.doit(), 
+    check.doit()
 ])
 
-
+assert equal(res, check)
 # %%
 
 
@@ -828,12 +810,11 @@ expr = A * R.T * L.T * K * E.T * B + D.T + K
 res = groupTranspose(expr)
 check = Transpose( MatAdd(MatMul(B.T, E, K.T, L, R, A.T), D, K.T) )
 
-assert equal(res, check)
-
 showGroup([
     expr, res, check 
 ])
 
+assert equal(res, check)
 # %%
 
 
@@ -847,13 +828,13 @@ expr = Trace(Transpose(Inverse(Transpose(C*D*E))))
 res = groupTranspose(expr)
 check = expr 
 
-assert equal(res, check)
-
 showGroup([
     expr, res, check 
 ])
 
-
+# TODO fix the expandMatMul function so that trace can be passed as argument (just do expand on what is inside)
+#assert equal(res, check)
+assert res == check
 # %%
 
 
@@ -867,12 +848,12 @@ expr = Trace(Transpose(Transpose(Inverse(C*D*E))))
 res = groupTranspose(expr)
 check = expr 
 
-assert equal(res, check)
-
 showGroup([
     expr, res, check 
 ])
 
+# assert equal(res, check) # todo fix equals function
+assert res == check
 # %%
 
 
@@ -884,14 +865,17 @@ D = MatrixSymbol('D', a, a)
 
 expr = Transpose(Inverse(Transpose(C.T * A.I * D.T)))
 res = groupTranspose(expr)
-check = Transpose(Inverse(Transpose(Transpose(D * A.I.T * C)))) 
-
-assert equal(res, check)
+check = Transpose(Inverse(Transpose(Transpose(
+    MatMul(D , Transpose(Inverse(A)), C )
+)))) 
 
 showGroup([
-    expr, res, check 
+    expr, res, check ,
+    res.doit(),
+    check.doit()
 ])
 
+assert equal(res, check)
 # %%
 
 
@@ -908,17 +892,19 @@ expr = Trace(Transpose(Transpose(Inverse(C*D*E))))
 res = groupTranspose(expr)
 check = expr 
 
-assert equal(res, check)
-
 showGroup([
     expr, res, check 
 ])
+
+#assert equal(res, check) # TODO fix
+assert res == check
 
 
 
 
 # %%
-def transposeOut(expr: MatrixExpr) -> MatrixExpr: 
+#def transposeOut(expr: MatrixExpr) -> MatrixExpr: 
+# TODO left off here
 
 # %%
 C = MatrixSymbol('C', c, c)
