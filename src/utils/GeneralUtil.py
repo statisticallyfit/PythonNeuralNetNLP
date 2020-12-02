@@ -7,7 +7,7 @@ from IPython.display import display
 
 
 ### Sympy 
-from sympy import det, Determinant, Trace, Transpose, Inverse, Function, Lambda, HadamardProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, MatrixSymbol, Identity,  Derivative, symbols, diff
+from sympy import det, Determinant, Trace, Transpose, Inverse, Function, Lambda, HadamardProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, MatrixSymbol, Identity, ZeroMatrix, Derivative, symbols, diff
 
 from sympy import srepr , simplify
 
@@ -196,7 +196,7 @@ def expandMatmul(expr: MatrixExpr) -> MatrixExpr:
             expanded = MatAdd(*[MatMul(*t) for t in itertools.product(*terms)])
             if a != expanded:
                 expr = expr.xreplace({a: expanded})
-                return expand_matmul(expr)
+                return expandMatmul(expr)
     return expr
 
 

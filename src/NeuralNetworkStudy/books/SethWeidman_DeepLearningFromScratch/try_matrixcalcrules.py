@@ -440,77 +440,389 @@ assert splitOnce(expr.args, E, 4) == ([], [])
 
 
 # %%
+from sympy.core.assumptions import ManagedProperties 
+from sympy.core.numbers import Number 
+
+
+def digger(expr: MatrixExpr) -> Tuple[MatrixExpr, List[ManagedProperties]]: 
+    '''
+    Given an expression with nesting / depth, this function gets the innermost argument and the list of constructors along the way, ordered inside to out
+    Example: 
+    INPUT: (((C.T * A * D.T)^T)^-1)^T 
+    RESULT: (C.T * A * D.T, [Transpose, Inverse, Transpose] )
+    '''
+    # Traverse in preorder, getting deeper each time. At one point, the element in the list is the innermost arg of the nested expression, expr. 
+    elems: List[MatrixExpr] = list(preorder_traversal(expr))
+
+    # Create the filtering condition, to get just the nested expressions and innermost arg, while avoiding matrixsymbols and sizes and numbers
+    #isMatSym = lambda e: len(e.free_symbols) == 1
+
+    #onlyNestedArgs = lambda elem: (not isinstance(elem, MatrixSymbol) ) and (not isinstance(elem, Symbol)) and (not isinstance(elem, Number)) and (not isMatSym(elem))
+
+    # Filter the list to get just the nested args (all the innermost args that are matmuls of symbols)
+    nestings: List[MatrixExpr] = list(filter(lambda elem : onlyNestedArgs(elem), elems))
+
+    # Get the innermost argument (the deepest argument that is inside all the continuous nestings)
+    innermostArg = nestings[-1]
+
+    nestingDepth: int = len(nestings)
+
+    # Now get the constructors along the way
+    constructors: List[ManagedProperties] = list(map(lambda elem : elem.func, nestings[:-1]))
+    # NOTE: use all elems but the last one, since that is a matmul (?)
+    # TODO check for more tests (when more than 1 innermost arg)
+
+    return (innermostArg, constructors)
+
+# %%
+
+# %%
+# TEST 1: just ONE innermost expression
+C = MatrixSymbol('C', c, c)
+D = MatrixSymbol('D', c, c)
+E = MatrixSymbol('E', c, c)
+
+expr = Trace(Transpose(Inverse(Transpose(C*D*E))))
+
+(inner, constrs) = digger(expr)
+
+(checkInner, checkConstrs) = (C*D*E, [Trace, Transpose, Inverse, Transpose])
+
+assert checkInner == inner 
+assert checkConstrs == constrs 
+
+showGroup([
+    expr, 
+    (inner, constrs), 
+    (checkInner, checkConstrs)
+])
+
+# %%
+
+
+# TEST 2: more than one innermost expression
+C = MatrixSymbol('C', c, c)
+D = MatrixSymbol('D', c, c)
+E = MatrixSymbol('E', c, c)
+A = MatrixSymbol('A', c, c)
+B = MatrixSymbol('B', c, c)
+R = MatrixSymbol('R', c, c)
+
+L = Transpose(Inverse(B*A*R))
+
+expr = Transpose(Inverse(
+    MatMul(A*D.T*R.T , Transpose(Inverse(
+        MatMul(C.T, E.I, L, B.T)
+    ) 
+))))
+
+(inner, constrs) = digger(expr)
+
+showGroup([
+    expr, 
+    (inner, constrs)
+])
+# %%
+# TODO stuck here with digger
+
+def revTransposeAlgo(expr):
+    hasTranspose = lambda e : "Transpose" in srepr(e)
+
+    if hasTranspose(expr) and expr.is_MatMul:
+        def pickOut(a):
+            if not hasTranspose(a):
+                #return Transpose(MatMul(*a.args))
+                return Transpose(a)
+            elif hasTranspose(a) and a.is_Transpose:
+                return a.arg 
+            return Transpose(a) #TODO check 
+
+        revs = list(map(lambda a : pickOut(a), reversed(expr.args)))
+
+        return Transpose(MatMul(*revs))
+        
+    return expr 
+
+ps = list(preorder_traversal(expr))
+ms = list(filter(lambda p : p.is_MatMul, ps))
+ts = list(map(lambda m : revTransposeAlgo(m), ms))
+
+# %%
+ms
+# %%
+ts
+# %%
+import copy # NOTE: using deepcopy to avoid this problem with list append: https://hyp.is/POjNFDTXEeuNRzdBT07tTA/thispointer.com/python-how-to-copy-a-dictionary-shallow-copy-vs-deep-copy/
+
+ds = dict()
+
+#for i in range(0, len(ts)):
+#    t = ts[i]
+#    for j in range(0, len(ms)):
+
+#        m = ms[j]
+
+#        if t.has(m):
+#            #ns.append( t.xreplace({m : revTransposeAlgo(m)}) )
+#            newPair = [(m, ts[j])] #revTransposeAlgo(m))]
+#            ds[t] = (ds.get(t) + newPair) if t in ds.keys() else newPair
+
+
+#t = ts[0]# most complicated, first innermost (with potential rabbit holes, deeper innermosts)
+t = expr # most complicated, first innermost (with potential rabbit holes, deeper innermosts)
+for j in range(0, len(ms)):
+    m = ms[j]
+    if t.has(m):
+        newPair = [(m, ts[j])] #revTransposeAlgo(m))]
+        ds[t] = (ds.get(t) + newPair) if t in ds.keys() else newPair
+        #ns[j] = (m, ts[j])
+ds
+# %%
+# Get the dict pair with longest values list
+#list(filter(lambda pair : , ds.items()))
+
+tToChange = t 
+for (old, new) in ds.get(t):
+    tToChange = tToChange.xreplace({old : new})
+
+assert equal(tToChange.doit(), expr.doit())
+
+showGroup([tToChange, tToChange.doit(), expr.doit() ])
+
+
+# %%
+
+
+
+
+
+(checkInner, checkConstrs) = (C*D*E, [Trace, Transpose, Inverse, Transpose])
+
+assert checkInner == inner 
+assert checkConstrs == constrs 
+
+showGroup([
+    expr, 
+    (inner, constrs), 
+    (checkInner, checkConstrs)
+])
+# %%
+
+def groupTranspose_MatMulOrSym(m: MatrixExpr) -> MatrixExpr: 
+    '''Given a matmul or a matsymbol or matsymbol with inv or transpose, returns the expression with transposes grouped together. 
+
+    Only works if transpose is the outermost operation; else this function doesn't make them the outermost. Do transposeOut() for that.'''
+
+    isMatSym = lambda expr : len(expr.free_symbols) == 1
+
+    #assert m.is_MatMul 
+    hasTranspose = lambda expr : "Transpose" in srepr(expr)
+
+    if (isMatSym(m) or m.is_MatMul) and hasTranspose(m):
+
+        # Reverse the transpose operation (useful for a matmul, that is the rule)
+        # NOTE: must use Transpose rather than .T because the .T gets inside any Inverse , defeating the purpose
+        undoTransp = list(map(lambda t: Transpose(t), reversed(expr.args)))
+
+        return Transpose( MatMul(*undoTransp) )
+    
+    return expr # as how it is
+
 
 
 def groupTranspose(expr: MatrixExpr) -> MatrixExpr: 
     '''Combines transposes when they are the outermost operations. 
     
-    Brings the individual transpose operations out over the entire group (factors out the transpose and puts it as the outer operation)
+    Brings the individual transpose operations out over the entire group (factors out the transpose and puts it as the outer operation). 
+    NOTE: This happens only when the transpose ops are at the same level. If they are nested, that "bringing out" task is left to the transposeOut function. '''
+
+    isMatSym = lambda s: len(s.free_symbols) == 1
+
+    if expr.is_MatAdd: 
+        addendsTransp: List[MatrixExpr] = list(map(lambda a: groupTranspose(a), expr.args))
+
+        return MatAdd(*addendsTransp)
+
+    elif expr.is_MatMul or isMatSym(expr):
+        return groupTranspose(expr)
+
+    #else: # is transpose or inverse or trace etc and need to dig to get the innermost argument
+    return groupTranspose_Digger(expr)
     
-    PRECONDITION: only is successful when the transposes are the outermost operation per expression. Otherwise a more successful result is obtained using transposeOut() because that one relies on inverting the transposes so they are outermost operations.'''
-
-    hasTranspose = lambda expr : "Transpose" in srepr(expr)
-
-    if (not expr.is_Transpose) and hasTranspose(expr):
-
-        # NOTE seems that there is no need of separating into MatAdd and MatMul cases (the undoTransp step below works for both!)
-        Constr = expr.func # matadd or matmul # TODO check if correct
-
-        # Reverse the transpose operation
-        # NOTE: must use Transpose rather than .T because the .T gets inside any Inverse , defeating the purpose
-        undoTransp = list(map(lambda t: Transpose(t), reversed(expr.args)))
-
-        return Transpose( Constr(*undoTransp).doit() )
     
-    return expr # as how it is
 
-# TODO fix this function, red alert, see the transposeOut --- decide which function picks off from the other and what each function should do. 
 
-# TODO 2: fix areas of the last case (below) where the matadd args get reversed -- need to keep them in same order as was given. 
-
-# TODO 3: don't like how inverses get simplified because of the .doit() on constructor. Need to keep things the same as they were. 
-# %%
-A = MatrixSymbol("A", a, c)
-J = MatrixSymbol("J", c, a)
-B = MatrixSymbol("B", c, b)
-R = MatrixSymbol("R", c,c)
-D = MatrixSymbol('D', b, a)
-L = MatrixSymbol('L', a, c)
-E = MatrixSymbol('E', c, b)
-K = MatrixSymbol('K', a, b) # pair of D
-
-expr = MatMul( Transpose(MatMul(A, B)) , Transpose(MatMul(R, J)) )
-res = groupTranspose( expr )
-check = Transpose(MatMul(R, J, A, B))
-
-assert equal(res, check)
-
-showGroup([expr, res, check])
 # %%
 
+
+# TEST 1: inverse out, transpose in
+
+B = MatrixSymbol("B", c, c)
+C = MatrixSymbol('C', c, c)
+E = MatrixSymbol('E', c, c)
+
+expr = Inverse(Transpose(C*E*B))
+res = groupTranspose(expr)
+check = expr 
+
+showGroup([
+    expr, res, check 
+])
+# %%
+
+
+# TEST 2: transpose out, inverse in
+
+B = MatrixSymbol("B", c, c)
+C = MatrixSymbol('C', c, c)
+E = MatrixSymbol('E', c, c)
+
+expr = Transpose(Inverse(C*E*B))
+res = groupTranspose(expr)
+check = expr 
+
+showGroup([
+    expr, res, check 
+])
+# %%
+
+
+# TEST 3: individual transposes inside inverse
+
+B = MatrixSymbol("B", c, c)
+C = MatrixSymbol('C', c, c)
+E = MatrixSymbol('E', c, c)
+
+expr = Inverse(B.T * E.T * C.T)
+res = groupTranspose(expr)
+check = Inverse(Transpose(C*E*B))
+
+showGroup([
+    expr, res, check 
+])
+# %%
+
+
+# TEST 4: individual inverse inside transpose
+
+B = MatrixSymbol("B", c, c)
+C = MatrixSymbol('C', c, c)
+E = MatrixSymbol('E', c, c)
+
+expr = Transpose(B.I * E.I * C.I)
+res = groupTranspose(expr)
+check = expr
+
+showGroup([
+    expr, res, check 
+])
+
+# %%
+
+
+# TEST 5: individual symbols
+
+A = MatrixSymbol("A", a, b)
+
+(expr1, check1) = (A, A)
+(expr2, check2) = (A.T, A.T) 
+(expr3, check3) = (A.I, A.I) 
+
+res1 = groupTranspose(expr1)
+res2 = groupTranspose(expr2)
+res3 = groupTranspose(expr3)
+
+showGroup([
+    (expr1, res1, check1), 
+    (expr2, res2, check2),
+    (expr3, res3, check3)
+])
+
+# %%
+
+
+# TEST 6: grouped products
+
+A = MatrixSymbol('A', a, a)
+B = MatrixSymbol("B", a, a)
+R = MatrixSymbol('R', a, a)
+J = MatrixSymbol('J', a, a)
+
+expr = MatMul( Transpose(A*B), Transpose(R*J) )
+res = groupTranspose(expr)
+check = Transpose(R*J*A*B)
+
+showGroup([
+    expr, res, check 
+])
+# %%
+
+
+# TEST 7: individual transposes littered along as matmul
+
+A = MatrixSymbol('A', a, a)
+B = MatrixSymbol("B", a, a)
+R = MatrixSymbol('R', a, a)
+J = MatrixSymbol('J', a, a)
 
 expr = B.T * A.T * J.T * R.T
-res = groupTranspose( expr)
-check = Transpose(MatMul(R, J, A, B))
-
-assert equal(res, check)
-
-showGroup([expr, res, check])
-# %%
-
-expr = A * R.T * L.T * K * E.T * B
 res = groupTranspose(expr)
-check = Transpose(MatMul(B.T, E, K.T, L, R, A.T))
+check = Transpose(R*J*A*B)
 
-assert equal(res, check)
+showGroup([
+    expr, res, check 
+])
+# %%
 
-showGroup([expr, res, check])
+
+# TEST 8: inverses mixed with transpose in a matmul, but with transposes all as the outer expression
+
+A = MatrixSymbol('A', a, a)
+B = MatrixSymbol("B", a, a)
+L = MatrixSymbol('L', a, a)
+K = MatrixSymbol('K', a, a)
+E = MatrixSymbol('E', a, a)
+
+expr = A * R.I.T * L.I.T * K * E * B.I 
+res = groupTranspose(expr)
+check = Transpose(B.I.T * E * K.T * L.I * R.I * A.T)
+
+showGroup([
+    expr, res, check 
+])
+# %%
+
+
+# TEST 9: mix of inverses and transposes in a matmul, but this time with transpose not as outer operation, for at least one symbol case. 
+
+A = MatrixSymbol('A', a, a)
+B = MatrixSymbol("B", a, a)
+R = MatrixSymbol('R', a, a)
+L = MatrixSymbol('L', a, a)
+K = MatrixSymbol('K', a, a)
+E = MatrixSymbol('E', a, a)
+
+expr = A * R.I.T * L.T.I * K * E * B.I 
+res = groupTranspose(expr)
+check = expr
+
+showGroup([
+    expr, res, check 
+])
+
 
 # %%
 
 
-# NOTE WARNING: this below is false just simply because of the different position of D and K.T in the matadd expressioN!!!
-# assert groupTranspose(A * R.T * L.T * K * E.T * B + D.T + K) == Transpose( MatAdd(D,  K.T, MatMul(B.T, E, K.T, L, R, A.T)) )
+# TEST 10: transposes in matmuls and singular matrix symbols, all in a matadd expression. 
+
+A = MatrixSymbol('A', a, a)
+B = MatrixSymbol("B", a, a)
+R = MatrixSymbol('R', a, a)
+L = MatrixSymbol('L', a, a)
+K = MatrixSymbol('K', a, a)
+E = MatrixSymbol('E', a, a)
+D = MatrixSymbol('D', a, a)
 
 expr = A * R.T * L.T * K * E.T * B + D.T + K
 res = groupTranspose(expr)
@@ -518,61 +830,95 @@ check = Transpose( MatAdd(MatMul(B.T, E, K.T, L, R, A.T), D, K.T) )
 
 assert equal(res, check)
 
-showGroup([expr, res, check])
+showGroup([
+    expr, res, check 
+])
+
+# %%
+
+
+# TEST 11: digger case, very layered expression (with transposes separated so not expecting the grouptranspose to change them). Has inner arg matmul. 
+
+C = MatrixSymbol('C', a, a)
+E = MatrixSymbol('E', a, a)
+D = MatrixSymbol('D', a, a)
+
+expr = Trace(Transpose(Inverse(Transpose(C*D*E))))
+res = groupTranspose(expr)
+check = expr 
+
+assert equal(res, check)
+
+showGroup([
+    expr, res, check 
+])
+
+
+# %%
+
+
+# TEST 12: very layered expression, but transposes are next to each other, with inner arg as matmul
+
+C = MatrixSymbol('C', a, a)
+E = MatrixSymbol('E', a, a)
+D = MatrixSymbol('D', a, a)
+
+expr = Trace(Transpose(Transpose(Inverse(C*D*E))))
+res = groupTranspose(expr)
+check = expr 
+
+assert equal(res, check)
+
+showGroup([
+    expr, res, check 
+])
+
+# %%
+
+
+# TEST 13: very layered expression (digger case) with individual transpose and inverses littered in the inner matmul arg. 
+
+C = MatrixSymbol('C', a, a)
+E = MatrixSymbol('E', a, a)
+D = MatrixSymbol('D', a, a)
+
+expr = Transpose(Inverse(Transpose(C.T * A.I * D.T)))
+res = groupTranspose(expr)
+check = Transpose(Inverse(Transpose(Transpose(D * A.I.T * C)))) 
+
+assert equal(res, check)
+
+showGroup([
+    expr, res, check 
+])
+
+# %%
+
+
+# TEST 14: very layered expression, and the inner arg is matadd with some matmuls but some matmuls have one of the elements as another layered arg, so we can test if the function reaches all rabbit holes effectively. 
+
+A = MatrixSymbol('A', a, a)
+R = MatrixSymbol('R', a, a)
+B = MatrixSymbol('B', a, a)
+C = MatrixSymbol('C', a, a)
+E = MatrixSymbol('E', a, a)
+D = MatrixSymbol('D', a, a)
+
+expr = Trace(Transpose(Transpose(Inverse(C*D*E))))
+res = groupTranspose(expr)
+check = expr 
+
+assert equal(res, check)
+
+showGroup([
+    expr, res, check 
+])
 
 
 
 
 # %%
-# Component form: 
-def transposeOut_Part(exprGiven:  MatrixExpr) -> MatrixExpr: 
-    '''Returns a result where each part has the transpose on the outer side, if the inverse was inner and transpose was outer'''
-
-    expr = exprGiven.doit() # attempting to flatten an Inv(Trans(Matmul)) expression to bring the MatMul on the outside, so there are fewer cases to consider...
-
-    def transposeOut_Sym(sym: MatrixExpr) -> MatrixExpr:
-        if len(sym.free_symbols) == 1:
-            if sym.is_Inverse and sym.arg.is_Transpose:
-                letter = sym.arg.arg # matrix symbol
-                return Transpose(Inverse(letter))
-        return sym 
-
-    if len(expr.free_symbols) == 1:
-        return transposeOut_Sym(expr)
-
-    elif expr.is_MatMul: 
-        newComponents = list(map(lambda arg : transposeOut_Sym(arg), expr.args))
-        # TODO should I groupTranspose here? 
-        return MatMul(*newComponents)
-
-    # else just return the given value
-    return exprGiven
-
-
-
-def transposeOut_Grouped(matadd: MatAdd) -> MatAdd: 
-    '''Returns a matadd ensuring that each expression inside has the transpose on the outer, and inverse on the inner
-    
-    Returns the components always grouped under transpose, even if they weren't that way when given as argument'''
-
-    assert matadd.is_MatAdd 
-
-    # NOTE: the only component types can be: Inverse, Transpose, MatMul, or MatrixSymbol. 
-    # NOTE must bring out the matmul part if we get cases like Inverse(Transpose(MatMul)). Need to flatten so matmul is on the ousdie, using doit(). Need that so we pass in one matrixsymbol not a matmul, to the transposeOut function. 
-    # NOTE no need anymore since transposeOut does it
-    #flattenedAddends: List[MatrixExpr] = list(map(lambda a : a.doit(), matadd.args))
-
-    # Now these are either matmuls or matsymbols of individual matsymbols with Transpose or Inverse, but all have Transpose as the outer operation (according to lin alg laws)
-    matmulsWithTranspOut: List[MatrixExpr] = list(map(lambda a: transposeOut_Part(a), matadd.args))
-
-    # Grouping each individual part
-    matmulsGroupedTransp = list(map(lambda m: groupTranspose(m), matmulsWithTranspOut))
-
-    # Now return the transpose out of the entire addition: 
-    mataddsWithTranspOut = MatAdd(*matmulsGroupedTransp)
-
-    #return groupTranspose( mataddsWithTranspOut )
-    return mataddsWithTranspOut
+def transposeOut(expr: MatrixExpr) -> MatrixExpr: 
 
 # %%
 C = MatrixSymbol('C', c, c)
