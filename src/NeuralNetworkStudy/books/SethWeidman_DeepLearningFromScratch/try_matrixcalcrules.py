@@ -443,7 +443,7 @@ assert splitOnce(expr.args, E, 4) == ([], [])
 from sympy.core.assumptions import ManagedProperties 
 from sympy.core.numbers import Number 
 
-
+"""
 def digger(expr: MatrixExpr) -> Tuple[MatrixExpr, List[ManagedProperties]]: 
     '''
     Given an expression with nesting / depth, this function gets the innermost argument and the list of constructors along the way, ordered inside to out
@@ -496,6 +496,7 @@ showGroup([
     (inner, constrs), 
     (checkInner, checkConstrs)
 ])
+"""
 
 # %%
 def groupTranpose_MatMul_or_MatSym(expr: MatrixExpr) -> MatrixExpr:
@@ -524,10 +525,7 @@ def groupTranpose_MatMul_or_MatSym(expr: MatrixExpr) -> MatrixExpr:
     ms = list(filter(lambda p : p.is_MatMul, ps))
     ts = list(map(lambda m : revTransposeAlgo(m), ms))
 
-    #ds = dict() # TODO use list instead ns
-    cs = []
-
-    t = expr # most complicated, first innermost (with potential rabbit holes, deeper innermosts)
+    ns = []
     for j in range(0, len(ms)):
         m = ms[j]
         if expr.has(m):
@@ -562,18 +560,30 @@ expr = Transpose(Inverse(
     ) 
 ))))
 
-res = groupTranpose_MatMul_or_MatSym(expr)
+check = Transpose(
+    Inverse(Transpose(
+        MatMul(
+            Inverse(Transpose(MatMul(
+                B, Inverse(MatMul(B, A, R)), Transpose(Inverse(E)), C
+            ))),
 
-assert equal(res.doit(), expr.doit())
+            Transpose(Transpose(MatMul(R, D, A.T)))
+        )
+    ))
+)
+
+res = groupTranpose_MatMul_or_MatSym(expr)
 
 showGroup([
     expr, 
     res,  
+    check,
     expr.doit(),
     res.doit()
 ])
 
-
+assert equal(res, expr)
+assert equal(res, check) # # TODO want to use == for structurally equal tests here
 
 # %%
 
@@ -602,6 +612,13 @@ def groupTranspose(expr: MatrixExpr) -> MatrixExpr:
     
     
 
+# %%
+
+
+#def transposeOut(expr: MatrixExpr) -> MatrixExpr: 
+# TODO left off here
+
+
 
 # %%
 
@@ -613,6 +630,8 @@ C = MatrixSymbol('C', c, c)
 E = MatrixSymbol('E', c, c)
 
 expr = Inverse(Transpose(C*E*B))
+
+# %%
 res = groupTranspose(expr)
 check = expr 
 
@@ -621,6 +640,17 @@ showGroup([
 ])
 
 assert equal(res, check)
+assert equal(expr.doit(), res.doit())
+# %%
+res = transposeOut(expr)
+check = Transpose(Inverse(MatMul(C, E, B)))
+
+showGroup([
+    expr, res, check
+])
+
+assert equal(res, check)
+assert equal(expr.doit(), res.doit())
 # %%
 
 
@@ -631,6 +661,8 @@ C = MatrixSymbol('C', c, c)
 E = MatrixSymbol('E', c, c)
 
 expr = Transpose(Inverse(C*E*B))
+
+# %%
 res = groupTranspose(expr)
 check = expr 
 
@@ -638,6 +670,17 @@ showGroup([
     expr, res, check 
 ])
 
+assert equal(expr.doit(), res.doit())
+assert equal(res, check)
+# %%
+res = transposeOut(expr)
+check = Transpose(Inverse(C*E*B))
+
+showGroup([
+    expr, res, check
+])
+
+assert equal(expr.doit(), res.doit())
 assert equal(res, check)
 # %%
 
@@ -649,14 +692,26 @@ C = MatrixSymbol('C', c, c)
 E = MatrixSymbol('E', c, c)
 
 expr = Inverse(B.T * E.T * C.T)
+# %%
+
 res = groupTranspose(expr)
 check = Inverse(Transpose(C*E*B))
 
 showGroup([
     expr, res, check 
 ])
-
+assert equal(expr.doit(), res.doit())
 assert equal(res, check)
+# %%
+
+res = transposeOut(expr)
+check = Transpose(Inverse(C*E*B))
+
+showGroup([
+    expr, res, check
+])
+assert equal(expr.doit(), res.doit())
+assert equal(check, res)
 # %%
 
 
@@ -667,6 +722,8 @@ C = MatrixSymbol('C', c, c)
 E = MatrixSymbol('E', c, c)
 
 expr = Transpose(B.I * E.I * C.I)
+# %%
+
 res = groupTranspose(expr)
 check = expr
 
@@ -674,6 +731,19 @@ showGroup([
     expr, res, check 
 ])
 
+assert equal(expr.doit(), res.doit())
+assert equal(res, check)
+
+# %%
+
+res = transposeOut(expr)
+check = expr
+
+showGroup([
+    expr, res, check
+])
+
+assert equal(expr.doit(), res.doit())
 assert equal(res, check)
 # %%
 
@@ -683,23 +753,54 @@ assert equal(res, check)
 A = MatrixSymbol("A", a, b)
 C = MatrixSymbol('C', c, c)
 
+# %%
+
 (expr1, check1) = (A, A)
 (expr2, check2) = (A.T, A.T) 
 (expr3, check3) = (C.I, C.I) 
+(expr4, check4) = (Inverse(Transpose(C)), Inverse(Transpose(C)))
 
 res1 = groupTranspose(expr1)
 res2 = groupTranspose(expr2)
 res3 = groupTranspose(expr3)
+res4 = groupTranspose(expr4)
 
 showGroup([
     (expr1, res1, check1), 
     (expr2, res2, check2),
-    (expr3, res3, check3)
+    (expr3, res3, check3),
+    (expr4, res4, check4)
 ])
 
 assert equal(res1, check1)
 assert equal(res2, check2)
 assert equal(res3, check3)
+assert equal(res4, check4)
+
+# %%
+
+
+(expr1, check1) = (A, A)
+(expr2, check2) = (A.T, A.T) 
+(expr3, check3) = (C.I, C.I) 
+(expr4, check4) = (Inverse(Transpose(C)), Transpose(Inverse(C)))
+
+res1 = transposeOut(expr1)
+res2 = transposeOut(expr2)
+res3 = transposeOut(expr3)
+res4 = transposeOut(expr4)
+
+showGroup([
+    (expr1, res1, check1), 
+    (expr2, res2, check2),
+    (expr3, res3, check3),
+    (expr4, res4, check4)
+])
+
+assert equal(res1, check1)
+assert equal(res2, check2)
+assert equal(res3, check3)
+assert equal(res4, check4)
 # %%
 
 
@@ -711,6 +812,8 @@ R = MatrixSymbol('R', a, a)
 J = MatrixSymbol('J', a, a)
 
 expr = MatMul( Transpose(A*B), Transpose(R*J) )
+# %%
+
 res = groupTranspose(expr)
 check = Transpose(R*J*A*B)
 
@@ -718,7 +821,20 @@ showGroup([
     expr, res, check 
 ])
 
+assert equal(expr.doit(), res.doit())
 # TODO if you want you should split the matmul case into a "simple matmul case" in that there are no innermost nestings and everything is on the first level. 
+assert equal(res, check)
+
+# %%
+
+res = transposeOut(expr)
+check = expr 
+
+showGroup([
+    expr, res, check
+])
+
+assert equal(expr.doit(), res.doit())
 assert equal(res, check)
 # %%
 
@@ -731,6 +847,9 @@ R = MatrixSymbol('R', a, a)
 J = MatrixSymbol('J', a, a)
 
 expr = B.T * A.T * J.T * R.T
+
+# %%
+
 res = groupTranspose(expr)
 check = Transpose(R*J*A*B)
 
@@ -738,6 +857,16 @@ showGroup([
     expr, res, check 
 ])
 
+assert equal(expr.doit(), res.doit())
+assert equal(res, check)
+# %%
+
+res = transposeOut(expr)
+check = expr
+
+showGroup([expr, res, check])
+
+assert equal(expr.doit(), res.doit())
 assert equal(res, check)
 # %%
 
@@ -752,11 +881,13 @@ E = MatrixSymbol('E', a, a)
 R = MatrixSymbol('R', a, a)
 
 expr = MatMul(A , Transpose(Inverse(R)), Transpose(Inverse(L)) , K , E.T , B.I )
+# %%
+
 res = groupTranspose(expr)
+
 check = Transpose( 
     MatMul( Transpose(Inverse(B)), E , K.T , Transpose(Inverse(L)) , Transpose(Inverse(R)) , A.T)
 )
-
 
 showGroup([
     expr, res, check , 
@@ -764,7 +895,23 @@ showGroup([
     check.doit()
 ])
 
+assert equal(expr.doit(), res.doit())
 assert equal(res, check)
+
+# %%
+
+res = transposeOut(expr)
+
+check = expr 
+
+showGroup([
+    expr, res, check
+])
+
+assert equal(expr.doit(), res.doit())
+assert equal(res, check)
+
+
 # %%
 
 
@@ -779,6 +926,7 @@ E = MatrixSymbol('E', a, a)
 
 
 expr = MatMul(A , Transpose(Inverse(R)), Inverse(Transpose(L)) , K , E.T , B.I )
+# %%
 
 res = groupTranspose(expr)
 
@@ -792,6 +940,22 @@ showGroup([
     check.doit()
 ])
 
+assert equal(expr.doit(), res.doit())
+assert equal(res, check)
+
+# %%
+
+res = transposeOut(expr)
+
+check = MatMul(
+    A, Transpose(Inverse(R)), Transpose(Inverse(L)), K, E.T, B.I
+)
+
+showGroup([
+    expr, res, check
+])
+
+assert equal(expr.doit(), res.doit())
 assert equal(res, check)
 # %%
 
@@ -807,6 +971,8 @@ E = MatrixSymbol('E', a, a)
 D = MatrixSymbol('D', a, a)
 
 expr = A * R.T * L.T * K * E.T * B + D.T + K
+# %%
+
 res = groupTranspose(expr)
 check = Transpose( MatAdd(MatMul(B.T, E, K.T, L, R, A.T), D, K.T) )
 
@@ -814,6 +980,18 @@ showGroup([
     expr, res, check 
 ])
 
+assert equal(expr.doit(), res.doit())
+assert equal(res, check)
+# %%
+
+res = transposeOut(expr)
+check = expr
+
+showGroup([
+    expr, res, check
+])
+
+assert equal(expr.doit(), res.doit())
 assert equal(res, check)
 # %%
 
@@ -824,7 +1002,9 @@ C = MatrixSymbol('C', a, a)
 E = MatrixSymbol('E', a, a)
 D = MatrixSymbol('D', a, a)
 
-expr = Trace(Transpose(Inverse(Transpose(C*D*E))))
+expr = Trace(Tanspose(Inverse(Transpose(C*D*E))))
+# %%
+
 res = groupTranspose(expr)
 check = expr 
 
@@ -832,9 +1012,22 @@ showGroup([
     expr, res, check 
 ])
 
+assert equal(expr.doit(), res.doit())
 # TODO fix the expandMatMul function so that trace can be passed as argument (just do expand on what is inside)
 #assert equal(res, check)
 assert res == check
+# %%
+
+res = transposeOut(expr)
+check = Trace(Transpose(Transpose(Inverse(C*D*E))))
+
+showGroup([
+    expr, res, check
+])
+
+assert equal(expr.doit(), res.doit())
+# TODO assert res == check # make structural equality work
+assert equal(res, check)
 # %%
 
 
@@ -845,26 +1038,38 @@ E = MatrixSymbol('E', a, a)
 D = MatrixSymbol('D', a, a)
 
 expr = Trace(Transpose(Transpose(Inverse(C*D*E))))
-res = groupTranspose(expr)
+
+res1 = groupTranspose(expr)
+
+res2 = transposeOut(expr)
+
 check = expr 
 
 showGroup([
-    expr, res, check 
+    expr, res1, res2, check 
 ])
 
+assert equal(expr.doit(), res1.doit())
+assert equal(expr.doit(), res2.doit())
 # assert equal(res, check) # todo fix equals function
-assert res == check
+assert res1 == check
+assert res2 == check 
+
 # %%
 
 
 # TEST 13: very layered expression (digger case) with individual transpose and inverses littered in the inner matmul arg. 
 
 C = MatrixSymbol('C', a, a)
-E = MatrixSymbol('E', a, a)
+A = MatrixSymbol('A', a, a)
 D = MatrixSymbol('D', a, a)
 
 expr = Transpose(Inverse(Transpose(C.T * A.I * D.T)))
+# %%
+
+
 res = groupTranspose(expr)
+
 check = Transpose(Inverse(Transpose(Transpose(
     MatMul(D , Transpose(Inverse(A)), C )
 )))) 
@@ -875,76 +1080,305 @@ showGroup([
     check.doit()
 ])
 
+assert equal(expr.doit(), res.doit())
+assert equal(res, check)
+# %%
+
+res = transposeOut(expr)
+
+check = Transpose(Transpose(Inverse(
+    C.T * A.I * D.T
+)))
+
+showGroup([
+    expr, res, check
+])
+
+assert equal(expr.doit(), res.doit())
 assert equal(res, check)
 # %%
 
 
-# TEST 14: very layered expression, and the inner arg is matadd with some matmuls but some matmuls have one of the elements as another layered arg, so we can test if the function reaches all rabbit holes effectively. 
+# TEST 14: layered expression (many innermost nestings) and the very innermost BAR expression has transpose on the inside and the other outer-inner exprs have transpose on outside however.
 
-A = MatrixSymbol('A', a, a)
-R = MatrixSymbol('R', a, a)
-B = MatrixSymbol('B', a, a)
-C = MatrixSymbol('C', a, a)
-E = MatrixSymbol('E', a, a)
-D = MatrixSymbol('D', a, a)
-
-expr = Trace(Transpose(Transpose(Inverse(C*D*E))))
-res = groupTranspose(expr)
-check = expr 
-
-showGroup([
-    expr, res, check 
-])
-
-#assert equal(res, check) # TODO fix
-assert res == check
-
-
-
-
-# %%
-#def transposeOut(expr: MatrixExpr) -> MatrixExpr: 
-# TODO left off here
-
-# %%
 C = MatrixSymbol('C', c, c)
-E = MatrixSymbol('E', c, c)
-B = MatrixSymbol('B', c, c)
-L = MatrixSymbol('L', c, c)
 D = MatrixSymbol('D', c, c)
+E = MatrixSymbol('E', c, c)
+A = MatrixSymbol('A', c, c)
+B = MatrixSymbol('B', c, c)
+R = MatrixSymbol('R', c, c)
+J = MatrixSymbol('J', c, c)
+
+#L = Transpose(Inverse(B*A*R))
+L = Inverse(Transpose(B*A*R))
+
+expr = Transpose(Inverse(
+    MatMul(A*D.T*R.T , 
+        Transpose(
+            Inverse(
+                MatMul(C.T, E.I, L, B.T)
+            ) 
+        )
+    )
+))
+
+# %%
+# TODO left off here
+res = groupTranspose(expr)
+
+# TODO update this check so that it is correct (different from above test)
+check = Transpose(
+    Inverse(Transpose(
+        MatMul(
+            Inverse(Transpose(MatMul(
+                B, Transpose(Inverse(Transpose(B*A*R))), Transpose(Inverse(E)), C
+            ))),
+
+            Transpose(Transpose(MatMul(R, D, A.T)))
+        )
+    ))
+)
+
+showGroup([expr, res, check])
+
+assert equal(res.doit(), expr.doit())
+assert equal(res, check)
 
 
-mataddExpr = MatAdd( Inverse(Transpose(C*D*E)) , D.I , Inverse(Transpose(C*D)) , E.T)
+# %%
 
-'''
+
+# TEST 15: layered expression like above except some transposes are now innermost instead of outer
+
+C = MatrixSymbol('C', c, c)
+D = MatrixSymbol('D', c, c)
+E = MatrixSymbol('E', c, c)
+A = MatrixSymbol('A', c, c)
+B = MatrixSymbol('B', c, c)
+R = MatrixSymbol('R', c, c)
+J = MatrixSymbol('J', c, c)
+
+#L = Transpose(Inverse(B*A*R))
+L = Inverse(Transpose(B*A*R))
+
+expr = Inverse(Transpose(
+    MatMul(A*D.T*R.T , 
+        Inverse(
+            Transpose(
+                MatMul(C.T, E.I, L, B.T)
+            ) 
+        )
+    )
+))
+
+# %%
+res = groupTranspose(expr)
+# TODO evaluate on paper and then create this check
+#check = 
+# %%
+
+
+def chunkInvTrans(constructors: List[ManagedProperties]) -> List[List[ManagedProperties]]:
+    '''Separates the Inverse and Transpose types in a list of types, and keeps other types separate too, just as how they appear in the original list'''
+
+    # Not strictly necessary here, just useful if you want to see shorter version of names below
+    #getSimpleTypeName = lambda t : str(t).split("'")[1].split(".")[-1]
+
+    # Step 1: coding up in pairs for easy identification: need Inverse and Transpose tagged as same kind
+    codeConstrPairs: List[(int, ManagedProperties)] = list(map(lambda c : (0, c) if c == Transpose or c == Inverse else (1, c), constructors))
+
+    # Step 2: getting the groups
+    chunkedPairs: List[List[(int, ManagedProperties)]] = [list(group) for key, group in itertools.groupby(codeConstrPairs, operator.itemgetter(0))]
+
+    # Step 3: getting only the types in the chunked lists
+    chunkedTypes: List[List[ManagedProperties]] = list(map(lambda lst : list(map(lambda pair : pair[1], lst)), chunkedPairs))
+
+    return chunkedTypes
+# %%
+from sympy.core.numbers import NegativeOne
+
+# Constructors
+cs = [Inverse, Transpose, Transpose, Inverse, Inverse, Inverse, Transpose, MatrixSymbol, Symbol, Symbol, Symbol, NegativeOne, NegativeOne, NegativeOne, NegativeOne, Inverse, Symbol, Transpose, Inverse, Symbol, Transpose, Inverse, Inverse, MatMul, MatMul, MatAdd]
+
+res = chunkInvTrans(cs)
+check = [
+    [Inverse, Transpose, Transpose, Inverse, Inverse, Inverse, Transpose], 
+    [MatrixSymbol, Symbol, Symbol, Symbol, NegativeOne, NegativeOne, NegativeOne, NegativeOne], 
+    [Inverse], 
+    [Symbol], 
+    [Transpose, Inverse], 
+    [Symbol], 
+    [Transpose, Inverse, Inverse], 
+    [MatMul, MatMul, MatAdd]
+]
+
+assert res == check
+# %%
+
+
+# TODO left off here, need to work out how the digger and transposeOut functions work together and groupTranspose based on the list of types passed out
+clean = lambda t : str(t).split("'")[1].split(".")[-1]
+
+ps = list(preorder_traversal(expr)) # elements broken down
+cs = list(map(lambda p: type(p), ps)) # types / constructors
+csChunked = chunkInvTrans(cs)
+
+
+def stack(byType: ManagedProperties, constructors: List[ManagedProperties]) -> List[ManagedProperties]:
+    '''Given a type (like Transpose) and given a list, this function pulls all the signal types to the end of the list, leaving the non-signal-types as the front'''
+
+    # Get number of signal types in the list
+    countTypes: int = len(list(filter(lambda c : c == byType, constructors)))
+
+    # Create the signal types that go at the end
+    endTypes: List[ManagedProperties] = [byType] * countTypes
+
+    # Get the list without the signal types
+    nonSignalTypes: List[ManagedProperties] = list(filter(lambda c : c != byType, constructors))
+
+    return endTypes + nonSignalTypes # + endTypes
+
+assert stack(Transpose, [Inverse, Inverse, Transpose, Inverse, Transpose, Transpose, Inverse, MatMul, MatAdd]) == [Transpose, Transpose, Transpose, Inverse, Inverse, Inverse, Inverse, MatMul, MatAdd]
+
+# Order the types properly now for each chunk: make transposes go last in each chunk: 
+stackedChunks = list(map(lambda lst : stack(Transpose, lst), csChunked))
+
+
+# Get the lengths of each chunk
+chunkLens = list(map(lambda cLst : len(cLst), csChunked))
+
+
+# Use lengths to segregate the preorder traversal exprs also, then later to apply the transformations
+psChunked = []
+rest = ps 
+
+for size in chunkLens:
+    (fst, rest) = (rest[:size], rest[size: ]) 
+    psChunked.append( fst )
+#psChunked
+
+
+
+
+
+# %%
+# SEE the type names more easily:
+# NOTE: instead of clean(), the below gives the same result: type(expr).__name__ but result is still a string
+list(map(lambda lst : list(map(lambda c : c.__name__, lst)), csChunked))
+
+# %%
+
+res = transposeOut(expr)
+
+
+# This is the non-invasive check. Below we have a more grouped-oriented check
+check = Transpose(
+    Inverse(Transpose(
+        MatMul(
+            Inverse(Transpose(MatMul(
+                B, Inverse(MatMul(B, A, R)), Transpose(Inverse(E)), C
+            ))),
+
+            Transpose(Transpose(MatMul(R, D, A.T)))
+        )
+    ))
+)
+
+
+# More grouping-oriented check: 
+check = 
+
+showGroup([expr, res, check])
+
+assert equal(res.doit(), expr.doit())
+assert equal(res, check)
+
+# %%
+
+
+# TEST 15: very layered expression, and the inner arg is matadd with some matmuls but some matmuls have one of the elements as another layered arg, so we can test if the function reaches all rabbit holes effectively. 
+
+C = MatrixSymbol('C', c, c)
+D = MatrixSymbol('D', c, c)
+E = MatrixSymbol('E', c, c)
+A = MatrixSymbol('A', c, c)
+B = MatrixSymbol('B', c, c)
+R = MatrixSymbol('R', c, c)
+J = MatrixSymbol('J', c, c)
+
+#L = Transpose(Inverse(B*A*R))
+L = Inverse(Transpose(B*A*R))
+
+expr = Transpose(
+    MatAdd( B.T * A.T * J.T * R.T, 
+    Inverse(
+        MatMul(A*D.T*R.T , 
+            Transpose(
+                Inverse(
+                    MatMul(C.T, E.I, L, B.T)
+                ) 
+            )
+        )
+    ) )
+)
+# %%
+
+res = groupTranspose(expr)
+
 check = Transpose(
     MatAdd(
-        MatMul(D.I, C.I), 
-        MatMul(E.I, D.I, C.I), 
-        D.T.I, 
-        E
+        Inverse(Transpose(
+            MatMul(
+                Inverse(Transpose(MatMul(
+                    B, Transpose(Inverse(Transpose(B*A*R))), Transpose(Inverse(E)), C
+                ))),
+
+                Transpose(Transpose(MatMul(R, D, A.T)))
+            )
+        )), 
+
+        Transpose(MatMul(R, J, A, B))
     )
 )
-'''
-check = MatAdd(
-    D.I, 
-    Transpose(Inverse(MatMul(C, D))),
-    Transpose(Inverse(MatMul(C, D, E))), 
-    E.T
-)
-
-res = transposeOut_Grouped(mataddExpr)
-
-#assert equal(res, check)
 
 showGroup([
-    mataddExpr, 
-    check, 
-    groupTranspose(check),
-    res
+    expr, 
+    res,  
+    check,
+    expr.doit(),
+    res.doit(),
+    check.doit()
 ])
-# TODO fix groupTranspose because it doesn't leave expressions the same (see how the inverse got split)
-# TODO 2: fix transposeOut function because it doesn't leave expressions the same -- see how inverse gets split
+
+assert equal(expr, res)
+#assert check == res # TODO why not? they should equal structurally 
+# # TODO convert this test to the structural equal test to make sure the structure is the same
+assert equal(res, check)
+
+# %%
+
+res = transposeOut(expr)
+
+check = Transpose(
+    MatAdd(
+        MatMul(B.T, A.T, J.T, R.T), 
+
+        Inverse(MatMul(
+            MatMul(A, D.T, R.T),
+
+            Transpose(Inverse(MatMul(
+                C.T, E.I, Transpose(Inverse(B*A*R)), B.T, C
+            )))
+        ))
+    )
+)
+
+showGroup([expr, res, check])
+
+assert equal(res.doit(), expr.doit())
+assert equal(res, check)
+
+
 
 
 # %%
@@ -1028,6 +1462,7 @@ def derivTrace(trace: Trace, byVar: MatrixSymbol) -> MatrixExpr:
         return MatAdd(*splitDiffedAddends)
 
     
+
 
 
 # %%
@@ -1231,6 +1666,8 @@ showGroup([
     dcheck, 
     groupTranspose(res)
 ]) 
+
+
 # %%
 # TODO fix this function so it can take symbolic matrices
 #diffMatrix(B * Inverse(C) * E.T * L.T * A * E * D,   E)
