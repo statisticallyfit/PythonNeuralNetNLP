@@ -439,64 +439,6 @@ assert splitOnce(expr.args, E, 4) == ([], [])
 
 
 
-# %%
-from sympy.core.assumptions import ManagedProperties 
-from sympy.core.numbers import Number 
-
-"""
-def digger(expr: MatrixExpr) -> Tuple[MatrixExpr, List[ManagedProperties]]: 
-    '''
-    Given an expression with nesting / depth, this function gets the innermost argument and the list of constructors along the way, ordered inside to out
-    Example: 
-    INPUT: (((C.T * A * D.T)^T)^-1)^T 
-    RESULT: (C.T * A * D.T, [Transpose, Inverse, Transpose] )
-    '''
-    # Traverse in preorder, getting deeper each time. At one point, the element in the list is the innermost arg of the nested expression, expr. 
-    elems: List[MatrixExpr] = list(preorder_traversal(expr))
-
-    # Create the filtering condition, to get just the nested expressions and innermost arg, while avoiding matrixsymbols and sizes and numbers
-    #isMatSym = lambda e: len(e.free_symbols) == 1
-
-    #onlyNestedArgs = lambda elem: (not isinstance(elem, MatrixSymbol) ) and (not isinstance(elem, Symbol)) and (not isinstance(elem, Number)) and (not isMatSym(elem))
-
-    # Filter the list to get just the nested args (all the innermost args that are matmuls of symbols)
-    nestings: List[MatrixExpr] = list(filter(lambda elem : onlyNestedArgs(elem), elems))
-
-    # Get the innermost argument (the deepest argument that is inside all the continuous nestings)
-    innermostArg = nestings[-1]
-
-    nestingDepth: int = len(nestings)
-
-    # Now get the constructors along the way
-    constructors: List[ManagedProperties] = list(map(lambda elem : elem.func, nestings[:-1]))
-    # NOTE: use all elems but the last one, since that is a matmul (?)
-    # TODO check for more tests (when more than 1 innermost arg)
-
-    return (innermostArg, constructors)
-
-# %%
-
-# %%
-# TEST 1: just ONE innermost expression
-C = MatrixSymbol('C', c, c)
-D = MatrixSymbol('D', c, c)
-E = MatrixSymbol('E', c, c)
-
-expr = Trace(Transpose(Inverse(Transpose(C*D*E))))
-
-(inner, constrs) = digger(expr)
-
-(checkInner, checkConstrs) = (C*D*E, [Trace, Transpose, Inverse, Transpose])
-
-assert checkInner == inner 
-assert checkConstrs == constrs 
-
-showGroup([
-    expr, 
-    (inner, constrs), 
-    (checkInner, checkConstrs)
-])
-"""
 
 # %%
 def groupTranpose_MatMul_or_MatSym(expr: MatrixExpr) -> MatrixExpr:
@@ -586,7 +528,7 @@ assert equal(res, expr)
 assert equal(res, check) # # TODO want to use == for structurally equal tests here
 
 # %%
-
+### GROUP TRANSPOSE HERE ----------------------------------------
 
 
 def groupTranspose(expr: MatrixExpr) -> MatrixExpr: 
@@ -613,14 +555,103 @@ def groupTranspose(expr: MatrixExpr) -> MatrixExpr:
     
 
 # %%
+### TRANSPOSE OUT HERE -----------------------------------------
+from sympy import ManagedProperties
+
+def chunkInvTrans(constructors: List[ManagedProperties]) -> List[List[ManagedProperties]]:
+    '''Separates the Inverse and Transpose types in a list of types, and keeps other types separate too, just as how they appear in the original list'''
+
+    # Not strictly necessary here, just useful if you want to see shorter version of names below
+    #getSimpleTypeName = lambda t : str(t).split("'")[1].split(".")[-1]
+
+    # Step 1: coding up in pairs for easy identification: need Inverse and Transpose tagged as same kind
+    codeConstrPairs: List[(int, ManagedProperties)] = list(map(lambda c : (0, c) if c == Transpose or c == Inverse else (1, c), constructors))
+
+    # Step 2: getting the groups
+    chunkedPairs: List[List[(int, ManagedProperties)]] = [list(group) for key, group in itertools.groupby(codeConstrPairs, operator.itemgetter(0))]
+
+    # Step 3: getting only the types in the chunked lists
+    chunkedTypes: List[List[ManagedProperties]] = list(map(lambda lst : list(map(lambda pair : pair[1], lst)), chunkedPairs))
+
+    return chunkedTypes
+# %%
+from sympy.core.numbers import NegativeOne
+
+# Constructors
+cs = [Inverse, Transpose, Transpose, Inverse, Inverse, Inverse, Transpose, MatrixSymbol, Symbol, Symbol, Symbol, NegativeOne, NegativeOne, NegativeOne, NegativeOne, Inverse, Symbol, Transpose, Inverse, Symbol, Transpose, Inverse, Inverse, MatMul, MatMul, MatAdd]
+
+res = chunkInvTrans(cs)
+check = [
+    [Inverse, Transpose, Transpose, Inverse, Inverse, Inverse, Transpose], 
+    [MatrixSymbol, Symbol, Symbol, Symbol, NegativeOne, NegativeOne, NegativeOne, NegativeOne], 
+    [Inverse], 
+    [Symbol], 
+    [Transpose, Inverse], 
+    [Symbol], 
+    [Transpose, Inverse, Inverse], 
+    [MatMul, MatMul, MatAdd]
+]
+
+assert res == check
+# %%
 
 
-#def transposeOut(expr: MatrixExpr) -> MatrixExpr: 
-# TODO left off here
+# TODO left off here, need to work out how the digger and transposeOut functions work together and groupTranspose based on the list of types passed out
+clean = lambda t : str(t).split("'")[1].split(".")[-1]
 
+ps = list(preorder_traversal(expr)) # elements broken down
+cs = list(map(lambda p: type(p), ps)) # types / constructors
+csChunked = chunkInvTrans(cs)
+
+
+def stack(byType: ManagedProperties, constructors: List[ManagedProperties]) -> List[ManagedProperties]:
+    '''Given a type (like Transpose) and given a list, this function pulls all the signal types to the end of the list, leaving the non-signal-types as the front'''
+
+    # Get number of signal types in the list
+    countTypes: int = len(list(filter(lambda c : c == byType, constructors)))
+
+    # Create the signal types that go at the end
+    endTypes: List[ManagedProperties] = [byType] * countTypes
+
+    # Get the list without the signal types
+    nonSignalTypes: List[ManagedProperties] = list(filter(lambda c : c != byType, constructors))
+
+    return endTypes + nonSignalTypes # + endTypes
+
+assert stack(Transpose, [Inverse, Inverse, Transpose, Inverse, Transpose, Transpose, Inverse, MatMul, MatAdd]) == [Transpose, Transpose, Transpose, Inverse, Inverse, Inverse, Inverse, MatMul, MatAdd]
+
+# Order the types properly now for each chunk: make transposes go last in each chunk: 
+stackedChunks = list(map(lambda lst : stack(Transpose, lst), csChunked))
+
+
+# Get the lengths of each chunk
+chunkLens = list(map(lambda cLst : len(cLst), csChunked))
+
+
+# Use lengths to segregate the preorder traversal exprs also, then later to apply the transformations
+psChunked = []
+rest = ps 
+
+for size in chunkLens:
+    (fst, rest) = (rest[:size], rest[size: ]) 
+    psChunked.append( fst )
+psChunked
+
+
+# Apply the stacked transpose rules on the arg of the last pschunked . This is now the correct transpose version. 
+# Replace the correct transpose versions in the original expression, starting from the outer expression. 
 
 
 # %%
+# SEE the type names more easily:
+# NOTE: instead of clean(), the below gives the same result: type(expr).__name__ but result is still a string
+list(map(lambda lst : list(map(lambda c : c.__name__, lst)), csChunked))
+
+
+# %%
+
+
+
 
 
 # TEST 1: inverse out, transpose in
@@ -1175,96 +1206,7 @@ expr = Inverse(Transpose(
 res = groupTranspose(expr)
 # TODO evaluate on paper and then create this check
 #check = 
-# %%
 
-
-def chunkInvTrans(constructors: List[ManagedProperties]) -> List[List[ManagedProperties]]:
-    '''Separates the Inverse and Transpose types in a list of types, and keeps other types separate too, just as how they appear in the original list'''
-
-    # Not strictly necessary here, just useful if you want to see shorter version of names below
-    #getSimpleTypeName = lambda t : str(t).split("'")[1].split(".")[-1]
-
-    # Step 1: coding up in pairs for easy identification: need Inverse and Transpose tagged as same kind
-    codeConstrPairs: List[(int, ManagedProperties)] = list(map(lambda c : (0, c) if c == Transpose or c == Inverse else (1, c), constructors))
-
-    # Step 2: getting the groups
-    chunkedPairs: List[List[(int, ManagedProperties)]] = [list(group) for key, group in itertools.groupby(codeConstrPairs, operator.itemgetter(0))]
-
-    # Step 3: getting only the types in the chunked lists
-    chunkedTypes: List[List[ManagedProperties]] = list(map(lambda lst : list(map(lambda pair : pair[1], lst)), chunkedPairs))
-
-    return chunkedTypes
-# %%
-from sympy.core.numbers import NegativeOne
-
-# Constructors
-cs = [Inverse, Transpose, Transpose, Inverse, Inverse, Inverse, Transpose, MatrixSymbol, Symbol, Symbol, Symbol, NegativeOne, NegativeOne, NegativeOne, NegativeOne, Inverse, Symbol, Transpose, Inverse, Symbol, Transpose, Inverse, Inverse, MatMul, MatMul, MatAdd]
-
-res = chunkInvTrans(cs)
-check = [
-    [Inverse, Transpose, Transpose, Inverse, Inverse, Inverse, Transpose], 
-    [MatrixSymbol, Symbol, Symbol, Symbol, NegativeOne, NegativeOne, NegativeOne, NegativeOne], 
-    [Inverse], 
-    [Symbol], 
-    [Transpose, Inverse], 
-    [Symbol], 
-    [Transpose, Inverse, Inverse], 
-    [MatMul, MatMul, MatAdd]
-]
-
-assert res == check
-# %%
-
-
-# TODO left off here, need to work out how the digger and transposeOut functions work together and groupTranspose based on the list of types passed out
-clean = lambda t : str(t).split("'")[1].split(".")[-1]
-
-ps = list(preorder_traversal(expr)) # elements broken down
-cs = list(map(lambda p: type(p), ps)) # types / constructors
-csChunked = chunkInvTrans(cs)
-
-
-def stack(byType: ManagedProperties, constructors: List[ManagedProperties]) -> List[ManagedProperties]:
-    '''Given a type (like Transpose) and given a list, this function pulls all the signal types to the end of the list, leaving the non-signal-types as the front'''
-
-    # Get number of signal types in the list
-    countTypes: int = len(list(filter(lambda c : c == byType, constructors)))
-
-    # Create the signal types that go at the end
-    endTypes: List[ManagedProperties] = [byType] * countTypes
-
-    # Get the list without the signal types
-    nonSignalTypes: List[ManagedProperties] = list(filter(lambda c : c != byType, constructors))
-
-    return endTypes + nonSignalTypes # + endTypes
-
-assert stack(Transpose, [Inverse, Inverse, Transpose, Inverse, Transpose, Transpose, Inverse, MatMul, MatAdd]) == [Transpose, Transpose, Transpose, Inverse, Inverse, Inverse, Inverse, MatMul, MatAdd]
-
-# Order the types properly now for each chunk: make transposes go last in each chunk: 
-stackedChunks = list(map(lambda lst : stack(Transpose, lst), csChunked))
-
-
-# Get the lengths of each chunk
-chunkLens = list(map(lambda cLst : len(cLst), csChunked))
-
-
-# Use lengths to segregate the preorder traversal exprs also, then later to apply the transformations
-psChunked = []
-rest = ps 
-
-for size in chunkLens:
-    (fst, rest) = (rest[:size], rest[size: ]) 
-    psChunked.append( fst )
-#psChunked
-
-
-
-
-
-# %%
-# SEE the type names more easily:
-# NOTE: instead of clean(), the below gives the same result: type(expr).__name__ but result is still a string
-list(map(lambda lst : list(map(lambda c : c.__name__, lst)), csChunked))
 
 # %%
 
@@ -1284,9 +1226,9 @@ check = Transpose(
     ))
 )
 
-
+# TODO
 # More grouping-oriented check: 
-check = 
+#check = 
 
 showGroup([expr, res, check])
 
@@ -1296,7 +1238,7 @@ assert equal(res, check)
 # %%
 
 
-# TEST 15: very layered expression, and the inner arg is matadd with some matmuls but some matmuls have one of the elements as another layered arg, so we can test if the function reaches all rabbit holes effectively. 
+# TEST 16: very layered expression, and the inner arg is matadd with some matmuls but some matmuls have one of the elements as another layered arg, so we can test if the function reaches all rabbit holes effectively. 
 
 C = MatrixSymbol('C', c, c)
 D = MatrixSymbol('D', c, c)
@@ -1313,8 +1255,8 @@ expr = Transpose(
     MatAdd( B.T * A.T * J.T * R.T, 
     Inverse(
         MatMul(A*D.T*R.T , 
-            Transpose(
-                Inverse(
+            Inverse(
+                Transpose(
                     MatMul(C.T, E.I, L, B.T)
                 ) 
             )
@@ -1325,6 +1267,7 @@ expr = Transpose(
 
 res = groupTranspose(expr)
 
+# TODO need to update this test since I want the group transpose to call transpose out to make sure the transpose gets simplified, and not just re-applied  doubly
 check = Transpose(
     MatAdd(
         Inverse(Transpose(
@@ -1381,8 +1324,12 @@ assert equal(res, check)
 
 
 
+
+
 # %%
 
+
+### TRACE DERIVATIVE HERE ----------------------------------------
 
 
 # Now apply the trace deriv function per pair
