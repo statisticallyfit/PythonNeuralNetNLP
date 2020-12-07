@@ -441,21 +441,22 @@ assert splitOnce(expr.args, E, 4) == ([], [])
 
 
 # %%
+hasTranspose = lambda e : "Transpose" in srepr(e)
+
+def pickOut(a):
+    if not hasTranspose(a):
+        #return Transpose(MatMul(*a.args))
+        return Transpose(a)
+    elif hasTranspose(a) and a.is_Transpose:
+        return a.arg 
+    return Transpose(a) #TODO check 
+
 def groupTranpose_MatMul_or_MatSym(expr: MatrixExpr) -> MatrixExpr:
 
     def revTransposeAlgo(expr):
         '''Converts B.T * A.T --> (A * B).T'''
 
-        hasTranspose = lambda e : "Transpose" in srepr(e)
-
         if hasTranspose(expr) and expr.is_MatMul:
-            def pickOut(a):
-                if not hasTranspose(a):
-                    #return Transpose(MatMul(*a.args))
-                    return Transpose(a)
-                elif hasTranspose(a) and a.is_Transpose:
-                    return a.arg 
-                return Transpose(a) #TODO check 
 
             revs = list(map(lambda a : pickOut(a), reversed(expr.args)))
 
@@ -546,6 +547,10 @@ def groupTranspose(expr: MatrixExpr, combineAdds:bool = False) -> MatrixExpr:
 
     addendsTransp: List[MatrixExpr] = list(map(lambda a: groupTranspose(a), expr.args))
 
+    if combineAdds:
+        innerAddends = list(map(lambda t: pickOut(t), addendsTransp))
+        return Transpose(MatAdd(*innerAddends))
+    # Else not combining adds, just grouping transposes in addends individually
     return MatAdd(*addendsTransp)
 
     #elif expr.is_MatMul or isMatSym(expr):
@@ -1187,14 +1192,20 @@ expr = A * R.T * L.T * K * E.T * B + D.T + K
 # %%
 
 res = groupTranspose(expr)
-check = Transpose( MatAdd(MatMul(B.T, E, K.T, L, R, A.T), D, K.T) )
+resGroup = groupTranspose(expr, combineAdds = True)
+
+check = MatAdd( Transpose(MatMul(B.T, E, K.T, L, R, A.T)) , D.T, K)
+checkGroup = Transpose( B.T * E * K.T * L * R * A.T + D + K.T) 
 
 showGroup([
-    expr, res, check 
+    (expr, res, check),
+    (expr, resGroup, checkGroup)
 ])
 
-assert equal(expr.doit(), res.doit())
+assert expr.doit() == res.doit()
+assert expr.doit() == resGroup.doit()
 assert equal(res, check)
+assert equal(resGroup, checkGroup)
 # %%
 
 res = transposeOut_Simple(expr)
@@ -1215,7 +1226,7 @@ C = MatrixSymbol('C', a, a)
 E = MatrixSymbol('E', a, a)
 D = MatrixSymbol('D', a, a)
 
-expr = Trace(Tanspose(Inverse(Transpose(C*D*E))))
+expr = Trace(Transpose(Inverse(Transpose(C*D*E))))
 # %%
 
 res = groupTranspose(expr)
@@ -1231,17 +1242,20 @@ assert equal(expr.doit(), res.doit())
 assert res == check
 # %%
 
-res = transposeOut(expr)
+res = transposeOut_Simple(expr)
 check = Trace(Transpose(Transpose(Inverse(C*D*E))))
 
 showGroup([
     expr, res, check
 ])
 
-assert equal(expr.doit(), res.doit())
+# TODO make the expandMatMul function work with Trace (throws error here because Trace has no 'shape' attribute)
+# assert equal(expr.doit(), res.doit())
+assert expr.doit() == res.doit()
 # TODO assert res == check # make structural equality work
 assert equal(res, check)
 # %% -------------------------------------------------------------
+
 
 
 # TEST 12: very layered expression, but transposes are next to each other, with inner arg as matmul
@@ -1254,7 +1268,7 @@ expr = Trace(Transpose(Transpose(Inverse(C*D*E))))
 
 res1 = groupTranspose(expr)
 
-res2 = transposeOut(expr)
+res2 = transposeOut_Simple(expr)
 
 check = expr 
 
@@ -1262,8 +1276,8 @@ showGroup([
     expr, res1, res2, check 
 ])
 
-assert equal(expr.doit(), res1.doit())
-assert equal(expr.doit(), res2.doit())
+assert expr.doit() == res1.doit()
+assert expr.doit() == res2.doit()
 # assert equal(res, check) # todo fix equals function
 assert res1 == check
 assert res2 == check 
@@ -1297,7 +1311,7 @@ assert equal(expr.doit(), res.doit())
 assert equal(res, check)
 # %%
 
-res = transposeOut(expr)
+res = transposeOut_Simple(expr)
 
 check = Transpose(Transpose(Inverse(
     C.T * A.I * D.T
@@ -1307,7 +1321,7 @@ showGroup([
     expr, res, check
 ])
 
-assert equal(expr.doit(), res.doit())
+assert expr.doit() == res.doit()
 assert equal(res, check)
 # %% -------------------------------------------------------------
 
@@ -1360,34 +1374,22 @@ assert equal(res, check)
 # %%
 
 
-res = transposeOut(expr)
-
-check = Transpose(Transpose(Transpose(Inverse(MatMul(
-    A, D.T, R.T, 
-    Inverse(MatMul(B, Inverse(B*A*R), Transpose(Inverse(E)), C))
-)))))
-
-showGroup([
-    expr, res, check
-])
-
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
-
-
-# %%
-
-
 res = transposeOut_Simple(expr)
 
+# Aggressive check
+#check = Transpose(Transpose(Transpose(Inverse(MatMul(
+#    A, D.T, R.T, 
+#    Inverse(MatMul(B, Inverse(B*A*R), Transpose(Inverse(E)), C))
+#)))))
 check = expr
 
 showGroup([
     expr, res, check
 ])
 
-assert equal(expr.doit(), res.doit())
+assert expr.doit() == res.doit()
 assert equal(res, check)
+
 
 
 # %% -------------------------------------------------------------
@@ -1439,37 +1441,31 @@ assert equal(res, check)
 # %%
 
 
-res = transposeOut(expr)
-
-check = Transpose(Transpose(Transpose(Inverse(MatMul(
-    A, D.T, R.T, 
-    Inverse(MatMul(B, Inverse(B*A*R), Transpose(Inverse(E)), C))
-)))))
-
-showGroup([
-    expr, res, check
-])
-
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
-
-
-# %%
-
-
 res = transposeOut_Simple(expr)
 
-check = Transpose(Inverse(MatMul(
-    A, D.T, R.T, 
-    Transpose(Inverse(MatMul(C.T, E.I, Transpose(Inverse(B*A*R)), B.T)))
-)))
+# Simple check 
+check = Transpose(Inverse(
+    MatMul(A*D.T*R.T , 
+        Transpose(
+            Inverse(
+                MatMul(C.T, E.I, Transpose(Inverse(B*A*R)), B.T)
+            ) 
+        )
+    )
+))
+# Aggressive check
+#check = Transpose(Transpose(Transpose(Inverse(MatMul(
+#    A, D.T, R.T, 
+#    Inverse(MatMul(B, Inverse(B*A*R), Transpose(Inverse(E)), C))
+#)))))
 
 showGroup([
     expr, res, check
 ])
 
-assert equal(expr.doit(), res.doit())
+assert expr.doit() == res.doit()
 assert equal(res, check)
+
 
 
 # %% -------------------------------------------------------------
@@ -1529,27 +1525,14 @@ assert equal(res, check)
 # %%
 
 
-res = transposeOut(expr)
-
-check = Transpose(Transpose(Transpose(Inverse(MatMul(
-    A, D.T, R.T, 
-    Inverse(MatMul(B, Inverse(B*A*R), Transpose(Inverse(E)), C))
-)))))
-
-showGroup([
-    expr, res, check
-])
-
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
-
-
-
-# %%
-
-
 res = transposeOut_Simple(expr)
 
+# Aggressive check
+#check = Transpose(Transpose(Transpose(Inverse(MatMul(
+#    A, D.T, R.T, 
+#    Inverse(MatMul(B, Inverse(B*A*R), Transpose(Inverse(E)), C))
+#)))))
+# Simple check
 check = Transpose(Inverse(MatMul(
     A, D.T, R.T, 
     Transpose(Inverse(MatMul(
@@ -1561,8 +1544,10 @@ showGroup([
     expr, res, check
 ])
 
-assert equal(expr.doit(), res.doit())
+assert expr.doit() == res.doit()
 assert equal(res, check)
+
+
 
 # %% -------------------------------------------------------------
 
@@ -1613,27 +1598,9 @@ assert equal(res, check)
 # %%
 
 
-res = transposeOut(expr)
-
-check = Transpose(Transpose(Transpose(Inverse(MatMul(
-    A, D.T, R.T, 
-    Inverse(MatMul(B, Inverse(B*A*R), Transpose(Inverse(E)), C))
-)))))
-
-showGroup([
-    expr, res, check
-])
-
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
-
-
-
-# %%
-
-
 res = transposeOut_Simple(expr)
 
+# Simple check
 check = Transpose(Inverse(MatMul(
     A, D.T, R.T, 
     Transpose(Inverse(MatMul(
@@ -1641,11 +1608,17 @@ check = Transpose(Inverse(MatMul(
     )))
 )))
 
+# Aggressive check
+#check = Transpose(Transpose(Transpose(Inverse(MatMul(
+#    A, D.T, R.T, 
+#    Inverse(MatMul(B, Inverse(B*A*R), Transpose(Inverse(E)), C))
+#)))))
+
 showGroup([
     expr, res, check
 ])
 
-assert equal(expr.doit(), res.doit())
+assert expr.doit() == res.doit()
 assert equal(res, check)
 
 
@@ -1722,12 +1695,24 @@ assert equal(res, check)
 # %%
 
 
-res = transposeOut(expr)
+res = transposeOut_Simple(expr)
 
-check_inner_14a = Transpose(Transpose(Inverse(MatMul(
-    A, D.T, R.T, 
-    Inverse(MatMul(B, Inverse(B*A*R), Transpose(Inverse(E)), C))
-))))
+# Simple check 14 a
+check_inner_14a = Inverse(
+    MatMul(A*D.T*R.T , 
+        Transpose(
+            Inverse(
+                MatMul(C.T, E.I, L, B.T)
+            ) 
+        )
+    )
+)
+
+# Aggressive check 14 a
+#check_inner_14a = Transpose(Transpose(Inverse(MatMul(
+#    A, D.T, R.T, 
+#    Inverse(MatMul(B, Inverse(B*A*R), Transpose(Inverse(E)), C))
+#))))
 
 check = Transpose(MatAdd(
     B.T * A.T * J.T * R.T, 
@@ -1740,35 +1725,6 @@ showGroup([
 
 assert expr.doit() == res.doit()
 assert equal(res, check)
-
-
-# %%
-
-
-res = transposeOut_Simple(expr)
-
-check_inner_14a = expr = Inverse(
-    MatMul(A*D.T*R.T , 
-        Transpose(
-            Inverse(
-                MatMul(C.T, E.I, L, B.T)
-            ) 
-        )
-    )
-) #Just the inverse part, inside first transpose
-
-check = Transpose(MatAdd(
-    B.T * A.T * J.T * R.T, 
-    check_inner_14a
-))
-
-showGroup([
-    expr, res, check
-])
-
-assert res.doit() == expr.doit()
-assert equal(res, check)
-
 
 
 
