@@ -1375,12 +1375,6 @@ assert equal(res, check)
 
 
 res = transposeOut_Simple(expr)
-
-# Aggressive check
-#check = Transpose(Transpose(Transpose(Inverse(MatMul(
-#    A, D.T, R.T, 
-#    Inverse(MatMul(B, Inverse(B*A*R), Transpose(Inverse(E)), C))
-#)))))
 check = expr
 
 showGroup([
@@ -1392,6 +1386,19 @@ assert equal(res, check)
 
 
 
+# %%
+
+# TODO update the grouptranspose reverse algo to deal with minimum number of transpose elimination scheme (of innermosts across the same level (?)). (Use digger?)
+# TODO: must put this reverse algo directly inside the transpose out function, to adapt the result and avoid having product transposes, to aim for having just one innermost expression with transposes surrounding. 
+
+#res = transposeOut(expr)
+
+# Aggressive check
+check = Transpose(Transpose(Transpose(Inverse(MatMul(
+    A, D.T, R.T, 
+    Inverse(MatMul(B, Inverse(B*A*R), Transpose(Inverse(E)), C))
+)))))
+check
 # %% -------------------------------------------------------------
 
 
@@ -1433,7 +1440,7 @@ check = Transpose(Inverse(Transpose(MatMul(
 
 showGroup([expr, res, check])
 
-assert equal(res.doit(), expr.doit())
+assert expr.doit() == res.doit()
 assert equal(res, check)
 
 
