@@ -645,6 +645,7 @@ def inner(expr):
     # else keep recursing
     return inner(expr.arg) # need to get arg from Trace or Transpose or Inverse ... among other constructors
 
+
 # %% -------------------------------------------------------------
 # TEST 1: simplest case possible, just matrixsymbol as innermost nesting
 t1 = Transpose(Inverse(Inverse(Inverse(Transpose(Transpose(A))))))
@@ -669,8 +670,82 @@ t3 = Transpose(Inverse(
 ))
 c3 = t3.arg.arg #just twice depth
 assert inner(t3) == c3
+
+
+
+# %%
+def innerTrail(expr: MatrixExpr) -> List[Tuple[List[ManagedProperties], MatrixExpr]]: 
+    '''Gets the innermost expr (past all the .arg) on the first level only, and stores also the list of constructors'''
+
+    def doInnerTrail(expr: MatrixExpr, accConstrs: List[ManagedProperties]) -> Tuple[List[ManagedProperties], MatrixExpr]:
+
+        Constr = expr.func 
+        types = [MatMul, MatAdd, MatrixSymbol, Symbol, Number] 
+        isAnySubclass = any(map(lambda t : issubclass(Constr, t), types))
+
+        if (Constr in types) or isAnySubclass: 
+
+            return (accConstrs, expr)
+        # else keep recursing
+        return doInnerTrail(expr = expr.arg, accConstrs = accConstrs + [Constr])
+
+    return doInnerTrail(expr = expr, accConstrs = [])
+
+# %%
+# TEST 1
+assert innerTrail(A) == ([], A)
+# %%
+# TEST 2
+assert innerTrail(A.T) == ([Transpose], A)
+
+assert innerTrail(Inverse(Transpose(Inverse(Inverse(A))))) == ([Inverse, Transpose, Inverse, Inverse], A)
+# %%
+# TEST 3
+C = MatrixSymbol('C', c, c)
+D = MatrixSymbol('D', c, c)
+E = MatrixSymbol('E', c, c)
+A = MatrixSymbol('A', c, c)
+B = MatrixSymbol('B', c, c)
+R = MatrixSymbol('R', c, c)
+J = MatrixSymbol('J', c, c)
+
+
+L = Transpose(Inverse(B*A*R))
+
+expr = Transpose(Inverse(
+    MatMul(A*D.T*R.T , 
+        Transpose(
+            Inverse(
+                MatMul(C.T, E.I, L, B.T)
+            ) 
+        )
+    )
+))
+# Showing how innerTrail gets only the first level while digger gets all the levels (in the order of preorder traversal, as it happens)
+assert innerTrail(expr) == digger(expr)[0]
+
+# %%
+# TEST 4
+
+# This is the result of grouptranspose then transposeout_simple of expression from 14.a test
+tg = Transpose(Transpose(Inverse(MatMul(
+    Transpose(Inverse(MatMul(
+        B, Inverse(B*A*R), Transpose(Inverse(E)), C
+    ))), 
+    Transpose(Transpose(MatMul(R, D, A.T)))
+))))
+
+# Showing how inner gets just the innermost arg like innerTrail but without the types. 
+assert inner(tg) == innerTrail(tg)[1]
+
+# Showing how inner trail gets just the first level
+assert innerTrail(tg) == digger(tg)[0]
 # %%
 
+def applyTypesToExpr( pairTypeExpr: Tuple[List[ManagedProperties], MatrixExpr]) -> MatrixExpr:
+
+    (typeList, expr) = pairTypeExpr 
+    return compose(*typeList)(expr)
 
 def transposeOut_Simple_MatMul_or_MatSym(expr: MatrixExpr) -> MatrixExpr: 
     '''For each layered (nested) expression where transpose is the inner operation, this function brings transposes to be the outer operations, leaving all other operations in between in the same order.'''
@@ -701,13 +776,6 @@ def transposeOut_Simple_MatMul_or_MatSym(expr: MatrixExpr) -> MatrixExpr:
     for size in chunkLens:
         (fst, rest) = (rest[:size], rest[size: ]) 
         psChunked.append( fst )
-
-
-    def applyTypesToExpr( pairTypeExpr: Tuple[List[ManagedProperties], MatrixExpr]) -> MatrixExpr:
-
-        (typeList, expr) = pairTypeExpr 
-        return compose(*typeList)(expr)
-
 
 
     # Pair up the correct order of transpose types with the expressions
@@ -817,9 +885,66 @@ def digger(expr: MatrixExpr) -> List[Tuple[List[ManagedProperties], MatrixExpr]]
     return itListInnerPair 
 # %%
 def factorOuterTranspose(mult: MatMul) -> MatrixExpr: 
+    '''Expects a matmul expression where each arg has transpose on the outer side, as in after being passed through transposeOut_Simple. 
+    
+    Then within each arg of the passed matmul expression, this function removes the minimum amount of tnraspose layering (factors it out) so the returned expression is mathematically equivalent but simplified by transpose layering.'''
+
     assert mult.is_MatMul 
 
-    # Get the minimum number of transpose in the transpose layering per expression. 
+    isSymOrNum = lambda expr : expr.is_Symbol or expr.is_Number or len(expr.free_symbols) == 1
+
+    # Get the args and pair the inner exprs with the list of outer constructors (at first level)
+    typesInnerPairs: List[Tuple[List[ManagedProperties], MatrixExpr]] = list(map(lambda a : innerTrail(a), mult.args))
+
+    # Filter the args that are strictly matmul (or matadd), so keep just ones that are NOT symbols or numbers, because those can be transposed with no issue. Want to keep integrity of the groups.
+    #typesInnerNosymPairs = list(filter(lambda pair : not isSymOrNum(pair[1])  , typesInnerPairs))
+    #typesInnerSymPairs = list(filter(lambda pair : isSymOrNum(pair[1]), typesInnerPairs))
+
+    # Count transposes and get the minimum of the list. This is the number of transposes we must factor out of all the mult.args.
+    counts: List[int] = list(map(lambda pair : pair[0].count(Transpose), typesInnerPairs))
+    # Ignoring any with zero counts (those are the symbols)
+    factor: int = min( list(filter(lambda c : c != 0, counts)) )
+
+    # Counts num transposes to remove (total divisions with remainder)
+    numRemove = lambda total, factor: (int)(total / factor) * factor
+    # Count leftover transposes
+    leftover = lambda total, remove: total - remove 
+
+    # NOTE: using filter instead of just snapping all transposes off the end will let this work for even args that are not passed to transposeOut from the start. (beats the precondition)
+    
+    sepT = lambda types: [Transpose] * (leftover(types.count(Transpose), numRemove(types.count(Transpose) , factor) ) )  + list(filter(lambda t: t != Transpose, types))
+
+    # Initializing the result
+    result = mult 
+
+    # CASE 3: count == 0 
+    # ---->  leave the expression the same
+    if factor == 0:
+        return result
+
+    # CASE 1: count is odd 
+    elif factor % 2 == 1:
+
+        # ---> remove COUNT transpose (over the no-sym list) and Add ONE transpose (over the sym list)
+        elimTypeInnerPairs = list(map(lambda pair: ([Transpose] + pair[0], pair[1]) if not (Transpose in pair[0]) else ( sepT(pair[0])  , pair[1]),   typesInnerPairs))
+
+        # ---> apply the types
+        elimExprs: List[MatrixExpr] = list(map(lambda pair : applyTypesToExpr(pair), elimTypeInnerPairs))
+
+        # ---> reverse the above and matmul it
+        revElimExpr: MatMul = MatMul( *reversed(elimExprs) )
+
+        # ---> apply COUNT transposes to the outer of the reversed matmul
+        result = applyTypesToExpr( ([Transpose] * factor, revElimExpr) )
+
+
+
+    # CASE 2: count is even 
+    elif factor % 2 == 0:
+        # ---> remove COUNT transposes off each mult.arg (that is the no-sym list) and do nothing (over the sym list)
+        elimTypeInnerPairs = list(map(lambda pair : pair if not (Transpose in pair[0]) else (sepT(pair[0]))))
+        # ---> leave the matmul in the same order, no outer transpose needed
+
 # %% -------------------------------------------------------------
 
 
