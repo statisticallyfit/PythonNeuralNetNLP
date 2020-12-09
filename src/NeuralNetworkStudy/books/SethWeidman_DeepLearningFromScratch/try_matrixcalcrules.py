@@ -714,7 +714,7 @@ def transposeOut_Simple_MatMul_or_MatSym(expr: MatrixExpr) -> MatrixExpr:
     itListExprListPair = list(filter(lambda plst : ((Transpose in plst[0]) or (Inverse in plst[0]) ) , list(zip(stackedChunks, psChunked)) ))
 
 
-    # Get the first expression only, since it is the most layered, don't use the entire expression list
+    # Get the first expression only, since it is the most layered, don't use the entire expression list of the tuple's second part.
     itListExprPair = list(map(lambda tsPs : (tsPs[0], tsPs[1][0]), itListExprListPair))
 
     # Get the inner argument (lay bare) in preparation for apply the correct order of transpose types. 
@@ -766,6 +766,60 @@ def transposeOut_Simple(expr: MatrixExpr) -> MatrixExpr:
 
     return MatAdd(*addendsOut)
 
+# %%
+# TODO
+# Transpose out aggressive
+
+#for each each inner matmul thing, split by args and factor out the minimum transpose across each group
+# Step 2: (above: if there are some non-transpose outer exprs and if they are just symbols, apply the min transp factor out else do not (if zero outer transp for a group expression))
+
+def digger(expr: MatrixExpr) -> List[Tuple[List[ManagedProperties], MatrixExpr]]:
+    '''Gets list of tuples, where each tuple contains a list of types that surround the inner argument in the given matrix expression. 
+    
+    EXAMPLE:
+
+    Input: (((B*A*R)^-1)^T)^T 
+
+    Output: (ts, inner) where 
+        ts = [Transpose, Transpose, Inverse]
+        inner = MatMul(B, A, R)
+    '''
+
+    ps = list(preorder_traversal(expr)) # elements broken down
+    cs = list(map(lambda p: type(p), ps)) # types / constructors
+
+    # Check first: does expr have transpose or inverse? If not, then return it out, nothing to do here: 
+    # TODO refactor this function to work for any constructor (like Derivative, Trace, Inverse, Function, ...)
+    if not (Transpose in cs): 
+        return expr 
+
+    csChunked = chunkInvTrans(cs)
+
+    # Get the lengths of each chunk
+    chunkLens = list(map(lambda cLst : len(cLst), csChunked))
+
+    # Use lengths to segregate the preorder traversal exprs also, then later to apply the transformations
+    psChunked = []
+    rest = ps 
+
+    for size in chunkLens:
+        (fst, rest) = (rest[:size], rest[size: ]) 
+        psChunked.append( fst )
+
+
+    # Pair up the correct order of transpose types with the expressions
+    itListExprListPair = list(filter(lambda plst : ((Transpose in plst[0]) or (Inverse in plst[0]) ) , list(zip(csChunked, psChunked)) ))
+
+
+    # Get the first expression only, since it is the most layered, and pair its inner arg with the list of types from that pair. 
+    itListInnerPair = list(map(lambda tsPs : (tsPs[0], inner(tsPs[1][0])), itListExprListPair))
+
+    return itListInnerPair 
+# %%
+def factorOuterTranspose(mult: MatMul) -> MatrixExpr: 
+    assert mult.is_MatMul 
+
+    # Get the minimum number of transpose in the transpose layering per expression. 
 # %% -------------------------------------------------------------
 
 
@@ -1236,9 +1290,10 @@ showGroup([
     expr, res, check 
 ])
 
-assert equal(expr.doit(), res.doit())
 # TODO fix the expandMatMul function so that trace can be passed as argument (just do expand on what is inside)
 #assert equal(res, check)
+#assert equal(expr.doit(), res.doit())
+
 assert res == check
 # %%
 
@@ -1253,7 +1308,7 @@ showGroup([
 # assert equal(expr.doit(), res.doit())
 assert expr.doit() == res.doit()
 # TODO assert res == check # make structural equality work
-assert equal(res, check)
+#assert equal(res, check)
 # %% -------------------------------------------------------------
 
 
