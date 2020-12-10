@@ -21,13 +21,16 @@ from sympy.abc import x, i, j, a, b, c
 from sympy.matrices.expressions.matadd import MatAdd
 from sympy.matrices.expressions.matmul import MatMul
 
+from sympy.core.numbers import NegativeOne, Number
 
+from sympy.core.assumptions import ManagedProperties
 
 # %%
 import torch
 import torch.tensor as tensor
 
 # Types
+MatrixType = ManagedProperties
 
 Tensor = torch.Tensor
 LongTensor = torch.LongTensor
@@ -451,7 +454,8 @@ def pickOut(a):
         return a.arg 
     return Transpose(a) #TODO check 
 
-def groupTranpose_MatMul_or_MatSym(expr: MatrixExpr) -> MatrixExpr:
+# %%
+def algoTransposeGroup_MatMul_or_MatSym(expr: MatrixExpr) -> MatrixExpr:
 
     def revTransposeAlgo(expr):
         '''Converts B.T * A.T --> (A * B).T'''
@@ -515,7 +519,7 @@ check = Transpose(
     ))
 )
 
-res = groupTranpose_MatMul_or_MatSym(expr)
+res = algoTransposeGroup_MatMul_or_MatSym(expr)
 
 showGroup([
     expr, 
@@ -532,20 +536,20 @@ assert equal(res, check) # # TODO want to use == for structurally equal tests he
 ### GROUP TRANSPOSE HERE ----------------------------------------
 
 
-def groupTranspose(expr: MatrixExpr, combineAdds:bool = False) -> MatrixExpr: 
+def algoTransposeGroup(expr: MatrixExpr, combineAdds:bool = False) -> MatrixExpr: 
     '''Combines transposes when they are the outermost operations. 
     
     Brings the individual transpose operations out over the entire group (factors out the transpose and puts it as the outer operation). 
-    NOTE: This happens only when the transpose ops are at the same level. If they are nested, that "bringing out" task is left to the transposeOut function. 
+    NOTE: This happens only when the transpose ops are at the same level. If they are nested, that "bringing out" task is left to the rippletranspose function. 
     
     combineAdds:bool  = if True then the function will group all the addition components under a transpose, like in matmul, otherwise it will group only the individual components of the MatAdd under transpose.'''
 
     #isMatSym = lambda s: len(s.free_symbols) == 1
 
     if not expr.is_MatAdd: 
-        return groupTranpose_MatMul_or_MatSym(expr)
+        return algoTransposeGroup_MatMul_or_MatSym(expr)
 
-    addendsTransp: List[MatrixExpr] = list(map(lambda a: groupTranspose(a), expr.args))
+    addendsTransp: List[MatrixExpr] = list(map(lambda a: algoTransposeGroup(a), expr.args))
 
     if combineAdds:
         innerAddends = list(map(lambda t: pickOut(t), addendsTransp))
@@ -558,8 +562,6 @@ def groupTranspose(expr: MatrixExpr, combineAdds:bool = False) -> MatrixExpr:
 
     #else: # is transpose or inverse or trace etc and need to dig to get the innermost argument
     
-    
-    
 
 # %%
 
@@ -567,26 +569,25 @@ def groupTranspose(expr: MatrixExpr, combineAdds:bool = False) -> MatrixExpr:
 
 
 ### TRANSPOSE OUT HERE -----------------------------------------
-from sympy.core.assumptions import ManagedProperties
 
-def chunkInvTrans(constructors: List[ManagedProperties]) -> List[List[ManagedProperties]]:
+
+def chunkInvTrans(constructors: List[MatrixType]) -> List[List[MatrixType]]:
     '''Separates the Inverse and Transpose types in a list of types, and keeps other types separate too, just as how they appear in the original list'''
 
     # Not strictly necessary here, just useful if you want to see shorter version of names below
     #getSimpleTypeName = lambda t : str(t).split("'")[1].split(".")[-1]
 
     # Step 1: coding up in pairs for easy identification: need Inverse and Transpose tagged as same kind
-    codeConstrPairs: List[(int, ManagedProperties)] = list(map(lambda c : (0, c) if c == Transpose or c == Inverse else (1, c), constructors))
+    codeConstrPairs: List[Tuple[int, MatrixType]] = list(map(lambda c : (0, c) if c == Transpose or c == Inverse else (1, c), constructors))
 
     # Step 2: getting the groups
-    chunkedPairs: List[List[(int, ManagedProperties)]] = [list(group) for key, group in itertools.groupby(codeConstrPairs, operator.itemgetter(0))]
+    chunkedPairs: List[List[Tuple[int, MatrixType]]] = [list(group) for key, group in itertools.groupby(codeConstrPairs, operator.itemgetter(0))]
 
     # Step 3: getting only the types in the chunked lists
-    chunkedTypes: List[List[ManagedProperties]] = list(map(lambda lst : list(map(lambda pair : pair[1], lst)), chunkedPairs))
+    chunkedTypes: List[List[MatrixType]] = list(map(lambda lst : list(map(lambda pair : pair[1], lst)), chunkedPairs))
 
     return chunkedTypes
 # %%
-from sympy.core.numbers import NegativeOne, Number
 
 # Constructors
 cs = [Inverse, Transpose, Transpose, Inverse, Inverse, Inverse, Transpose, MatrixSymbol, Symbol, Symbol, Symbol, NegativeOne, NegativeOne, NegativeOne, NegativeOne, Inverse, Symbol, Transpose, Inverse, Symbol, Transpose, Inverse, Inverse, MatMul, MatMul, MatAdd]
@@ -610,17 +611,17 @@ assert res == check
 
 
 
-def stack(byType: ManagedProperties, constructors: List[ManagedProperties]) -> List[ManagedProperties]:
+def stack(byType: MatrixType, constructors: List[MatrixType]) -> List[MatrixType]:
     '''Given a type (like Transpose) and given a list, this function pulls all the signal types to the end of the list, leaving the non-signal-types as the front'''
 
     # Get number of signal types in the list
     countTypes: int = len(list(filter(lambda c : c == byType, constructors)))
 
     # Create the signal types that go at the end
-    endTypes: List[ManagedProperties] = [byType] * countTypes
+    endTypes: List[MatrixType] = [byType] * countTypes
 
     # Get the list without the signal types
-    nonSignalTypes: List[ManagedProperties] = list(filter(lambda c : c != byType, constructors))
+    nonSignalTypes: List[MatrixType] = list(filter(lambda c : c != byType, constructors))
 
     return endTypes + nonSignalTypes # + endTypes
 
@@ -674,10 +675,176 @@ assert inner(t3) == c3
 
 
 # %%
-def innerTrail(expr: MatrixExpr) -> List[Tuple[List[ManagedProperties], MatrixExpr]]: 
+
+def applyTypesToExpr( pairTypeExpr: Tuple[List[MatrixType], MatrixExpr]) -> MatrixExpr:
+
+    (typeList, expr) = pairTypeExpr 
+
+    if typeList == []:
+        return expr 
+    return compose(*typeList)(expr)
+
+# %%
+
+
+def chunkExprsByInvTrans(expr: MatrixExpr) -> Tuple[List[List[MatrixType]], List[List[MatrixExpr]]]:
+    '''Given an expression, returns the types and expressions as tuples, listed in preorder traversal, and separated by which expressions are grouped by Transpose or Inverse constructors (in their layering)'''
+
+    ps: List[MatrixExpr] = list(preorder_traversal(expr)) # elements broken down
+    cs: List[MatrixType] = list(map(lambda p: type(p), ps)) # types / constructors
+
+
+    # Check first: does expr have transpose or inverse? If not, then return it out, nothing to do here: 
+    if not (Transpose in cs): 
+        return expr 
+
+    csChunked: List[List[MatrixType]] = chunkInvTrans(cs)
+
+
+    # Get the lengths of each chunk
+    chunkLens: List[int] = list(map(lambda cLst : len(cLst), csChunked))
+
+
+    # Use lengths to segregate the preorder traversal exprs also, then later to apply the transformations
+    psChunked: List[List[MatrixExpr]] = []
+    rest: List[MatrixExpr] = ps 
+
+    for size in chunkLens:
+        (fst, rest) = (rest[:size], rest[size: ]) 
+        psChunked.append( fst )
+
+    return (csChunked, psChunked)
+# %%
+
+
+
+def algoTransposeRipple_MatMul_or_MatSym(expr: MatrixExpr) -> MatrixExpr: 
+    '''For each layered (nested) expression where transpose is the inner operation, this function brings transposes to be the outer operations, leaving all other operations in between in the same order.'''
+
+    (csChunked, psChunked) = chunkExprsByInvTrans(expr)
+
+    # Order the types properly now for each chunk: make transposes go last in each chunk: 
+    stackedChunks = list(map(lambda lst : stack(Transpose, lst), csChunked))
+
+    # Pair up the correct order of transpose types with the expressions
+    itListExprListPair = list(filter(lambda plst : ((Transpose in plst[0]) or (Inverse in plst[0]) ) , list(zip(stackedChunks, psChunked)) ))
+
+
+    # Get the first expression only, since it is the most layered, don't use the entire expression list of the tuple's second part.
+    itListExprPair = list(map(lambda tsPs : (tsPs[0], tsPs[1][0]), itListExprListPair))
+
+    # Get the inner argument (lay bare) in preparation for apply the correct order of transpose types. 
+    itListInnerExprPair = list(map(lambda tsPs : (tsPs[0], inner(tsPs[1])), itListExprPair))
+
+    outs = list(map(lambda tsExprPair : applyTypesToExpr(tsExprPair), itListInnerExprPair ))
+
+    # Get the original expressions as they were before applying correct transpose
+    ins = list(map(lambda tsPs : tsPs[1], itListExprPair))
+
+    # Filter: get just the matmul-type arguments (meaning not the D^T or E^-1 type arguments) from the result list (assuming there are other MatMul exprs). Could have done this when first filtering the psChunked, but easier to do it now. 
+    # NOTE: when there are ONLY mat syms and no other matmuls then we must keep them since it means the expression is layered with only a matsum as the innermost expression, rather than a matmul. 
+    isSymOrNum = lambda expr : expr.is_Symbol or expr.is_Number 
+    #isSym = lambda expr  : len(expr.free_symbols) == 1
+
+    # Flattening the chunked ps list for easier evaluation: 
+    ps: List[MatrixExpr] = list(itertools.chain(*psChunked))
+    allSymOrNums = len(ps) == len(list(filter(lambda e: isSymOrNum(e), ps)) )
+    #allSyms = all(map(lambda expr : isSym(expr), ps))
+
+    #if not allSymOrNums: 
+    outs = list(filter(lambda expr : not isSymOrNum(expr), outs))
+
+    ins = list(filter(lambda expr : not isSymOrNum(expr), ins))
+    # else just leave the syms as they are. 
+
+
+    # Zip the non-transp-out exprs with the transp-out expressions as list (NOTE: cannot be dictionary since we need to keep the same order of expressions as obtained from the preorder traversal, else substitution order will be messed up)
+    outInPairs = list(zip(outs, ins))
+
+    # Now must apply from the beginning to end, each of the expressions. Must replace in the first expr, all of the latter expressions, kind of like folding operation of Matryoshka dolls, to preserve all the end changes: C -> goes into -> B -> goes into -> A
+    accFirst = expr #outs[0]
+
+    f = lambda acc, outInPair: acc.xreplace({outInPair[1] : outInPair[0]})
+
+    resultTranspOut = foldLeft(f , accFirst,  outInPairs) # outsNotsPairs[1:])
+
+    return resultTranspOut 
+
+
+
+def algoTransposeRipple(expr: MatrixExpr) -> MatrixExpr: 
+    
+    '''Brings transposes to the outermost level when in a nested expression. Leaves the nested expressions in their same structure. '''
+
+    #isMatSym = lambda s: len(s.free_symbols) == 1
+
+    if not expr.is_MatAdd: 
+        return algoTransposeRipple_MatMul_or_MatSym(expr)
+
+    addendsOut: List[MatrixExpr] = list(map(lambda a: algoTransposeRipple(a), expr.args))
+
+    return MatAdd(*addendsOut)
+
+# %%
+
+
+
+def digger(expr: MatrixExpr) -> List[Tuple[List[MatrixType], MatrixExpr]]:
+    '''Gets list of tuples, where each tuple contains a list of types that surround the inner argument in the given matrix expression. 
+    
+    EXAMPLE:
+
+    Input: (((B*A*R)^-1)^T)^T 
+
+    Output: (ts, inner) where 
+        ts = [Transpose, Transpose, Inverse]
+        inner = MatMul(B, A, R)
+    '''
+   
+    (csChunked, psChunked) = chunkExprsByInvTrans(expr)
+
+    # Pair up the correct order of transpose types with the expressions
+    itListExprListPair = list(filter(lambda plst : ((Transpose in plst[0]) or (Inverse in plst[0]) ) , list(zip(csChunked, psChunked)) ))
+
+
+    # Get the first expression only, since it is the most layered, and pair its inner arg with the list of types from that pair. 
+    itListInnerPair = list(map(lambda tsPs : (tsPs[0], inner(tsPs[1][0])), itListExprListPair))
+
+    return itListInnerPair 
+
+# TODO update transpose out to use the digger function (boilerplate)
+
+# %% -------------------------------------------
+
+
+# TEST 1: 
+expr = Transpose(Inverse(Inverse(MatMul(
+    Inverse(Transpose(Inverse(R*J*D))), 
+    Inverse(Transpose(Inverse(Transpose(B*A*R)))
+)))))
+
+res = digger(expr)
+(resTypes, resExprs) = list(zip(*res)) # unzipping with zip (? why works?)
+
+
+check = [
+    ([Transpose, Inverse, Inverse], expr.arg.arg.args[0]),
+    ([Inverse, Transpose, Inverse], R*J*D),
+    ([Inverse, Transpose, Inverse, Transpose], B*A*R)
+]
+(checkTypes, checkExprs) = list(zip(*check))
+
+showGroup([expr, resTypes, resExprs])
+
+assert res == check
+assert resExprs == checkExprs
+# %%
+
+
+def innerTrail(expr: MatrixExpr) -> List[Tuple[List[MatrixType], MatrixExpr]]: 
     '''Gets the innermost expr (past all the .arg) on the first level only, and stores also the list of constructors'''
 
-    def doInnerTrail(expr: MatrixExpr, accConstrs: List[ManagedProperties]) -> Tuple[List[ManagedProperties], MatrixExpr]:
+    def doInnerTrail(expr: MatrixExpr, accConstrs: List[MatrixType]) -> Tuple[List[MatrixType], MatrixExpr]:
 
         Constr = expr.func 
         types = [MatMul, MatAdd, MatrixSymbol, Symbol, Number] 
@@ -727,7 +894,7 @@ assert innerTrail(expr) == digger(expr)[0]
 # %%
 # TEST 4
 
-# This is the result of grouptranspose then transposeout_simple of expression from 14.a test
+# This is the result of grouptranspose then algotransposeripple of expression from 14.a test
 tg = Transpose(Transpose(Inverse(MatMul(
     Transpose(Inverse(MatMul(
         B, Inverse(B*A*R), Transpose(Inverse(E)), C
@@ -740,161 +907,53 @@ assert inner(tg) == innerTrail(tg)[1]
 
 # Showing how inner trail gets just the first level
 assert innerTrail(tg) == digger(tg)[0]
-# %%
-
-def applyTypesToExpr( pairTypeExpr: Tuple[List[ManagedProperties], MatrixExpr]) -> MatrixExpr:
-
-    (typeList, expr) = pairTypeExpr 
-    return compose(*typeList)(expr)
-
-def transposeOut_Simple_MatMul_or_MatSym(expr: MatrixExpr) -> MatrixExpr: 
-    '''For each layered (nested) expression where transpose is the inner operation, this function brings transposes to be the outer operations, leaving all other operations in between in the same order.'''
-
-
-    ps = list(preorder_traversal(expr)) # elements broken down
-    cs = list(map(lambda p: type(p), ps)) # types / constructors
-
-
-    # Check first: does expr have transpose or inverse? If not, then return it out, nothing to do here: 
-    if not (Transpose in cs): 
-        return expr 
-
-    csChunked = chunkInvTrans(cs)
-
-    # Order the types properly now for each chunk: make transposes go last in each chunk: 
-    stackedChunks = list(map(lambda lst : stack(Transpose, lst), csChunked))
-
-
-    # Get the lengths of each chunk
-    chunkLens = list(map(lambda cLst : len(cLst), csChunked))
-
-
-    # Use lengths to segregate the preorder traversal exprs also, then later to apply the transformations
-    psChunked = []
-    rest = ps 
-
-    for size in chunkLens:
-        (fst, rest) = (rest[:size], rest[size: ]) 
-        psChunked.append( fst )
-
-
-    # Pair up the correct order of transpose types with the expressions
-    itListExprListPair = list(filter(lambda plst : ((Transpose in plst[0]) or (Inverse in plst[0]) ) , list(zip(stackedChunks, psChunked)) ))
-
-
-    # Get the first expression only, since it is the most layered, don't use the entire expression list of the tuple's second part.
-    itListExprPair = list(map(lambda tsPs : (tsPs[0], tsPs[1][0]), itListExprListPair))
-
-    # Get the inner argument (lay bare) in preparation for apply the correct order of transpose types. 
-    itListInnerExprPair = list(map(lambda tsPs : (tsPs[0], inner(tsPs[1])), itListExprPair))
-
-    outs = list(map(lambda tsExprPair : applyTypesToExpr(tsExprPair), itListInnerExprPair ))
-
-    # Get the original expressions as they were before applying correct transpose
-    ins = list(map(lambda tsPs : tsPs[1], itListExprPair))
-
-    # Filter: get just the matmul-type arguments (meaning not the D^T or E^-1 type arguments) from the result list (assuming there are other MatMul exprs). Could have done this when first filtering the psChunked, but easier to do it now. 
-    # NOTE: when there are ONLY mat syms and no other matmuls then we must keep them since it means the expression is layered with only a matsum as the innermost expression, rather than a matmul. 
-    isSymOrNum = lambda expr : expr.is_Symbol or expr.is_Number 
-    #isSym = lambda expr  : len(expr.free_symbols) == 1
-    allSymOrNums = len(ps) == len(list(filter(lambda e: isSymOrNum(e), ps)) )
-    #allSyms = all(map(lambda expr : isSym(expr), ps))
-
-    #if not allSymOrNums: 
-    outs = list(filter(lambda expr : not isSymOrNum(expr), outs))
-
-    ins = list(filter(lambda expr : not isSymOrNum(expr), ins))
-    # else just leave the syms as they are. 
-
-
-    # Zip the non-transp-out exprs with the transp-out expressions as list (NOTE: cannot be dictionary since we need to keep the same order of expressions as obtained from the preorder traversal, else substitution order will be messed up)
-    outInPairs = list(zip(outs, ins))
-
-    # Now must apply from the beginning to end, each of the expressions. Must replace in the first expr, all of the latter expressions, kind of like folding operation of Matryoshka dolls, to preserve all the end changes: C -> goes into -> B -> goes into -> A
-    accFirst = expr #outs[0]
-
-    f = lambda acc, outInPair: acc.xreplace({outInPair[1] : outInPair[0]})
-
-    resultTranspOut = foldLeft(f , accFirst,  outInPairs) # outsNotsPairs[1:])
-
-    return resultTranspOut 
-
-
-
-def transposeOut_Simple(expr: MatrixExpr) -> MatrixExpr: 
-    
-    '''Brings transposes to the outermost level when in a nested expression. Leaves the nested expressions in their same structure. '''
-
-    #isMatSym = lambda s: len(s.free_symbols) == 1
-
-    if not expr.is_MatAdd: 
-        return transposeOut_Simple_MatMul_or_MatSym(expr)
-
-    addendsOut: List[MatrixExpr] = list(map(lambda a: transposeOut_Simple(a), expr.args))
-
-    return MatAdd(*addendsOut)
 
 # %%
-# TODO
-# Transpose out aggressive
 
-#for each each inner matmul thing, split by args and factor out the minimum transpose across each group
-# Step 2: (above: if there are some non-transpose outer exprs and if they are just symbols, apply the min transp factor out else do not (if zero outer transp for a group expression))
+def evalMatSymComponents(expr: MatrixExpr) -> MatrixExpr:
 
-def digger(expr: MatrixExpr) -> List[Tuple[List[ManagedProperties], MatrixExpr]]:
-    '''Gets list of tuples, where each tuple contains a list of types that surround the inner argument in the given matrix expression. 
+    Constr: MatrixType = expr.func 
+
+    # NOTE: len == 0 of free syms when Number else for MatSym len == 1 so put 0 case just for safety.
+    onlySymComponents_AddMul = lambda expr: (Constr in [MatAdd, MatMul]) and all(map(lambda a: len(a.free_symbols) in [0, 1], expr.args))
+
+    onlySym = lambda expr: len(expr.free_symbols) in [0, 1]
+
+    if onlySymComponents_AddMul(expr):
+        # Pull out transpose also
+        # TODO TOMORROW fix here error about unpacking values after expression invertpullinvert applying factortranspose below
+        simplifiedSyms: List[MatrixExpr] = list(map(lambda a: algoTransposeRipple(a.doit()), expr.args))
+
+        return Constr(*simplifiedSyms)
+
+    elif onlySym(expr):
+        return algoTransposeRipple( expr.doit() ) #pull out transpose also
     
-    EXAMPLE:
-
-    Input: (((B*A*R)^-1)^T)^T 
-
-    Output: (ts, inner) where 
-        ts = [Transpose, Transpose, Inverse]
-        inner = MatMul(B, A, R)
-    '''
-
-    ps = list(preorder_traversal(expr)) # elements broken down
-    cs = list(map(lambda p: type(p), ps)) # types / constructors
-
-    # Check first: does expr have transpose or inverse? If not, then return it out, nothing to do here: 
-    # TODO refactor this function to work for any constructor (like Derivative, Trace, Inverse, Function, ...)
-    if not (Transpose in cs): 
-        return expr 
-
-    csChunked = chunkInvTrans(cs)
-
-    # Get the lengths of each chunk
-    chunkLens = list(map(lambda cLst : len(cLst), csChunked))
-
-    # Use lengths to segregate the preorder traversal exprs also, then later to apply the transformations
-    psChunked = []
-    rest = ps 
-
-    for size in chunkLens:
-        (fst, rest) = (rest[:size], rest[size: ]) 
-        psChunked.append( fst )
-
-
-    # Pair up the correct order of transpose types with the expressions
-    itListExprListPair = list(filter(lambda plst : ((Transpose in plst[0]) or (Inverse in plst[0]) ) , list(zip(csChunked, psChunked)) ))
-
-
-    # Get the first expression only, since it is the most layered, and pair its inner arg with the list of types from that pair. 
-    itListInnerPair = list(map(lambda tsPs : (tsPs[0], inner(tsPs[1][0])), itListExprListPair))
-
-    return itListInnerPair 
+    # else:
+    return expr 
 # %%
-def factorOuterTranspose(mult: MatMul) -> MatrixExpr: 
-    '''Expects a matmul expression where each arg has transpose on the outer side, as in after being passed through transposeOut_Simple. 
+
+
+def algoFactorTranspose(expr: MatrixExpr) -> MatrixExpr: 
+    '''Expects a matmul or mat add expression where each arg has transpose on the outer side, as in after being passed through algoTransposeRipple. 
     
-    Then within each arg of the passed matmul expression, this function removes the minimum amount of tnraspose layering (factors it out) so the returned expression is mathematically equivalent but simplified by transpose layering.'''
+    Then within each arg of the passed matmul/matadd expression, this function removes the minimum amount of tnraspose layering (factors it out) so the returned expression is mathematically equivalent but simplified by transpose layering.'''
 
-    assert mult.is_MatMul 
+    #assert mult.is_MatMul 
 
-    isSymOrNum = lambda expr : expr.is_Symbol or expr.is_Number or len(expr.free_symbols) == 1
+    # Get the constructor - either matadd or matmul
+    Constr: MatrixType = expr.func 
+
+    #isSymOrNum = lambda expr : expr.is_Symbol or expr.is_Number or len(expr.free_symbols) == 1
+
+    # TODO fix this part here because it doesn't work when digger innerexprs (from res of expr_SLaGA second time) tries to simplify the mat add
 
     # Get the args and pair the inner exprs with the list of outer constructors (at first level)
-    typesInnerPairs: List[Tuple[List[ManagedProperties], MatrixExpr]] = list(map(lambda a : innerTrail(a), mult.args))
+    typesInnerPairs: List[Tuple[List[MatrixType], MatrixExpr]] = list(map(lambda a : innerTrail(a), expr.args))
+
+    # New step: simplify the inner exprs that have just matrix symbols (get rid of towering transpose just to make this quicker)
+    # NOTE: saying here that can leave individual transposes on the MatSym letters (at most one)
+    typesInnerPairs = list(map(lambda tsIns: ( tsIns[0], evalMatSymComponents(tsIns[1]) ), typesInnerPairs ) )
 
     # Filter the args that are strictly matmul (or matadd), so keep just ones that are NOT symbols or numbers, because those can be transposed with no issue. Want to keep integrity of the groups.
     #typesInnerNosymPairs = list(filter(lambda pair : not isSymOrNum(pair[1])  , typesInnerPairs))
@@ -903,27 +962,32 @@ def factorOuterTranspose(mult: MatMul) -> MatrixExpr:
     # Count transposes and get the minimum of the list. This is the number of transposes we must factor out of all the mult.args.
     counts: List[int] = list(map(lambda pair : pair[0].count(Transpose), typesInnerPairs))
     # Ignoring any with zero counts (those are the symbols)
-    factor: int = min( list(filter(lambda c : c != 0, counts)) )
+    nonzeroCounts = list(filter(lambda c : c != 0, counts))
+    minCount: int = min( nonzeroCounts ) if not (nonzeroCounts == []) else 0 
 
     # Counts num transposes to remove (total divisions with remainder)
-    numRemove = lambda total, factor: (int)(total / factor) * factor
+    #numRemove = lambda total, factor: (int)(total / factor) * factor
     # Count leftover transposes
-    leftover = lambda total, remove: total - remove 
+    #leftover = lambda total, remove: total - remove 
 
-    # NOTE: using filter instead of just snapping all transposes off the end will let this work for even args that are not passed to transposeOut from the start. (beats the precondition)
-    
-    sepT = lambda types: [Transpose] * (leftover(types.count(Transpose), numRemove(types.count(Transpose) , factor) ) )  + list(filter(lambda t: t != Transpose, types))
 
     # Initializing the result
-    result = mult 
+    result = expr 
+
+
+
+    # NOTE: using filter instead of just snapping all transposes off the end will let this work for even args that are not passed to algoTransposeRipple from the start. (beats the precondition)
+    
+    sepT = lambda types: [Transpose] * (types.count(Transpose) - minCount) + list(filter(lambda t: t != Transpose, types))
+
 
     # CASE 3: count == 0 
     # ---->  leave the expression the same
-    if factor == 0:
+    if minCount == 0:
         return result
 
     # CASE 1: count is odd 
-    elif factor % 2 == 1:
+    elif minCount % 2 == 1:
 
         # ---> remove COUNT transpose (over the no-sym list) and Add ONE transpose (over the sym list)
         elimTypeInnerPairs = list(map(lambda pair: ([Transpose] + pair[0], pair[1]) if not (Transpose in pair[0]) else ( sepT(pair[0])  , pair[1]),   typesInnerPairs))
@@ -931,19 +995,160 @@ def factorOuterTranspose(mult: MatMul) -> MatrixExpr:
         # ---> apply the types
         elimExprs: List[MatrixExpr] = list(map(lambda pair : applyTypesToExpr(pair), elimTypeInnerPairs))
 
-        # ---> reverse the above and matmul it
-        revElimExpr: MatMul = MatMul( *reversed(elimExprs) )
+        # ---> reverse the above and add back the matmul or matadd (not need to reverse with matadd but still result not usually visible, depends more on letter sorting) (?)
+        revElimExpr: MatrixExpr = Constr( *reversed(elimExprs) )
 
         # ---> apply COUNT transposes to the outer of the reversed matmul
-        result = applyTypesToExpr( ([Transpose] * factor, revElimExpr) )
+        result = applyTypesToExpr( ([Transpose] * minCount, revElimExpr) )
 
 
 
     # CASE 2: count is even 
-    elif factor % 2 == 0:
+    elif minCount % 2 == 0:
         # ---> remove COUNT transposes off each mult.arg (that is the no-sym list) and do nothing (over the sym list)
-        elimTypeInnerPairs = list(map(lambda pair : pair if not (Transpose in pair[0]) else (sepT(pair[0]))))
+        elimTypeInnerPairs = list(map(lambda pair : pair if not (Transpose in pair[0]) else (sepT(pair[0]), pair[1]), typesInnerPairs ))
+
         # ---> leave the matmul in the same order, no outer transpose needed
+        elimExprs: List[MatrixExpr] = list(map(lambda pair : applyTypesToExpr(pair), elimTypeInnerPairs))
+
+        # ---> create the expression, no reversal
+        elimExpr: MatrixExpr = Constr(*elimExprs)
+
+        # ---> apply COUNT transposes to the outer matmul
+        result = applyTypesToExpr( ([Transpose] * minCount, elimExpr) )
+
+    return result 
+
+# %%
+
+# Applying the factor transpose algo to every inner expr (every matmul and matadd and matsym)
+#def factorTranspose(expr: MatrixExpr) -> MatrixExpr: 
+#TODO
+
+# %% --------------------------------------------------------------
+
+
+# NOTE: "single" means individual matrixsymbol
+# NOTE: "grouped" means symbols gathered with an operation (+, -, *) and WRAPPED IN  constructors (trace, transpose, inverse ...)
+
+
+C = MatrixSymbol('C', c, c)
+D = MatrixSymbol('D', c, c)
+E = MatrixSymbol('E', c, c)
+A = MatrixSymbol('A', c, c)
+B = MatrixSymbol('B', c, c)
+R = MatrixSymbol('R', c, c)
+J = MatrixSymbol('J', c, c)
+
+
+L = Transpose(Inverse(B*A*R))
+
+# %%
+
+
+
+# TEST 1: SL + GA = single symbol + grouped MatAdd
+
+expr_SLaGA = MatAdd(A, Transpose(B + C.T) )
+res = algoFactorTranspose(expr_SLaGA)
+check = Transpose(MatAdd(A.T, MatAdd(B, C.T)))
+
+showGroup([
+    expr_SLaGA, 
+    res, 
+    check
+])
+
+assert expr_SLaGA.doit() == res.doit()
+assert res.doit() == check.doit() # even structurally equal
+# %%
+
+
+# TEST 2: SL + GA = single symbol + grouped MatAdd (with more layerings per addend)
+
+expr_SLaGA = MatAdd(
+    Inverse(Transpose(Transpose(A))),
+    Inverse(Transpose(Inverse(Transpose(Transpose(MatAdd(
+        B , Inverse(Transpose(Transpose(E))) , C.T , R
+    ))))) )
+)
+res = algoFactorTranspose(expr_SLaGA)
+
+#check = 
+showGroup([
+    expr_SLaGA,
+    res
+])
+
+# TODO finish here all the tests (pink in the notebook)
+
+# TODO the above result is not right: Must be that the outer three transposes are cut out into ONE overall transpose and must be that the inner E^T^T^-1 is cut to E^-1. 
+# %%
+
+#TODO later: SL_a_GA_2 as innermost arg layered with transpse and then combine with any other kind: SL, SA, SM, GA, GM in between the layers. TODO for every kind of expression
+
+# TODO 2: must take all above tests and organize so each function I made gets all those above cases (then separate the "special" cases per function beneath these "general" cases which are made just by combining types of expressions, as opposed to the "biased"/"special" cases.)
+
+# %% 
+
+
+
+
+# Making a group transpose that goes deep until innermost expression (largest depth) and applies the group algo there
+# Drags out even the inner transposes (aggressive grouper)
+def polarizeTranspose(expr: MatrixExpr) -> MatrixExpr: 
+    '''Given an expression with innermost args nested as components inside another expression, (many nestings), this function tries to drag / pull / force out all the transposes from the groups of expressions of matmuls / matmadds and from individual symbols. 
+    
+    Tries to create one nesting level that mentions transpose (there can be other nestings with inverse inside for instance but the outermost nesting must be the only one with transpose).
+
+    There must be no layering of transpose in the nested expressions in the result returned by this function -- polarization of transpose to the outer edges.'''
+
+    def percolateTranspose(expr: MatrixExpr) -> MatrixExpr: 
+        '''Does pushing out of transpose, from within deep in each innermost expression, but once this is finished, the entire expression may not have all transposes pushed to the outermost, as polarize wants'''
+
+        #exprOut: MatrixExpr = algoTransposeRipple(res)
+        exprOut = expr # assuming rippled transposes out beforehand
+
+        # Find all inner ones
+        (constrs, innerExprs) = list(zip(*digger(exprOut)))
+        (constrs, innerExprs) = (list(constrs), list(innerExprs)) # otherwise they are confusingly tuple!
+
+        # Apply the grouping algo with ADD combine enabled on each INNER
+        # NOTE: the inner expr is matmul or matadd
+        # NOTE: must first let transposes be the outer layers so that grouping algo can work properly. 
+        innerFactored: List[MatrixExpr] = list(map(lambda theInner: algoFactorTranspose(theInner), innerExprs))
+        #innerGrouped: List[MatrixExpr] = list(map(lambda theInner: algoTransposeGroup(theInner, combineAdds = True), innerExprs))
+        # TODO or group transpose here?
+
+        # Map the grouped inners with the old inners 
+        pairsOldNew: List[Dict[MatrixExpr, MatrixExpr]] = list(map(lambda pair: dict([pair]), zip(innerExprs, innerFactored)) )
+
+
+        # Substitute (xreplace) the grouped inners starting from the first one (to get the outer layering correct first), can't update it later
+        accFirst = exprOut
+        f = lambda acc, oldNew : acc.xreplace(oldNew)
+
+        result = foldLeft(f, accFirst, pairsOldNew)
+
+        return result 
+
+    
+    
+    # TODO do more tests cases to figure out if you need all these steps or if can just apply factor transpose? 
+
+    invert = algoTransposeRipple(expr)
+
+    # Move out the transposes from within each nesting
+    invertPull = percolateTranspose(invert)
+
+    # Needs another pulling out of the transposes
+    invertPullInvert = algoTransposeRipple(invertPull)
+
+    # Now can factor out the common transposes from the outer side. 
+    invertPullInvertFactor = algoFactorTranspose(invertPullInvert)
+    # percolate again
+    # ripple out again
+
 
 # %% -------------------------------------------------------------
 
@@ -959,7 +1164,7 @@ E = MatrixSymbol('E', c, c)
 expr = Inverse(Transpose(C*E*B))
 
 # %%
-res = groupTranspose(expr)
+res = algoTransposeGroup(expr)
 check = expr 
 
 showGroup([
@@ -971,7 +1176,7 @@ assert equal(expr.doit(), res.doit())
 # %%
 
 
-res = transposeOut_Simple(expr)
+res = algoTransposeRipple(expr)
 check = Transpose(Inverse(MatMul(C, E, B)))
 
 showGroup([
@@ -992,7 +1197,7 @@ E = MatrixSymbol('E', c, c)
 expr = Transpose(Inverse(C*E*B))
 
 # %%
-res = groupTranspose(expr)
+res = algoTransposeGroup(expr)
 check = expr 
 
 showGroup([
@@ -1002,7 +1207,7 @@ showGroup([
 assert equal(expr.doit(), res.doit())
 assert equal(res, check)
 # %%
-res = transposeOut_Simple(expr)
+res = algoTransposeRipple(expr)
 check = Transpose(Inverse(C*E*B))
 
 showGroup([
@@ -1023,7 +1228,7 @@ E = MatrixSymbol('E', c, c)
 expr = Inverse(B.T * E.T * C.T)
 # %%
 
-res = groupTranspose(expr)
+res = algoTransposeGroup(expr)
 check = Inverse(Transpose(C*E*B))
 
 showGroup([
@@ -1033,7 +1238,7 @@ assert equal(expr.doit(), res.doit())
 assert equal(res, check)
 # %%
 
-res = transposeOut_Simple(expr)
+res = algoTransposeRipple(expr)
 check = expr 
 
 #checkAggr = Transpose(Inverse(C*E*B))
@@ -1055,7 +1260,7 @@ E = MatrixSymbol('E', c, c)
 expr = Transpose(B.I * E.I * C.I)
 # %%
 
-res = groupTranspose(expr)
+res = algoTransposeGroup(expr)
 check = expr
 
 showGroup([
@@ -1067,7 +1272,7 @@ assert equal(res, check)
 
 # %%
 
-res = transposeOut_Simple(expr)
+res = algoTransposeRipple(expr)
 check = expr
 
 showGroup([
@@ -1092,10 +1297,10 @@ C = MatrixSymbol('C', c, c)
 (expr3, check3) = (C.I, C.I) 
 (expr4, check4) = (Inverse(Transpose(C)), Inverse(Transpose(C)))
 
-res1 = groupTranspose(expr1)
-res2 = groupTranspose(expr2)
-res3 = groupTranspose(expr3)
-res4 = groupTranspose(expr4)
+res1 = algoTransposeGroup(expr1)
+res2 = algoTransposeGroup(expr2)
+res3 = algoTransposeGroup(expr3)
+res4 = algoTransposeGroup(expr4)
 
 showGroup([
     (expr1, res1, check1), 
@@ -1117,10 +1322,10 @@ assert equal(res4, check4)
 (expr3, check3) = (C.I, C.I) 
 (expr4, check4) = (Inverse(Transpose(C)), Transpose(Inverse(C)))
 
-res1 = transposeOut_Simple(expr1)
-res2 = transposeOut_Simple(expr2)
-res3 = transposeOut_Simple(expr3)
-res4 = transposeOut_Simple(expr4)
+res1 = algoTransposeRipple(expr1)
+res2 = algoTransposeRipple(expr2)
+res3 = algoTransposeRipple(expr3)
+res4 = algoTransposeRipple(expr4)
 
 showGroup([
     (expr1, res1, check1), 
@@ -1155,7 +1360,7 @@ expr = Transpose(Inverse(Inverse(Inverse(Transpose(MatMul(
 ))))))
 # %%
 
-res = groupTranspose(expr)
+res = algoTransposeGroup(expr)
 
 
 check = Transpose(Inverse(Inverse(Inverse(Transpose(Transpose(MatMul(
@@ -1177,7 +1382,7 @@ assert equal(res, check)
 # %%
 
 
-res = transposeOut_Simple(expr)
+res = algoTransposeRipple(expr)
 
 check = Transpose(Transpose(Inverse(Inverse(Inverse(MatMul(
     A, 
@@ -1211,7 +1416,7 @@ J = MatrixSymbol('J', a, a)
 expr = MatMul( Transpose(A*B), Transpose(R*J) )
 # %%
 
-res = groupTranspose(expr)
+res = algoTransposeGroup(expr)
 check = Transpose(R*J*A*B)
 
 showGroup([
@@ -1224,7 +1429,7 @@ assert equal(res, check)
 
 # %%
 
-res = transposeOut_Simple(expr)
+res = algoTransposeRipple(expr)
 check = expr 
 
 showGroup([
@@ -1247,7 +1452,7 @@ expr = B.T * A.T * J.T * R.T
 
 # %%
 
-res = groupTranspose(expr)
+res = algoTransposeGroup(expr)
 check = Transpose(R*J*A*B)
 
 showGroup([
@@ -1258,7 +1463,7 @@ assert equal(expr.doit(), res.doit())
 assert equal(res, check)
 # %%
 
-res = transposeOut_Simple(expr)
+res = algoTransposeRipple(expr)
 check = expr
 
 showGroup([expr, res, check])
@@ -1280,7 +1485,7 @@ R = MatrixSymbol('R', a, a)
 expr = MatMul(A , Transpose(Inverse(R)), Transpose(Inverse(L)) , K , E.T , B.I )
 # %%
 
-res = groupTranspose(expr)
+res = algoTransposeGroup(expr)
 
 check = Transpose( 
     MatMul( Transpose(Inverse(B)), E , K.T , Inverse(L) , Inverse(R) , A.T)
@@ -1297,7 +1502,7 @@ assert equal(res, check)
 
 # %%
 
-res = transposeOut_Simple(expr)
+res = algoTransposeRipple(expr)
 
 check = expr 
 
@@ -1325,7 +1530,7 @@ E = MatrixSymbol('E', a, a)
 expr = MatMul(A , Transpose(Inverse(R)), Inverse(Transpose(L)) , K , E.T , B.I )
 # %%
 
-res = groupTranspose(expr)
+res = algoTransposeGroup(expr)
 
 check = Transpose( 
     MatMul( Transpose(Inverse(B)), E , K.T , Transpose(Inverse(Transpose(L))) , R.I , A.T)
@@ -1342,7 +1547,7 @@ assert equal(res, check)
 
 # %%
 
-res = transposeOut_Simple(expr)
+res = algoTransposeRipple(expr)
 
 check = MatMul(
     A, Transpose(Inverse(R)), Transpose(Inverse(L)), K, E.T, B.I
@@ -1370,8 +1575,8 @@ D = MatrixSymbol('D', a, a)
 expr = A * R.T * L.T * K * E.T * B + D.T + K
 # %%
 
-res = groupTranspose(expr)
-resGroup = groupTranspose(expr, combineAdds = True)
+res = algoTransposeGroup(expr)
+resGroup = algoTransposeGroup(expr, combineAdds = True)
 
 check = MatAdd( Transpose(MatMul(B.T, E, K.T, L, R, A.T)) , D.T, K)
 checkGroup = Transpose( B.T * E * K.T * L * R * A.T + D + K.T) 
@@ -1387,7 +1592,7 @@ assert equal(res, check)
 assert equal(resGroup, checkGroup)
 # %%
 
-res = transposeOut_Simple(expr)
+res = algoTransposeRipple(expr)
 check = expr
 
 showGroup([
@@ -1408,7 +1613,7 @@ D = MatrixSymbol('D', a, a)
 expr = Trace(Transpose(Inverse(Transpose(C*D*E))))
 # %%
 
-res = groupTranspose(expr)
+res = algoTransposeGroup(expr)
 check = expr 
 
 showGroup([
@@ -1422,7 +1627,7 @@ showGroup([
 assert res == check
 # %%
 
-res = transposeOut_Simple(expr)
+res = algoTransposeRipple(expr)
 check = Trace(Transpose(Transpose(Inverse(C*D*E))))
 
 showGroup([
@@ -1446,9 +1651,9 @@ D = MatrixSymbol('D', a, a)
 
 expr = Trace(Transpose(Transpose(Inverse(C*D*E))))
 
-res1 = groupTranspose(expr)
+res1 = algoTransposeGroup(expr)
 
-res2 = transposeOut_Simple(expr)
+res2 = algoTransposeRipple(expr)
 
 check = expr 
 
@@ -1475,7 +1680,7 @@ expr = Transpose(Inverse(Transpose(C.T * A.I * D.T)))
 # %%
 
 
-res = groupTranspose(expr)
+res = algoTransposeGroup(expr)
 
 check = Transpose(Inverse(Transpose(Transpose(
     MatMul(D , Transpose(Inverse(A)), C )
@@ -1491,7 +1696,7 @@ assert equal(expr.doit(), res.doit())
 assert equal(res, check)
 # %%
 
-res = transposeOut_Simple(expr)
+res = algoTransposeRipple(expr)
 
 check = Transpose(Transpose(Inverse(
     C.T * A.I * D.T
@@ -1532,7 +1737,7 @@ expr = Transpose(Inverse(
 
 # %%
 
-res = groupTranspose(expr)
+res = algoTransposeGroup(expr)
 
 check = Transpose(
     Inverse(Transpose(
@@ -1554,7 +1759,7 @@ assert equal(res, check)
 # %%
 
 
-res = transposeOut_Simple(expr)
+res = algoTransposeRipple(expr)
 check = expr
 
 showGroup([
@@ -1609,7 +1814,7 @@ expr = Transpose(Inverse(
 
 # %%
 
-res = groupTranspose(expr)
+res = algoTransposeGroup(expr)
 
 check = Transpose(Inverse(Transpose(MatMul(
     Inverse(Transpose(MatMul(
@@ -1628,7 +1833,7 @@ assert equal(res, check)
 # %%
 
 
-res = transposeOut_Simple(expr)
+res = algoTransposeRipple(expr)
 
 # Simple check 
 check = Transpose(Inverse(
@@ -1683,7 +1888,7 @@ expr = Inverse(Transpose(
 
 # %%
 
-res = groupTranspose(expr)
+res = algoTransposeGroup(expr)
 
 # TODO how to make this grunction avoid getting this unnecessary transpose? 
 # Desired check: 
@@ -1712,7 +1917,7 @@ assert equal(res, check)
 # %%
 
 
-res = transposeOut_Simple(expr)
+res = algoTransposeRipple(expr)
 
 # Aggressive check
 #check = Transpose(Transpose(Transpose(Inverse(MatMul(
@@ -1764,7 +1969,7 @@ expr = Inverse(Transpose(
 
 # %%
 
-res = groupTranspose(expr)
+res = algoTransposeGroup(expr)
 
 # TODO how to make this grunction avoid getting this unnecessary transpose? 
 
@@ -1785,7 +1990,7 @@ assert equal(res, check)
 # %%
 
 
-res = transposeOut_Simple(expr)
+res = algoTransposeRipple(expr)
 
 # Simple check
 check = Transpose(Inverse(MatMul(
@@ -1842,7 +2047,7 @@ expr = Transpose(
 )
 # %%
 
-res = groupTranspose(expr)
+res = algoTransposeGroup(expr)
 
 # TODO need to update this test since I want the group transpose to call transpose out to make sure the transpose gets simplified, and not just re-applied  doubly
 check_inv_14a = Inverse(Transpose(
@@ -1882,7 +2087,7 @@ assert equal(res, check)
 # %%
 
 
-res = transposeOut_Simple(expr)
+res = algoTransposeRipple(expr)
 
 # Simple check 14 a
 check_inner_14a = Inverse(
@@ -2046,7 +2251,7 @@ assert equal(check, dcheck)
 
 showGroup([
     res, 
-    groupTranspose(res), 
+    algoTransposeGroup(res), 
     dcheck
 ])
 
@@ -2171,7 +2376,7 @@ showGroup([
     res, 
     check, 
     dcheck, 
-    groupTranspose(res)
+    algoTransposeGroup(res)
 ]) 
 # %% -------------------------------------------------------------
 
@@ -2196,7 +2401,7 @@ check = L.T * A*E*D*B*C.I + A.T* L * E *(C.I).T * B.T * D.T
 dcheck = diff(trace, byVar)
 
 showGroup([
-    res, check, dcheck, groupTranspose(dcheck)
+    res, check, dcheck, algoTransposeGroup(dcheck)
 ])
 # %%
 assert equal(res, check)
@@ -2207,7 +2412,7 @@ showGroup([
     res, 
     check, 
     dcheck, 
-    groupTranspose(res)
+    algoTransposeGroup(res)
 ]) 
 
 
