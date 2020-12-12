@@ -677,8 +677,13 @@ assert inner(t3) == c3
 # %%
 
 def applyTypesToExpr( pairTypeExpr: Tuple[List[MatrixType], MatrixExpr]) -> MatrixExpr:
+    '''Ignores any types that are MatrixSymbol or Symbol or instance of Number because those give error when applied to an expr.'''
 
     (typeList, expr) = pairTypeExpr 
+
+    isSymOrNum = lambda tpe : tpe in [MatrixSymbol, Symbol] or issubclass(tpe, Number)
+
+    typeList = list(filter(lambda tpe: not isSymOrNum(tpe), typeList))
 
     if typeList == []:
         return expr 
@@ -696,7 +701,14 @@ def chunkExprsByInvTrans(expr: MatrixExpr) -> Tuple[List[List[MatrixType]], List
 
     # Check first: does expr have transpose or inverse? If not, then return it out, nothing to do here: 
     if not (Transpose in cs): 
-        return expr 
+        return ([cs], [ps]) 
+
+    # Crucial step: must first eliminate all Symbol and instance-of-Number types and MatrixSymbol types because otherwise when we later apply the types to the inner expr , that op crashes if given Symbol or NegativeOne for instance.
+    #isSymOrNum = lambda e: len(e.free_symbols) in [0,1]
+    #isSymOrNum = lambda tpe : tpe in [MatrixSymbol, Symbol] or issubclass(tpe, Number)
+
+    #cs: List[MatrixType] = list(filter(lambda c: not isSymOrNum(c) , cs))
+
 
     csChunked: List[List[MatrixType]] = chunkInvTrans(cs)
 
@@ -819,17 +831,18 @@ def digger(expr: MatrixExpr) -> List[Tuple[List[MatrixType], MatrixExpr]]:
 
 # TEST 1: 
 expr = Transpose(Inverse(Inverse(MatMul(
-    Inverse(Transpose(Inverse(R*J*D))), 
-    Inverse(Transpose(Inverse(Transpose(B*A*R)))
-)))))
+    Inverse(Transpose(Inverse(R*C*D))), 
+    Inverse(Transpose(Inverse(Transpose(B*A*R))))
+))))
 
 res = digger(expr)
 (resTypes, resExprs) = list(zip(*res)) # unzipping with zip (? why works?)
+(resTypes, resExprs) = (list(resTypes), list(resExprs))
 
 
 check = [
     ([Transpose, Inverse, Inverse], expr.arg.arg.args[0]),
-    ([Inverse, Transpose, Inverse], R*J*D),
+    ([Inverse, Transpose, Inverse], R*C*D),
     ([Inverse, Transpose, Inverse, Transpose], B*A*R)
 ]
 (checkTypes, checkExprs) = list(zip(*check))
@@ -920,22 +933,47 @@ def evalMatSymComponents(expr: MatrixExpr) -> MatrixExpr:
     onlySym = lambda expr: len(expr.free_symbols) in [0, 1]
 
     if onlySymComponents_AddMul(expr):
-        # Pull out transpose also
-        # TODO TOMORROW fix here error about unpacking values after expression invertpullinvert applying factortranspose below
-        simplifiedSyms: List[MatrixExpr] = list(map(lambda a: algoTransposeRipple(a.doit()), expr.args))
+        # TODO need to Pull out transpose also??
+        simplifiedSyms: List[MatrixExpr] = list(map(lambda a: a.doit(), expr.args))
 
         return Constr(*simplifiedSyms)
 
     elif onlySym(expr):
-        return algoTransposeRipple( expr.doit() ) #pull out transpose also
+        return expr.doit()  
+        #TODO need to pull out transpose also??
     
     # else:
     return expr 
 # %%
+def algoTransposeFactor_MatSym(ms: MatrixExpr) -> MatrixExpr: 
+    isMatSym = lambda m: len(m.free_symbols) in [0,1]
+
+    assert isMatSym(ms)
+
+    # Get the outer types
+    typesInner: Tuple[List[MatrixTypes], MatrixExpr] = innerTrail(ms)
+    (types, innerSym) = typesInner
+
+    #}assert typesInner == digger(expr)[0] # another check the expr is just a matrixsymbol underneath (otherwise more layers would follow after the first term in list from digger)
 
 
-def algoFactorTranspose(expr: MatrixExpr) -> MatrixExpr: 
-    '''Expects a matmul or mat add expression where each arg has transpose on the outer side, as in after being passed through algoTransposeRipple. 
+    # Count number of transposes on the outer covering of inner arg.
+    countT: int = types.count(Transpose)
+    # Filter to get non-transpose list of types
+    typesNoTranspose: List[MatrixTypes] = list(filter(lambda t: t != Transpose, types))
+
+    if countT % 2 == 0:
+        # Even transposes cancel, return no transpose on outer symbol: 
+        return applyTypesToExpr( (typesNoTranspose, innerSym) )
+    # else add one transpose on outer edge (if odd num of transposes)
+    return applyTypesToExpr( ([Transpose] + typesNoTranspose, innerSym) )
+# %%
+
+
+# TODO FIX THIS TOMORROW (STAR)
+# NOTE: need to figure out if easier to act on matadd and do mincount over than, or do mincount over group of matmuls. 
+def algoTransposeFactor_MatMul(expr: MatrixExpr) -> MatrixExpr: 
+    '''Expects a group of MatMuls (with mul op creating the groups) where each arg has transpose on the outer side, as in after being passed through algoTransposeRipple. 
     
     Then within each arg of the passed matmul/matadd expression, this function removes the minimum amount of tnraspose layering (factors it out) so the returned expression is mathematically equivalent but simplified by transpose layering.'''
 
@@ -950,6 +988,9 @@ def algoFactorTranspose(expr: MatrixExpr) -> MatrixExpr:
 
     # Get the args and pair the inner exprs with the list of outer constructors (at first level)
     typesInnerPairs: List[Tuple[List[MatrixType], MatrixExpr]] = list(map(lambda a : innerTrail(a), expr.args))
+    # NOTE: cannot use digger since need to remain at the matadd/matmul level instead of digging deeper into individual symbols otherwise they get applied in the matadd expr by algos later on, not right
+    
+    
 
     # New step: simplify the inner exprs that have just matrix symbols (get rid of towering transpose just to make this quicker)
     # NOTE: saying here that can leave individual transposes on the MatSym letters (at most one)
@@ -998,8 +1039,9 @@ def algoFactorTranspose(expr: MatrixExpr) -> MatrixExpr:
         # ---> reverse the above and add back the matmul or matadd (not need to reverse with matadd but still result not usually visible, depends more on letter sorting) (?)
         revElimExpr: MatrixExpr = Constr( *reversed(elimExprs) )
 
-        # ---> apply COUNT transposes to the outer of the reversed matmul
-        result = applyTypesToExpr( ([Transpose] * minCount, revElimExpr) )
+        # ---> apply ONE (mincount % 2 == 1) transpose to the outer of the reversed matmul
+        factoredCount = minCount % 2 # is 1
+        result = applyTypesToExpr( ([Transpose] * factoredCount, revElimExpr) )
 
 
 
@@ -1014,10 +1056,20 @@ def algoFactorTranspose(expr: MatrixExpr) -> MatrixExpr:
         # ---> create the expression, no reversal
         elimExpr: MatrixExpr = Constr(*elimExprs)
 
-        # ---> apply COUNT transposes to the outer matmul
-        result = applyTypesToExpr( ([Transpose] * minCount, elimExpr) )
+        # ---> apply NO transposes to the outer matmul (because even number of transposes are canceled out)
+        #result = applyTypesToExpr( ([Transpose] * minCount, elimExpr) )
+        result = elimExpr 
 
     return result 
+# %%
+def algoTransposeFactor(expr: MatrixExpr) -> MatrixExpr: 
+    if not expr.is_MatAdd: 
+        return algoTransposeFactor_MatMul(expr)
+    
+    # else if it is mat add then apply the algo over components
+    addends: List[MatrixExpr] = list(map(lambda a : algoTransposeFactor_MatMul(a), expr.args))
+
+    return MatAdd(*addends)
 
 # %%
 
@@ -1050,7 +1102,7 @@ L = Transpose(Inverse(B*A*R))
 # TEST 1: SL + GA = single symbol + grouped MatAdd
 
 expr_SLaGA = MatAdd(A, Transpose(B + C.T) )
-res = algoFactorTranspose(expr_SLaGA)
+res = algoTransposeFactor_MatMul(expr_SLaGA)
 check = Transpose(MatAdd(A.T, MatAdd(B, C.T)))
 
 showGroup([
@@ -1072,8 +1124,10 @@ expr_SLaGA = MatAdd(
         B , Inverse(Transpose(Transpose(E))) , C.T , R
     ))))) )
 )
-res = algoFactorTranspose(expr_SLaGA)
 
+res = algoTransposeFactor_MatMul(expr_SLaGA)
+
+check = Transpose()
 #check = 
 showGroup([
     expr_SLaGA,
@@ -1116,7 +1170,7 @@ def polarizeTranspose(expr: MatrixExpr) -> MatrixExpr:
         # Apply the grouping algo with ADD combine enabled on each INNER
         # NOTE: the inner expr is matmul or matadd
         # NOTE: must first let transposes be the outer layers so that grouping algo can work properly. 
-        innerFactored: List[MatrixExpr] = list(map(lambda theInner: algoFactorTranspose(theInner), innerExprs))
+        innerFactored: List[MatrixExpr] = list(map(lambda theInner: algoTransposeFactor_MatMul(theInner), innerExprs))
         #innerGrouped: List[MatrixExpr] = list(map(lambda theInner: algoTransposeGroup(theInner, combineAdds = True), innerExprs))
         # TODO or group transpose here?
 
@@ -1145,7 +1199,7 @@ def polarizeTranspose(expr: MatrixExpr) -> MatrixExpr:
     invertPullInvert = algoTransposeRipple(invertPull)
 
     # Now can factor out the common transposes from the outer side. 
-    invertPullInvertFactor = algoFactorTranspose(invertPullInvert)
+    invertPullInvertFactor = algoTransposeFactor_MatMul(invertPullInvert)
     # percolate again
     # ripple out again
 
