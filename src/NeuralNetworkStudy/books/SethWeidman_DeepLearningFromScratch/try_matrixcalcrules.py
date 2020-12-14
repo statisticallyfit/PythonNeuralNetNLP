@@ -848,6 +848,7 @@ check = [
 (checkTypes, checkExprs) = list(zip(*check))
 
 showGroup([expr, resTypes, resExprs])
+(checkTypes, checkExprs) = (list(checkTypes), list(checkExprs))
 
 assert res == check
 assert resExprs == checkExprs
@@ -921,161 +922,39 @@ assert inner(tg) == innerTrail(tg)[1]
 # Showing how inner trail gets just the first level
 assert innerTrail(tg) == digger(tg)[0]
 
-# %%
 
-def evalMatSymComponents(expr: MatrixExpr) -> MatrixExpr:
-
-    Constr: MatrixType = expr.func 
-
-    # NOTE: len == 0 of free syms when Number else for MatSym len == 1 so put 0 case just for safety.
-    onlySymComponents_AddMul = lambda expr: (Constr in [MatAdd, MatMul]) and all(map(lambda a: len(a.free_symbols) in [0, 1], expr.args))
-
-    onlySym = lambda expr: len(expr.free_symbols) in [0, 1]
-
-    if onlySymComponents_AddMul(expr):
-        # TODO need to Pull out transpose also??
-        simplifiedSyms: List[MatrixExpr] = list(map(lambda a: a.doit(), expr.args))
-
-        return Constr(*simplifiedSyms)
-
-    elif onlySym(expr):
-        return expr.doit()  
-        #TODO need to pull out transpose also??
-    
-    # else:
-    return expr 
-# %%
-def algoTransposeFactor_MatSym(ms: MatrixExpr) -> MatrixExpr: 
-    isMatSym = lambda m: len(m.free_symbols) in [0,1]
-
-    assert isMatSym(ms)
-
-    # Get the outer types
-    typesInner: Tuple[List[MatrixTypes], MatrixExpr] = innerTrail(ms)
-    (types, innerSym) = typesInner
-
-    #}assert typesInner == digger(expr)[0] # another check the expr is just a matrixsymbol underneath (otherwise more layers would follow after the first term in list from digger)
-
-
-    # Count number of transposes on the outer covering of inner arg.
-    countT: int = types.count(Transpose)
-    # Filter to get non-transpose list of types
-    typesNoTranspose: List[MatrixTypes] = list(filter(lambda t: t != Transpose, types))
-
-    if countT % 2 == 0:
-        # Even transposes cancel, return no transpose on outer symbol: 
-        return applyTypesToExpr( (typesNoTranspose, innerSym) )
-    # else add one transpose on outer edge (if odd num of transposes)
-    return applyTypesToExpr( ([Transpose] + typesNoTranspose, innerSym) )
-# %%
-
-
-# TODO FIX THIS TOMORROW (STAR)
-# NOTE: need to figure out if easier to act on matadd and do mincount over than, or do mincount over group of matmuls. 
-def algoTransposeFactor_MatMul(expr: MatrixExpr) -> MatrixExpr: 
-    '''Expects a group of MatMuls (with mul op creating the groups) where each arg has transpose on the outer side, as in after being passed through algoTransposeRipple. 
-    
-    Then within each arg of the passed matmul/matadd expression, this function removes the minimum amount of tnraspose layering (factors it out) so the returned expression is mathematically equivalent but simplified by transpose layering.'''
-
-    #assert mult.is_MatMul 
-
-    # Get the constructor - either matadd or matmul
-    Constr: MatrixType = expr.func 
-
-    #isSymOrNum = lambda expr : expr.is_Symbol or expr.is_Number or len(expr.free_symbols) == 1
-
-    # TODO fix this part here because it doesn't work when digger innerexprs (from res of expr_SLaGA second time) tries to simplify the mat add
-
-    # Get the args and pair the inner exprs with the list of outer constructors (at first level)
-    typesInnerPairs: List[Tuple[List[MatrixType], MatrixExpr]] = list(map(lambda a : innerTrail(a), expr.args))
-    # NOTE: cannot use digger since need to remain at the matadd/matmul level instead of digging deeper into individual symbols otherwise they get applied in the matadd expr by algos later on, not right
-    
-    
-
-    # New step: simplify the inner exprs that have just matrix symbols (get rid of towering transpose just to make this quicker)
-    # NOTE: saying here that can leave individual transposes on the MatSym letters (at most one)
-    typesInnerPairs = list(map(lambda tsIns: ( tsIns[0], evalMatSymComponents(tsIns[1]) ), typesInnerPairs ) )
-
-    # Filter the args that are strictly matmul (or matadd), so keep just ones that are NOT symbols or numbers, because those can be transposed with no issue. Want to keep integrity of the groups.
-    #typesInnerNosymPairs = list(filter(lambda pair : not isSymOrNum(pair[1])  , typesInnerPairs))
-    #typesInnerSymPairs = list(filter(lambda pair : isSymOrNum(pair[1]), typesInnerPairs))
-
-    # Count transposes and get the minimum of the list. This is the number of transposes we must factor out of all the mult.args.
-    counts: List[int] = list(map(lambda pair : pair[0].count(Transpose), typesInnerPairs))
-    # Ignoring any with zero counts (those are the symbols)
-    nonzeroCounts = list(filter(lambda c : c != 0, counts))
-    minCount: int = min( nonzeroCounts ) if not (nonzeroCounts == []) else 0 
-
-    # Counts num transposes to remove (total divisions with remainder)
-    #numRemove = lambda total, factor: (int)(total / factor) * factor
-    # Count leftover transposes
-    #leftover = lambda total, remove: total - remove 
-
-
-    # Initializing the result
-    result = expr 
-
-
-
-    # NOTE: using filter instead of just snapping all transposes off the end will let this work for even args that are not passed to algoTransposeRipple from the start. (beats the precondition)
-    
-    sepT = lambda types: [Transpose] * (types.count(Transpose) - minCount) + list(filter(lambda t: t != Transpose, types))
-
-
-    # CASE 3: count == 0 
-    # ---->  leave the expression the same
-    if minCount == 0:
-        return result
-
-    # CASE 1: count is odd 
-    elif minCount % 2 == 1:
-
-        # ---> remove COUNT transpose (over the no-sym list) and Add ONE transpose (over the sym list)
-        elimTypeInnerPairs = list(map(lambda pair: ([Transpose] + pair[0], pair[1]) if not (Transpose in pair[0]) else ( sepT(pair[0])  , pair[1]),   typesInnerPairs))
-
-        # ---> apply the types
-        elimExprs: List[MatrixExpr] = list(map(lambda pair : applyTypesToExpr(pair), elimTypeInnerPairs))
-
-        # ---> reverse the above and add back the matmul or matadd (not need to reverse with matadd but still result not usually visible, depends more on letter sorting) (?)
-        revElimExpr: MatrixExpr = Constr( *reversed(elimExprs) )
-
-        # ---> apply ONE (mincount % 2 == 1) transpose to the outer of the reversed matmul
-        factoredCount = minCount % 2 # is 1
-        result = applyTypesToExpr( ([Transpose] * factoredCount, revElimExpr) )
-
-
-
-    # CASE 2: count is even 
-    elif minCount % 2 == 0:
-        # ---> remove COUNT transposes off each mult.arg (that is the no-sym list) and do nothing (over the sym list)
-        elimTypeInnerPairs = list(map(lambda pair : pair if not (Transpose in pair[0]) else (sepT(pair[0]), pair[1]), typesInnerPairs ))
-
-        # ---> leave the matmul in the same order, no outer transpose needed
-        elimExprs: List[MatrixExpr] = list(map(lambda pair : applyTypesToExpr(pair), elimTypeInnerPairs))
-
-        # ---> create the expression, no reversal
-        elimExpr: MatrixExpr = Constr(*elimExprs)
-
-        # ---> apply NO transposes to the outer matmul (because even number of transposes are canceled out)
-        #result = applyTypesToExpr( ([Transpose] * minCount, elimExpr) )
-        result = elimExpr 
-
-    return result 
 # %%
 def algoTransposeFactor(expr: MatrixExpr) -> MatrixExpr: 
-    if not expr.is_MatAdd: 
-        return algoTransposeFactor_MatMul(expr)
     
-    # else if it is mat add then apply the algo over components
-    addends: List[MatrixExpr] = list(map(lambda a : algoTransposeFactor_MatMul(a), expr.args))
+    typesInners = digger(expr)
+    (types, innerExprs) = list(zip(*typesInners))
+    (types, innerExprs) = (list(types), list(innerExprs))
 
-    return MatAdd(*addends)
+    # Filtering the wrapper types of Transposes
+    noTranspTypes: List[MatrixType] = list(map(lambda typeList:  list(filter(lambda t: t != Transpose, typeList)) , types))
 
-# %%
+    # Pair up all the types, filtered types, and inner expressions for easier querying later:
+    triples: List[Tuple[List[MatrixType], List[MatrixType], List[MatrixExpr]]]  = list(zip(types, noTranspTypes, innerExprs))
 
-# Applying the factor transpose algo to every inner expr (every matmul and matadd and matsym)
-#def factorTranspose(expr: MatrixExpr) -> MatrixExpr: 
-#TODO
+    # Create new pairs from the filtered and inner Exprs, by attaching a Transpose at the end if odd num else none. 
+    newTypesInners: List[Tuple[List[MatrixType], List[MatrixExpr]]] = list(map(lambda triple: ([Transpose] + triple[1], triple[2]) if (triple[0].count(Transpose) % 2 == 1) else (triple[1], triple[2]) , triples))
+
+    # Create the old exprs from the digger results: 
+    oldExprs: List[MatrixExpr] = list(map(lambda pair: applyTypesToExpr(pair), typesInners))
+
+    # Create the new expressions with the simplified transposes: 
+    newExprs: List[MatrixExpr] = list(map(lambda pair: applyTypesToExpr(pair), newTypesInners))
+
+    # Zip the old and new expressions for replacement later on: 
+    oldNewExprs: List[Dict[MatrixExpr, MatrixExpr]] = list(map(lambda pair: dict([pair]), list(zip(oldExprs, newExprs))))
+
+    # Use fold to accumulate the results by replacing correct, simplified pieces of expressions into the overall expression. 
+    accFirst = expr 
+    f = lambda acc, oldNew: acc.xreplace(oldNew)
+    result: MatrixExpr = foldLeft(f, accFirst, oldNewExprs)
+
+    return result 
+
 
 # %% --------------------------------------------------------------
 
@@ -1095,15 +974,17 @@ J = MatrixSymbol('J', c, c)
 
 L = Transpose(Inverse(B*A*R))
 
-# %%
+# %% --------------------------------------------------------------
 
 
 
-# TEST 1: SL + GA = single symbol + grouped MatAdd
+# TEST 1a: SL + GA = single symbol + grouped MatAdd
 
 expr_SLaGA = MatAdd(A, Transpose(B + C.T) )
-res = algoTransposeFactor_MatMul(expr_SLaGA)
-check = Transpose(MatAdd(A.T, MatAdd(B, C.T)))
+
+res = algoTransposeFactor(expr_SLaGA)
+
+check = expr_SLaGA
 
 showGroup([
     expr_SLaGA, 
@@ -1113,10 +994,10 @@ showGroup([
 
 assert expr_SLaGA.doit() == res.doit()
 assert res.doit() == check.doit() # even structurally equal
-# %%
+# %% --------------------------------------------------------------
 
 
-# TEST 2: SL + GA = single symbol + grouped MatAdd (with more layerings per addend)
+# TEST 1b: SL + GA = single symbol + grouped MatAdd (with more layerings per addend)
 
 expr_SLaGA = MatAdd(
     Inverse(Transpose(Transpose(A))),
@@ -1125,18 +1006,1027 @@ expr_SLaGA = MatAdd(
     ))))) )
 )
 
-res = algoTransposeFactor_MatMul(expr_SLaGA)
+res = algoTransposeFactor(expr_SLaGA)
 
-check = Transpose()
-#check = 
+check = MatAdd(
+    A.I, 
+    Transpose(Inverse(Inverse(MatAdd(
+        B, E.I, R, C.T
+    ))))
+)
+
 showGroup([
     expr_SLaGA,
-    res
+    res, 
+    check
 ])
 
-# TODO finish here all the tests (pink in the notebook)
+# TODO why does expr.doit() come out with MatPow (1) instead of negative one for inverse?
+# assert expr_SLaGA.doit() == res.doit()
+assert equal(expr_SLaGA, res)
+assert res.doit() == check.doit() 
+# %% --------------------------------------------------------------
 
-# TODO the above result is not right: Must be that the outer three transposes are cut out into ONE overall transpose and must be that the inner E^T^T^-1 is cut to E^-1. 
+
+# TEST 2a: SL * GA = single symbol * grouped MatAdd 
+
+expr_SLmGA = MatMul(
+    A,
+    Inverse(Transpose(MatAdd(B, C.T)))
+)
+
+res = algoTransposeFactor(expr_SLmGA)
+
+check = MatMul(
+    A,
+    Transpose(Inverse(MatAdd(B, C.T)))
+)
+
+showGroup([
+    expr_SLmGA,
+    res, 
+    check
+])
+
+#TODO matpow error again
+# assert expr_SLmGA.doit() == res.doit()
+assert equal(expr_SLmGA, res)
+assert res.doit() == check.doit() 
+# %% --------------------------------------------------------------
+
+
+# TEST 2b: SL * GA = single symbol * grouped MatAdd (with more layerings per addend)
+
+expr_SLmGA = MatMul(
+    Inverse(Transpose(Transpose(Inverse(Inverse(Transpose(Transpose(A))))))),
+    Inverse(Transpose(Inverse(Transpose(Transpose(MatAdd(
+        B , Inverse(Transpose(Transpose(E))) , C.T , Transpose(Inverse(R))
+    ))))) )
+)
+
+res = algoTransposeFactor(expr_SLmGA)
+
+check = MatMul(
+    Inverse(Inverse(Inverse(A))),
+    Transpose(Inverse(Inverse(MatAdd(
+        B, E.I, Transpose(Inverse(R)), C.T
+    ))))
+)
+
+showGroup([
+    expr_SLmGA,
+    res,
+    check
+])
+
+# TODO matpow error again
+# assert expr_SLmGA.doit() == res.doit()
+assert equal(expr_SLmGA, res)
+assert res.doit() == check.doit() 
+# %% --------------------------------------------------------------
+
+
+# TEST 3a: SL + GM = single symbol + grouped MatMul
+
+expr_SLaGM = MatAdd(A, MatMul(B, A.T, R.I))
+res = algoTransposeFactor(expr_SLaGM)
+check = expr_SLaGM
+
+showGroup([
+    expr_SLaGM,
+    res, 
+    check
+])
+
+# TODO matpow error
+assert expr_SLaGM.doit() == res.doit()
+#assert equal(expr_SLaGM, res)
+assert res.doit() == check.doit() 
+# %% --------------------------------------------------------------
+
+
+# TEST 3b: SL + GM = single symbol + grouped MatMul (with more layerings per addend)
+
+expr_SLaGM = MatAdd(
+    Inverse(Transpose(Transpose(Inverse(Inverse(Transpose(Transpose(A))))))),
+    Inverse(Transpose(Inverse(Transpose(Transpose(MatAdd(
+        B , Inverse(Transpose(Transpose(E))) , C.T , Transpose(Inverse(R))
+    ))))) )
+)
+
+res = algoTransposeFactor(expr_SLaGM)
+
+check = MatAdd(
+    Inverse(Inverse(Inverse(A))), 
+    Transpose(Inverse(Inverse(MatAdd(
+        B, E.I, Transpose(Inverse(R)), C.T
+    ))))
+)
+
+showGroup([
+    expr_SLaGM,
+    res,
+    check
+])
+
+# TODO matpow error? 
+# assert expr_SLaGM.doit() == res.doit()
+assert equal(expr_SLaGM, res)
+assert res.doit() == check.doit() 
+
+# %% --------------------------------------------------------------
+
+
+# TEST 4a: SL * GM = single symbol * grouped MatMul
+
+expr_SLmGM = MatMul(A, MatMul(B.T, A, R.I))
+res = algoTransposeFactor(expr_SLmGM)
+check = expr_SLmGM
+
+showGroup([
+    expr_SLmGM,
+    res, 
+    check
+])
+
+assert expr_SLmGM.doit() == res.doit()
+assert res.doit() == check.doit() 
+# %% --------------------------------------------------------------
+
+
+# TEST 4b: SL * GM = single symbol * grouped MatMul (with more layerings per multiplicand)
+
+expr_SLmGM = MatMul(
+    Inverse(Transpose(Transpose(Inverse(Inverse(Transpose(Transpose(A))))))),
+    Inverse(Transpose(Inverse(Transpose(Transpose(MatMul(
+        B , Inverse(Transpose(Transpose(E))) , C.T , Transpose(Inverse(R))
+    ))))) )
+)
+
+res = algoTransposeFactor(expr_SLmGM)
+
+check = MatMul(
+    Inverse(Inverse(Inverse(A))), 
+    Transpose(Inverse(Inverse(MatMul(
+        B, E.I, C.T, Transpose(Inverse(R))
+    ))))
+)
+
+showGroup([
+    expr_SLmGM,
+    res,
+    check
+])
+
+assert expr_SLmGM.doit() == res.doit()
+assert res.doit() == check.doit() 
+
+# %% --------------------------------------------------------------
+
+
+# TEST 5a: SA + GA = single symbol Add + grouped Matadd
+
+expr_SAaGA = MatAdd(
+    A.T, B.I, C, 
+    Inverse(Transpose(Inverse(MatAdd(
+        B, C.T, D.I
+    ))))
+)
+res = algoTransposeFactor(expr_SAaGA)
+check = MatAdd(
+    A.T, B.I, C, 
+    Transpose(Inverse(Inverse(MatAdd(
+        B, C.T, D.I
+    ))))
+)
+
+showGroup([
+    expr_SAaGA,
+    res, 
+    check
+])
+
+# TODO matpow error again
+# assert expr_SAaGA.doit() == res.doit()
+assert equal(expr_SAaGA, res)
+assert res.doit() == check.doit() 
+# %% --------------------------------------------------------------
+
+
+# TEST 5b: SA + GA = single symbol Add + grouped Matadd (with more layerings per component)
+
+expr_SAaGA = MatAdd(
+    Inverse(Transpose(Transpose(Inverse(Inverse(Transpose(Transpose(A))))))),
+    Inverse(Inverse(B)), 
+    Transpose(Transpose(C)), 
+    Inverse(Transpose(Inverse(Transpose(Transpose(MatAdd(
+        B , Inverse(Transpose(Transpose(E))) , C.T , Transpose(Inverse(R))
+    ))))) )
+)
+
+res = algoTransposeFactor(expr_SAaGA)
+
+check = MatAdd(
+    Inverse(Inverse(Inverse(A))), 
+    Inverse(Inverse(B)), 
+    C, 
+    Transpose(Inverse(Inverse(MatAdd(
+        B, E.I, Transpose(Inverse(R)), C.T
+    ))))
+)
+
+showGroup([
+    expr_SAaGA,
+    res,
+    check
+])
+
+# TODO matpow error
+# assert expr_SAaGA.doit() == res.doit()
+assert equal(expr_SAaGA, res)
+assert res.doit() == check.doit() 
+
+
+# %% --------------------------------------------------------------
+
+
+# TEST 6a: SA * GA = single symbol Add * grouped Matadd
+
+expr_SAmGA = MatMul(
+    A.T, B.I, C, 
+    Inverse(Transpose(Inverse(MatAdd(
+        B, C.T, D.I
+    ))))
+)
+
+res = algoTransposeFactor(expr_SAmGA)
+
+check = MatMul(
+    A.T, B.I, C, 
+    Transpose(Inverse(Inverse(MatAdd(
+        B, C.T, D.I
+    ))))
+)
+
+showGroup([
+    expr_SAmGA,
+    res, 
+    check
+])
+
+# TODO matpow error
+# assert expr_SAmGA.doit() == res.doit()
+# TODO why doesn't this work? 
+# assert equal(expr_SAmGA, res)
+assert res.doit() == check.doit() 
+# TODO why does check.doit() not show inverse being distributed for all terms D, C, B, just for D? URGENT
+# %% --------------------------------------------------------------
+
+
+# TEST 6b: SA * GA = single symbol Add * grouped Matadd (with more layerings per component)
+
+expr_SAmGA = MatMul(
+    Inverse(Transpose(Transpose(Inverse(Inverse(Transpose(Transpose(A))))))),
+    Inverse(Inverse(B)), 
+    Transpose(Transpose(C)), 
+    Inverse(Transpose(Inverse(Transpose(Transpose(MatAdd(
+        B , Inverse(Transpose(Transpose(E))) , C.T , Transpose(Inverse(R))
+    ))))) )
+)
+
+res = algoTransposeFactor(expr_SAmGA)
+
+check = MatMul(
+    Inverse(Inverse(Inverse(A))), 
+    Inverse(Inverse(B)), 
+    C, 
+    Transpose(Inverse(Inverse(MatAdd(
+        B, E.I, Transpose(Inverse(R)), C.T
+    ))))
+)
+
+showGroup([
+    expr_SAmGA,
+    res,
+    check
+])
+
+# TODO matpow error? 
+# assert expr_SAmGA.doit() == res.doit()
+# TODO why doesn't this work? 
+# assert equal(expr_SAmGA, res)
+assert res.doit() == check.doit() 
+
+
+# %% --------------------------------------------------------------
+
+
+# TEST 7a: SA + SM = single symbol Add + single symbol Mul
+
+expr_SAaSM = MatAdd(
+    A.T, B.I, C, 
+    Inverse(Transpose(Inverse(MatMul(
+        B, C.T, D.I, E
+    ))))
+)
+res = algoTransposeFactor(expr_SAaSM)
+check = MatAdd(
+    A.T, B.I, C, 
+    Transpose(Inverse(Inverse(MatMul(
+        B, C.T, D.I, E
+    ))))
+)
+
+showGroup([
+    expr_SAaSM,
+    res, 
+    check
+])
+
+assert expr_SAaSM.doit() == res.doit()
+assert res.doit() == check.doit() 
+# %% --------------------------------------------------------------
+
+
+# TEST 7b: SA + SM = single symbol Add + single symbol Mul (with more layerings per component)
+
+expr_SAaSM = MatAdd(
+    Inverse(Transpose(Transpose(Inverse(Inverse(Transpose(Transpose(A))))))),
+    Inverse(Inverse(B)), 
+    Transpose(Transpose(C)), 
+    Inverse(Transpose(Inverse(Transpose(Transpose(MatMul(
+        B , Inverse(Transpose(Transpose(E))) , C.T , Transpose(Inverse(R))
+    ))))) ), 
+    Inverse(Transpose(Inverse(Transpose(MatMul(
+        B, Inverse(Transpose(Transpose(Transpose(A)))), R
+    )))))
+)
+
+res = algoTransposeFactor(expr_SAaSM)
+
+check = MatAdd(
+    Inverse(Inverse(Inverse(A))), 
+    Inverse(Inverse(B)), 
+    C, 
+    Transpose(Inverse(Inverse(MatMul(
+        B, E.I, C.T, Transpose(Inverse(R))
+    )))), 
+    Inverse(Inverse(MatMul(
+        B, Transpose(Inverse(A)), R
+    )))
+)
+
+showGroup([
+    expr_SAaSM,
+    res,
+    check
+])
+
+assert expr_SAaSM.doit() == res.doit()
+assert res.doit() == check.doit() 
+
+
+# %% --------------------------------------------------------------
+
+
+# TEST 8a: SM + GA = single symbol Mul + group symbol Add
+
+expr_SMaGA = MatAdd(
+    MatMul(A.T, B.I, C, D.T),
+    Inverse(Transpose(MatAdd(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))
+)
+
+res = algoTransposeFactor(expr_SMaGA)
+
+check = MatAdd(
+    MatMul(A.T, B.I, C, D.T),
+    Transpose(Inverse(MatAdd(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))
+)
+
+showGroup([
+    expr_SMaGA,
+    res, 
+    check
+])
+
+# TODO matpow error
+# assert expr_SMaGA.doit() == res.doit()
+assert equal(expr_SMaGA, res)
+assert res.doit() == check.doit() 
+# %% --------------------------------------------------------------
+
+
+# TEST 8b: SM + GA = single symbol Mul + group symbol Add (with more layerings per component)
+
+expr_SMaGA = MatAdd(
+    MatMul(
+        Inverse(Transpose(Transpose(Inverse(Inverse(Transpose(Transpose(A))))))),
+        Inverse(Inverse(B)), 
+        Transpose(Transpose(C)), 
+        D.I
+    ), 
+    Inverse(Transpose(Inverse(Transpose(Transpose(MatAdd(
+        B , Inverse(Transpose(Transpose(E))) , C.T , Transpose(Inverse(R))
+    ))))) ), 
+    Inverse(Transpose(Inverse(Transpose(MatAdd(
+        B, Inverse(Transpose(Transpose(Transpose(A)))), R
+    )))))
+)
+
+res = algoTransposeFactor(expr_SMaGA)
+
+check = MatAdd(
+    MatMul(
+        Inverse(Inverse(Inverse(A))), 
+        Inverse(Inverse(B)), 
+        C, 
+        D.I
+    ),
+    Transpose(Inverse(Inverse(MatAdd(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))), 
+    Inverse(Inverse(MatAdd(
+        B, Transpose(Inverse(A)), R
+    )))
+)
+
+showGroup([
+    expr_SMaGA,
+    res,
+    check
+])
+
+# TODO matpow error
+# assert expr_SMaGA.doit() == res.doit()
+assert equal(expr_SMaGA, res)
+assert res.doit() == check.doit() 
+
+
+# %% --------------------------------------------------------------
+
+
+# TEST 9a: SM * GA = single symbol Mul * group symbol Add
+
+expr_SMmGA = MatMul(
+    MatMul(A.T, B.I, C, D.T),
+    Inverse(Transpose(MatAdd(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))
+)
+
+res = algoTransposeFactor(expr_SMmGA)
+
+check = MatMul(
+    MatMul(A.T, B.I, C, D.T),
+    Transpose(Inverse(MatAdd(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))
+)
+
+showGroup([
+    expr_SMmGA,
+    res, 
+    check
+])
+
+assert expr_SMmGA.doit() == res.doit()
+assert res.doit() == check.doit() 
+# %% --------------------------------------------------------------
+
+
+# TEST 9b: SM * GA = single symbol Mul * group symbol Add (with more layerings per component)
+
+expr_SMmGA = MatMul(
+    MatMul(
+        Inverse(Transpose(Transpose(Inverse(Inverse(Transpose(Transpose(A))))))),
+        Inverse(Inverse(B)), 
+        Transpose(Transpose(C)), 
+        D.I
+    ), 
+    Inverse(Transpose(Inverse(Transpose(Transpose(MatAdd(
+        B , Inverse(Transpose(Transpose(E))) , C.T , Transpose(Inverse(R))
+    ))))) ), 
+    Inverse(Transpose(Inverse(Transpose(MatAdd(
+        B, Inverse(Transpose(Transpose(Transpose(A)))), R
+    )))))
+)
+
+res = algoTransposeFactor(expr_SMmGA)
+
+check = MatMul(
+    MatMul(
+        Inverse(Inverse(Inverse(A))), 
+        Inverse(Inverse(B)), 
+        C, 
+        D.I
+    ),
+    Transpose(Inverse(Inverse(MatAdd(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))), 
+    Inverse(Inverse(MatAdd(
+        B, Transpose(Inverse(A)), R
+    )))
+)
+
+showGroup([
+    expr_SMmGA,
+    res,
+    check
+])
+
+assert expr_SMmGA.doit() == res.doit()
+assert res.doit() == check.doit() 
+
+
+# %% --------------------------------------------------------------
+
+
+# TEST 10a: SM + GM = single symbol Mul + group symbol Mul
+
+expr_SMaGM = MatAdd(
+    MatMul(A.T, B.I, C, D.T),
+    Inverse(Transpose(MatMul(
+        B, E.I, Inverse(Transpose(R)), C.T
+    )))
+)
+
+res = algoTransposeFactor(expr_SMaGM)
+
+check = MatAdd(
+    MatMul(A.T, B.I, C, D.T),
+    Transpose(Inverse(MatMul(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))
+)
+
+showGroup([
+    expr_SMaGM,
+    res, 
+    check
+])
+
+assert expr_SMaGM.doit() == res.doit()
+assert res.doit() == check.doit() 
+# %% --------------------------------------------------------------
+
+
+# TEST 10b: SM + GM = single symbol Mul + group symbol Mul (with more layerings per component)
+
+expr_SMaGM = MatAdd(
+    MatMul(
+        Inverse(Transpose(Transpose(Inverse(Inverse(Transpose(Transpose(A))))))),
+        Inverse(Inverse(B)), 
+        Transpose(Transpose(C)), 
+        D.I
+    ), 
+    Inverse(Transpose(Inverse(Transpose(Transpose(MatMul(
+        B , Inverse(Transpose(Transpose(E))) , C.T , Transpose(Inverse(R))
+    ))))) ), 
+    Inverse(Transpose(Inverse(Transpose(MatMul(
+        B, Inverse(Transpose(Transpose(Transpose(A)))), R
+    )))))
+)
+
+res = algoTransposeFactor(expr_SMaGM)
+
+check = MatAdd(
+    MatMul(
+        Inverse(Inverse(Inverse(A))), 
+        Inverse(Inverse(B)), 
+        C, 
+        D.I
+    ),
+    Transpose(Inverse(Inverse(MatMul(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))), 
+    Inverse(Inverse(MatMul(
+        B, Transpose(Inverse(A)), R
+    )))
+)
+
+showGroup([
+    expr_SMaGM,
+    res,
+    check
+])
+
+assert expr_SMaGM.doit() == res.doit()
+assert res.doit() == check.doit() 
+
+
+
+# %% --------------------------------------------------------------
+
+
+# TEST 11a: SM * GM = single symbol Mul * group symbol Mul
+
+expr_SMmGM = MatMul(
+    MatMul(A.T, B.I, C, D.T),
+    Inverse(Transpose(MatMul(
+        B, E.I, Inverse(Transpose(R)), C.T
+    )))
+)
+
+res = algoTransposeFactor(expr_SMmGM)
+
+check = MatMul(
+    MatMul(A.T, B.I, C, D.T),
+    Transpose(Inverse(MatMul(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))
+)
+
+showGroup([
+    expr_SMmGM,
+    res, 
+    check
+])
+
+assert expr_SMmGM.doit() == res.doit()
+assert res.doit() == check.doit() 
+# %% --------------------------------------------------------------
+
+
+# TEST 11b: SM * GM = single symbol Mul * group symbol Mul (with more layerings per component)
+
+expr_SMmGM = MatMul(
+    MatMul(
+        Inverse(Transpose(Transpose(Inverse(Inverse(Transpose(Transpose(A))))))),
+        Inverse(Inverse(B)), 
+        Transpose(Transpose(C)), 
+        D.I
+    ), 
+    Inverse(Transpose(Inverse(Transpose(Transpose(MatMul(
+        B , Inverse(Transpose(Transpose(E))) , C.T , Transpose(Inverse(R))
+    ))))) ), 
+    Inverse(Transpose(Inverse(Transpose(MatMul(
+        B, Inverse(Transpose(Transpose(Transpose(A)))), R
+    )))))
+)
+
+res = algoTransposeFactor(expr_SMmGM)
+
+check = MatMul(
+    MatMul(
+        Inverse(Inverse(Inverse(A))), 
+        Inverse(Inverse(B)), 
+        C, 
+        D.I
+    ),
+    Transpose(Inverse(Inverse(MatMul(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))), 
+    Inverse(Inverse(MatMul(
+        B, Transpose(Inverse(A)), R
+    )))
+)
+
+showGroup([
+    expr_SMmGM,
+    res,
+    check
+])
+
+assert expr_SMmGM.doit() == res.doit()
+assert res.doit() == check.doit() 
+
+
+# %% --------------------------------------------------------------
+
+
+# TEST 12a: GA + GM = group symbol Add + group symbol Mul
+
+expr_GAaGM = MatAdd(
+    Inverse(MatAdd(A.T, B.I, C, D.T)),
+    Inverse(Transpose(MatMul(
+        B, E.I, Inverse(Transpose(R)), C.T
+    )))
+)
+
+res = algoTransposeFactor(expr_GAaGM)
+
+check = MatAdd(
+    Inverse(MatAdd(A.T, B.I, C, D.T)),
+    Transpose(Inverse(MatMul(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))
+)
+
+showGroup([
+    expr_GAaGM,
+    res, 
+    check
+])
+
+assert expr_GAaGM.doit() == res.doit()
+assert res.doit() == check.doit() 
+# %% --------------------------------------------------------------
+
+
+# TEST 12b: GA + GM = group symbol Add + group symbol Mul (with more layerings per component)
+
+expr_GAaGM = MatAdd(
+    Inverse(Inverse(Transpose(Inverse(Transpose(Transpose(MatAdd(
+        Inverse(Transpose(Transpose(Inverse(Inverse(Transpose(Transpose(A))))))),
+        Inverse(Inverse(B)), 
+        Transpose(Transpose(C)), 
+        D.I
+    ))))))), 
+    Inverse(Transpose(Inverse(Transpose(Transpose(MatMul(
+        B , Inverse(Transpose(Transpose(E))) , C.T , Transpose(Inverse(R))
+    ))))) ), 
+    Inverse(Transpose(Inverse(Transpose(MatMul(
+        B, Inverse(Transpose(Transpose(Transpose(A)))), R
+    )))))
+)
+
+res = algoTransposeFactor(expr_GAaGM)
+
+check = MatAdd(
+    Transpose(Inverse(Inverse(Inverse(MatAdd(
+        Inverse(Inverse(Inverse(A))), 
+        Inverse(Inverse(B)), 
+        C, 
+        D.I
+    ))))),
+    Transpose(Inverse(Inverse(MatMul(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))), 
+    Inverse(Inverse(MatMul(
+        B, Transpose(Inverse(A)), R
+    )))
+)
+
+showGroup([
+    expr_GAaGM,
+    res,
+    check
+])
+
+assert expr_GAaGM.doit() == res.doit()
+assert res.doit() == check.doit() 
+
+
+# %% --------------------------------------------------------------
+
+
+# TEST 13a: GA * GM = group symbol Add * group symbol Mul
+
+expr_GAmGM = MatMul(
+    Inverse(MatAdd(A.T, B.I, C, D.T)),
+    Inverse(Transpose(MatMul(
+        B, E.I, Inverse(Transpose(R)), C.T
+    )))
+)
+
+res = algoTransposeFactor(expr_GAmGM)
+
+check = MatMul(
+    Inverse(MatAdd(A.T, B.I, C, D.T)),
+    Transpose(Inverse(MatMul(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))
+)
+
+showGroup([
+    expr_GAmGM,
+    res, 
+    check
+])
+
+assert expr_GAmGM.doit() == res.doit()
+assert res.doit() == check.doit() 
+# %% --------------------------------------------------------------
+
+
+# TEST 13b: GA * GM = group symbol Add * group symbol Mul (with more layerings per component)
+
+expr_GAmGM = MatMul(
+    Inverse(Inverse(Transpose(Inverse(Transpose(Transpose(MatAdd(
+        Inverse(Transpose(Transpose(Inverse(Inverse(Transpose(Transpose(A))))))),
+        Inverse(Inverse(B)), 
+        Transpose(Transpose(C)), 
+        D.I
+    ))))))), 
+    Inverse(Transpose(Inverse(Transpose(Transpose(MatMul(
+        B , Inverse(Transpose(Transpose(E))) , C.T , Transpose(Inverse(R))
+    ))))) ), 
+    Inverse(Transpose(Inverse(Transpose(MatMul(
+        B, Inverse(Transpose(Transpose(Transpose(A)))), R
+    )))))
+)
+
+res = algoTransposeFactor(expr_GAmGM)
+
+check = MatMul(
+    Transpose(Inverse(Inverse(Inverse(MatAdd(
+        Inverse(Inverse(Inverse(A))), 
+        Inverse(Inverse(B)), 
+        C, 
+        D.I
+    ))))),
+    Transpose(Inverse(Inverse(MatMul(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))), 
+    Inverse(Inverse(MatMul(
+        B, Transpose(Inverse(A)), R
+    )))
+)
+
+showGroup([
+    expr_GAmGM,
+    res,
+    check
+])
+
+assert expr_GAmGM.doit() == res.doit()
+assert res.doit() == check.doit() 
+
+
+# %% --------------------------------------------------------------
+
+
+# TEST 14a: GM + GM = group symbol Mul + group symbol Mul
+
+expr_GMaGM = MatAdd(
+    Inverse(MatMul(A.T, B.I, C, D.T)),
+    Inverse(Transpose(MatMul(
+        B, E.I, Inverse(Transpose(R)), C.T
+    )))
+)
+
+res = algoTransposeFactor(expr_GMaGM)
+
+check = MatAdd(
+    Inverse(MatMul(A.T, B.I, C, D.T)),
+    Transpose(Inverse(MatMul(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))
+)
+
+showGroup([
+    expr_GMaGM,
+    res, 
+    check
+])
+
+assert expr_GMaGM.doit() == res.doit()
+assert res.doit() == check.doit() 
+# %% --------------------------------------------------------------
+
+
+# TEST 14b: GM +  GM = group symbol Mul + group symbol Mul (with more layerings per component)
+
+expr_GMaGM = MatAdd(
+    Inverse(Inverse(Transpose(Inverse(Transpose(Transpose(MatMul(
+        Inverse(Transpose(Transpose(Inverse(Inverse(Transpose(Transpose(A))))))),
+        Inverse(Inverse(B)), 
+        Transpose(Transpose(C)), 
+        D.I
+    ))))))), 
+    Inverse(Transpose(Inverse(Transpose(Transpose(MatMul(
+        B , Inverse(Transpose(Transpose(E))) , C.T , Transpose(Inverse(R))
+    ))))) ), 
+    Inverse(Transpose(Inverse(Transpose(MatMul(
+        B, Inverse(Transpose(Transpose(Transpose(A)))), R
+    )))))
+)
+
+res = algoTransposeFactor(expr_GMaGM)
+
+check = MatAdd(
+    Transpose(Inverse(Inverse(Inverse(MatMul(
+        Inverse(Inverse(Inverse(A))), 
+        Inverse(Inverse(B)), 
+        C, 
+        D.I
+    ))))),
+    Transpose(Inverse(Inverse(MatMul(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))), 
+    Inverse(Inverse(MatMul(
+        B, Transpose(Inverse(A)), R
+    )))
+)
+
+showGroup([
+    expr_GMaGM,
+    res,
+    check
+])
+
+assert expr_GMaGM.doit() == res.doit()
+assert res.doit() == check.doit() 
+
+
+# %% --------------------------------------------------------------
+
+
+# TEST 15a: GM * GM = group symbol Mul * group symbol Mul
+
+expr_GMmGM = MatMul(
+    Inverse(MatMul(A.T, B.I, C, D.T)),
+    Inverse(Transpose(MatMul(
+        B, E.I, Inverse(Transpose(R)), C.T
+    )))
+)
+
+res = algoTransposeFactor(expr_GMmGM)
+
+check = MatMul(
+    Inverse(MatMul(A.T, B.I, C, D.T)),
+    Transpose(Inverse(MatMul(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))
+)
+
+showGroup([
+    expr_GMmGM,
+    res, 
+    check
+])
+
+assert expr_GMmGM.doit() == res.doit()
+assert res.doit() == check.doit() 
+
+
+# %% --------------------------------------------------------------
+
+
+# TEST 15b: GM * GM = group symbol Mul * group symbol Mul 
+
+expr_GMmGM = MatMul(
+    Transpose(MatMul(A, B)), 
+    Transpose(MatMul(R, J))
+)
+
+res = algoTransposeFactor(expr_GMmGM)
+
+check = expr_GMmGM
+
+showGroup([
+    expr_GMmGM,
+    res,
+    check
+])
+
+assert expr_GMmGM.doit() == res.doit()
+assert res.doit() == check.doit() 
+
+
+
+
+# %% --------------------------------------------------------------
+
+
+# TEST 15c: GM * GM = group symbol Mul * group symbol Mul (with more layerings per component)
+
+expr_GMmGM = MatMul(
+    Inverse(Inverse(Transpose(Inverse(Transpose(Transpose(MatMul(
+        Inverse(Transpose(Transpose(Inverse(Inverse(Transpose(Transpose(A))))))),
+        Inverse(Inverse(B)), 
+        Transpose(Transpose(C)), 
+        D.I
+    ))))))), 
+    Inverse(Transpose(Inverse(Transpose(Transpose(MatMul(
+        B , Inverse(Transpose(Transpose(E))) , C.T , Transpose(Inverse(R))
+    ))))) ), 
+    Inverse(Transpose(Inverse(Transpose(MatMul(
+        B, Inverse(Transpose(Transpose(Transpose(A)))), R
+    )))))
+)
+
+res = algoTransposeFactor(expr_GMmGM)
+
+check = MatMul(
+    Transpose(Inverse(Inverse(Inverse(MatMul(
+        Inverse(Inverse(Inverse(A))), 
+        Inverse(Inverse(B)), 
+        C, 
+        D.I
+    ))))),
+    Transpose(Inverse(Inverse(MatMul(
+        B, E.I, Transpose(Inverse(R)), C.T
+    )))), 
+    Inverse(Inverse(MatMul(
+        B, Transpose(Inverse(A)), R
+    )))
+)
+
+showGroup([
+    expr_GMmGM,
+    res,
+    check
+])
+
+assert expr_GMmGM.doit() == res.doit()
+assert res.doit() == check.doit() 
+
+
 # %%
 
 #TODO later: SL_a_GA_2 as innermost arg layered with transpse and then combine with any other kind: SL, SA, SM, GA, GM in between the layers. TODO for every kind of expression
