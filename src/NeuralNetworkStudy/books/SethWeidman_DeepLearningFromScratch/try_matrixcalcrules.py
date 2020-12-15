@@ -2048,7 +2048,7 @@ assert res.doit() == check.doit()
 
 
 
-def wrapInTranspose(innerExpr: MatrixExpr) -> MatrixExpr: 
+def algoTransposeWrap_shallow(innerExpr: MatrixExpr) -> MatrixExpr: 
     '''The wrapping algo for taking a set of simple arguments and enveloping them in transpose.'''
 
     Constr: MatrixType = innerExpr.func 
@@ -2057,7 +2057,7 @@ def wrapInTranspose(innerExpr: MatrixExpr) -> MatrixExpr:
     numArgsTranspose: int = len(list(filter(lambda a: a.is_Transpose, innerExpr.args )))
 
     # Building conditions for checking if we need to wrap the expr, or else return it as is. 
-    mostSymsAreTranspose: bool = (numArgsTranspose / len(innerExpr.args) ) > 0.5
+    mostSymsAreTranspose: bool = (numArgsTranspose / len(innerExpr.args) ) >= 0.5
 
     # NOTE: len == 0 of free syms when Number else for MatSym len == 1 so put 0 case just for safety.
     #onlySymComponents_AddMul = lambda expr: (expr.func in [MatAdd, MatMul]) and all(map(lambda a: len(a.free_symbols) in [0, 1], expr.args))
@@ -2088,34 +2088,45 @@ isSym = lambda m: len(m.free_symbols) in [0,1]
 isSimpleArgs = lambda e: all(map(lambda a: len(a.free_symbols) in [0, 1], e.args))
 isInnerExpr = lambda e: (e.func in [MatAdd, MatMul]) and isSimpleArgs(e)
 
-def recWrap(expr: MatrixExpr) -> MatrixExpr: 
+def algoTransposeWrap_deep(expr: MatrixExpr) -> MatrixExpr: 
 
     Constr = expr.func 
 
     if isSym(expr):
         return expr 
     elif Constr in [MatAdd, MatMul]:  #then split the polarizing operation over the arguments since any one of the args can be an inner expr.
-        wrappedArgs: List[MatrixExpr] = list(map(lambda a: recWrap(a), expr.args))
+        wrappedArgs: List[MatrixExpr] = list(map(lambda a: algoTransposeWrap_deep(a), expr.args))
         exprWithPartsWrapped: MatrixExpr = Constr(*wrappedArgs)
-        exprOverallWrapped: MatrixExpr = wrapInTranspose(exprWithPartsWrapped)
+        exprOverallWrapped: MatrixExpr = algoTransposeWrap_shallow(exprWithPartsWrapped)
 
         return exprOverallWrapped 
         
     elif isInnerExpr(expr):
-        wrappedExpr: MatrixExpr = wrapInTranspose(expr)
+        wrappedExpr: MatrixExpr = algoTransposeWrap_shallow(expr)
         return wrappedExpr 
     else: # else is Trace, Transpose, or Inverse or any other constructor
         innerExpr = expr.arg 
     
-        return Constr( recWrap(innerExpr) )
+        return Constr( algoTransposeWrap_deep(innerExpr) )
 # %%
 e = Inverse(MatMul(
-    Transpose(Inverse(Transpose(MatAdd(B.T, A.T, R, MatMul(Transpose(Inverse(B*A*R.T)), MatAdd(E, J, D)), E.I, Inverse(Transpose(D)))))),
+    Transpose(Inverse(Transpose(MatAdd(B.T, A.T, R, MatMul(Transpose(Inverse(B*A*R.T)), MatAdd(E, J, D)), Inverse(Transpose(E)), Inverse(Transpose(D)))))),
     Inverse(Transpose(MatMul(A.T, B.T, E.I, Transpose(Inverse(Transpose(A + E + R.T))), C)))
-    
+))
 e1 = e.arg.args[1].arg.arg
 
-recWrap(e1)
+#algoTransposeWrap_deep(e1)
+# algoTransposeWrap_deep(e) # doesn't factor out the transposes not bring them outer
+
+re = algoTransposeRipple(e)
+fre = algoTransposeFactor(re)
+wfre = algoTransposeWrap_deep(fre)
+
+assert wfre.doit() == e.doit()
+
+showGroup([
+    e, re, fre, wfre
+])
 # %%
 
 
@@ -2129,63 +2140,16 @@ def polarizeTranspose(expr: MatrixExpr) -> MatrixExpr:
 
     There must be no layering of transpose in the nested expressions in the result returned by this function -- polarization of transpose to the outer edges.'''
 
-    def percolateTranspose(expr: MatrixExpr) -> MatrixExpr: 
-        '''Does pushing out of transpose, from within deep in each innermost expression, but once this is finished, the entire expression may not have all transposes pushed to the outermost, as polarize wants'''
 
-        #exprOut: MatrixExpr = algoTransposeRipple(res)
-        exprOut = expr # assuming rippled transposes out beforehand
+    # Need to factor out transposes and ripple them out first before passing to wrap algo because the wrap algo won't reach in and factor or bring out inner transposes, will just overlay on top of them without simplifying (bad, since yields more complicated expression)
+    fe = algoTransposeFactor(expr) # no need for ripple out because factor does this implicitly
 
-        # Find all inner ones
-        (constrs, innerExprs) = list(zip(*digger(exprOut)))
-        (constrs, innerExprs) = (list(constrs), list(innerExprs)) # otherwise they are confusingly tuple!
-
-        # Apply the grouping algo with ADD combine enabled on each INNER
-        # NOTE: the inner expr is matmul or matadd
-        # NOTE: must first let transposes be the outer layers so that grouping algo can work properly. 
-        innerFactored: List[MatrixExpr] = list(map(lambda theInner: algoTransposeFactor_MatMul(theInner), innerExprs))
-        #innerGrouped: List[MatrixExpr] = list(map(lambda theInner: algoTransposeGroup(theInner, combineAdds = True), innerExprs))
-        # TODO or group transpose here?
-
-        # Map the grouped inners with the old inners 
-        pairsOldNew: List[Dict[MatrixExpr, MatrixExpr]] = list(map(lambda pair: dict([pair]), zip(innerExprs, innerFactored)) )
-
-
-        # Substitute (xreplace) the grouped inners starting from the first one (to get the outer layering correct first), can't update it later
-        accFirst = exprOut
-        f = lambda acc, oldNew : acc.xreplace(oldNew)
-
-        result = foldLeft(f, accFirst, pairsOldNew)
-
-        return result 
-
+    wfe = algoTransposeWrap_deep(fe)
     
-    # TODO STAR LEFT OFF HERE START TOMORROW: do the algo for mincount and follow the recursion code on paper for doing the polarizer function. 
-    # FIRST TEST CASE: 
-    '''
-    e = Inverse(MatMul(
-       Transpose(Inverse(Transpose(MatMul(B.T, A.T, R)))),
-       Inverse(Transpose(MatMul(A.T, B.T, C)))
-    ))
-    e = Inverse(MatMul(
-    Transpose(Inverse(Transpose(MatAdd(B.T, A.T, R, MatMul(Transpose(Inverse(B*A*R.T)), MatAdd(E, J, D)), E.I, Inverse(Transpose(D)))))),
-    Inverse(Transpose(MatMul(A.T, B.T, E.I, Transpose(Inverse(Transpose(A + E + R.T))), C)))
-))
-    '''
+    # Must bring out the extra transposes that are brought out by the wrap algo and then cut out extra ones.
+    fwfe = algoTransposeFactor(wfe)
 
-    # TODO do more tests cases to figure out if you need all these steps or if can just apply factor transpose? 
-
-    invert = algoTransposeRipple(expr)
-
-    # Move out the transposes from within each nesting
-    invertPull = percolateTranspose(invert)
-
-    # Needs another pulling out of the transposes
-    invertPullInvert = algoTransposeRipple(invertPull)
-
-    # Now can factor out the common transposes from the outer side. 
-    invertPullInvertFactor = algoTransposeFactor_MatMul(invertPullInvert)
-    # percolate again
-    # ripple out again
+    return fwfe 
 
 
 # %% -------------------------------------------------------------
