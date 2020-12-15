@@ -578,7 +578,7 @@ def chunkInvTrans(constructors: List[MatrixType]) -> List[List[MatrixType]]:
     #getSimpleTypeName = lambda t : str(t).split("'")[1].split(".")[-1]
 
     # Step 1: coding up in pairs for easy identification: need Inverse and Transpose tagged as same kind
-    codeConstrPairs: List[Tuple[int, MatrixType]] = list(map(lambda c : (0, c) if c == Transpose or c == Inverse else (1, c), constructors))
+    codeConstrPairs: List[Tuple[int, MatrixType]] = list(map(lambda c : (0, c) if (c == Transpose or c == Inverse) else (1, c), constructors))
 
     # Step 2: getting the groups
     chunkedPairs: List[List[Tuple[int, MatrixType]]] = [list(group) for key, group in itertools.groupby(codeConstrPairs, operator.itemgetter(0))]
@@ -800,7 +800,10 @@ def algoTransposeRipple(expr: MatrixExpr) -> MatrixExpr:
 # %%
 
 
-
+# TODO this function cannot identify MatPow that is same as Inverse: for instance the obj D.I.T is MatPow of Transpose (not Inverse as expected) while using Transpose(Inverse(D)) is Transpose of Inverse, as expected. 
+# ---> So must find way for this function to recognize MatPow with NegativeOne and convert those into Inverse. 
+# ---> Need to find out if the double NegativeOne come from one set of MatPow inverse or not. Then replace accordingly with the Inverse constructor. 
+# TODO for now just avoid passing in D.I.T and just use the verbose constructor names. 
 def digger(expr: MatrixExpr) -> List[Tuple[List[MatrixType], MatrixExpr]]:
     '''Gets list of tuples, where each tuple contains a list of types that surround the inner argument in the given matrix expression. 
     
@@ -2045,6 +2048,77 @@ assert res.doit() == check.doit()
 
 
 
+def wrapInTranspose(innerExpr: MatrixExpr) -> MatrixExpr: 
+    '''The wrapping algo for taking a set of simple arguments and enveloping them in transpose.'''
+
+    Constr: MatrixType = innerExpr.func 
+    #assert Constr in [MatAdd, MatMul]
+
+    numArgsTranspose: int = len(list(filter(lambda a: a.is_Transpose, innerExpr.args )))
+
+    # Building conditions for checking if we need to wrap the expr, or else return it as is. 
+    mostSymsAreTranspose: bool = (numArgsTranspose / len(innerExpr.args) ) > 0.5
+
+    # NOTE: len == 0 of free syms when Number else for MatSym len == 1 so put 0 case just for safety.
+    #onlySymComponents_AddMul = lambda expr: (expr.func in [MatAdd, MatMul]) and all(map(lambda a: len(a.free_symbols) in [0, 1], expr.args))
+
+    mustWrap: bool = (Constr in [MatAdd, MatMul]) and mostSymsAreTranspose #and onlySymComponents_AddMul(innerExpr)
+
+    if not mustWrap: 
+        return innerExpr 
+    
+    # Else do the wrapping algorithm: 
+    invertedArgs: List[MatrixExpr] = list(map(lambda a: pickOut(a), innerExpr.args))
+
+    
+    invertedArgs: List[MatrixExpr] = list(reversed(invertedArgs)) if Constr == MatMul else invertedArgs
+
+    wrapped: MatrixExpr = Transpose(Constr(*invertedArgs))
+
+    return wrapped 
+
+# %%
+
+
+isSym = lambda m: len(m.free_symbols) in [0,1]
+
+# NOTE: len == 0 of free syms when Number else for MatSym len == 1 so put 0 case just for safety.
+#onlySymComponents_AddMul = lambda expr: (expr.func in [MatAdd, MatMul]) and all(map(lambda a: len(a.free_symbols) in [0, 1], expr.args))
+
+isSimpleArgs = lambda e: all(map(lambda a: len(a.free_symbols) in [0, 1], e.args))
+isInnerExpr = lambda e: (e.func in [MatAdd, MatMul]) and isSimpleArgs(e)
+
+def recWrap(expr: MatrixExpr) -> MatrixExpr: 
+
+    Constr = expr.func 
+
+    if isSym(expr):
+        return expr 
+    elif Constr in [MatAdd, MatMul]:  #then split the polarizing operation over the arguments since any one of the args can be an inner expr.
+        wrappedArgs: List[MatrixExpr] = list(map(lambda a: recWrap(a), expr.args))
+        exprWithPartsWrapped: MatrixExpr = Constr(*wrappedArgs)
+        exprOverallWrapped: MatrixExpr = wrapInTranspose(exprWithPartsWrapped)
+
+        return exprOverallWrapped 
+        
+    elif isInnerExpr(expr):
+        wrappedExpr: MatrixExpr = wrapInTranspose(expr)
+        return wrappedExpr 
+    else: # else is Trace, Transpose, or Inverse or any other constructor
+        innerExpr = expr.arg 
+    
+        return Constr( recWrap(innerExpr) )
+# %%
+e = Inverse(MatMul(
+    Transpose(Inverse(Transpose(MatAdd(B.T, A.T, R, MatMul(Transpose(Inverse(B*A*R.T)), MatAdd(E, J, D)), E.I, Inverse(Transpose(D)))))),
+    Inverse(Transpose(MatMul(A.T, B.T, E.I, Transpose(Inverse(Transpose(A + E + R.T))), C)))
+    
+e1 = e.arg.args[1].arg.arg
+
+recWrap(e1)
+# %%
+
+
 
 # Making a group transpose that goes deep until innermost expression (largest depth) and applies the group algo there
 # Drags out even the inner transposes (aggressive grouper)
@@ -2087,10 +2161,16 @@ def polarizeTranspose(expr: MatrixExpr) -> MatrixExpr:
     
     # TODO STAR LEFT OFF HERE START TOMORROW: do the algo for mincount and follow the recursion code on paper for doing the polarizer function. 
     # FIRST TEST CASE: 
-    # e = Inverse(MatMul(
-    #    Transpose(Inverse(Transpose(MatMul(B.T, A.T, R)))),
-    #    Inverse(Transpose(MatMul(A.T, B.T, C)))
-    # ))
+    '''
+    e = Inverse(MatMul(
+       Transpose(Inverse(Transpose(MatMul(B.T, A.T, R)))),
+       Inverse(Transpose(MatMul(A.T, B.T, C)))
+    ))
+    e = Inverse(MatMul(
+    Transpose(Inverse(Transpose(MatAdd(B.T, A.T, R, MatMul(Transpose(Inverse(B*A*R.T)), MatAdd(E, J, D)), E.I, Inverse(Transpose(D)))))),
+    Inverse(Transpose(MatMul(A.T, B.T, E.I, Transpose(Inverse(Transpose(A + E + R.T))), C)))
+))
+    '''
 
     # TODO do more tests cases to figure out if you need all these steps or if can just apply factor transpose? 
 
