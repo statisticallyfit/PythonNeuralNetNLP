@@ -982,6 +982,12 @@ def factor(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
     typesInners = digger(expr)
 
+    # Check: if empty list returned by digger (say since expr is just MatrixSymbol) then need to exit and return original expression (since there must be nothing to factor). 
+    if typesInners == []:
+        return expr 
+    # Otherwise error results on next line: 
+
+
     (types, innerExprs) = list(zip(*typesInners))
     (types, innerExprs) = (list(types), list(innerExprs))
 
@@ -1958,25 +1964,8 @@ def wrapDeep(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
         innerExpr = expr.arg
 
         return Constr( wrapDeep(WrapType = WrapType, expr = innerExpr) )
-# %%
-e = Inverse(MatMul(
-    Transpose(Inverse(Transpose(MatAdd(B.T, A.T, R, MatMul(Transpose(Inverse(B*A*R.T)), MatAdd(E, J, D)), Inverse(Transpose(E)), Inverse(Transpose(D)))))),
-    Inverse(Transpose(MatMul(A.T, B.T, E.I, Transpose(Inverse(Transpose(A + E + R.T))), C)))
-))
-e1 = e.arg.args[1].arg.arg
 
-#wrapDeep(e1)
-# wrapDeep(e) # doesn't factor out the transposes not bring them outer
 
-re = rippleOut(Transpose, e)
-fre = factor(Transpose, re)
-wfre = wrapDeep(Transpose, fre)
-
-assert wfre.doit() == e.doit()
-
-showGroup([
-    e, re, fre, wfre
-])
 # %%
 
 
@@ -2001,13 +1990,31 @@ def polarize(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
     return fwfe
 # %%
-showGroup([
-    e, 
-    polarize(Transpose, e)
-])
-assert equal(e, polarize(Transpose, e))
+
+
+# TEST 16: testing mix and match of matmul / matadd with inverse / transposes to see how polarize filters out Transpose. 
+
+expr_polarize = Inverse(MatMul(
+    Transpose(Inverse(Transpose(MatAdd(B.T, A.T, R, MatMul(Transpose(Inverse(B*A*R.T)), MatAdd(E, J, D)), Inverse(Transpose(E)), Inverse(Transpose(D)))))),
+    Inverse(Transpose(MatMul(A.T, B.T, E.I, Transpose(Inverse(Transpose(A + E + R.T))), C)))
+))
+
+check = Transpose(Inverse(MatMul(
+    Inverse(MatMul(
+        A.T, B.T, E.I, Inverse(MatAdd(A, E, R.T)), C
+    )), 
+    Inverse(MatAdd(
+        D.I, E.I, A, B, MatMul(
+            Transpose(MatAdd(D, E, J)), 
+            Inverse(MatMul(B, A, R.T))
+        ), 
+        R.T
+    ))
+)))
+
+testCase(algo = polarize, expr = expr_polarize, check = check, byType = Transpose)
 # %% -------------------------------------------------------------
-# TODO LEFT OFF HERE IN REFACTORING
+
 
 
 
@@ -2015,27 +2022,30 @@ assert equal(e, polarize(Transpose, e))
 expr = Inverse(Transpose(C*E*B))
 
 # %%
-res = group(expr)
 check = expr
 
-showGroup([
-    expr, res, check
-])
-
-assert equal(res, check)
-assert equal(expr.doit(), res.doit())
+testCase(algo = group, expr = expr, check = check, byType = Transpose)
 # %%
 
 
-res = rippleOut(expr)
 check = Transpose(Inverse(MatMul(C, E, B)))
 
-showGroup([
-    expr, res, check
-])
+testCase(algo = rippleOut, expr = expr, check = check, byType = Transpose)
 
-assert equal(res, check)
-assert equal(expr.doit(), res.doit())
+# %%
+
+# TODO should I leave the inverse / leave Constructors order as they are? Or is it ok for factor to act as rippleOut? 
+check = Transpose(Inverse(MatMul(C, E, B)))
+
+testCase(algo = factor, expr = expr, check = check, byType = Transpose)
+
+
+# %%
+
+check = Transpose(Inverse(MatMul(C, E, B)))
+
+testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
+
 # %% -------------------------------------------------------------
 
 
@@ -2043,25 +2053,18 @@ assert equal(expr.doit(), res.doit())
 expr = Transpose(Inverse(C*E*B))
 
 # %%
-res = group(expr)
+
+
 check = expr
 
-showGroup([
-    expr, res, check
-])
+testCase(algo = group, expr = expr, check = check, byType = Transpose)
 
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
-# %%
-res = rippleOut(expr)
-check = Transpose(Inverse(C*E*B))
+testCase(algo = rippleOut, expr = expr, check = check, byType = Transpose)
 
-showGroup([
-    expr, res, check
-])
+testCase(algo = factor, expr = expr, check = check, byType = Transpose)
 
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
+testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
+
 # %% -------------------------------------------------------------
 
 
@@ -2069,26 +2072,26 @@ assert equal(res, check)
 expr = Inverse(B.T * E.T * C.T)
 # %%
 
-res = group(expr)
+
 check = Inverse(Transpose(C*E*B))
 
-showGroup([
-    expr, res, check
-])
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
+testCase(algo = group, expr = expr, check = check, byType = Transpose)
 # %%
 
-res = rippleOut(expr)
+
 check = expr
 
-#checkAggr = Transpose(Inverse(C*E*B))
+testCase(algo = rippleOut, expr = expr, check = check, byType = Transpose)
+# %%
 
-showGroup([
-    expr, res, check
-])
-assert equal(expr.doit(), res.doit())
-assert equal(check, res)
+check = expr
+
+testCase(algo = factor, expr = expr, check = check, byType = Transpose)
+# %%
+
+check = Transpose(Inverse(MatMul(C, E, B)))
+
+testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
 # %% -------------------------------------------------------------
 
 
@@ -2097,27 +2100,17 @@ assert equal(check, res)
 expr = Transpose(B.I * E.I * C.I)
 # %%
 
-res = group(expr)
-check = expr
+check = expr 
 
-showGroup([
-    expr, res, check
-])
+testCase(algo = group, expr = expr, check = check, byType = Transpose)
 
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
+testCase(algo = rippleOut, expr = expr, check = check, byType = Transpose)
 
-# %%
+testCase(algo = factor, expr = expr, check = check, byType = Transpose)
 
-res = rippleOut(expr)
-check = expr
+testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
 
-showGroup([
-    expr, res, check
-])
 
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
 # %% -------------------------------------------------------------
 
 
@@ -2132,22 +2125,10 @@ Q = MatrixSymbol("Q", a, b)
 (expr3, check3) = (C.I, C.I)
 (expr4, check4) = (Inverse(Transpose(C)), Inverse(Transpose(C)))
 
-res1 = group(expr1)
-res2 = group(expr2)
-res3 = group(expr3)
-res4 = group(expr4)
-
-showGroup([
-    (expr1, res1, check1),
-    (expr2, res2, check2),
-    (expr3, res3, check3),
-    (expr4, res4, check4)
-])
-
-assert equal(res1, check1)
-assert equal(res2, check2)
-assert equal(res3, check3)
-assert equal(res4, check4)
+testCase(algo = group, expr = expr1, check = check1, byType = Transpose)
+testCase(algo = group, expr = expr2, check = check2, byType = Transpose)
+testCase(algo = group, expr = expr3, check = check3, byType = Transpose)
+testCase(algo = group, expr = expr4, check = check4, byType = Transpose)
 
 # %%
 
@@ -2157,24 +2138,49 @@ assert equal(res4, check4)
 (expr3, check3) = (C.I, C.I)
 (expr4, check4) = (Inverse(Transpose(C)), Transpose(Inverse(C)))
 
-res1 = rippleOut(expr1)
-res2 = rippleOut(expr2)
-res3 = rippleOut(expr3)
-res4 = rippleOut(expr4)
+testCase(algo = rippleOut, expr = expr1, check = check1, byType = Transpose)
+testCase(algo = rippleOut, expr = expr2, check = check2, byType = Transpose)
+testCase(algo = rippleOut, expr = expr3, check = check3, byType = Transpose)
+testCase(algo = rippleOut, expr = expr4, check = check4, byType = Transpose)
 
-showGroup([
-    (expr1, res1, check1),
-    (expr2, res2, check2),
-    (expr3, res3, check3),
-    (expr4, res4, check4)
-])
-
-assert equal(res1, check1)
-assert equal(res2, check2)
-assert equal(res3, check3)
-assert equal(res4, check4)
+# %%
 
 
+(expr1, check1) = (Q, Q)
+(expr2, check2) = (Q.T, Q.T)
+(expr3, check3) = (C.I, C.I)
+(expr4, check4) = (Inverse(Transpose(C)), Transpose(Inverse(C)))
+
+testCase(algo = factor, expr = expr1, check = check1, byType = Transpose)
+testCase(algo = factor, expr = expr2, check = check2, byType = Transpose)
+testCase(algo = factor, expr = expr3, check = check3, byType = Transpose)
+testCase(algo = factor, expr = expr4, check = check4, byType = Transpose)
+
+# %%
+
+
+(expr1, check1) = (Q, Q)
+(expr2, check2) = (Q.T, Q.T)
+(expr3, check3) = (C.I, C.I)
+(expr4, check4) = (Inverse(Transpose(C)), Transpose(Inverse(C)))
+
+testCase(algo = factor, expr = expr1, check = check1, byType = Transpose)
+testCase(algo = factor, expr = expr2, check = check2, byType = Transpose)
+testCase(algo = factor, expr = expr3, check = check3, byType = Transpose)
+testCase(algo = factor, expr = expr4, check = check4, byType = Transpose)
+
+# %%
+
+
+(expr1, check1) = (Q, Q)
+(expr2, check2) = (Q.T, Q.T)
+(expr3, check3) = (C.I, C.I)
+(expr4, check4) = (Inverse(Transpose(C)), Transpose(Inverse(C)))
+
+testCase(algo = polarize, expr = expr1, check = check1, byType = Transpose)
+testCase(algo = polarize, expr = expr2, check = check2, byType = Transpose)
+testCase(algo = polarize, expr = expr3, check = check3, byType = Transpose)
+testCase(algo = polarize, expr = expr4, check = check4, byType = Transpose)
 
 # %% -------------------------------------------------------------
 
@@ -2190,9 +2196,6 @@ expr = Transpose(Inverse(Inverse(Inverse(Transpose(MatMul(
 ))))))
 # %%
 
-res = group(expr)
-
-
 check = Transpose(Inverse(Inverse(Inverse(Transpose(Transpose(MatMul(
     M.T,
     Transpose(Inverse(Transpose(R))),
@@ -2200,19 +2203,10 @@ check = Transpose(Inverse(Inverse(Inverse(Transpose(Transpose(MatMul(
     A.T
 )))))))
 
-showGroup([
-    expr,
-    res,
-    check
-])
-
-assert res.doit() == expr.doit()
-assert equal(res, check)
+testCase(algo = group, expr = expr, check = check, byType = Transpose)
 
 # %%
 
-
-res = rippleOut(expr)
 
 check = Transpose(Transpose(Inverse(Inverse(Inverse(MatMul(
     A,
@@ -2221,18 +2215,25 @@ check = Transpose(Transpose(Inverse(Inverse(Inverse(MatMul(
     M
 ))))))
 
-showGroup([
-    expr,
-    res,
-    check
-])
+testCase(algo = rippleOut, expr = expr, check = check, byType = Transpose)
 
-assert res.doit() == expr.doit()
-assert equal(res, check)
+# %%
 
 
+check = Inverse(Inverse(Inverse(MatMul(
+    A, Inverse(Inverse(C)), Transpose(Inverse(R)), M
+))))
+
+testCase(algo = factor, expr = expr, check = check, byType = Transpose)
+# %%
+
+
+check = Inverse(Inverse(Inverse(MatMul(
+    A, Inverse(Inverse(C)), Transpose(Inverse(R)), M
+))))
+
+testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
 # %% -------------------------------------------------------------
-
 
 
 
@@ -2241,165 +2242,176 @@ assert equal(res, check)
 expr = MatMul( Transpose(A*B), Transpose(R*J) )
 # %%
 
-res = group(expr)
 check = Transpose(R*J*A*B)
 
-showGroup([
-    expr, res, check
-])
-
-assert equal(expr.doit(), res.doit())
-# TODO if you want you should split the matmul case into expr "simple matmul case" in that there are no innermost nestings and everything is on the first level.
-assert equal(res, check)
+testCase(algo = group, expr = expr, check = check, byType = Transpose)
 
 # %%
 
-res = rippleOut(expr)
 check = expr
 
-showGroup([
-    expr, res, check
-])
+testCase(algo = rippleOut, expr = expr, check = check, byType = Transpose)
+# %%
 
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
+check = expr 
+
+testCase(algo = factor, expr = expr, check = check, byType = Transpose)
+# %%
+
+
+check = Transpose(MatMul(R, J, A, B))
+
+testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
 # %% -------------------------------------------------------------
 
 
 # TEST 7: individual transposes littered along as matmul
 
 expr = B.T * A.T * J.T * R.T
-
 # %%
 
-res = group(expr)
+
 check = Transpose(R*J*A*B)
 
-showGroup([
-    expr, res, check
-])
-
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
+testCase(algo = group, expr = expr, check = check, byType = Transpose)
 # %%
 
-res = rippleOut(expr)
 check = expr
 
-showGroup([expr, res, check])
+testCase(algo = rippleOut, expr = expr, check = check, byType = Transpose)
+# %%
 
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
+check = expr 
+
+testCase(algo = factor, expr = expr, check = check, byType = Transpose)
+# %%
+
+check = Transpose(MatMul(R, J, A, B))
+
+testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
 # %% -------------------------------------------------------------
 
 
 # TEST 8: inverses mixed with transpose in expr matmul, but with transposes all as the outer expression
+L = Transpose(Inverse(MatMul(B, A, R)))
 
 expr = MatMul(A , Transpose(Inverse(R)), Transpose(Inverse(L)) , K , E.T , B.I )
 # %%
-
-res = group(expr)
 
 check = Transpose(
     MatMul( Transpose(Inverse(B)), E , K.T , Inverse(L) , Inverse(R) , A.T)
 )
 
-showGroup([
-    expr, res, check ,
-    res.doit(),
-    check.doit()
-])
-
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
-
+testCase(algo = group, expr = expr, check = check, byType = Transpose)
 # %%
-
-res = rippleOut(expr)
 
 check = expr
 
-showGroup([
-    expr, res, check
-])
+testCase(algo = rippleOut, expr = expr, check = check, byType = Transpose)
+# %%
 
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
+check = MatMul(
+    A, Transpose(Inverse(R)), Inverse(Inverse(MatMul(B, A, R))), K, E.T, B.I
+)
+
+testCase(algo = factor, expr = expr, check = check, byType = Transpose)
+# %%
 
 
+check = MatMul(
+    A, Transpose(Inverse(R)), Inverse(Inverse(MatMul(B, A, R))), K, E.T, B.I
+)
+testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
 # %% -------------------------------------------------------------
 
 
 # TEST 9: mix of inverses and transposes in expr matmul, but this time with transpose not as outer operation, for at least one symbol case.
+L = Inverse(Transpose(MatMul(B, A, R)))
 
 expr = MatMul(A , Transpose(Inverse(R)), Inverse(Transpose(L)) , K , E.T , B.I )
 # %%
 
-res = group(expr)
 
 check = Transpose(
     MatMul( Transpose(Inverse(B)), E , K.T , Transpose(Inverse(Transpose(L))) , R.I , A.T)
 )
-
-showGroup([
-    expr, res, check ,
-    res.doit(),
-    check.doit()
-])
-
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
+testCase(algo = group, expr = expr, check = check, byType = Transpose)
 
 # %%
 
-res = rippleOut(expr)
 
 check = MatMul(
-    A, Transpose(Inverse(R)), Transpose(Inverse(L)), K, E.T, B.I
+    A, Transpose(Inverse(R)), Transpose(Transpose(Inverse(Inverse(MatMul(B, A, R))))), K, E.T, B.I
 )
 
-showGroup([
-    expr, res, check
-])
+testCase(algo = rippleOut, expr = expr, check = check, byType = Transpose)
+# %%
 
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
+
+check = MatMul(
+    A, Transpose(Inverse(R)), Inverse(Inverse(MatMul(B, A, R))), K, E.T , B.I
+)
+testCase(algo = factor, expr = expr, check = check, byType = Transpose)
+# %%
+
+
+check = MatMul(
+    A, Transpose(Inverse(R)), Inverse(Inverse(MatMul(B, A, R))), K, E.T , B.I
+)
+testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
+
 # %% -------------------------------------------------------------
 
 
 # TEST 10: transposes in matmuls and singular matrix symbols, all in expr matadd expression.
 
-expr = A * R.T * L.T * K * E.T * B + D.T + K
+expr = MatAdd( 
+    MatMul(A, R.T, L, K, E.T, B),
+    D.T, K
+)
 # %%
 
-res = group(expr)
-resGroup = group(expr, combineAdds = True)
 
-check = MatAdd( Transpose(MatMul(B.T, E, K.T, L, R, A.T)) , D.T, K)
-checkGroup = Transpose( B.T * E * K.T * L * R * A.T + D + K.T)
+check = MatAdd( Transpose(MatMul(B.T, E, K.T, Transpose(L), R, A.T)) , D.T, K)
+
+testCase(algo = group, expr = expr, check = check, byType = Transpose)
+# %%
+
+# TODO make separate function for group combine adds test? 
+
+resGroup = group(byType = Transpose, expr = expr, combineAdds = True)
+
+checkGroup = Transpose(MatAdd(
+    MatMul(B.T, E, K.T, Transpose(L), R, A.T),
+    K.T, D
+))
 
 showGroup([
-    (expr, res, check),
-    (expr, resGroup, checkGroup)
+    expr, resGroup, checkGroup
 ])
 
-assert expr.doit() == res.doit()
 assert expr.doit() == resGroup.doit()
-assert equal(res, check)
 assert equal(resGroup, checkGroup)
 # %%
 
-res = rippleOut(expr)
-check = expr
 
-showGroup([
-    expr, res, check
-])
+check = MatAdd(
+    MatMul(A, R.T, Transpose(Inverse(MatMul(B, A, R))), K, E.T, B), 
+    K, D.T
+)
 
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
+testCase(algo = rippleOut, expr = expr, check = check, byType = Transpose)
+testCase(algo = factor, expr = expr, check = check, byType = Transpose)
+# %%
+
+
+check = Transpose(MatAdd(
+    D, MatMul(B.T, E, K.T, Inverse(MatMul(B, A, R)), R, A.T), K.T
+))
+testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
 # %% -------------------------------------------------------------
 
+# TODO REFACTORING LEFT OFF HERE
 
 # TEST 11: digger case, very layered expression (with transposes separated so not expecting the grouptranspose to change them). Has inner arg matmul.
 
