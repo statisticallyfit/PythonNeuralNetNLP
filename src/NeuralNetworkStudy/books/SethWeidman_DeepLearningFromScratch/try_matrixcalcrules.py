@@ -1039,6 +1039,17 @@ def testCase(algo, expr, check: MatrixExpr, byType: MatrixType = None):
         assert res.doit() == check.doit() 
     except Exception: 
         print("ASSERTION ERROR: res.doit() == check.doit() --- maybe MatPow ? ")
+
+# %%
+def testGroupCombineAdds(expr, check: MatrixExpr, byType: MatrixType):
+    res = group(byType = byType, expr = expr, combineAdds = True)
+
+    showGroup([
+        expr, res, check 
+    ])
+
+    assert equal(expr, res)
+    assert res.doit() == check.doit()
 # %%
 
 
@@ -2364,6 +2375,7 @@ testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
 
 
 # TEST 10: transposes in matmuls and singular matrix symbols, all in expr matadd expression.
+L = Transpose(Inverse(MatMul(B, A, R)))
 
 expr = MatAdd( 
     MatMul(A, R.T, L, K, E.T, B),
@@ -2372,26 +2384,26 @@ expr = MatAdd(
 # %%
 
 
-check = MatAdd( Transpose(MatMul(B.T, E, K.T, Transpose(L), R, A.T)) , D.T, K)
+#check = MatAdd( Transpose(MatMul(B.T, E, K.T, Transpose(L), R, A.T)) , D.T, K)
+check = MatAdd(
+    Transpose(MatMul(B.T, E, K.T, Inverse(MatMul(B, A, R)), R, A.T)), K, D.T
+)
 
 testCase(algo = group, expr = expr, check = check, byType = Transpose)
+
 # %%
 
 # TODO make separate function for group combine adds test? 
-
-resGroup = group(byType = Transpose, expr = expr, combineAdds = True)
-
-checkGroup = Transpose(MatAdd(
-    MatMul(B.T, E, K.T, Transpose(L), R, A.T),
-    K.T, D
+#check = Transpose(MatAdd(
+#    MatMul(B.T, E, K.T, Transpose(L), R, A.T),
+#    K.T, D
+#))
+check = Transpose(MatAdd(
+    MatMul(B.T, E, K.T, Inverse(MatMul(B, A, R)), R, A.T), D, K.T
 ))
 
-showGroup([
-    expr, resGroup, checkGroup
-])
+testGroupCombineAdds(expr = expr, check = check, byType = Transpose)
 
-assert expr.doit() == resGroup.doit()
-assert equal(resGroup, checkGroup)
 # %%
 
 
@@ -2411,39 +2423,33 @@ check = Transpose(MatAdd(
 testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
 # %% -------------------------------------------------------------
 
-# TODO REFACTORING LEFT OFF HERE
 
 # TEST 11: digger case, very layered expression (with transposes separated so not expecting the grouptranspose to change them). Has inner arg matmul.
 
 expr = Trace(Transpose(Inverse(Transpose(C*D*E))))
 # %%
 
-res = group(expr)
 check = expr
 
-showGroup([
-    expr, res, check
-])
+testCase(algo = group, expr = expr, check = check, byType = Transpose)
 
-# TODO fix the expandMatMul function so that trace can be passed as argument (just do expand on what is inside)
-#assert equal(res, check)
-#assert equal(expr.doit(), res.doit())
+testGroupCombineAdds(expr = expr, check = check, byType = Transpose)
 
-assert res == check
 # %%
 
-res = rippleOut(expr)
-check = Trace(Transpose(Transpose(Inverse(C*D*E))))
+check = Trace(Transpose(Transpose(Inverse(MatMul(C, D, E)))))
 
-showGroup([
-    expr, res, check
-])
+testCase(algo = rippleOut, expr = expr, check = check, byType = Transpose)
+# %%
 
-# TODO make the expandMatMul function work with Trace (throws error here because Trace has no 'shape' attribute)
-# assert equal(expr.doit(), res.doit())
-assert expr.doit() == res.doit()
-# TODO assert res == check # make structural equality work
-#assert equal(res, check)
+
+
+check = Trace(Inverse(MatMul(C, D, E)))
+
+testCase(algo = factor, expr = expr, check = check, byType = Transpose)
+
+testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
+
 # %% -------------------------------------------------------------
 
 
@@ -2451,22 +2457,22 @@ assert expr.doit() == res.doit()
 # TEST 12: very layered expression, but transposes are next to each other, with inner arg as matmul
 
 expr = Trace(Transpose(Transpose(Inverse(C*D*E))))
-
-res1 = group(expr)
-
-res2 = rippleOut(expr)
+# %%
 
 check = expr
 
-showGroup([
-    expr, res1, res2, check
-])
+testCase(algo = group, expr = expr, check = check, byType = Transpose)
 
-assert expr.doit() == res1.doit()
-assert expr.doit() == res2.doit()
-# assert equal(res, check) # todo fix equals function
-assert res1 == check
-assert res2 == check
+testGroupCombineAdds(expr = expr, check = check, byType = Transpose)
+
+testCase(algo = rippleOut, expr = expr, check = check, byType = Transpose)
+# %%
+
+check = Trace(Inverse(MatMul(C, D, E)))
+
+testCase(algo = factor, expr = expr, check = check, byType = Transpose)
+
+testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
 
 # %% -------------------------------------------------------------
 
@@ -2476,34 +2482,24 @@ expr = Transpose(Inverse(Transpose(C.T * A.I * D.T)))
 # %%
 
 
-res = group(expr)
-
 check = Transpose(Inverse(Transpose(Transpose(
     MatMul(D , Transpose(Inverse(A)), C )
 ))))
 
-showGroup([
-    expr, res, check ,
-    res.doit(),
-    check.doit()
-])
-
-assert equal(expr.doit(), res.doit())
-assert equal(res, check)
+testCase(algo = group, expr = expr, check = check, byType = Transpose)
 # %%
 
-res = rippleOut(expr)
+check = Transpose(Transpose(Inverse(MatMul(C.T, A.I, D.T))))
 
-check = Transpose(Transpose(Inverse(
-    C.T * A.I * D.T
-)))
+testCase(algo = rippleOut, expr = expr, check = check, byType = Transpose)
+# %%
 
-showGroup([
-    expr, res, check
-])
 
-assert expr.doit() == res.doit()
-assert equal(res, check)
+check = Inverse(C.T * A.I * D.T)
+
+testCase(algo = factor, expr = expr, check = check, byType = Transpose)
+testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
+
 # %% -------------------------------------------------------------
 
 
@@ -2524,8 +2520,6 @@ expr = Transpose(Inverse(
 
 # %%
 
-res = group(expr)
-
 check = Transpose(
     Inverse(Transpose(
         MatMul(
@@ -2538,39 +2532,27 @@ check = Transpose(
     ))
 )
 
-showGroup([expr, res, check])
-
-assert equal(res.doit(), expr.doit())
-assert equal(res, check)
-
+testCase(algo = group, expr = expr, check = check, byType = Transpose)
+testGroupCombineAdds(expr = expr, check = check, byType = Transpose)
 # %%
 
+check = expr 
 
-res = rippleOut(expr)
-check = expr
+testCase(algo = rippleOut, expr = expr, check = check, byType = Transpose)
 
-showGroup([
-    expr, res, check
-])
-
-assert expr.doit() == res.doit()
-assert equal(res, check)
-
-
-
+testCase(algo = factor, expr = expr, check = check, byType = Transpose)
 # %%
 
-# TODO update the grouptranspose reverse algo to deal with minimum number of transpose elimination scheme (of innermosts across the same level (?)). (Use digger?)
-# TODO: must put this reverse algo directly inside the transpose out function, to adapt the result and avoid having product transposes, to aim for having just one innermost expression with transposes surrounding.
+check = Inverse(MatMul(
+    Transpose(Inverse(MatMul(
+        B, Inverse(B*A*R), Transpose(Inverse(E)), C
+    ))), 
+    MatMul(R, D, A.T)
+))
 
-#res = transposeOut(expr)
+testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
 
-# Aggressive check
-check = Transpose(Transpose(Transpose(Inverse(MatMul(
-    A, D.T, R.T,
-    Inverse(MatMul(B, Inverse(B*A*R), Transpose(Inverse(E)), C))
-)))))
-check
+
 # %% -------------------------------------------------------------
 
 

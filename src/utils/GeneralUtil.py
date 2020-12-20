@@ -201,9 +201,15 @@ def expandMatmul(expr: MatrixExpr) -> MatrixExpr:
 
 
 def equal(mat1: MatrixExpr, mat2: MatrixExpr) -> bool:
-    if mat1.shape == mat2.shape:
-        zeroMat = ZeroMatrix(*mat1.shape)
 
-        return expandMatmul(mat1 - mat2).doit() == zeroMat
+    if isinstance(mat1, MatrixExpr) and isinstance(mat2, MatrixExpr):
+        if mat1.shape == mat2.shape:
+            zeroMat = ZeroMatrix(*mat1.shape)
+
+            return expandMatmul(mat1 - mat2).doit() == zeroMat
+
+    # else check if they are traces
+    elif mat1.is_Trace and mat2.is_Trace:
+        return equal(mat1.arg, mat2.arg)
 
     return False 
