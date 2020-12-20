@@ -1,3 +1,67 @@
+
+
+import numpy as np
+from numpy import ndarray
+
+from typing import *
+import itertools
+from functools import reduce
+
+
+from sympy import det, Determinant, Trace, Transpose, Inverse, Function, Lambda, HadamardProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, MatrixSymbol, Identity,  Derivative, symbols, diff
+
+from sympy import srepr , simplify
+
+from sympy import tensorcontraction, tensorproduct, preorder_traversal
+from sympy.functions.elementary.piecewise import Undefined
+from sympy.physics.quantum.tensorproduct import TensorProduct
+
+from sympy.abc import x, i, j, a, b, c
+
+from sympy.matrices.expressions.matadd import MatAdd
+from sympy.matrices.expressions.matmul import MatMul
+
+from sympy.core.numbers import NegativeOne, Number
+
+from sympy.core.assumptions import ManagedProperties
+
+
+
+# Types
+MatrixType = ManagedProperties
+
+
+# Path settings
+import sys
+import os
+
+PATH: str = '/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP'
+
+UTIL_DISPLAY_PATH: str = PATH + "/src/utils/GeneralUtil/"
+
+
+#os.chdir(NEURALNET_PATH)
+#assert os.getcwd() == NEURALNET_PATH
+
+sys.path.append(PATH)
+sys.path.append(UTIL_DISPLAY_PATH)
+
+
+
+
+
+from src.utils.GeneralUtil import *
+
+# For displaying
+from IPython.display import display, Math
+from sympy.interactive import printing
+printing.init_printing(use_latex='mathjax')
+
+
+
+# -------------------------------------------------------------
+
+
 # Need to include list of constructors that you dig out of.
 # TODO: need Trace / Derivative / Function ...??
 CONSTR_LIST: List[MatrixType] = [Transpose, Inverse]
@@ -495,25 +559,50 @@ def polarize(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
     There must be no layering of transpose in the nested expressions in the result returned by this function -- polarization of transpose to the outer edges.'''
 
 
-    # Need to factor out transposes and ripple them out first before passing to wrap algo because the wrap algo won't reach in and factor or bring out inner transposes, will just overlay on top of them without simplifying (bad, since yields more complicated expression)
-    fe = factor(byType = byType, expr = expr) # no need for ripple out because factor does this implicitly
+    def algoPolarize(byType: MatrixExpr, expr: MatrixExpr) -> MatrixExpr: 
+        # Need to factor out transposes and ripple them out first before passing to wrap algo because the wrap algo won't reach in and factor or bring out inner transposes, will just overlay on top of them without simplifying (bad, since yields more complicated expression)
+        fe = factor(byType = byType, expr = expr) # no need for ripple out because factor does this implicitly
 
-    wfe = wrapDeep(WrapType = byType, expr = fe)
+        wfe = wrapDeep(WrapType = byType, expr = fe)
 
-    # Must bring out the extra transposes that are brought out by the wrap algo and then cut out extra ones.
-    fwfe = factor(byType = byType, expr = wfe)
+        # Must bring out the extra transposes that are brought out by the wrap algo and then cut out extra ones.
+        fwfe = factor(byType = byType, expr = wfe)
+
+        return fwfe
+
+
 
     # TODO fix if this extra step of factoring and wrapping deep results in more transposes then  polarize again or just leave at the previous factor
     countTopTypes = lambda pairs: sum(list(map(lambda pair: True if pair[0][0] == byType else False, pairs)) )
 
-    fwfe_ds = digger(fwfe)
-    fe_ds = digger(fe)
+    p = algoPolarize(byType = byType, expr = expr)
+    pp = algoPolarize(byType = byType, expr = p )
+    fe = factor(byType, expr)
 
-    if countTopTypes(fwfe_ds) > countTopTypes(fe_ds):
-        return fe # because sometimes the simpler answer is obtained after a simple factoring
+    p_ds = digger(p)
+    pp_ds = digger(pp)
+    f_ds = digger(fe) # first factoring
+
+    countMap: Dict[MatrixExpr, int] = dict([
+        (p, countTopTypes(p_ds)),
+        (pp, countTopTypes(pp_ds)),
+        (fe, countTopTypes(f_ds)),
+    ])
+
+    # Get the first (get first expression corresponding to first minimum, since that is one of the ones that reduces num transpose)
+    countMapSorted: List[Tuple[MatrixExpr, int]] = sorted(countMap.items(), key = operator.itemgetter(1)) # sorting by values 
+
+    result: MatrixExpr = countMapSorted[0][0]
+
+    return result 
+    # TODO if this function works make it more efficient by integrating the algoPolarize into the function itself (like put a list of functinos and apply the params to each arg in a map)
+
+
+    #if countTopTypes(fwfe_ds) > countTopTypes(fe_ds):
+    #    return fe # because sometimes the simpler answer is obtained after a simple factoring
         # TODO check general case (?)
-
-    return fwfe
+    #return fwfe
+    
 
 
 
