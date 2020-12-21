@@ -457,7 +457,7 @@ def derivTrace(trace: Trace, byVar: MatrixSymbol) -> MatrixExpr:
 
 
 ### TRACE TEST 1: simple case, with addition, no inverse or transpose in any of the variables
-a, b, c = symbols('expr b c', commutative=True)
+a, b, c = symbols('a b c', commutative=True)
 
 C = MatrixSymbol('C', a, b)
 E = MatrixSymbol('E', b, c)
@@ -468,7 +468,7 @@ D = MatrixSymbol('D', c, a)
 K = MatrixSymbol('K', a, a)
 
 
-trace = Trace(expr + A*B*E * R * J  + A*D + K )
+trace = Trace( A*B*E * R * J  + C*E*B*E*L*E*D )
 byVar = E
 
 
@@ -486,15 +486,17 @@ dcheck = diff(trace, byVar)
 # NOTE: doesn't work to simplify the check - res expression ! Leaves it in subtraction form, same with doit() in all kinds of combinations with simplify()
 #assert simplify(check - res) == 0
 
+showGroup([
+    res,
+    polarize(Transpose, res),
+    check,
+    dcheck
+])
+
 assert equal(check, res)
 assert equal(res, dcheck)
 assert equal(check, dcheck)
 
-showGroup([
-    res,
-    group(res),
-    dcheck
-])
 
 
 # %% -------------------------------------------------------------
@@ -517,15 +519,15 @@ check = Transpose( B * E * Inverse(L) * E * D * C + Inverse(L)*E*D*C*E*B +  D*C*
 
 dcheck = diff(trace, byVar)
 
-assert equal(res, check)
-assert equal(res, dcheck)
-assert equal(check, dcheck)
-
 showGroup([
     res,
     check,
     dcheck
 ])
+
+assert equal(res, check)
+assert equal(res, dcheck)
+assert equal(check, dcheck)
 
 # %% -------------------------------------------------------------
 
