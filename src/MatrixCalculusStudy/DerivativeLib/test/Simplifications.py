@@ -240,7 +240,8 @@ testCase(algo = factor, expr = expr_SLaGA, check = check, byType = Transpose)
 #check_TOFIX = Transpose(MatAdd(
 #    Transpose(MatAdd(C, B.T)), A.T
 #))
-check = expr_SLaGA
+#check = expr_SLaGA
+check = MatAdd(A, MatAdd(C, B.T))
 
 testCase(algo = polarize, expr = expr_SLaGA, check = check, byType = Transpose)
 
@@ -288,11 +289,19 @@ testCase(algo = factor, expr = expr_SLaGA, check = check, byType = Transpose)
 
 # %%
 
-
-check = Transpose(MatAdd(
+# old check
+check_grouped = Transpose(MatAdd(
     Transpose(Inverse(A)),
     Inverse(Inverse(E.I + B + R + C.T))
 ))
+
+# new check, after splitting Transpose over MatAdd
+check = MatAdd(
+    A.I, 
+    Transpose(Inverse(Inverse(MatAdd(
+        E.I, B, R, C.T
+    ))))
+)
 
 testCase(algo = polarize, expr = expr_SLaGA, check = check, byType = Transpose)
 # %% --------------------------------------------------------------
@@ -343,6 +352,7 @@ check = MatMul(
     A,
     Transpose(Inverse(MatAdd(B, C.T)))
 )
+# TODO: the different simplified result is occuring after splitting Transpose over MatAdd fix -- is this difference because of that?
 testCase(algo = polarize, expr = expr_SLmGA, check = check, byType = Transpose)
 # %% --------------------------------------------------------------
 
@@ -399,6 +409,7 @@ check = MatMul(
         E.I, B, Transpose(Inverse(R)), C.T
     ))))
 )
+# TODO the difference in res and check might be from the updated wrapDeep function (factoring over args)
 testCase(algo = polarize, expr = expr_SLmGA, check = check, byType = Transpose)
 # %% --------------------------------------------------------------
 
@@ -425,7 +436,7 @@ testCase(algo = factor, expr = expr_SLaGM, check = check, byType = Transpose)
 
 testCase(algo = rippleOut, expr = expr_SLaGM, check = check, byType = Transpose)
 
-testCase(algo = polarize, expr = expr_SLaGM, check = expr_SLaGM, byType = Transpose)
+testCase(algo = polarize, expr = expr_SLaGM, check = check, byType = Transpose)
 # %% --------------------------------------------------------------
 
 
@@ -456,9 +467,9 @@ testCase(algo = rippleOut, expr = expr_SLaGM, check = check, byType = Transpose)
 
 check = MatAdd(
     Inverse(Inverse(Inverse(A))),
-    Transpose(Inverse(Inverse(MatAdd(
-        B, E.I, Transpose(Inverse(R)), C.T
-    ))))
+    Inverse(Inverse(MatAdd(
+        R.I, C, Transpose(Inverse(E)), B.T
+    )))
 )
 
 testCase(algo = factor, expr = expr_SLaGM, check = check, byType = Transpose)
@@ -522,13 +533,20 @@ testCase(algo = factor, expr = expr_SLmGM, check = check, byType = Transpose)
 #w = wrapDeep(Transpose, p)
 #fe = factor(Transpose, w)
 #polarize(Transpose, fe)
+
+# OLD check before the wrap-deep-factor fix: 
+#check = MatMul(
+#    Inverse(Inverse(Inverse(A))),
+#    Transpose(Inverse(Inverse(MatMul(
+#        B, E.I, C.T, Transpose(Inverse(R))
+#    ))))
+#)
 check = MatMul(
     Inverse(Inverse(Inverse(A))),
-    Transpose(Inverse(Inverse(MatMul(
-        B, E.I, C.T, Transpose(Inverse(R))
-    ))))
+    Inverse(Inverse(MatMul(
+        R.I, C, Transpose(Inverse(E)), B.T
+    )))
 )
-
 testCase(algo = polarize, expr = expr_SLmGM, check = check, byType = Transpose)
 # %% --------------------------------------------------------------
 
@@ -781,12 +799,18 @@ expr_SMaGA = MatAdd(
 )
 # %%
 
-
+# OLD check (before wrap-deep-factor fix and mat-add-transpose-group fix)
+#check = MatAdd(
+#    MatMul(A.T, B.I, C, D.T),
+#    Transpose(Inverse(MatAdd(
+#        B, E.I, Transpose(Inverse(R)), C.T
+#    )))
+#)
 check = MatAdd(
     MatMul(A.T, B.I, C, D.T),
-    Transpose(Inverse(MatAdd(
-        B, E.I, Transpose(Inverse(R)), C.T
-    )))
+    Inverse(MatAdd(
+        R.I, C, Transpose(Inverse(E)), B.T
+    ))
 )
 
 testCase(algo = factor, expr = expr_SMaGA, check = check, byType = Transpose)
@@ -876,9 +900,9 @@ testCase(algo = factor, expr = expr_SMmGA, check = check, byType = Transpose)
 
 check = MatMul(
     MatMul(A.T, B.I, C, D.T),
-    Inverse(Inverse(MatAdd(
+    Inverse(MatAdd(
         R.I, C, Transpose(Inverse(E)), B.T
-    )))
+    ))
 )
 
 testCase(algo = polarize, expr = expr_SMmGA, check = check, byType = Transpose)
@@ -1134,6 +1158,9 @@ expr_GAaGM = MatAdd(
         B, E.I, Inverse(Transpose(R)), C.T
     )))
 )
+# %%
+
+
 
 check = MatAdd(
     Inverse(MatAdd(A.T, B.I, C, D.T)),
@@ -1146,13 +1173,12 @@ testCase(algo = factor, expr = expr_GAaGM, check = check, byType = Transpose)
 # %%
 
 
-# TODO left off here refactoring:  (STAR)
-# TODO: check wrapdeep isSym because the above expressions be.ir.t.i*c.t haven't been getting wrapped properly ... see then if you still need to apply the polarize twice
+check = MatAdd(
+    Inverse(MatMul(C, R.I, Transpose(Inverse(E)), B.T)),
+    Inverse(MatAdd(B.I, C, A.T, D.T))
+)
 
-expr_GAaGM
-p = polarize(Transpose, expr_GAaGM)
-p
-#testCase(algo = polarize, expr = expr_GAaGM, check = check, byType = Transpose)
+testCase(algo = polarize, expr = expr_GAaGM, check = check, byType = Transpose)
 # %% -------------------------------------------------------------
 
 
@@ -1164,12 +1190,20 @@ expr_GAaGM = MatAdd(
         B, E.I, Inverse(Transpose(R)), Transpose(Transpose(C))
     )))
 )
-#check_polarize =
 
+check_polarize = MatAdd(
+    Inverse(MatAdd(A.T, B.I, C, D.T)),
+    Inverse(MatMul(
+        C.T, R.I, Transpose(Inverse(E)), B.T
+    ))
+)
+
+# NOTE: in this case the top-level-transpose count is the same for both resultGroup an d resultAdd (4) so the group expression is returned (as specified in the polarize algo)
+testCase(algo = polarize, expr = expr_GAaGM, check = check_polarize, byType = Transpose)
 # %% --------------------------------------------------------------
 
 
-# TEST 12b: GA + GM = group symbol Add + group symbol Mul (with more layerings per component)
+# TEST 12c: GA + GM = group symbol Add + group symbol Mul (with more layerings per component)
 
 expr_GAaGM = MatAdd(
     Inverse(Inverse(Transpose(Inverse(Transpose(Transpose(MatAdd(
@@ -1204,11 +1238,27 @@ check = MatAdd(
 )
 
 testCase(algo = factor, expr = expr_GAaGM, check = check, byType = Transpose)
-#assert expr_GAaGM.doit() == res.doit()
-#assert res.doit() == check.doit()
+# %%
 
 
+check = MatAdd(
+    Transpose(Inverse(Inverse(Inverse(MatAdd(
+        Inverse(Inverse(Inverse(A))),
+        Inverse(Inverse(B)),
+        C,
+        D.I
+    ))))),
+    Inverse(Inverse(MatMul(
+        R.I, C, Transpose(Inverse(E)), B.T
+    ))),
+    Inverse(Inverse(MatMul(
+        B, Transpose(Inverse(A)), R
+    )))
+)
+
+testCase(algo = polarize, expr = expr_GAaGM, check = check, byType = Transpose)
 # %% --------------------------------------------------------------
+
 
 
 # TEST 13a: GA * GM = group symbol Add * group symbol Mul
@@ -1219,6 +1269,8 @@ expr_GAmGM = MatMul(
         B, E.I, Inverse(Transpose(R)), C.T
     )))
 )
+# %%
+
 
 check = MatMul(
     Inverse(MatAdd(A.T, B.I, C, D.T)),
@@ -1228,8 +1280,17 @@ check = MatMul(
 )
 
 testCase(algo = factor, expr = expr_GAmGM, check = check, byType = Transpose)
-#assert expr_GAmGM.doit() == res.doit()
-#assert res.doit() == check.doit()
+# %%
+
+
+check = MatMul(
+    Inverse(MatAdd(A.T, B.I, C, D.T)),
+    Inverse(MatMul(
+        C, R.I, Transpose(Inverse(E)), B.T
+    ))
+)
+
+testCase(algo = polarize, expr = expr_GAmGM, check = check, byType = Transpose)
 # %% --------------------------------------------------------------
 
 
@@ -1249,6 +1310,9 @@ expr_GAmGM = MatMul(
         B, Inverse(Transpose(Transpose(Transpose(A)))), R
     )))))
 )
+# %%
+
+
 
 check = MatMul(
     Transpose(Inverse(Inverse(Inverse(MatAdd(
@@ -1266,10 +1330,26 @@ check = MatMul(
 )
 
 testCase(algo = factor, expr = expr_GAmGM, check = check, byType = Transpose)
-#assert expr_GAmGM.doit() == res.doit()
-#assert res.doit() == check.doit()
+# %%
 
 
+
+check = MatMul(
+    Transpose(Inverse(Inverse(Inverse(MatAdd(
+        Inverse(Inverse(Inverse(A))),
+        Inverse(Inverse(B)),
+        C,
+        D.I
+    ))))),
+    Inverse(Inverse(MatMul(
+        R.I, C, Transpose(Inverse(E)), B.T
+    ))),
+    Inverse(Inverse(MatMul(
+        B, Transpose(Inverse(A)), R
+    )))
+)
+
+testCase(algo = polarize, expr = expr_GAmGM, check = check, byType = Transpose)
 # %% --------------------------------------------------------------
 
 
@@ -1281,6 +1361,9 @@ expr_GMaGM = MatAdd(
         B, E.I, Inverse(Transpose(R)), C.T
     )))
 )
+# %%
+
+
 
 check = MatAdd(
     Inverse(MatMul(A.T, B.I, C, D.T)),
@@ -1290,8 +1373,18 @@ check = MatAdd(
 )
 
 testCase(algo = factor, expr = expr_GMaGM, check = check, byType = Transpose)
-#assert expr_GMaGM.doit() == res.doit()
-#assert res.doit() == check.doit()
+# %%
+
+
+
+check = MatAdd(
+    Inverse(MatMul(A.T, B.I, C, D.T)),
+    Inverse(MatMul(
+        C, R.I, Transpose(Inverse(E)), B.T
+    ))
+)
+
+testCase(algo = polarize, expr = expr_GMaGM, check = check, byType = Transpose)
 # %% --------------------------------------------------------------
 
 
@@ -1311,6 +1404,8 @@ expr_GMaGM = MatAdd(
         B, Inverse(Transpose(Transpose(Transpose(A)))), R
     )))))
 )
+# %%
+
 
 check = MatAdd(
     Transpose(Inverse(Inverse(Inverse(MatMul(
@@ -1328,10 +1423,25 @@ check = MatAdd(
 )
 
 testCase(algo = factor, expr = expr_GMaGM, check = check, byType = Transpose)
-#assert expr_GMaGM.doit() == res.doit()
-#assert res.doit() == check.doit()
+# %%
 
 
+check = MatAdd(
+    Transpose(Inverse(Inverse(Inverse(MatMul(
+        Inverse(Inverse(Inverse(A))),
+        Inverse(Inverse(B)),
+        C,
+        D.I
+    ))))),
+    Inverse(Inverse(MatMul(
+        R.I, C, Transpose(Inverse(E)), B.T
+    ))),
+    Inverse(Inverse(MatMul(
+        B, Transpose(Inverse(A)), R
+    )))
+)
+
+testCase(algo = polarize, expr = expr_GMaGM, check = check, byType = Transpose)
 # %% --------------------------------------------------------------
 
 
@@ -1343,6 +1453,9 @@ expr_GMmGM = MatMul(
         B, E.I, Inverse(Transpose(R)), C.T
     )))
 )
+# %%
+
+
 
 check = MatMul(
     Inverse(MatMul(A.T, B.I, C, D.T)),
@@ -1352,10 +1465,18 @@ check = MatMul(
 )
 
 testCase(algo = factor, expr = expr_GMmGM, check = check, byType = Transpose)
-#assert expr_GMmGM.doit() == res.doit()
-#assert res.doit() == check.doit()
+# %%
 
 
+
+check = MatMul(
+    Inverse(MatMul(A.T, B.I, C, D.T)),
+    Inverse(MatMul(
+        C, R.I, Transpose(Inverse(E)), B.T
+    ))
+)
+
+testCase(algo = polarize, expr = expr_GMmGM, check = check, byType = Transpose)
 # %% --------------------------------------------------------------
 
 
@@ -1365,13 +1486,20 @@ expr_GMmGM = MatMul(
     Transpose(MatMul(A, B)),
     Transpose(MatMul(R, J))
 )
+# %%
+
+
 
 check = expr_GMmGM
 
 testCase(algo = factor, expr = expr_GMmGM, check = check, byType = Transpose)
-#assert expr_GMmGM.doit() == res.doit()
-#assert res.doit() == check.doit()
+# %%
 
+
+# NOTE: here we can see effect of the layered replace (nesting effect on  multiplication: RJ(AB) instead of just RJAB  )
+check = Transpose(MatMul(R, J, A, B))
+
+testCase(algo = polarize, expr = expr_GMmGM, check = check, byType = Transpose)
 
 # %% --------------------------------------------------------------
 
@@ -1392,6 +1520,9 @@ expr_GMmGM = MatMul(
         B, Inverse(Transpose(Transpose(Transpose(A)))), R
     )))))
 )
+# %%
+
+
 
 check = MatMul(
     Transpose(Inverse(Inverse(Inverse(MatMul(
@@ -1409,10 +1540,27 @@ check = MatMul(
 )
 
 testCase(algo = factor, expr = expr_GMmGM, check = check, byType = Transpose)
-#assert expr_GMmGM.doit() == res.doit()
-#assert res.doit() == check.doit()
+# %%
 
 
+
+check = MatMul(
+    Transpose(Inverse(Inverse(Inverse(MatMul(
+        Inverse(Inverse(Inverse(A))),
+        Inverse(Inverse(B)),
+        C,
+        D.I
+    ))))),
+    Inverse(Inverse(MatMul(
+        R.I, C, Transpose(Inverse(E)), B.T
+    ))),
+    Inverse(Inverse(MatMul(
+        B, Transpose(Inverse(A)), R
+    )))
+)
+
+testCase(algo = polarize, expr = expr_GMmGM, check = check, byType = Transpose)
+# FUN TODO: test polarize transpose then inverse and assert same result from inverse then transpose
 # %%
 
 #TODO later: SL_a_GA_2 as innermost arg layered with transpse and then combine with any other kind: SL, SA, SM, GA, GM in between the layers. TODO for every kind of expression
@@ -1458,7 +1606,6 @@ testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
 
 # GENERAL TEST 2: transpose out, inverse in
 expr = Transpose(Inverse(C*E*B))
-
 # %%
 
 
@@ -1571,24 +1718,10 @@ testCase(algo = factor, expr = expr4, check = check4, byType = Transpose)
 (expr3, check3) = (C.I, C.I)
 (expr4, check4) = (Inverse(Transpose(C)), Transpose(Inverse(C)))
 
-testCase(algo = factor, expr = expr1, check = check1, byType = Transpose)
-testCase(algo = factor, expr = expr2, check = check2, byType = Transpose)
-testCase(algo = factor, expr = expr3, check = check3, byType = Transpose)
-testCase(algo = factor, expr = expr4, check = check4, byType = Transpose)
-
-# %%
-
-
-(expr1, check1) = (Q, Q)
-(expr2, check2) = (Q.T, Q.T)
-(expr3, check3) = (C.I, C.I)
-(expr4, check4) = (Inverse(Transpose(C)), Transpose(Inverse(C)))
-
 testCase(algo = polarize, expr = expr1, check = check1, byType = Transpose)
 testCase(algo = polarize, expr = expr2, check = check2, byType = Transpose)
 testCase(algo = polarize, expr = expr3, check = check3, byType = Transpose)
 testCase(algo = polarize, expr = expr4, check = check4, byType = Transpose)
-
 # %% -------------------------------------------------------------
 
 
@@ -1641,7 +1774,6 @@ check = Inverse(Inverse(Inverse(MatMul(
 
 testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
 # %% -------------------------------------------------------------
-
 
 
 # GENERAL TEST 6: grouped products
@@ -1807,7 +1939,8 @@ testCase(algo = rippleOut, expr = expr, check = check, byType = Transpose)
 testCase(algo = factor, expr = expr, check = check, byType = Transpose)
 # %%
 
-
+# TODO this is the old check, before fixing polarize to split transpose over add
+# TODO check if indeed the result is as the polarize() intends
 check = Transpose(MatAdd(
     D, MatMul(B.T, E, K.T, Inverse(MatMul(B, A, R)), R, A.T), K.T
 ))
@@ -1889,6 +2022,12 @@ testCase(algo = rippleOut, expr = expr, check = check, byType = Transpose)
 check = Inverse(C.T * A.I * D.T)
 
 testCase(algo = factor, expr = expr, check = check, byType = Transpose)
+# %%
+
+
+check = Transpose(Inverse(MatMul(
+    D, Transpose(Inverse(A)), C
+)))
 testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
 
 # %% -------------------------------------------------------------
@@ -1940,9 +2079,8 @@ check = Inverse(MatMul(
     ))),
     MatMul(R, D, A.T)
 ))
-
+# NOTE even though this looks like the transpose on the left should come out, instead the polarize() does the right thing here since the alternative is RDA.T with outer transpose on the left and an overall transpose over the entire MatMul, so there are more transposes than in this check here (verified by digger hacks)
 testCase(algo = polarize, expr = expr, check = check, byType = Transpose)
-
 
 # %% -------------------------------------------------------------
 
@@ -2307,3 +2445,5 @@ testCase(algo = polarize, expr = expr_polarize, check = check, byType = Transpos
 
 
 
+
+# %% codecell

@@ -539,7 +539,7 @@ def wrapDeep(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
         wrappedArgs: List[MatrixExpr] = list(map(lambda a: factor(WrapType, wrapDeep(WrapType, a)), expr.args))
 
         exprWithPartsWrapped: MatrixExpr = Constr(*wrappedArgs)
-        
+
         exprOverallWrapped: MatrixExpr = wrapShallow(WrapType = WrapType, innerExpr = exprWithPartsWrapped)
 
         return exprOverallWrapped
@@ -576,40 +576,63 @@ def polarize(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
         return fwfe
 
+    def hack_polarizeMatAddMul(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr: 
+        assert expr.is_MatAdd or expr.is_MatMul 
+
+        polarizedArgs: List[MatrixExpr] = list(map(lambda a: hack_polarizeGroup(byType = byType, expr = a), expr.args))
+
+        Constr = expr.func 
+
+        return Constr(*polarizedArgs)
 
 
-    # TODO fix if this extra step of factoring and wrapping deep results in more transposes then  polarize again or just leave at the previous factor
-    countTopTypes = lambda pairs: sum(list(map(lambda pair: True if pair[0][0] == byType else False, pairs)) )
+    countTopTypes = lambda byType, pairs: sum(list(map(lambda pair: True if pair[0][0] == byType else False, pairs)) )
+    
 
-    p = algoPolarize(byType = byType, expr = expr)
-    pp = algoPolarize(byType = byType, expr = p )
-    fe = factor(byType, expr)
+    def hack_polarizeGroup(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr: 
+        # TODO fix if this extra step of factoring and wrapping deep results in more transposes then  polarize again or just leave at the previous factor
 
-    p_ds = digger(p)
-    pp_ds = digger(pp)
-    f_ds = digger(fe) # first factoring
+        p = algoPolarize(byType = byType, expr = expr)
+        pp = algoPolarize(byType = byType, expr = p )
+        fe = factor(byType, expr)
 
-    countMap: Dict[MatrixExpr, int] = dict([
-        (p, countTopTypes(p_ds)),
-        (pp, countTopTypes(pp_ds)),
-        (fe, countTopTypes(f_ds)),
-    ])
+        p_ds = digger(p)
+        pp_ds = digger(pp)
+        f_ds = digger(fe) # first factoring
 
-    # Get the first (get first expression corresponding to first minimum, since that is one of the ones that reduces num transpose)
-    countMapSorted: List[Tuple[MatrixExpr, int]] = sorted(countMap.items(), key = operator.itemgetter(1)) # sorting by values
+        countMap: Dict[MatrixExpr, int] = dict([
+            (p, countTopTypes(byType, p_ds)),
+            (pp, countTopTypes(byType, pp_ds)),
+            (fe, countTopTypes(byType, f_ds)),
+        ])
 
-    result: MatrixExpr = countMapSorted[0][0]
+        # Get the first (get first expression corresponding to first minimum, since that is one of the ones that reduces num transpose)
+        countMapSorted: List[Tuple[MatrixExpr, int]] = sorted(countMap.items(), key = operator.itemgetter(1)) # sorting by values
 
-    return result
-    # TODO if this function works make it more efficient by integrating the algoPolarize into the function itself (like put a list of functinos and apply the params to each arg in a map)
+        result: MatrixExpr = countMapSorted[0][0]
 
-
-    #if countTopTypes(fwfe_ds) > countTopTypes(fe_ds):
-    #    return fe # because sometimes the simpler answer is obtained after a simple factoring
-        # TODO check general case (?)
-    #return fwfe
+        return result
+        # TODO if this function works make it more efficient by integrating the algoPolarize into the function itself (like put a list of functinos and apply the params to each arg in a map)
 
 
+    # Compare the two results for the Addition case: 
+
+    if expr.is_MatAdd or expr.is_MatMul:
+        resultComp: MatrixExpr = hack_polarizeMatAddMul(byType, expr)
+        resultGroup: MatrixExpr = hack_polarizeGroup(byType, expr)
+
+        c_ds = digger(resultComp)
+        g_ds = digger(resultGroup)
+
+        if countTopTypes(byType, g_ds) > countTopTypes(byType, c_ds):
+            return resultComp
+        else: 
+            return resultGroup # favor the group result even when num byTypes are equal for each expression
+    
+    # else apply the group algo
+    resultGroup: MatrixExpr = hack_polarizeGroup(byType, expr)
+
+    return resultGroup 
 
 
 
