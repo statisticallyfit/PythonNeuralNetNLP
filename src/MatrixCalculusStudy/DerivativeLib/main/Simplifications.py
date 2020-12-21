@@ -35,17 +35,16 @@ MatrixType = ManagedProperties
 import sys
 import os
 
-PATH: str = '/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP'
+PATH: str = '/'
 
 UTIL_DISPLAY_PATH: str = PATH + "/src/utils/GeneralUtil/"
 
+MATDIFF_PATH: str = PATH + "/src/MatrixCalculusStudy/DifferentialLib"
 
-#os.chdir(NEURALNET_PATH)
-#assert os.getcwd() == NEURALNET_PATH
 
 sys.path.append(PATH)
 sys.path.append(UTIL_DISPLAY_PATH)
-
+sys.path.append(MATDIFF_PATH)
 
 
 
@@ -250,9 +249,9 @@ def group(byType: MatrixType, expr: MatrixExpr, combineAdds:bool = False) -> Mat
     if not expr.is_MatAdd: # TODO must change this to identify matmul or matsym exactly
         return algo_Group_MatMul_or_MatSym(byType, expr)
 
-    
-    Constr = expr.func 
-    
+
+    Constr = expr.func
+
     # TODO fix this to handle any non-add operation upon function entry
     addendsTransp: List[MatrixExpr] = list(map(lambda a: group(byType, a), expr.args))
 
@@ -263,7 +262,7 @@ def group(byType: MatrixType, expr: MatrixExpr, combineAdds:bool = False) -> Mat
 
     # Else not combining adds, just grouping transposes in addends individually
     # TODO fix this to handle any non-add operation upon function entry. May not be a MatAdd, may be Trace for instance.
-    
+
     #return MatAdd(*addendsTransp)
     return Constr(*addendsTransp)
 
@@ -439,10 +438,10 @@ def factor(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
     typesInners = digger(expr)
 
-    # Check: if empty list returned by digger (say since expr is just MatrixSymbol) then need to exit and return original expression (since there must be nothing to factor). 
+    # Check: if empty list returned by digger (say since expr is just MatrixSymbol) then need to exit and return original expression (since there must be nothing to factor).
     if typesInners == []:
-        return expr 
-    # Otherwise error results on next line: 
+        return expr
+    # Otherwise error results on next line:
 
 
     (types, innerExprs) = list(zip(*typesInners))
@@ -529,16 +528,23 @@ def wrapDeep(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
     if isSym(expr):
         return expr
-    elif Constr in [MatAdd, MatMul]:  #then split the polarizing operation over the arguments since any one of the args can be an inner expr.
-        wrappedArgs: List[MatrixExpr] = list(map(lambda a: wrapDeep(WrapType, a), expr.args))
-        exprWithPartsWrapped: MatrixExpr = Constr(*wrappedArgs)
-        exprOverallWrapped: MatrixExpr = wrapShallow(WrapType = WrapType, innerExpr = exprWithPartsWrapped)
-
-        return exprOverallWrapped
 
     elif isInnerExpr(expr):
         wrappedExpr: MatrixExpr = wrapShallow(WrapType = WrapType, innerExpr = expr)
         return wrappedExpr
+
+    elif Constr in [MatAdd, MatMul]:  #then split the polarizing operation over the arguments since any one of the args can be an inner expr.
+
+        # NOTE: must also factor the result so that the next step of wrapNest works correctly (doesn't contain superfluous transposes)
+        wrappedArgs: List[MatrixExpr] = list(map(lambda a: factor(WrapType, wrapDeep(WrapType, a)), expr.args))
+
+        exprWithPartsWrapped: MatrixExpr = Constr(*wrappedArgs)
+        
+        exprOverallWrapped: MatrixExpr = wrapShallow(WrapType = WrapType, innerExpr = exprWithPartsWrapped)
+
+        return exprOverallWrapped
+
+    
     else: # else is Trace, Transpose, or Inverse or any other constructor
         innerExpr = expr.arg
 
@@ -559,7 +565,7 @@ def polarize(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
     There must be no layering of transpose in the nested expressions in the result returned by this function -- polarization of transpose to the outer edges.'''
 
 
-    def algoPolarize(byType: MatrixExpr, expr: MatrixExpr) -> MatrixExpr: 
+    def algoPolarize(byType: MatrixExpr, expr: MatrixExpr) -> MatrixExpr:
         # Need to factor out transposes and ripple them out first before passing to wrap algo because the wrap algo won't reach in and factor or bring out inner transposes, will just overlay on top of them without simplifying (bad, since yields more complicated expression)
         fe = factor(byType = byType, expr = expr) # no need for ripple out because factor does this implicitly
 
@@ -590,11 +596,11 @@ def polarize(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
     ])
 
     # Get the first (get first expression corresponding to first minimum, since that is one of the ones that reduces num transpose)
-    countMapSorted: List[Tuple[MatrixExpr, int]] = sorted(countMap.items(), key = operator.itemgetter(1)) # sorting by values 
+    countMapSorted: List[Tuple[MatrixExpr, int]] = sorted(countMap.items(), key = operator.itemgetter(1)) # sorting by values
 
     result: MatrixExpr = countMapSorted[0][0]
 
-    return result 
+    return result
     # TODO if this function works make it more efficient by integrating the algoPolarize into the function itself (like put a list of functinos and apply the params to each arg in a map)
 
 
@@ -602,7 +608,7 @@ def polarize(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
     #    return fe # because sometimes the simpler answer is obtained after a simple factoring
         # TODO check general case (?)
     #return fwfe
-    
+
 
 
 
@@ -611,7 +617,7 @@ def polarize(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
 
 # ------------------------------------------------------------------
-# UNUSED: 
+# UNUSED:
 
 def splitOnce(theArgs: List[MatrixSymbol], signalVar: MatrixSymbol, n: int) -> Tuple[List[MatrixSymbol], List[MatrixSymbol]]:
 

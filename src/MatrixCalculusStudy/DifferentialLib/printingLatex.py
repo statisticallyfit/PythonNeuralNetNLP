@@ -6,7 +6,7 @@ from sympy.matrices.expressions import MatrixExpr
 from sympy.abc import x, i, j, a, b
 from sympy.core.function import UndefinedFunction, Application
 
-from src.MatrixCalculusStudy.MatrixDerivLib.symbols import Deriv# , RealValuedMatrixFunc
+from src.MatrixCalculusStudy.DifferentialLib.symbols import Deriv# , RealValuedMatrixFunc
 
 
 from functools import reduce

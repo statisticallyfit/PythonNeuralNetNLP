@@ -24,7 +24,7 @@ import os
 
 PATH: str = '/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP'
 
-MATDIFF_PATH: str = PATH + "/src/MatrixCalculusStudy/LIBSymbolicMatDiff/"
+MATDIFF_PATH: str = PATH + "/src/MatrixCalculusStudy/DifferentialLib/"
 
 UTIL_PATH: str = PATH + "/src/utils/"
 
@@ -33,10 +33,12 @@ sys.path.append(MATDIFF_PATH)
 sys.path.append(UTIL_PATH)
 
 # Importing the custom files:
-from src.MatrixCalculusStudy.MatrixDerivLib.symbols import d, Kron, SymmetricMatrixSymbol, Deriv#, RealValuedMatrixFunc # my deriv here
-from src.MatrixCalculusStudy.MatrixDerivLib.simplifications import simplify_matdiff
+from src.MatrixCalculusStudy.DifferentialLib.symbols import d, Kron, SymmetricMatrixSymbol, Deriv#,
+# RealValuedMatrixFunc #
+# my deriv here
+from src.MatrixCalculusStudy.DifferentialLib.simplifications import simplify_matdiff
 from src.utils.GeneralUtil import *
-from src.MatrixCalculusStudy.MatrixDerivLib.printingLatex import myLatexPrinter
+from src.MatrixCalculusStudy.DifferentialLib.printingLatex import myLatexPrinter
 
 from IPython.display import display, Math
 from sympy.interactive import printing
@@ -48,7 +50,7 @@ printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLat
 #printing.init_printing(use_latex='mathjax')
 
 
-# NOTE verified the tensor product rule B x A^T from Alexander Graham book example 5.1: 
+# NOTE verified the tensor product rule B x A^T from Alexander Graham book example 5.1:
 # Matrix(derive_by_array(y, x)) == Matrix(TensorProduct(W, eye(3,3)))
 # But it seems this needs to be unvectorized to get result W^T (as in add every third row and then add every third column to get W^T. Question here: how does this folding process relate to W^T in the dl_dW_abstract formula from derivtion.py? )
 
@@ -201,7 +203,7 @@ def main():
     L = MatrixSymbol('L', a, c)
     E = MatrixSymbol('E', c, b)
 
-    # Testing with real numbers because the matrix diff function needs real number dimensions 
+    # Testing with real numbers because the matrix diff function needs real number dimensions
     # TODO make diffmatrix convert symbolic dims into real dims that match just for the sake of keeping symbolic dims at the end (then replace)
     A_ = MatrixSymbol("A", 4, 3)
     J_ = MatrixSymbol('J', 4, 3)
@@ -217,7 +219,7 @@ def main():
 
     # TODO this doesn't seem correct --- just puts the diff operator on the A, why doesn't it compare to the diff(X*w) = X^T ???
     display(matrixDifferential(B_ * Inverse(C_) * E_.T * L_.T * A_ * E_ * D_ , A_))
-    # TODO make the diffmatrix function be able to operate on MatrixSymbol type that has symbols for dimensions, not just real numbers: 
+    # TODO make the diffmatrix function be able to operate on MatrixSymbol type that has symbols for dimensions, not just real numbers:
     # B * Inverse(C) * E.T * L.T * A * E * D
 
     #diffMatrix(A * Inverse(R) * B, R)
@@ -236,7 +238,7 @@ def main():
     g = Function('g', commutative=True)
     h = Function('h', commutative=True)
 
-    # Product Rule for Matrices: 
+    # Product Rule for Matrices:
     matrixDifferential(f(A,B)*g(A,B), A)
 
 
