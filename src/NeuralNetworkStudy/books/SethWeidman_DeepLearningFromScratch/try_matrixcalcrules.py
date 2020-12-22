@@ -374,18 +374,60 @@ showGroup([
 
 
 # Now apply the trace deriv function per pair
-def traceDerivPair(pair: Tuple[List[MatrixSymbol], List[MatrixSymbol]]) -> MatrixExpr:
+def calcTraceDerivFromPair(useConstr: MatrixType , pair: ArgPair, signalVar: MatrixSymbol) -> MatrixExpr:
+
+    #def combiner(left: List[MatrixExpr], right: List[MatrixExpr], useConstr: MatrixType, signalVar: MatrixSymbol):
+
+    def combineWhenTransposeArg(left: List[MatrixExpr], right: List[MatrixExpr]) -> MatrixExpr:
+
+        result = MatMul(*list(itertools.chain(*(right, left))))
+        return result 
+
+
+    def combineWhenInverseArg(left: List[MatrixExpr], right: List[MatrixExpr], signalVar: MatrixSymbol) -> MatrixExpr:
+
+        # Create the inner matmul (that is inside the inverse var)
+        middle: MatrixExpr = MatMul(* list(itertools.chain(* (right, left) )))
+        # Create the inverse diff expression result
+        invVar = Inverse(signalVar)
+        result = MatMul(NegativeOne(-1), Transpose(MatMul(invVar, middle, invVar)) )
+
+        return result 
+
+
+
+    def combineWhenSimpleArg(left: List[MatrixExpr], right: List[MatrixExpr]) -> MatrixExpr:
+        def putTranspInList(lstSyms: List[MatrixSymbol]) -> List[MatrixExpr]:
+            if len(lstSyms) == 0:
+                return []
+            elif len(lstSyms) == 1: 
+                return [Transpose(*lstSyms)]
+            #else: 
+            return [Transpose(MatMul(*lstSyms))]
+        
+        result = MatMul(* (putTranspInList(left) + putTranspInList(right)) )
+
+        return result 
+        
+    
     (left, right) = pair
 
-    # NOTE: separating operations based on the length of the element list because we don't want braces like (C)^T, instead we want C^T simply. If len == 1 then it is case C instaed of C,E,B,,... so need no MatMul inside Transpose:
-    leftTransp = Transpose(*left) if len(left) == 1 else Transpose(MatMul(*left))
+    if left == [] and right == []:
+        # TODO this function is not prepared for when both are empty (what else to return but exception? WANT OPTION MONAD NOW)
+        raise Exception("Both `left` and `right` are empty")
 
-    rightTransp = Transpose(*right) if len(right) == 1 else Transpose(MatMul(*right))
 
-    return MatMul( leftTransp, rightTransp )
+    if useConstr == Transpose:
+        return combineWhenTransposeArg(left, right)
+    elif useConstr == Inverse:
+        return combineWhenInverseArg(left, right, signalVar = signalVar)
+    #else: is matrixsymbol
+    # TODO what is good practice, need to assert useConstr == MatrixSymbol? how to be more typesafe????
+    return combineWhenSimpleArg(left, right)
+
 
 # %%
-def derivMatInsideTrace(expr: MatrixExpr, byVar: MatrixSymbol) -> MatMul:
+def calcDerivInsideTrace(expr: MatrixExpr, byVar: MatrixSymbol) -> MatMul:
     # First check if not expr matrix symbol; if it is then diff easily.
     if isinstance(expr, MatrixSymbol):
         return diff(Trace(expr), byVar)
@@ -401,13 +443,13 @@ def derivMatInsideTrace(expr: MatrixExpr, byVar: MatrixSymbol) -> MatMul:
     # list(itertools.chain(*map(lambda expr: expr.free_symbols, trace.arg.args))), where expr := trace.arg
 
     # Get the split list applications: split by signal var for how many times it appears
-    signalSplits = list(map(lambda n: splitOnce(expr.args, byVar, n), range(1, numSignalVars + 1)))
+    signalSplits: List[Tuple[MatrixType, ArgPair]] = splitArgs(givenArgs = expr.args, signalVar = byVar)
 
     # Apply the trace derivative function per pair
-    transposedMatMuls = list(map(lambda s: traceDerivPair(s), signalSplits))
+    components = list(map(lambda typeAndPair: calcTraceDerivFromPair(*typeAndPair, signalVar = byVar), signalSplits))
 
     # Result is an addition of the transposed matmul combinations:
-    return MatAdd(* transposedMatMuls )
+    return MatAdd(* components )
 
 
 
@@ -428,7 +470,7 @@ def derivTrace(trace: Trace, byVar: MatrixSymbol) -> MatrixExpr:
 
     # Case 2: if arg is matmul then just apply the trace matmul function:
     elif trace.arg.is_MatMul:
-        return derivMatInsideTrace(trace.arg, byVar = byVar)
+        return calcDerivInsideTrace(trace.arg, byVar = byVar)
         #assert equal(result, diff(trace, byVar))
 
     # Case 3: split first by MatAdd to get MatMul pieces and feed in the pieces to the single function that gets applied to each MatMul piece.
@@ -438,7 +480,7 @@ def derivTrace(trace: Trace, byVar: MatrixSymbol) -> MatrixExpr:
         # NOTE: can contain matrixsymbols mixed with matmul
 
         # NOTE this is expr list of MatAdds; must flatten them to avoid brackets extra and to enhance simplification.
-        diffedAddends: List[MatrixExpr] = list(map(lambda m : derivMatInsideTrace(m, byVar), addends))
+        diffedAddends: List[MatrixExpr] = list(map(lambda m : calcDerivInsideTrace(m, byVar), addends))
 
         # Preparing to flatten the matrix additions into one overall matrix addition:
         splitMatAdd = lambda expr : list(expr.args) if expr.is_MatAdd else [expr]
@@ -459,13 +501,16 @@ def derivTrace(trace: Trace, byVar: MatrixSymbol) -> MatrixExpr:
 ### TRACE TEST 1: simple case, with addition, no inverse or transpose in any of the variables
 a, b, c = symbols('a b c', commutative=True)
 
-C = MatrixSymbol('C', a, b)
-E = MatrixSymbol('E', b, c)
-B = MatrixSymbol('B', c, b)
-L = MatrixSymbol('L', c, b)
-D = MatrixSymbol('D', c, a)
+A = MatrixSymbol("A", c, c)
+R = MatrixSymbol("R", c, c)
+J = MatrixSymbol("J", c, c)
+C = MatrixSymbol('C', c, c)
+E = MatrixSymbol('E', c, c)
+B = MatrixSymbol('B', c, c)
+L = MatrixSymbol('L', c, c)
+D = MatrixSymbol('D', c, c)
 
-K = MatrixSymbol('K', a, a)
+#K = MatrixSymbol('K', c, c)
 
 
 trace = Trace( A*B*E * R * J  + C*E*B*E*L*E*D )
@@ -487,6 +532,7 @@ dcheck = diff(trace, byVar)
 #assert simplify(check - res) == 0
 
 showGroup([
+    trace,
     res,
     polarize(Transpose, res),
     check,
@@ -520,9 +566,10 @@ check = Transpose( B * E * Inverse(L) * E * D * C + Inverse(L)*E*D*C*E*B +  D*C*
 dcheck = diff(trace, byVar)
 
 showGroup([
-    res,
+    trace,
+    res, polarize(Transpose, res),
     check,
-    dcheck
+    dcheck, polarize(Transpose, dcheck)
 ])
 
 assert equal(res, check)
@@ -550,15 +597,18 @@ check = Transpose(L * A* E * D * B * Inverse(C) + D*B*Inverse(C)*E*L*A)
 
 dcheck = diff(trace, byVar)
 
+showGroup([
+    trace,
+    res,
+    polarize(Transpose, res),
+    check,
+    dcheck,
+    polarize(Transpose, dcheck)
+])
+
 assert equal(res, check)
 assert equal(res, dcheck)
 assert equal(check, dcheck)
-
-showGroup([
-    res,
-    check,
-    dcheck
-])
 
 # %% -------------------------------------------------------------
 
@@ -580,15 +630,19 @@ check = Transpose(B*E*L*E*D*Inverse(C) + L*E*D*Inverse(C)*E*B + D*Inverse(C)*E*B
 
 dcheck = diff(trace, byVar)
 
+showGroup([
+    trace,
+    res,
+    polarize(Transpose, res),
+    check,
+    dcheck,
+    polarize(Transpose, dcheck)
+])
+
 assert equal(res, check)
 assert equal(res, dcheck)
 assert equal(check, dcheck)
 
-showGroup([
-    res,
-    check,
-    dcheck
-])
 
 # %% -------------------------------------------------------------
 
@@ -607,20 +661,25 @@ byVar = E
 
 res = derivTrace( trace , byVar)
 
-check = Transpose(L.T * A * E * D * B * C.I) + Transpose(D *B*C.I*E*L.T*A)
+check = Transpose(MatAdd(
+    L.T * A * E * D * B * C.I,
+    D *B*C.I*E*L.T*A
+))
 
 dcheck = diff(trace, byVar)
+
+showGroup([
+    trace,
+    res,
+    polarize(Transpose, res),
+    check,
+    dcheck,
+    polarize(Transpose, dcheck)
+])
 
 assert equal(res, check)
 assert equal(res, dcheck)
 assert equal(check, dcheck)
-
-showGroup([
-    res,
-    check,
-    dcheck,
-    group(res)
-])
 # %% -------------------------------------------------------------
 
 
@@ -644,19 +703,19 @@ check = L.T * A*E*D*B*C.I + A.T* L * E *(C.I).T * B.T * D.T
 dcheck = diff(trace, byVar)
 
 showGroup([
-    res, check, dcheck, group(dcheck)
+    trace,
+    res, 
+    polarize(Transpose, res),
+    check, 
+    dcheck, 
+    polarize(Transpose, dcheck)
 ])
-# %%
+
 assert equal(res, check)
 assert equal(res, dcheck)
 assert equal(check, dcheck)
 
-showGroup([
-    res,
-    check,
-    dcheck,
-    group(res)
-])
+
 
 
 # %%

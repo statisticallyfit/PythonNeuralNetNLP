@@ -662,3 +662,23 @@ def splitOnce(theArgs: List[MatrixSymbol], signalVar: MatrixSymbol, n: int) -> T
         cumArgs.append(arg)
 
     return ([], [])
+
+
+# NOTE: the symbols can be E.T or E or E.I (so are technically MatrixExpr's not MatrixSymbols)
+
+
+ArgPair = Tuple[List[MatrixSymbol], List[MatrixSymbol]]
+
+def splitArgs(givenArgs: List[MatrixExpr], signalVar: MatrixSymbol) -> List[Tuple[MatrixType, ArgPair]]:
+
+    '''Splits even at the signalVar if it is wrapped in theArgs with a constructor, and returns a dict specifying under which constructor it was wrapped in. 
+    
+    For instance if we split A * E.T * B at signalVar = E then result is {Transpose : ([A], [B]) } because the signalVar was wrapped in a transpose. 
+    
+    Constructor == Transpose ---> dict key is Transpose
+    Constructor == Inverse ---> dict key is Inverse
+    Constructor == MatrixSymbol --> dict key is MatrixSymbol (or None?)
+    '''
+    theArgs = list(givenArgs)
+
+    return [ ( theArgs[i].func  ,(theArgs[0:i], theArgs[i+1 : ]) ) for i in range(0, len(theArgs)) if theArgs[i].has(signalVar)] 
