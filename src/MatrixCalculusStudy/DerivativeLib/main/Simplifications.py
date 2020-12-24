@@ -20,6 +20,7 @@ from sympy.abc import x, i, j, a, b, c
 
 from sympy.matrices.expressions.matadd import MatAdd
 from sympy.matrices.expressions.matmul import MatMul
+from sympy.matrices.expressions.matpow import MatPow 
 
 from sympy.core.numbers import NegativeOne, Number
 
@@ -67,7 +68,7 @@ CONSTR_LIST: List[MatrixType] = [Transpose, Inverse]
 
 
 # TODO to add Function, Derivative, and Trace ? any others?
-ALL_TYPES_LIST = [Transpose, Inverse, MatMul, MatAdd, MatrixSymbol, Symbol, Number]
+ALL_TYPES_LIST = [Transpose, Inverse, MatMul, MatAdd, MatPow, MatrixSymbol, Symbol, Number]
 
 
 
@@ -504,12 +505,12 @@ def wrapShallow(WrapType: MatrixType, innerExpr: MatrixExpr) -> MatrixExpr:
         return innerExpr
 
     # Else do the wrapping algorithm:
-    invertedArgs: List[MatrixExpr] = list(map(lambda a: pickOut(Constr = WrapType, expr = a), innerExpr.args))
+    invertedArgs: List[MatrixExpr] = list(map(lambda a: pickOut(Constr = WrapType, expr = a), innerExpr.args)) # TODO BEFORE THIS POINT FIX MATPOW
 
 
     invertedArgs: List[MatrixExpr] = list(reversed(invertedArgs)) if Constr == MatMul else invertedArgs
 
-    wrapped: MatrixExpr = WrapType(Constr(*invertedArgs))
+    wrapped: MatrixExpr = WrapType(Constr(*invertedArgs)) # BROKEN HERE when wrapping -1 in matmul
 
     return wrapped
 
@@ -533,7 +534,7 @@ def wrapDeep(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
         wrappedExpr: MatrixExpr = wrapShallow(WrapType = WrapType, innerExpr = expr)
         return wrappedExpr
 
-    elif Constr in [MatAdd, MatMul]:  #then split the polarizing operation over the arguments since any one of the args can be an inner expr.
+    elif Constr in [MatAdd, MatMul, MatPow]:  #then split the polarizing operation over the arguments since any one of the args can be an inner expr.
 
         # NOTE: must also factor the result so that the next step of wrapNest works correctly (doesn't contain superfluous transposes)
         wrappedArgs: List[MatrixExpr] = list(map(lambda a: factor(WrapType, wrapDeep(WrapType, a)), expr.args))

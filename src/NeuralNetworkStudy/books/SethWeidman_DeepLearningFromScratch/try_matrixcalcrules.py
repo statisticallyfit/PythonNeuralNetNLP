@@ -1,7 +1,33 @@
 # %%
 
 
+
+import numpy as np
+from numpy import ndarray
+
+from typing import *
+import itertools
+from functools import reduce
+
+
+from sympy import det, Determinant, Trace, Transpose, Inverse, Function, Lambda, HadamardProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, MatrixSymbol, Identity,  Derivative, symbols, diff
+
+from sympy import srepr , simplify
+
+from sympy import tensorcontraction, tensorproduct, preorder_traversal
+from sympy.functions.elementary.piecewise import Undefined
+from sympy.physics.quantum.tensorproduct import TensorProduct
+
+from sympy.abc import x, i, j, a, b, c
+
+from sympy.matrices.expressions.matadd import MatAdd
+from sympy.matrices.expressions.matmul import MatMul
+from sympy.matrices.expressions.matpow import MatPow 
+
+from sympy.core.numbers import NegativeOne, Number
+
 from sympy.core.assumptions import ManagedProperties
+
 
 # %%
 import torch
@@ -495,10 +521,7 @@ def derivTrace(trace: Trace, byVar: MatrixSymbol) -> MatrixExpr:
 
 # %%
 
-# TODO refactor with testCase functions
-
-
-### TRACE TEST 1: simple case, with addition, no inverse or transpose in any of the variables
+# TRACE DERIVATIVE TESTS: 
 a, b, c = symbols('a b c', commutative=True)
 
 A = MatrixSymbol("A", c, c)
@@ -510,214 +533,198 @@ B = MatrixSymbol('B', c, c)
 L = MatrixSymbol('L', c, c)
 D = MatrixSymbol('D', c, c)
 
-#K = MatrixSymbol('K', c, c)
+# %% --------------------------------------------------------------
 
+
+### TRACE TEST 1: simple case, with addition, no inverse or transpose in any of the variables
 
 trace = Trace( A*B*E * R * J  + C*E*B*E*L*E*D )
 byVar = E
 
-
-res = derivTrace(trace, byVar)
-
-check = MatAdd(
+groupedCheck = MatAdd(
     MatMul(Transpose(MatMul(A, B)), Transpose(MatMul(R, J))),
     MatMul(C.T, Transpose(MatMul(B, E, L, E, D))),
     MatMul(Transpose(MatMul(C, E, B)), Transpose(MatMul(L, E, D))),
     MatMul(Transpose(MatMul(C, E, B, E, L)), D.T)
 )
 
-dcheck = diff(trace, byVar)
+onlineCheck = Transpose(MatAdd(
+    MatMul(R,J,A,B),
+    MatMul(B,E,L,E,D,C),
+    MatMul(L,E,D,C,E,B),
+    MatMul(D,C,E,B,E,L)
+))
 
-# NOTE: doesn't work to simplify the check - res expression ! Leaves it in subtraction form, same with doit() in all kinds of combinations with simplify()
-#assert simplify(check - res) == 0
-
-showGroup([
-    trace,
-    res,
-    polarize(Transpose, res),
-    check,
-    dcheck
-])
-
-assert equal(check, res)
-assert equal(res, dcheck)
-assert equal(check, dcheck)
-
-
+testDerivAlgo(algo = derivTrace, expr = trace, byVar = byVar, groupedCheck = groupedCheck, onlineCheck = onlineCheck)
 
 # %% -------------------------------------------------------------
 
 
 # TRACE TEST 2a: testing one inverse expression, not the byVar
-
-C = MatrixSymbol('C', a, c)
-E = MatrixSymbol('E', c, c)
-B = MatrixSymbol('B', c, c)
-L = MatrixSymbol('L', c, c)
-D = MatrixSymbol('D', c, a)
-
 trace = Trace(C * E * B * E * Inverse(L) * E * D)
 byVar = E
 
-res = derivTrace( trace , byVar)
+groupedCheck = Transpose(MatAdd(
+    B * E * Inverse(L) * E * D * C,
+    Inverse(L)*E*D*C*E*B,
+    D*C*E*B*E*Inverse(L)
+)) 
 
-check = Transpose( B * E * Inverse(L) * E * D * C + Inverse(L)*E*D*C*E*B +  D*C*E*B*E*Inverse(L))
+onlineCheck = groupedCheck 
 
-dcheck = diff(trace, byVar)
-
-showGroup([
-    trace,
-    res, polarize(Transpose, res),
-    check,
-    dcheck, polarize(Transpose, dcheck)
-])
-
-assert equal(res, check)
-assert equal(res, dcheck)
-assert equal(check, dcheck)
+testDerivAlgo(algo = derivTrace, expr = trace, byVar = byVar, groupedCheck = groupedCheck, onlineCheck = onlineCheck)
 
 # %% -------------------------------------------------------------
 
 
 # TRACE TEST 2b: testing one inverse expression, not the byVar
 
-C = MatrixSymbol('C', c, c)
-A = MatrixSymbol('A', c, c)
-E = MatrixSymbol('E', c, c)
-B = MatrixSymbol('B', c, c)
-L = MatrixSymbol('L', c, c)
-D = MatrixSymbol('D', c, c)
-
 trace = Trace(B * Inverse(C) * E * L * A * E * D)
 byVar = E
 
-res = derivTrace( trace , byVar)
+groupedCheck = Transpose(L * A* E * D * B * Inverse(C) + D*B*Inverse(C)*E*L*A)
+onlineCheck = groupedCheck
 
-check = Transpose(L * A* E * D * B * Inverse(C) + D*B*Inverse(C)*E*L*A)
-
-dcheck = diff(trace, byVar)
-
-showGroup([
-    trace,
-    res,
-    polarize(Transpose, res),
-    check,
-    dcheck,
-    polarize(Transpose, dcheck)
-])
-
-assert equal(res, check)
-assert equal(res, dcheck)
-assert equal(check, dcheck)
+testDerivAlgo(algo = derivTrace, expr = trace, byVar = byVar, groupedCheck = groupedCheck, onlineCheck = onlineCheck)
 
 # %% -------------------------------------------------------------
 
 
 # TRACE TEST 2c: testing one inverse expression, not the byVar, that is situated at the front of the expression.
 
-C = MatrixSymbol('C', c, c)
-E = MatrixSymbol('E', c, b)
-B = MatrixSymbol('B', b, c)
-L = MatrixSymbol('L', b, c)
-D = MatrixSymbol('D', b, c)
-
 trace = Trace(Inverse(C) * E * B * E * L * E * D)
 byVar = E
 
-res = derivTrace( trace , byVar)
+groupedCheck = Transpose(B*E*L*E*D*Inverse(C) + L*E*D*Inverse(C)*E*B + D*Inverse(C)*E*B*E*L)
+onlineCheck = groupedCheck
 
-check = Transpose(B*E*L*E*D*Inverse(C) + L*E*D*Inverse(C)*E*B + D*Inverse(C)*E*B*E*L)
-
-dcheck = diff(trace, byVar)
-
-showGroup([
-    trace,
-    res,
-    polarize(Transpose, res),
-    check,
-    dcheck,
-    polarize(Transpose, dcheck)
-])
-
-assert equal(res, check)
-assert equal(res, dcheck)
-assert equal(check, dcheck)
-
-
+testDerivAlgo(algo = derivTrace, expr = trace, byVar = byVar, groupedCheck = groupedCheck, onlineCheck = onlineCheck)
 # %% -------------------------------------------------------------
 
 
 # TRACE TEST 3a: testing mix of inverse and transpose expressions, not the byVar
 
-B = MatrixSymbol('B', c, c)
-C = MatrixSymbol('C', c, c)
-E = MatrixSymbol('E', c, c)
-L = MatrixSymbol('L', b, c)
-A = MatrixSymbol('A', b, c)
-D = MatrixSymbol('D', c, c)
-
 trace = Trace(B * C.I * E * L.T * A * E * D)
 byVar = E
 
-res = derivTrace( trace , byVar)
+groupedCheck = MatAdd(
+    MatMul(Transpose(B * C.I), Transpose(L.T * A * E* D)),
+    MatMul(Transpose(B * C.I * E * L.T * A), Transpose(D))
+)
 
-check = Transpose(MatAdd(
-    L.T * A * E * D * B * C.I,
-    D *B*C.I*E*L.T*A
-))
+onlineCheck = MatAdd(
+    MatMul(Transpose(A*E*D*B*Inverse(C)), L),
+    MatMul(A.T, L, E.T, Transpose(Inverse(C)), B.T, D.T)
+)
 
-dcheck = diff(trace, byVar)
-
-showGroup([
-    trace,
-    res,
-    polarize(Transpose, res),
-    check,
-    dcheck,
-    polarize(Transpose, dcheck)
-])
-
-assert equal(res, check)
-assert equal(res, dcheck)
-assert equal(check, dcheck)
+testDerivAlgo(algo = derivTrace, expr = trace, byVar = byVar, groupedCheck = groupedCheck, onlineCheck = onlineCheck)
 # %% -------------------------------------------------------------
-
 
 
 ### TRACE TEST 3b: testing mix of inverser and transpose expressions, and byVar is either an inverse of transpose.
 
-B = MatrixSymbol('B', c, c)
-C = MatrixSymbol('C', c, c)
-E = MatrixSymbol('E', c, c)
-L = MatrixSymbol('L', b, c)
-A = MatrixSymbol('A', b, c)
-D = MatrixSymbol('D', c, c)
-
 trace = Trace(B * C.I * E.T * L.T * A * E * D)
 byVar = E
 
-res = derivTrace( trace , byVar)
-
-check = L.T * A*E*D*B*C.I + A.T* L * E *(C.I).T * B.T * D.T
-
-dcheck = diff(trace, byVar)
-
-showGroup([
-    trace,
-    res, 
-    polarize(Transpose, res),
-    check, 
-    dcheck, 
-    polarize(Transpose, dcheck)
-])
-
-assert equal(res, check)
-assert equal(res, dcheck)
-assert equal(check, dcheck)
+groupedCheck = MatAdd(
+    MatMul(L.T,A,E,D,B,C.I),
+    MatMul(Transpose(B*C.I*E.T * L.T*A), Transpose(D))
+)
+onlineCheck = L.T * A*E*D*B*C.I + A.T* L * E *(C.I).T * B.T * D.T
 
 
+testDerivAlgo(algo = derivTrace, expr = trace, byVar = byVar, groupedCheck = groupedCheck, onlineCheck = onlineCheck)
+
+# %% -------------------------------------------------------------
 
 
+### TRACE TEST 4a: no inverse or transpose, but the byVar is at the edges and in the middle
+
+trace = Trace(E * C * A * B * E * L * E * D * E)
+byVar = E
+
+groupedCheck = MatAdd(
+    Transpose(C*A*B*E*L*E*D*E),
+    MatMul(Transpose(E*C*A*B), Transpose(L*E*D*E)),
+    MatMul(Transpose(E*C*A*B*E*L), Transpose(D*E)),
+    Transpose(E*C*A*B*E*L*E*D)
+)
+
+onlineCheck = Transpose(MatAdd(
+    MatMul(C,A,B,E,L,E,D,E),
+    MatMul(L,E,D,E,E,C,A,B),
+    MatMul(D,E,E,C,A,B,E,L),
+    MatMul(E,C,A,B,E,L,E,D)
+))
+
+testDerivAlgo(algo = derivTrace, expr = trace, byVar = byVar, groupedCheck = groupedCheck, onlineCheck = onlineCheck)
+
+# %% ---------------------------------------------------------------
+
+
+### TRACE TEST 4b: no inverse or transpose but the byVar is at the edge and middle (at the left edge, it is wrapped in Transpose)
+
+trace = Trace(E.T * C * A * B * E * L * E * D * E)
+byVar = E 
+
+groupedCheck = MatAdd(
+    MatMul(C, A, B, E, L, E, D, E),
+    MatMul(Transpose(E.T * C*A*B), Transpose(L*E*D*E)),
+    MatMul(Transpose(E.T* C*A*B*E*L), Transpose(D*E)),
+    Transpose(E.T * C*A*B*E*L*E*D)
+)
+
+onlineCheck = MatAdd(
+    MatMul(C,A,B,E,L,E,D,E),
+    MatMul(Transpose(C*A*B), E, E.T, D.T, E.T, L.T),
+    MatMul(Transpose(C*A*B*E*L), E,E.T, D.T),
+    MatMul(Transpose(C*A*B*E*L*E*D), E)
+)
+
+testDerivAlgo(algo = derivTrace, expr = trace, byVar = byVar, groupedCheck = groupedCheck, onlineCheck = onlineCheck)
+# %% --------------------------------------------------------------
+
+
+### TRACE TEST 4c: no inverse or transpose on other symbols but the bYVar is at the edge and middle and wrapped in either transpose or inverse (shuffle the constrs).
+
+trace = Trace(E.T * C * E * B * E.I * L * E.T * D * E.I)
+byVar = E 
+
+groupedCheck = MatAdd(
+    MatMul(C,E,B,E.I,L,E.T,D,E.I),
+    MatMul(Transpose(E.T * C), Transpose(B * E.I *L*E.T*D*E.I)),
+    MatMul(NegativeOne(-1), Transpose(MatMul(
+        E.I,  
+        MatMul(L, E.T, D, E.I, E.T, C, E, B),  
+        E.I
+    ))),
+    MatMul(D, E.I, E.T, C, E, B, E.I, L),
+    MatMul(NegativeOne(-1), Transpose(MatMul(
+        E.I, 
+        MatMul(E.T, C, E, B, E.I, L, E.T, D), 
+        E.I
+    )))
+)
+
+onlineCheck = MatAdd(
+    C* E * B * E.I * L * E.T * D * E.I,
+    C.T * E * Transpose(Inverse(E)) * D.T * E * L.T * Transpose(Inverse(E)) * B.T, 
+    MatMul(NegativeOne(-1), MatMul(
+        Transpose(C*E*B*E.I), 
+        MatMul(
+            E, Transpose(Inverse(E)), D.T, E, L.T, Transpose(Inverse(E))
+        )
+    )), 
+    D * E.I * E.T * C * E * B * E.I * L, 
+    MatMul(NegativeOne(-1), MatMul(
+        Transpose(D * Inverse(E)), E, L.T, Transpose(Inverse(E)), B.T, E.T, C.T, E, Transpose(Inverse(E))
+    ))
+)
+
+testDerivAlgo(algo = derivTrace, expr = trace, byVar = byVar, groupedCheck = groupedCheck, onlineCheck = onlineCheck)
+# %%
+res = derivTrace(trace, byVar)
+polarize(Transpose, res)
 # %%
 # TODO fix this function so it can take symbolic matrices
 #diffMatrix(B * Inverse(C) * E.T * L.T * A * E * D,   E)

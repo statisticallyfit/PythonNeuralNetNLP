@@ -63,7 +63,7 @@ from src.MatrixCalculusStudy.DerivativeLib.main.Simplifications import *
 
 
 
-def testCase(algo, expr, check: MatrixExpr, byType: MatrixType = None):
+def testSimplifyAlgo(algo, expr, check: MatrixExpr, byType: MatrixType = None):
     params = [byType, expr] if not (byType == None) else [expr]
     res = algo(*params)
 
@@ -85,7 +85,50 @@ def testCase(algo, expr, check: MatrixExpr, byType: MatrixType = None):
         print("ASSERTION ERROR: res.doit() == check.doit() --- maybe MatPow ? ")
 
 
-def testGroupCombineAdds(expr, check: MatrixExpr, byType: MatrixType):
+
+def testDerivAlgo(algo, expr: MatrixExpr, byVar: MatrixExpr, groupedCheck: MatrixExpr, onlineCheck: MatrixExpr):
+
+    res = algo(expr, byVar)
+
+    print("Expr:")
+    display(expr)
+    
+    print("\nResult:")
+    display(res)
+
+    print("\nResult (polarized):")
+    display(polarize(Transpose, res))
+
+    print("\nCheck (grouped version):")
+    display(groupedCheck)
+
+    # Online from matrixcalculus.org
+    print("\nCheck (online)")
+    display(onlineCheck)
+
+    print("\nCheck (online + polarized):")
+    display(polarize(Transpose, onlineCheck))
+
+    if expr.is_Trace:
+        diffCheck = diff(expr, byVar)
+
+        print("\nResult (sympy diff()):")
+        display(diffCheck)
+        
+        print("\nResult (sympy diff() + polarized)")
+        display(polarize(Transpose, diffCheck))
+
+
+    assert equal(res, groupedCheck)
+    assert equal(groupedCheck, onlineCheck)
+    
+    if expr.is_Trace:
+        assert equal(res, diffCheck)
+        assert equal(groupedCheck, diffCheck)
+
+
+
+def testSimplifyAlgo_GroupCombineAdds(expr, check: MatrixExpr, byType: MatrixType):
     res = group(byType = byType, expr = expr, combineAdds = True)
 
     showGroup([
