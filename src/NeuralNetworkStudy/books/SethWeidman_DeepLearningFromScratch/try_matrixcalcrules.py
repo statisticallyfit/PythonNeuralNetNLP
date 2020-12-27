@@ -62,7 +62,7 @@ printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLat
 
 
 from src.MatrixCalculusStudy.DerivativeLib.main.Simplifications import *
-
+from src.MatrixCalculusStudy.DerivativeLib.test.utils.TestHelpers import * 
 
 
 # %%
@@ -682,6 +682,7 @@ onlineCheck = MatAdd(
 )
 
 testDerivAlgo(algo = derivTrace, expr = trace, byVar = byVar, groupedCheck = groupedCheck, onlineCheck = onlineCheck)
+
 # %% --------------------------------------------------------------
 
 
@@ -722,6 +723,9 @@ onlineCheck = MatAdd(
 )
 
 testDerivAlgo(algo = derivTrace, expr = trace, byVar = byVar, groupedCheck = groupedCheck, onlineCheck = onlineCheck)
+
+
+
 # %%
 res = derivTrace(trace, byVar)
 polarize(Transpose, res)

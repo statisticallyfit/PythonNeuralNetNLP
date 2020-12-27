@@ -62,6 +62,8 @@ printing.init_printing(use_latex='mathjax')
 # -------------------------------------------------------------
 
 
+INV_TRANS_LIST: List[MatrixType] = [Transpose, Inverse] # this always will include just these two constructors, necessary since only the matrix rules of inverting matrix args when warpping applies to these.
+
 # Need to include list of constructors that you dig out of.
 # TODO: need Trace / Derivative / Function ...??
 CONSTR_LIST: List[MatrixType] = [Transpose, Inverse]
@@ -85,6 +87,7 @@ isSym = lambda m: len(m.free_symbols) in [0,1]
 #onlySymComponents_AddMul = lambda expr: (expr.func in [MatAdd, MatMul]) and all(map(lambda expr: len(expr.free_symbols) in [0, 1], expr.args))
 
 isSimpleArgs = lambda e: all(map(lambda a: len(a.free_symbols) in [0, 1], e.args))
+
 isInnerExpr = lambda e: (e.func in [MatAdd, MatMul]) and isSimpleArgs(e)
 
 
@@ -480,21 +483,34 @@ def factor(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
 
 
-
-
-
-
-
 def wrapShallow(WrapType: MatrixType, innerExpr: MatrixExpr) -> MatrixExpr:
-    '''The wrapping algo for taking expr set of simple arguments and enveloping them in the given `WrapType`.'''
+    '''Wraps expression in Constr Transpose or Inverse at the superficial level, doesn't wrap from the innermost expression outward. Can receive nested exprs or simple exprs: 
+    
+    Nested expr example: 
+        Input: (B*A*R).T * (R*U.T*C.I).T
+        Result: (R * U.T * C.I * B * A * R).T
+    
+    Simple expr example: 
+        Input: B.T + A.T + R.T + C.I
+        Result: (C.I.T + B + A + R).T
+    '''
 
+    assert WrapType in [Inverse, Transpose]
+
+    # TODO: wrapShallow must be able to interpret a MatMul(CONST, expr) kind of input (dig deeper)
     Constr: MatrixType = innerExpr.func
     #assert Constr in [MatAdd, MatMul]
 
-    numArgsOfType: int = len(list(filter(lambda a: type(a) == WrapType, innerExpr.args )))
+
+
+    # Get only the matrixexprs, leaving the numbers / constants aside: 
+    nonMatrixArgs = list(filter(lambda a: not isinstance(a, MatrixExpr), innerExpr.args))
+    matrixArgs = list(filter(lambda a: isinstance(a, MatrixExpr), innerExpr.args))
+
+    numArgsOfType: int = len(list(filter(lambda a: type(a) == WrapType, matrixArgs )))
 
     # Building conditions for checking if we need to wrap the expr, or else return it as is.
-    mostSymsAreOfType: bool = (numArgsOfType / len(innerExpr.args) ) >= 0.5
+    mostSymsAreOfType: bool = (numArgsOfType / len(matrixArgs) ) >= 0.5
 
     # NOTE: len == 0 of free syms when Number else for MatSym len == 1 so put 0 case just for safety.
     #onlySymComponents_AddMul = lambda expr: (expr.func in [MatAdd, MatMul]) and all(map(lambda expr: len(expr.free_symbols) in [0, 1], expr.args))
@@ -504,27 +520,26 @@ def wrapShallow(WrapType: MatrixType, innerExpr: MatrixExpr) -> MatrixExpr:
     if not mustWrap:
         return innerExpr
 
-    # Else do the wrapping algorithm:
-    invertedArgs: List[MatrixExpr] = list(map(lambda a: pickOut(Constr = WrapType, expr = a), innerExpr.args)) # TODO BEFORE THIS POINT FIX MATPOW
+    # Else 
 
+    ### WRAPPING ALGO: 
+
+    # Apply the reversing and wrapping alog part: 
+    invertedArgs: List[MatrixExpr] = list(map(lambda theArg: pickOut(WrapType, theArg) , matrixArgs)) # TODO BROKEN BEFORE THIS POINT FIX MATPOW. BROKEN HERE because it puts transpose on the -1 factor of matmul expr
 
     invertedArgs: List[MatrixExpr] = list(reversed(invertedArgs)) if Constr == MatMul else invertedArgs
 
-    wrapped: MatrixExpr = WrapType(Constr(*invertedArgs)) # BROKEN HERE when wrapping -1 in matmul
+    wrapped: MatrixExpr = WrapType(Constr(*invertedArgs)) # TODO BROKEN HERE when wrapping -1 in matmul
+
+    if nonMatrixArgs != []: 
+        wrapped: MatrixExpr = Constr(*(nonMatrixArgs + [wrapped]))
 
     return wrapped
 
 
 
 
-
-
-
-
-
-
 def wrapDeep(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
-
     Constr = expr.func
 
     if isSym(expr):
@@ -534,14 +549,16 @@ def wrapDeep(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
         wrappedExpr: MatrixExpr = wrapShallow(WrapType = WrapType, innerExpr = expr)
         return wrappedExpr
 
-    elif Constr in [MatAdd, MatMul, MatPow]:  #then split the polarizing operation over the arguments since any one of the args can be an inner expr.
-
-        # NOTE: must also factor the result so that the next step of wrapNest works correctly (doesn't contain superfluous transposes)
-        wrappedArgs: List[MatrixExpr] = list(map(lambda a: factor(WrapType, wrapDeep(WrapType, a)), expr.args))
+    elif Constr in [MatAdd, MatMul, MatPow]:  #then split the polarizing operation over the arguments since any one of the args can be an inner expr 
+        
+        # NOTE 1: (verify the case of matmul(const, expr) individually and then go deeper in the expr)
+        # NOTE 2: must also factor the result so that the next step of wrapNest works correctly (doesn't contain superfluous transposes)
+        wrappedArgs: List[MatrixExpr] = list(map(lambda a: factor(WrapType, wrapDeep(WrapType, a)) if isinstance(a, MatrixExpr) else a, expr.args))
+        # if isinstance(a, MatrixExpr) else a
 
         exprWithPartsWrapped: MatrixExpr = Constr(*wrappedArgs)
 
-        exprOverallWrapped: MatrixExpr = wrapShallow(WrapType = WrapType, innerExpr = exprWithPartsWrapped)
+        exprOverallWrapped: MatrixExpr = wrapShallow(WrapType = WrapType, innerExpr = exprWithPartsWrapped) # TODO BROKEN HERE
 
         return exprOverallWrapped
 
@@ -577,10 +594,10 @@ def polarize(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
         return fwfe
 
-    def hack_polarizeMatAddMul(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr: 
+    def hackpolarizeMatAddMul(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr: 
         assert expr.is_MatAdd or expr.is_MatMul 
 
-        polarizedArgs: List[MatrixExpr] = list(map(lambda a: hack_polarizeGroup(byType = byType, expr = a), expr.args))
+        polarizedArgs: List[MatrixExpr] = list(map(lambda a: hackpolarizeGroup(byType = byType, expr = a), expr.args))
 
         Constr = expr.func 
 
@@ -590,7 +607,7 @@ def polarize(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
     countTopTypes = lambda byType, pairs: sum(list(map(lambda pair: True if pair[0][0] == byType else False, pairs)) )
     
 
-    def hack_polarizeGroup(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr: 
+    def hackpolarizeGroup(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr: 
         # TODO fix if this extra step of factoring and wrapping deep results in more transposes then  polarize again or just leave at the previous factor
 
         p = algoPolarize(byType = byType, expr = expr)
@@ -619,8 +636,8 @@ def polarize(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
     # Compare the two results for the Addition case: 
 
     if expr.is_MatAdd or expr.is_MatMul:
-        resultComp: MatrixExpr = hack_polarizeMatAddMul(byType, expr)
-        resultGroup: MatrixExpr = hack_polarizeGroup(byType, expr)
+        resultComp: MatrixExpr = hackpolarizeMatAddMul(byType, expr)
+        resultGroup: MatrixExpr = hackpolarizeGroup(byType, expr)
 
         c_ds = digger(resultComp)
         g_ds = digger(resultGroup)
@@ -631,9 +648,12 @@ def polarize(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
             return resultGroup # favor the group result even when num byTypes are equal for each expression
     
     # else apply the group algo
-    resultGroup: MatrixExpr = hack_polarizeGroup(byType, expr)
+    resultGroup: MatrixExpr = hackpolarizeGroup(byType, expr)
 
     return resultGroup 
+
+
+
 
 
 
