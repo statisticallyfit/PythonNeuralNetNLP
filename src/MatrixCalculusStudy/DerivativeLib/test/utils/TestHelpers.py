@@ -91,7 +91,7 @@ def testDerivAlgo(algo, expr: MatrixExpr, byVar: MatrixExpr, groupedCheck: Matri
     res = algo(expr, byVar)
 
     print("Expr:")
-    display(expr)
+    display(freeze(expr))
     
     print("\nResult:")
     display(res)
@@ -100,11 +100,11 @@ def testDerivAlgo(algo, expr: MatrixExpr, byVar: MatrixExpr, groupedCheck: Matri
     display(polarize(Transpose, res))
 
     print("\nCheck (grouped version):")
-    display(groupedCheck)
+    display(freeze(groupedCheck))
 
     # Online from matrixcalculus.org
     print("\nCheck (online)")
-    display(onlineCheck)
+    display(freeze(onlineCheck))
 
     print("\nCheck (online + polarized):")
     display(polarize(Transpose, onlineCheck))

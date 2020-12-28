@@ -515,7 +515,12 @@ def derivTrace(trace: Trace, byVar: MatrixSymbol) -> MatrixExpr:
         splitDiffedAddends = list(itertools.chain(*map(lambda d : splitMatAdd(d), diffedAddends)) )
 
         # Now return the mat add
-        return MatAdd(*splitDiffedAddends)
+        matadd = MatAdd(*splitDiffedAddends)
+
+        # Apply freeze (since this is matadd constructor, needed here so that intermediate components don't get evaluated when shown)
+        mataddFreeze = freeze(matadd)
+
+        return mataddFreeze
 
 
 
@@ -726,9 +731,6 @@ testDerivAlgo(algo = derivTrace, expr = trace, byVar = byVar, groupedCheck = gro
 
 
 
-# %%
-res = derivTrace(trace, byVar)
-polarize(Transpose, res)
 # %%
 # TODO fix this function so it can take symbolic matrices
 #diffMatrix(B * Inverse(C) * E.T * L.T * A * E * D,   E)

@@ -22,11 +22,11 @@ from sympy.matrices.expressions.matadd import MatAdd
 from sympy.matrices.expressions.matmul import MatMul
 from sympy.matrices.expressions.matpow import MatPow 
 
-from sympy.core.numbers import NegativeOne, Number
+from sympy.core.numbers import NegativeOne, Number, Integer
 
 from sympy.core.assumptions import ManagedProperties
 
-
+from sympy import UnevaluatedExpr , parse_expr 
 
 # Types
 MatrixType = ManagedProperties
@@ -529,7 +529,7 @@ def wrapShallow(WrapType: MatrixType, innerExpr: MatrixExpr) -> MatrixExpr:
 
     invertedArgs: List[MatrixExpr] = list(reversed(invertedArgs)) if Constr == MatMul else invertedArgs
 
-    wrapped: MatrixExpr = WrapType(Constr(*invertedArgs)) # TODO BROKEN HERE when wrapping -1 in matmul
+    wrapped: MatrixExpr = WrapType(Constr(*invertedArgs)) if len(invertedArgs) != 1 else WrapType(*invertedArgs) # to avoid double constructor wrapping (like double Matmul wrapping)
 
     if nonMatrixArgs != []: 
         wrapped: MatrixExpr = Constr(*(nonMatrixArgs + [wrapped]))
@@ -575,7 +575,7 @@ def wrapDeep(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
 # Making expr group transpose that goes deep until innermost expression (largest depth) and applies the group algo there
 # Drags out even the inner transposes (aggressive grouper)
-def polarize(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
+def _polarize(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
     '''Given an expression with innermost args nested as components inside another expression, (many nestings), this function tries to drag / pull / force out all the transposes from the groups of expressions of matmuls / matmadds and from individual symbols.
 
     Tries to create one nesting level that mentions transpose (there can be other nestings with inverse inside for instance but the outermost nesting must be the only one with transpose).
@@ -650,10 +650,47 @@ def polarize(byType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
     # else apply the group algo
     resultGroup: MatrixExpr = hackpolarizeGroup(byType, expr)
 
+    # TODO why doesn't this freeze work here? why must I declare separate lambda? 
+    #resultGroup = freeze(resultGroup)# to keep the polarize result and avoid having the expr get evaluated when MatAdd form
+
     return resultGroup 
 
 
+polarize = lambda t, e: freeze(_polarize(t, e))
 
+
+
+
+def freeze(matadd: MatAdd) -> MatAdd:
+    '''Given the polarize() result passed as argument, when it is a MatAdd, this function returns an expression preserving the effect of polarize() otherwise presence of MatAdd renders polarize efforts invisible since the args of the MatAdd are evaluated when presented in the MatAdd. 
+    Uses string parsing and `UnevaluatedExpr` to "freeze" the polarize results. 
+
+    Arguments: 
+        `matadd`: the MatAdd result of polarize()
+    
+    Returns: 
+        A `MatrixExpr` (`MatAdd`) expression that was parsed from a string, containing the original symbols in the original expression. 
+    '''
+    #assert matadd.is_MatAdd  # otherwise the expressions remain and there is no need for this freeze function
+    if not matadd.is_MatAdd:
+        return matadd 
+
+    SE = lambda e: srepr(UnevaluatedExpr(e))
+
+    accFirst = ""
+
+    isNeg = lambda e: e.is_MatMul and (e.args[0] in [NegativeOne(-1), Number(-1), Integer(-1)])
+
+    pickOutNeg = lambda e: MatMul(*e.args[1:]) if isNeg(e) else e 
+
+    g = lambda accStr, nextE : "{} + {}".format(accStr, SE(nextE)) if not(isNeg(nextE)) else "{} - {}".format(accStr, SE(pickOutNeg(nextE)))
+
+    seJoined: str = foldLeft(g, accFirst, matadd.args)
+
+    # Create the symbols dict
+    symbolsDict: Dict[str, MatrixSymbol] = dict(list(map(lambda s: (str(s), s), matadd.free_symbols)) )
+
+    return parse_expr(seJoined, local_dict = symbolsDict)
 
 
 
