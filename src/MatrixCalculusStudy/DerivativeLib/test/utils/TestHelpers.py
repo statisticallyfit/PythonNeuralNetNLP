@@ -19,6 +19,10 @@ from sympy.abc import x, i, j, a, b, c
 
 from sympy.matrices.expressions.matadd import MatAdd
 from sympy.matrices.expressions.matmul import MatMul
+from sympy.matrices.expressions.matpow import MatPow
+from sympy.core.mul import Mul 
+from sympy.core.add import Add
+from sympy.core.power import Pow
 
 from sympy.core.numbers import NegativeOne, Number
 
