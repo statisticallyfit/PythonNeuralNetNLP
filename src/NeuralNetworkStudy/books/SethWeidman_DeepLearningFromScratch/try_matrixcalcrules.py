@@ -10,7 +10,7 @@ import itertools
 from functools import reduce
 
 
-from sympy import det, Determinant, Trace, Transpose, Inverse, Function, Lambda, HadamardProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, MatrixSymbol, Identity,  Derivative, symbols, diff
+from sympy import det, Determinant, Trace, Transpose, Inverse, Function, Lambda, HadamardProduct, Matrix, MatrixExpr, Identity, ZeroMatrix, Expr, Symbol, derive_by_array, MatrixSymbol, Identity,  Derivative, symbols, diff
 
 from sympy import srepr , simplify
 
@@ -175,7 +175,8 @@ def derivTrace(trace: Trace, byVar: MatrixSymbol) -> MatrixExpr:
     assert trace.is_Trace
 
     # Case 1: trace of expr single matrix symbol - easy
-    if isinstance(trace.arg, MatrixSymbol):
+    #if isinstance(trace.arg, MatrixSymbol):
+    if isSym(trace.arg):
         return diff(trace, byVar)
 
     # Case 2: if arg is matmul then just apply the trace matmul function:
@@ -217,7 +218,7 @@ def derivTrace(trace: Trace, byVar: MatrixSymbol) -> MatrixExpr:
 
 # %%
 
-# TRACE DERIVATIVE TESTS: 
+# TRACE DERIVATIVE TEST DATA: 
 a, b, c = symbols('a b c', commutative=True)
 
 A = MatrixSymbol("A", c, c)
@@ -228,6 +229,7 @@ E = MatrixSymbol('E', c, c)
 B = MatrixSymbol('B', c, c)
 L = MatrixSymbol('L', c, c)
 D = MatrixSymbol('D', c, c)
+X = MatrixSymbol("X", c, c)
 
 # %% --------------------------------------------------------------
 
@@ -420,8 +422,43 @@ onlineCheck = MatAdd(
 
 testDerivAlgo(algo = derivTrace, expr = trace, byVar = byVar, groupedCheck = groupedCheck, onlineCheck = onlineCheck)
 # %%
-res = derivTrace(trace, byVar)
-fr = freeze(res)
-fr
 
+
+
+# TRACE TEST 5: test simple symbols
+Ic = Identity(c)
+Zc = ZeroMatrix(c, c)
+
+testDerivAlgo(algo = derivTrace, expr = Trace(X.T), byVar = X, groupedCheck = Ic, onlineCheck = Ic)
+
+testDerivAlgo(algo = derivTrace, expr = Trace(X.T), byVar = A, groupedCheck = Zc, onlineCheck = Zc)
+
+# %% codecell
+
+
+
+# TRACE TEST 6: simple product transpose thing
+
+
+testDerivAlgo(algo = derivTrace, expr = Trace(A*X), byVar = X, groupedCheck = A.T, onlineCheck = A.T)
+# %%
+testDerivAlgo(algo = derivTrace, expr = Trace(X*A), byVar = X, groupedCheck = A.T, onlineCheck = A.T)
+# %%
+testDerivAlgo(algo = derivTrace, expr = Trace(X.T * A), byVar = X, groupedCheck = A, onlineCheck = A)
+# %%
+testDerivAlgo(algo = derivTrace, expr = Trace(A * X.T), byVar = X, groupedCheck = A, onlineCheck = A)
+# %%
+testDerivAlgo(algo = derivTrace, expr = Trace(X * X.T), byVar = X, groupedCheck = 2*X, onlineCheck = 2*X)
+# %%
+testDerivAlgo(algo = derivTrace, expr = Trace(X.T * X), byVar = X, groupedCheck = 2*X, onlineCheck = 2*X)
+
+# %% codecell
+
+
+
+# TRACE TEST 7: power
+
+testDerivAlgo(algo = derivTrace, expr = Trace(X ** 2), byVar = X, groupedCheck = 2 * X.T, onlineCheck = 2 * X.T)
+# %% codecell
+testDerivAlgo(algo = derivTrace, expr = Trace(X ** 7), byVar = X, groupedCheck = 7 * (X.T)**6, onlineCheck = 7 * (X.T)**6)
 # %% codecell

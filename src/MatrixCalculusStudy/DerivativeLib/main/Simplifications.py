@@ -120,6 +120,11 @@ def pickOut(WrapType: MatrixType, expr: MatrixExpr):
         #return Transpose(MatMul(*expr.args))
         #return Transpose(expr)
         return WrapType(expr)
+
+    # Need to avoid cuase of X^T ^ 3 ^ T later on so move the transpose out
+    elif isPow(expr) and expr.args[0].func == WrapType:
+        (base, expo) = expr.args 
+        return WrapType(MatPow(base.arg, expo))
     elif hasType(WrapType, expr) and expr.func == WrapType:
     #elif hasTranspose(expr) and expr.is_Transpose:
         return expr.arg
@@ -224,6 +229,7 @@ def chunkExprsBy(byTypes: List[MatrixType], expr: MatrixExpr) -> Tuple[List[List
 
 
 
+### WARNING: not maintained anymore 
 
 def group(WrapType: MatrixType, expr: MatrixExpr, combineAdds:bool = False) -> MatrixExpr:
     '''Combines transposes when they are the outermost operations.
@@ -337,7 +343,7 @@ def rippleOut(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
         # Filter: get just the matmul-type arguments (meaning not the D^T or E^-1 type arguments) from the result list (assuming there are other MatMul exprs). Could have done this when first filtering the psChunked, but easier to do it now.
         # NOTE: when there are ONLY mat syms and no other matmuls then we must keep them since it means the expression is layered with only expr matsum as the innermost expression, rather than expr matmul.
         #isSymOrNum = lambda expr : expr.is_Symbol or expr.is_Number
-        isSimpleSymOrNum = lambda expr: expr.is_Symbol or (expr.func in NUM_LIST)
+        isSimpleSymOrNum = lambda expr: expr.is_Symbol or isNum(expr)
         #isSym = lambda expr  : len(expr.free_symbols) == 1
 
         # Flattening the chunked ps list for easier evaluation:
@@ -423,13 +429,18 @@ def inner(expr: MatrixExpr) -> MatrixExpr:
     # TODO missing any base case possibilities? Should include here anything that is not Trace / Inverse ... etc or any kind of constructors that houses an inner argument.
     Constr = expr.func
     #types = [MatMul, MatAdd, MatrixSymbol, Symbol, Number]
-    otherTypes = list( set(ALL_TYPES_LIST).symmetric_difference(CONSTR_LIST) )
+    otherTypes = list( set(ALL_TYPES_LIST).symmetric_difference(CONSTR_LIST) - set(OP_POW_LIST))
     #isAnySubclass = any(map(lambda t : issubclass(Constr, t), types))
 
     #if (Constr in otherTypes) or issubclass(Constr, Number):
-    if (Constr in otherTypes) or isNumC(Constr):
+    if (Constr in otherTypes) or isNumC(Constr): # or (isPow(expr) and isSym(expr)):
 
         return expr
+    
+    elif isPow(expr): # and (not isSym(expr)):
+        # Recurse through the base of the power expression
+        (base, _) = expr.args 
+        return inner(base)
 
     # else keep recursing
     return inner(expr.arg) # need to get arg from Trace or Transpose or Inverse ... among other constructors
@@ -444,21 +455,27 @@ def innerTrail(expr: MatrixExpr) -> List[Tuple[List[MatrixType], MatrixExpr]]:
 
     def doInnerTrail(expr: MatrixExpr, accConstrs: List[MatrixType]) -> Tuple[List[MatrixType], MatrixExpr]:
 
-        Constr = expr.func
-        #types = [MatMul, MatAdd, MatrixSymbol, Symbol, Number]
+        # FIRST TASK when entering this function is to record the constructor type 
+
+        Constr: MatrixType = expr.func
+
         otherTypes = list( set(ALL_TYPES_LIST).symmetric_difference(CONSTR_LIST) )
 
-        #isAnySubclass = any(map(lambda t : issubclass(Constr, t), otherTypes))
-
-        #if (Constr in otherTypes) or isAnySubclass:
-        #if (Constr in otherTypes) or issubclass(Constr, Number):
-        if (Constr in otherTypes) or isNumC(Constr):
+        # BASE CASE 
+        if (Constr in otherTypes) or isNumC(Constr) or (isPow(expr) and isSym(expr)):
 
             return (accConstrs, expr)
 
         # else keep recursing
+        elif isPow(expr) and (not isSym(expr)): 
+            # Recurse through the base of the power expression
+            (base, _) = expr.args 
+
+            return doInnerTrail(expr = base, accConstr = accConstr + [Constr])
+
         return doInnerTrail(expr = expr.arg, accConstrs = accConstrs + [Constr])
 
+    # OUTER FUNCTION innerTrail()
     return doInnerTrail(expr = expr, accConstrs = [])
 
 
