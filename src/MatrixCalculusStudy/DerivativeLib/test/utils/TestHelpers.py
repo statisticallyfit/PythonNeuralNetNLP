@@ -97,8 +97,8 @@ def testDerivAlgo(algo, expr: MatrixExpr, byVar: MatrixExpr, groupedCheck: Matri
     print("Expr:")
     display(freeze(expr))
     
-    print("\nResult:")
-    display(res)
+    print("\nResult (freezed):")
+    display(freeze(res))
 
     print("\nResult (polarized):")
     display(polarize(Transpose, res))
@@ -107,8 +107,8 @@ def testDerivAlgo(algo, expr: MatrixExpr, byVar: MatrixExpr, groupedCheck: Matri
     display(freeze(groupedCheck))
 
     # Online from matrixcalculus.org
-    print("\nCheck (online)")
-    display(freeze(onlineCheck))
+    #print("\nCheck (online)")
+    #display(freeze(onlineCheck))
 
     print("\nCheck (online + polarized):")
     display(polarize(Transpose, onlineCheck))
@@ -116,8 +116,8 @@ def testDerivAlgo(algo, expr: MatrixExpr, byVar: MatrixExpr, groupedCheck: Matri
     if expr.is_Trace:
         diffCheck = diff(expr, byVar)
 
-        print("\nResult (sympy diff()):")
-        display(diffCheck)
+        #print("\nResult (sympy diff()):")
+        #display(diffCheck)
         
         print("\nResult (sympy diff() + polarized)")
         display(polarize(Transpose, diffCheck))

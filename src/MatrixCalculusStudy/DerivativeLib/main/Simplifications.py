@@ -556,7 +556,7 @@ def wrapShallow(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
     #invertedArgs: List[MatrixExpr] = list(reversed(invertedArgs)) if Constr == MatMul else invertedArgs
     # TODO changed to check for Mul also since freeze() changes to Mul from MatMul
-    invertedArgs: List[MatrixExpr] = list(reversed(invertedArgs)) if isMul(Constr) else invertedArgs
+    invertedArgs: List[MatrixExpr] = list(reversed(invertedArgs)) if isMulC(Constr) else invertedArgs
 
     wrapped: MatrixExpr = WrapType(Constr(*invertedArgs)) if len(invertedArgs) != 1 else WrapType(*invertedArgs) # to avoid double constructor wrapping (like double Matmul wrapping)
 

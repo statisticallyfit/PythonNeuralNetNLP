@@ -269,10 +269,7 @@ groupedCheck = Transpose(MatAdd(
 onlineCheck = groupedCheck 
 
 testDerivAlgo(algo = derivTrace, expr = trace, byVar = byVar, groupedCheck = groupedCheck, onlineCheck = onlineCheck)
-# %%
-res = derivTrace(trace, byVar)
-p = polarize(Transpose, res.args[1])
-p
+
 # %% -------------------------------------------------------------
 
 
