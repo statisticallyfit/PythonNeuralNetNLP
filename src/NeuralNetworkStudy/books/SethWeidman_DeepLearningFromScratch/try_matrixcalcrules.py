@@ -462,3 +462,4 @@ testDerivAlgo(algo = derivTrace, expr = Trace(X ** 2), byVar = X, groupedCheck =
 # %% codecell
 testDerivAlgo(algo = derivTrace, expr = Trace(X ** 7), byVar = X, groupedCheck = 7 * (X.T)**6, onlineCheck = 7 * (X.T)**6)
 # %% codecell
+rippleOut(Transpose, eout)

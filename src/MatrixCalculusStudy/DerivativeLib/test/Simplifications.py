@@ -54,7 +54,7 @@ R = MatrixSymbol('R', c, c)
 J = MatrixSymbol('J', c, c)
 M = MatrixSymbol('M', c, c)
 K = MatrixSymbol("K", c, c)
-
+X = MatrixSymbol("X", c, c)
 
 
 # %%
@@ -348,11 +348,17 @@ testSimplifyAlgo(algo = factor, expr = expr_SLmGA, check = check, byType = Trans
 #    Transpose(Inverse(MatAdd(C, B.T))),
 #    A.T
 #))
-check = MatMul(
-    A,
-    Transpose(Inverse(MatAdd(B, C.T)))
-)
+#check = MatMul(
+#    A,
+#    Transpose(Inverse(MatAdd(B, C.T)))
+#)
+
 # TODO: the different simplified result is occuring after splitting Transpose over MatAdd fix -- is this difference because of that?
+check = MatMul(
+    A, 
+    Inverse(C + B.T)
+)
+
 testSimplifyAlgo(algo = polarize, expr = expr_SLmGA, check = check, byType = Transpose)
 # %% --------------------------------------------------------------
 
@@ -2447,3 +2453,44 @@ testSimplifyAlgo(algo = polarize, expr = expr_polarize, check = check, byType = 
 
 
 # %% codecell
+
+
+
+
+### GENERAL TEST 17: matpow testing how constructors get rippleout around it
+
+eout = MatAdd(E, Transpose(MatMul(
+    Transpose(R*J*A.T*B), 
+    MatPow(Transpose(J + X*A), 4)
+)))
+# %%
+factor(Transpose, eout)
+# %%
+testSimplifyAlgo(algo = factor, expr = eout, check = eout, byType = Transpose)
+# %%
+
+
+check = MatAdd(
+    E, 
+    Transpose(MatMul(
+        Transpose(R*J*A.T*B), 
+        Transpose(MatPow(J + X*A, 4))
+    ))
+)
+
+testSimplifyAlgo(algo = rippleOut, expr = eout, check = check, byType = Transpose)
+# %% codecell
+
+
+
+check = MatAdd(
+    E, 
+    MatMul(
+        MatPow(J + X*A, 4),
+        R*J*A.T * B
+    )
+)
+
+testSimplifyAlgo(algo = polarize, expr = eout, check = check, byType = Transpose)
+# %% codecell
+wrapDeep(Transpose, eout)

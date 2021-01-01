@@ -32,7 +32,15 @@ from sympy.core.assumptions import ManagedProperties
 from sympy import UnevaluatedExpr , parse_expr 
 
 # Types
+import collections 
+
+# Need to create an instance of this each time you have a matpow and want to store the exponent in the same list as transpose and inverse constructors, so that this looks like any ordinary transpose / inverse constructor. 
+MatPowConstr = collections.namedtuple("MatPow", ["expo"])
+#MatrixType = ManagedProperties
+# ConstrType is either Transpose / Inverse (of type ManagedProperties) OR is a MatPow (which is of type collections.namedtuple)
 MatrixType = ManagedProperties
+ConstrType = Union[MatrixType, MatPowConstr]
+
 
 
 # Path settings
@@ -69,17 +77,18 @@ INV_TRANS_LIST: List[MatrixType] = [Transpose, Inverse] # this always will inclu
 
 # Need to include list of constructors that you dig out of.
 # TODO: need Trace / Derivative / Function ...??
-CONSTR_LIST: List[MatrixType] = [Transpose, Inverse]
+CONSTR_LIST: List[ConstrType] = [Transpose, Inverse, MatPow]
 
 OP_ADD_MUL_LIST : List[MatrixType] = [MatMul, Mul, MatAdd, Add]
-OP_POW_LIST: List[MatrixType] = [MatPow, Pow]
+OP_POW_LIST: List[MatrixType] = [MatPow, Pow, MatPowConstr]
 SYM_LIST: List[MatrixType] = [MatrixSymbol, Symbol]
 NUM_LIST: List[MatrixType] = [NegativeOne, Number, Integer]
 
 # TODO to add Function, Derivative, and Trace ? any others?
 ALL_TYPES_LIST = INV_TRANS_LIST + OP_ADD_MUL_LIST + OP_POW_LIST + SYM_LIST + NUM_LIST 
 
-
+names = lambda cs: list(map(lambda t: t.__name__, cs))
+names2 = lambda ccs: list(map(lambda lst: names(lst), ccs))
 
 hasType = lambda Type, expr : Type.__name__ in srepr(expr)
 #hasTranspose = lambda e : "Transpose" in srepr(e)
@@ -88,8 +97,8 @@ isMul = lambda e: e.func in [MatMul, Mul]
 isMulC = lambda t: t in [MatMul, Mul]
 isAdd = lambda e: e.func in [MatAdd, Add]
 isAddC = lambda t: t in [MatAdd, Add]
-isPow = lambda e: e.func in OP_POW_LIST 
-isPowC = lambda t : t in OP_POW_LIST 
+isPow = lambda e: isPowC(e.func)
+isPowC = lambda t : (t in OP_POW_LIST ) or any(map(lambda powType: isinstance(t, powType), OP_POW_LIST))
 
 
 isNum = lambda e: any(map(lambda NumType: issubclass(e.func, NumType), NUM_LIST)) or (e.func in NUM_LIST)
@@ -102,7 +111,11 @@ isSymOrNumC = lambda t : (t in SYM_LIST) or isNumC(t)
 
 isSym = lambda m: len(m.free_symbols) in [0,1]
 
-anyTypeIn = lambda testTypes, searchTypes : any([True for tpe in testTypes if tpe in searchTypes])
+# TODO left off here STAR (trying to refactor code so that it uses MatPowConstr instances so that we can rippleout and factor and polarize matpowconstr just like matpow but keeping the expo info)
+
+anyTypeEqual = lambda testTypes, searchTypes : any([True for tpe in testTypes if tpe in searchTypes])
+
+anyTypeInstance = lambda testTypes, searchTypes : any(map(lambda tester: list(map(lambda searcher: isinstance(tester, searcher), searchTypes)), testTypes))
 
 
 # NOTE: len == 0 of free syms when Number else for MatSym len == 1 so put 0 case just for safety.
@@ -150,7 +163,7 @@ def applyTypesToExpr( pairTypeExpr: Tuple[List[MatrixType], MatrixExpr]) -> Matr
 
 
 
-def stackTypesBy(byType: MatrixType, types: List[MatrixType]) -> List[MatrixType]:
+def stackTypesBy(byType: ConstrType, types: List[ConstrType]) -> List[ConstrType]:
     '''Given expr type (like Transpose) and given expr list, this function pulls all the signal types to the end of the
     list, leaving the non-signal-types as the front'''
 
@@ -158,18 +171,21 @@ def stackTypesBy(byType: MatrixType, types: List[MatrixType]) -> List[MatrixType
     countTypes: int = len(list(filter(lambda t : t == byType, types)))
 
     # Create the signal types that go at the end
-    endTypes: List[MatrixType] = [byType] * countTypes
+    endTypes: List[ConstrType] = [byType] * countTypes
 
     # Get the list without the signal types
-    nonSignalTypes: List[MatrixType] = list(filter(lambda t : t != byType, types))
+    nonSignalTypes: List[ConstrType] = list(filter(lambda t : t != byType, types))
 
     return endTypes + nonSignalTypes # + endTypes
 
 
 
+isConstrEqualTo = lambda c, tpe: isConstrInList(c, [tpe])
+
+isConstrInList = lambda c, lst: (c in lst) or isinstance(c, MatPowConstr)
 
 
-def chunkTypesBy(byTypes: List[MatrixType], types: List[MatrixType]) -> List[List[MatrixType]]:
+def chunkTypesBy(byTypes: List[MatrixType], types: List[ConstrType]) -> List[List[ConstrType]]:
     '''Separates the `types` in expr list of list of types by the types in `byConstrs` and keeps other types separate too, just as how they appear in the original list'''
 
     # Not strictly necessary here, just useful if you want to see shorter version of names below
@@ -177,36 +193,37 @@ def chunkTypesBy(byTypes: List[MatrixType], types: List[MatrixType]) -> List[Lis
     byConstrs: List[MatrixType] = list(set(byTypes))
 
     # Step 1: coding up in pairs for easy identification: need Inverse and Transpose tagged as same kind
-    codeConstrPairs: List[Tuple[int, MatrixType]] = list(map(lambda c : (0, c) if (c in byConstrs) else (1, c), types))
+    codeConstrPairs: List[Tuple[int, ConstrType]] = list(map(lambda C : (0, C) if isConstrInList(C, byConstrs) else (1, C), types))
 
     # Step 2: getting the groups
-    chunkedPairs: List[List[Tuple[int, MatrixType]]] = [list(group) for key, group in itertools.groupby(codeConstrPairs, operator.itemgetter(0))]
+    chunkedPairs: List[List[Tuple[int, ConstrType]]] = [list(group) for key, group in itertools.groupby(codeConstrPairs, operator.itemgetter(0))]
 
     # Step 3: getting only the types in the chunked lists
-    chunkedConstrs: List[List[MatrixType]] = list(map(lambda lst : list(map(lambda pair : pair[1], lst)), chunkedPairs))
+    chunkedConstrs: List[List[ConstrType]] = list(map(lambda lst : list(map(lambda pair : pair[1], lst)), chunkedPairs))
 
     return chunkedConstrs
 
 
 
 
-def chunkExprsBy(byTypes: List[MatrixType], expr: MatrixExpr) -> Tuple[List[List[MatrixType]], List[List[MatrixExpr]]]:
+def chunkExprsBy(byTypes: List[MatrixType], expr: MatrixExpr) -> Tuple[List[List[ConstrType]], List[List[MatrixExpr]]]:
     '''Given an expression, returns the types and expressions as tuples, listed in preorder traversal, and separated by which expressions are grouped by Transpose or Inverse constructors (in their layering)'''
 
     byConstrs: List[MatrixType] = list(set(byTypes))
 
     ps: List[MatrixExpr] = list(preorder_traversal(expr)) # elements broken down
-    cs: List[MatrixType] = list(map(lambda p: type(p), ps)) # types / constructors
+    # NOTE: if p is a matpow then must store its exponent in the named tuple constructor
+    cs: List[ConstrType] = list(map(lambda p: MatPowConstr(p.args[1]) if p.is_MatPow else type(p), ps)) # types / constructors
 
 
     # Check first: does the expr have the types in byConstrs? If not, then return it out, nothing to do here:
     #if not (Transpose in cs):
     #BAD tests for AND all types: if not (set(byConstrs).intersection(cs) == set(byConstrs)):
     # GOOD, tests for OR all types (since should be able to chunk [T, T, T] then [I, I] and [I, T, I, T] so need the OR relationship):
-    if not anyTypeIn(testTypes = CONSTR_LIST, searchTypes = cs):
+    if not anyTypeEqual(testTypes = CONSTR_LIST, searchTypes = cs):
         return ([cs], [ps])
 
-    csChunked: List[List[MatrixType]] = chunkTypesBy(byTypes = byConstrs, types = cs)
+    csChunked: List[List[ConstrType]] = chunkTypesBy(byTypes = byConstrs, types = cs)
 
 
     # Get the lengths of each chunk
@@ -304,6 +321,11 @@ def group(WrapType: MatrixType, expr: MatrixExpr, combineAdds:bool = False) -> M
 
 
 
+# TODO: FIX: this doesn't work to ripple out the innter transpose when in matpow: 
+#eout = MatAdd(E, Transpose(MatMul(
+#    Transpose(R*J*A.T*B), 
+#    MatPow(Transpose(J + X*A), 4)
+#)))
 
 def rippleOut(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
@@ -323,7 +345,7 @@ def rippleOut(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
         # Pair up the correct order of transpose types with the expressions
         # BEFORE: (Transpose in tsPs[0]) or (Inverse in tsPs[0])
-        typeListExprListPair = list(filter(lambda tsPs : anyTypeIn(testTypes = CONSTR_LIST, searchTypes = tsPs[0]),
+        typeListExprListPair = list(filter(lambda tsPs : anyTypeEqual(testTypes = CONSTR_LIST, searchTypes = tsPs[0]),
                                            list(zip(stackedChunks, psChunked))))
 
 
@@ -331,7 +353,7 @@ def rippleOut(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
         #typeListExprPair = list(map(lambda tsPs : (tsPs[0], tsPs[1][0]), typeListExprListPair))
 
         # Get the first expression only, since it is the most layered, don't use the entire expression list of the
-        # tuple's second part. And get the inner argument (lay bare) in preparation for apply the correct order of
+        # tuple's second part. And get the inner argument (lay bare) in preparation for appling the correct order of
         # `byType`s.
         typeListInnerExprPair = list(map(lambda tsPs : (tsPs[0], inner(tsPs[1][0])), typeListExprListPair))
 
@@ -384,7 +406,6 @@ def rippleOut(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
 
 
-
 # TODO this function cannot identify MatPow that is same as Inverse: for instance the obj D.I.T is MatPow of Transpose (not Inverse as expected) while using Transpose(Inverse(D)) is Transpose of Inverse, as expected.
 # ---> So must find way for this function to recognize MatPow with NegativeOne and convert those into Inverse.
 # ---> Need to find out if the double NegativeOne come from one set of MatPow inverse or not. Then replace accordingly with the Inverse constructor.
@@ -408,7 +429,7 @@ def digger(expr: MatrixExpr) -> List[Tuple[List[MatrixType], MatrixExpr]]:
 
     # Pair up the correct order of transpose types with the expressions
     # BEFORE: (Transpose in tsPs[0]) or (Inverse in tsPs[0])
-    typeListExprListPair = list(filter(lambda tsPs : anyTypeIn(testTypes = CONSTR_LIST, searchTypes = tsPs[0]),
+    typeListExprListPair = list(filter(lambda tsPs : anyTypeEqual(testTypes = CONSTR_LIST, searchTypes = tsPs[0]),
                                        list(zip(csChunked, psChunked))))
 
     # Get the first expression only, since it is the most layered, and pair its inner arg with the list of types from that pair.

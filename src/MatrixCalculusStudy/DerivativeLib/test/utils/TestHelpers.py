@@ -133,7 +133,7 @@ def testDerivAlgo(algo, expr: MatrixExpr, byVar: MatrixExpr, groupedCheck: Matri
 
 
 def testSimplifyAlgo_GroupCombineAdds(expr, check: MatrixExpr, byType: MatrixType):
-    res = group(byType = byType, expr = expr, combineAdds = True)
+    res = group(WrapType = byType, expr = expr, combineAdds = True)
 
     showGroup([
         expr, res, check
