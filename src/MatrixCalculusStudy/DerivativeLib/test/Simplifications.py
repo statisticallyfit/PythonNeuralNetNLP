@@ -2459,10 +2459,18 @@ testSimplifyAlgo(algo = polarize, expr = expr_polarize, check = check, byType = 
 
 ### GENERAL TEST 17: matpow testing how constructors get rippleout around it
 
+# TODO separate these expressions and test them separately 
+
+e =  Transpose(MatMul(Transpose(R*J*A.T*B), A*X))
+ein = MatAdd(E, Transpose(MatMul(Transpose(R*J*A.T*B), MatPow(X*A, 4))))
 eout = MatAdd(E, Transpose(MatMul(
     Transpose(R*J*A.T*B), 
     MatPow(Transpose(J + X*A), 4)
 )))
+# %%
+# TODO STAR left off debugging pow filtering (somehow error in the anytypeinstance function with instance arg2)
+p = Transpose(MatPow(Inverse(MatPow(MatPow(X, 2), 5)), 3))
+rippleOut(MatPow, p)
 # %%
 factor(Transpose, eout)
 # %%
