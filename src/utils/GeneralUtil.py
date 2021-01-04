@@ -42,8 +42,6 @@ FloatTensor = torch.FloatTensor
 
 
 
-
-
 ### My functions --------------------------------
 
 

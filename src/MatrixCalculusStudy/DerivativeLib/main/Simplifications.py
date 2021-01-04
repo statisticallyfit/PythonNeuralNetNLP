@@ -32,7 +32,8 @@ from sympy.core.assumptions import ManagedProperties
 from sympy import UnevaluatedExpr , parse_expr 
 
 # Types
-import collections 
+import inspect # for isclass() function 
+import collections  # for namedtuple
 
 # Need to create an instance of this each time you have a matpow and want to store the exponent in the same list as transpose and inverse constructors, so that this looks like any ordinary transpose / inverse constructor. 
 MatPowConstr = collections.namedtuple("MatPow", ["expo"])
@@ -83,12 +84,31 @@ OP_ADD_MUL_LIST : List[MatrixType] = [MatMul, Mul, MatAdd, Add]
 OP_POW_LIST: List[ConstrType] = [MatPow, Pow, MatPowConstr]
 SYM_LIST: List[MatrixType] = [MatrixSymbol, Symbol]
 NUM_LIST: List[MatrixType] = [NegativeOne, Number, Integer]
+NON_POW_LIST: List[MatrixType] = OP_ADD_MUL_LIST + SYM_LIST + NUM_LIST + INV_TRANS_LIST 
 
 # TODO to add Function, Derivative, and Trace ? any others?
 ALL_TYPES_LIST = INV_TRANS_LIST + OP_ADD_MUL_LIST + OP_POW_LIST + SYM_LIST + NUM_LIST 
 
-names = lambda cs: list(map(lambda t: t.__name__, cs))
-names2 = lambda ccs: list(map(lambda lst: names(lst), ccs))
+
+
+def typeName(t: ConstrType) -> str:
+    
+    if t == MatPowConstr:
+        return "MatPowConstr"
+    if not isinstance(t, MatPowConstr):
+        return t.__name__ 
+
+    powList = addToOpPows([t])
+    matpowIndex: int = findWhere(powList, t)[0]
+    matpowType : ConstrType = powList[matpowIndex]
+
+    return "{}".format(matpowType) 
+
+names = lambda ts: list(map(lambda t: typeName(t), ts))
+namesD = lambda tts: list(map(lambda lst: names(lst), tts))
+
+
+
 
 hasType = lambda Type, expr : Type.__name__ in srepr(expr)
 #hasTranspose = lambda e : "Transpose" in srepr(e)
@@ -115,16 +135,33 @@ isSym = lambda m: len(m.free_symbols) in [0,1]
 isOfType = lambda t, ts: anyTypeInstance([t], ts) or anyTypeSub([t], ts) or anyTypeEqual([t], ts)
 
 
-#isEqType = lambda t1, t2: isOfType(t1, [t2]) or isOfType(t2, [t1])
+def addToOpPows(ts: List[ConstrType]) -> List[ConstrType]:
+    # Must filter to not allow non-pow types to get added to the pow list (but must do this while not using isPow because that would cause recursion)
+    onlyPowTs: List[ConstrType] = list(filter(lambda t: not (t in NON_POW_LIST), ts))
+    return list(set(OP_POW_LIST + onlyPowTs))
 
-#isEqMatPow = lambda c, t : 
+# Need separate definition from anyTypeInst ... etc because otherwise will get recursion error. 
+def isEqMatPow(c: ConstrType, t: ConstrType) -> bool:
+
+    opPowList: List[ConstrType] = addToOpPows([c, t])
+    return ((c in opPowList) and (t in opPowList))
+
+#(isPowC(c) and isPowC(t)) or (isPowC(c) and isinstance(t, c)) or 
+
+isEq = lambda c, t: True if isEqMatPow(c, t) else (anyTypeEqual([c], [t]) or anyTypeInstance([c], [t]) )
+
+isEqAny = lambda cs, ts: any(list(itertools.chain(*list(map(lambda t: list(map(lambda c: isEqMatPow(c, t), cs)), ts ))))) if (any(map(lambda c: isPowC(c), cs)) or any(map(lambda t: isPowC(t), ts))) else (anyTypeEqual(cs, ts) or anyTypeInstance(cs, ts))
+
+isIn = lambda c, ts: any(map(lambda t : isEq(c, t), ts))
+
 
 anyTypeEqual = lambda testTypes, searchTypes : any( list(itertools.chain(*map(lambda t: list(map(lambda s: t == s, searchTypes)), testTypes)) ) )
 #any([True for tpe in testTypes if tpe in searchTypes])
 
-anyTypeInstance = lambda testTypes, searchTypes : any( list(itertools.chain(*map(lambda tester: list(map(lambda searcher: isinstance(tester, searcher), searchTypes)), testTypes)) ) )
+# NOTE isinstance and issubclass can throw errors when the constructor (like matpowconstr instance) is not a class so must use if-else and eqmatpow function to redirect.
+anyTypeInstance = lambda testTypes, searchTypes : any( list(itertools.chain(*map(lambda tester: list(map(lambda searcher: isEqMatPow(tester, searcher) if not inspect.isclass(searcher) else isinstance(tester, searcher), searchTypes)), testTypes)) ) )
 
-anyTypeSub = lambda testTypes, searchTypes : any( list(itertools.chain(*map(lambda tester: list(map(lambda searcher: issubclass(tester, searcher), searchTypes)), testTypes)) ) )
+anyTypeSub = lambda testTypes, searchTypes : any( list(itertools.chain(*map(lambda tester: list(map(lambda searcher: isEqMatPow(tester, searcher) if not (inspect.isclass(tester) and inspect.isclass(searcher)) else issubclass(tester, searcher), searchTypes)), testTypes)) ) )
 
 # NOTE: len == 0 of free syms when Number else for MatSym len == 1 so put 0 case just for safety.
 #onlySymComponents_AddMul = lambda expr: (expr.func in [MatAdd, MatMul]) and all(map(lambda expr: len(expr.free_symbols) in [0, 1], expr.args))
@@ -156,6 +193,23 @@ def pickOut(WrapType: MatrixType, expr: MatrixExpr):
 
 
 
+
+
+def composeTwoMatrixOps(f, g):
+    if isPowC(f) and isPowC(g):
+        return lambda *a, **kw: MatPow(MatPow(*a,  g.expo), f.expo)
+    elif isPowC(f):
+        return lambda *a, **kw: MatPow(g(*a, **kw), f.expo)
+    elif isPowC(g):
+        return lambda *a, **kw: f(MatPow(*a, g.expo))
+    return lambda *a, **kw: f(g(*a, **kw))
+
+
+
+def composeMatrixOps(*fs):
+    return reduce(composeTwoMatrixOps, fs)
+
+
 def applyTypesToExpr( pairTypeExpr: Tuple[List[MatrixType], MatrixExpr]) -> MatrixExpr:
     '''Ignores any types that are MatrixSymbol or Symbol or instance of Number because those give error when applied to an expr.'''
 
@@ -165,12 +219,11 @@ def applyTypesToExpr( pairTypeExpr: Tuple[List[MatrixType], MatrixExpr]) -> Matr
 
     if typeList == []:
         return expr
-    return compose(*typeList)(expr)
+    return composeMatrixOps(*typeList)(expr)
 
 
 
 
-isEq = lambda c, t: True if (isPowC(c) and isPowC(t)) else (anyTypeEqual([c], [t]) or anyTypeInstance([c], [t]) )
 
 def stackTypesBy(byType: ConstrType, types: List[ConstrType]) -> List[ConstrType]:
     '''Given expr type (like Transpose) and given expr list, this function pulls all the signal types to the end of the
@@ -204,7 +257,7 @@ def chunkTypesBy(byTypes: List[MatrixType], types: List[ConstrType]) -> List[Lis
 
 
     # Step 1: coding up in pairs for easy identification: need types from CONSTR_LIST to be tagged as the same number (0) and all other types to be tagged as (1). 
-    codeConstrPairs: List[Tuple[int, ConstrType]] = list(map(lambda C : (0, C) if isEq(C, byConstrs) else (1, C), types))
+    codeConstrPairs: List[Tuple[int, ConstrType]] = list(map(lambda C : (0, C) if isIn(C, byConstrs) else (1, C), types))
 
     # Step 2: getting the groups
     chunkedPairs: List[List[Tuple[int, ConstrType]]] = [list(group) for key, group in itertools.groupby(codeConstrPairs, operator.itemgetter(0))]
@@ -440,8 +493,10 @@ def digger(expr: MatrixExpr) -> List[Tuple[List[MatrixType], MatrixExpr]]:
 
     # Pair up the correct order of transpose types with the expressions
     # BEFORE: (Transpose in tsPs[0]) or (Inverse in tsPs[0])
-    typeListExprListPair = list(filter(lambda tsPs : anyTypeEqual(testTypes = CONSTR_LIST, searchTypes = tsPs[0]),
-                                       list(zip(csChunked, psChunked))))
+    typeListExprListPair = list(
+        filter(lambda tsPs : isEqAny(CONSTR_LIST, tsPs[0]),  
+        list(zip(csChunked, psChunked)))
+    )
 
     # Get the first expression only, since it is the most layered, and pair its inner arg with the list of types from that pair.
     typeListInnerPair = list(map(lambda tsPs : (tsPs[0], inner(tsPs[1][0])), typeListExprListPair))
@@ -527,13 +582,18 @@ def factor(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
     (types, innerExprs) = (list(types), list(innerExprs))
 
     # Filtering the wrapper types that are `WrapType`s
-    noSignalTypes: List[MatrixType] = list(map(lambda typeList:  list(filter(lambda t: t != WrapType, typeList)) , types))
+    noSignalTypes: List[List[ConstrType]] = list(map(lambda typeList:  list(filter(lambda t: not isEq(t, WrapType), typeList)) , types))
 
     # Pair up all the types, filtered types, and inner expressions for easier querying later:
     triples: List[Tuple[List[MatrixType], List[MatrixType], List[MatrixExpr]]]  = list(zip(types, noSignalTypes, innerExprs))
 
     # Create new pairs from the filtered and inner Exprs, by attaching expr Transpose at the end if odd num else none.
-    newTypesInners: List[Tuple[List[MatrixType], List[MatrixExpr]]] = list(map(lambda triple: ([WrapType] + triple[1], triple[2]) if (triple[0].count(WrapType) % 2 == 1) else (triple[1], triple[2]) , triples))
+    if WrapType in INV_TRANS_LIST: 
+        # The inverse / transpose way of factoring out
+        newTypesInners: List[Tuple[List[MatrixType], List[MatrixExpr]]] = list(map(lambda triple: ([WrapType] + triple[1], triple[2]) if (triple[0].count(WrapType) % 2 == 1) else (triple[1], triple[2]) , triples))
+
+    elif isPowC(WrapType):
+        # The matpow way of factoring: 
 
     # Create the old exprs from the digger results:
     oldExprs: List[MatrixExpr] = list(map(lambda pair: applyTypesToExpr(pair), typesInners))

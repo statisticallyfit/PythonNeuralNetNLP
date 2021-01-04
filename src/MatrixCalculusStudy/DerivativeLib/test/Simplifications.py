@@ -1,7 +1,7 @@
 
 # %%
 
-
+import inspect 
 from sympy.core.assumptions import ManagedProperties
 
 # %%
@@ -2467,14 +2467,24 @@ eout = MatAdd(E, Transpose(MatMul(
     Transpose(R*J*A.T*B), 
     MatPow(Transpose(J + X*A), 4)
 )))
+p = Transpose(MatPow(Inverse(MatPow(MatPow(X, 2), 5)), 3))
 # %%
 # TODO STAR left off debugging pow filtering (somehow error in the anytypeinstance function with instance arg2)
-p = Transpose(MatPow(Inverse(MatPow(MatPow(X, 2), 5)), 3))
 rippleOut(MatPow, p)
+# %%
+factor(MatPow, p)
 # %%
 factor(Transpose, eout)
 # %%
-testSimplifyAlgo(algo = factor, expr = eout, check = eout, byType = Transpose)
+polarize(Transpose, eout)
+# %%
+polarize(Transpose, ein)
+# %%
+check = MatAdd(E, Transpose(MatMul(
+    Transpose(R*J*A.T*B), 
+    Transpose(MatPow(J + X*A, 4))
+)))
+testSimplifyAlgo(algo = factor, expr = eout, check = check, byType = Transpose)
 # %%
 
 
