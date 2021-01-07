@@ -25,7 +25,8 @@ from sympy.core.mul import Mul
 from sympy.core.add import Add
 from sympy.core.power import Pow
 
-from sympy.core.numbers import NegativeOne, Number, Integer
+from sympy.core.singleton import Singleton 
+from sympy.core.numbers import NegativeOne, Number, Integer, One, IntegerConstant
 
 from sympy.core.assumptions import ManagedProperties
 
@@ -83,7 +84,7 @@ CONSTR_LIST: List[ConstrType] = [Transpose, Inverse, MatPow, MatPowConstr]
 OP_ADD_MUL_LIST : List[MatrixType] = [MatMul, Mul, MatAdd, Add]
 OP_POW_LIST: List[ConstrType] = [MatPow, Pow, MatPowConstr]
 SYM_LIST: List[MatrixType] = [MatrixSymbol, Symbol]
-NUM_LIST: List[MatrixType] = [NegativeOne, Number, Integer]
+NUM_LIST: List[MatrixType] = [NegativeOne, Number, Integer, IntegerConstant, Singleton] # NOTE: SIngleton to encompoass types like sympy.core.numbers.One 
 NON_POW_LIST: List[MatrixType] = OP_ADD_MUL_LIST + SYM_LIST + NUM_LIST + INV_TRANS_LIST 
 
 # TODO to add Function, Derivative, and Trace ? any others?
@@ -137,7 +138,10 @@ isOfType = lambda t, ts: anyTypeInstance([t], ts) or anyTypeSub([t], ts) or anyT
 
 def addToOpPows(ts: List[ConstrType]) -> List[ConstrType]:
     # Must filter to not allow non-pow types to get added to the pow list (but must do this while not using isPow because that would cause recursion)
-    onlyPowTs: List[ConstrType] = list(filter(lambda t: not (t in NON_POW_LIST), ts))
+    onlyPowTs: List[ConstrType] = list(filter(lambda t: 
+        not (any(map(lambda np: isEq(t, np), NON_POW_LIST))), 
+    ts))
+
     return list(set(OP_POW_LIST + onlyPowTs))
 
 # Need separate definition from anyTypeInst ... etc because otherwise will get recursion error. 
@@ -568,6 +572,48 @@ def innerTrail(expr: MatrixExpr) -> List[Tuple[List[MatrixType], MatrixExpr]]:
 
 
 
+
+
+
+def elimPows(powNums: List[int]) -> List[int]:
+    if len(powNums) in [0, 1]:
+        return powNums
+    
+    n = len(powNums)
+    x = powNums[0]
+    y = powNums[n-1] # last elem
+
+    if abs(x) == abs(y): 
+        #return [x] + elimPows(powNums[1 : n-1]) + [y]
+        # In this case, the ends are canceled out (represents out powers cancel out)
+        return elimPows(powNums[1 : n-1])
+    
+    if abs(x) > abs(y) and x <= 0:
+        return [x] + elimPows(powNums[1 : n])
+    
+    if abs(x) < abs(y) and x <= 0: 
+        return elimPows(powNums[0 : n-1]) + [y]
+    
+    # else no negatives so no powers to cancel, so just return the list
+    return powNums 
+
+
+def factorPows(types: List[ConstrType]) -> List[ConstrType]:
+     # Filter to get just the pow types
+    matPows: List[ConstrType] = list(filter(lambda t: isEq(t, MatPow), types))
+    # Get the non-matpow types
+    #nonMatpows: List[MatrixType] = list(filter(lambda t: not isEq(t, MatPow), types))
+    # Extract their exponents 
+    expos: List[int] = list(map(lambda mp: mp.expo, matPows))
+    # Go through this sorted num power list, canceling out opposite-sign pairs (to represent power canceling) otherwise no other simplification occurs
+    exposFactored: List[int] = elimPows(sorted(expos))
+    # Now make them MatPowConstr again
+    matPowsFactored: List[ConstrType] = list(map(lambda e: MatPowConstr(expo = e), exposFactored))
+
+    # Make the simplified list of pows go at beginning (aking to transposes that are all on outer layers) with non-matpow types at the inner layers. 
+    return matPowsFactored #+ nonMatPows
+
+
 def factor(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
     typesInners = digger(expr)
@@ -588,12 +634,14 @@ def factor(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
     triples: List[Tuple[List[MatrixType], List[MatrixType], List[MatrixExpr]]]  = list(zip(types, noSignalTypes, innerExprs))
 
     # Create new pairs from the filtered and inner Exprs, by attaching expr Transpose at the end if odd num else none.
+    newTypesInners = []
+
     if WrapType in INV_TRANS_LIST: 
         # The inverse / transpose way of factoring out
         newTypesInners: List[Tuple[List[MatrixType], List[MatrixExpr]]] = list(map(lambda triple: ([WrapType] + triple[1], triple[2]) if (triple[0].count(WrapType) % 2 == 1) else (triple[1], triple[2]) , triples))
 
-    elif isPowC(WrapType):
-        # The matpow way of factoring: 
+    elif isPowC(WrapType): # TODO start here to fix factor() to recognize matpows
+        newTypesInners: List[Tuple[List[ConstrType], List[MatrixExpr]]] = list(map(lambda triple: (factorPows(types = triple[0]) + triple[1], triple[2]) , triples))
 
     # Create the old exprs from the digger results:
     oldExprs: List[MatrixExpr] = list(map(lambda pair: applyTypesToExpr(pair), typesInners))

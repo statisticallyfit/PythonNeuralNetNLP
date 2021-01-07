@@ -2469,10 +2469,17 @@ eout = MatAdd(E, Transpose(MatMul(
 )))
 p = Transpose(MatPow(Inverse(MatPow(MatPow(X, 2), 5)), 3))
 # %%
-# TODO STAR left off debugging pow filtering (somehow error in the anytypeinstance function with instance arg2)
+# TODO STAR left off here must fix recursion error with isEqMatPow <===> isEq
 rippleOut(MatPow, p)
 # %%
 factor(MatPow, p)
+# %%
+# TODO STAR left off here must fix recursion error with isEqMatPow <===> isEq
+isEq(One, MatPow)
+# %%
+p1 = MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(X, -3), 2), 4), 3), -8), 5), -1), -2), 4), 1), -3)
+
+factor(MatPow, p1)
 # %%
 factor(Transpose, eout)
 # %%
