@@ -36,14 +36,6 @@ from sympy import UnevaluatedExpr , parse_expr
 import inspect # for isclass() function 
 import collections  # for namedtuple
 
-# Need to create an instance of this each time you have a matpow and want to store the exponent in the same list as transpose and inverse constructors, so that this looks like any ordinary transpose / inverse constructor. 
-MatPowConstr = collections.namedtuple("MatPow", ["expo"])
-#MatrixType = ManagedProperties
-# ConstrType is either Transpose / Inverse (of type ManagedProperties) OR is a MatPow (which is of type collections.namedtuple)
-MatrixType = ManagedProperties
-ConstrType = Union[MatrixType, MatPowConstr]
-
-
 
 # Path settings
 import sys
@@ -74,12 +66,31 @@ printing.init_printing(use_latex='mathjax')
 
 # -------------------------------------------------------------
 
+# Need to create an instance of this each time you have a matpow and want to store the exponent in the same list as transpose and inverse constructors, so that this looks like any ordinary transpose / inverse constructor. 
+MatPowConstr = collections.namedtuple("MatPow", ["expo"])
+
+
+#MatrixType = ManagedProperties
+# ConstrType is either Transpose / Inverse (of type ManagedProperties) OR is a MatPow (which is of type collections.namedtuple)
+MatrixType = ManagedProperties
+
+# TODO: whenever I create a new named tuple I would have to include it in this union ... any other way to get it dynamically included after creation?
+ConstrType = Union[MatrixType, MatPowConstr]
+
+
 
 INV_TRANS_LIST: List[MatrixType] = [Transpose, Inverse] # this always will include just these two constructors, necessary since only the matrix rules of inverting matrix args when warpping applies to these.
 
 # Need to include list of constructors that you dig out of.
 # TODO: need Trace / Derivative / Function ...??
 CONSTR_LIST: List[ConstrType] = [Transpose, Inverse, MatPow, MatPowConstr]
+
+# Named tuple list of items (to be able to compare at the type-level)
+NAMED_TUPLE_CONSTR_LIST: List[ConstrType] = [MatPowConstr] 
+
+# Dictionary to map between sympy constructors and my own named tuple constructors: 
+# TODO need to add here the pairs every time you create a named tuple to match the sympy constructor. 
+NAMED_TUP_TO_CONSTR: Dict[ConstrType, ConstrType] = {MatPow : MatPowConstr}
 
 OP_ADD_MUL_LIST : List[MatrixType] = [MatMul, Mul, MatAdd, Add]
 OP_POW_LIST: List[ConstrType] = [MatPow, Pow, MatPowConstr]
@@ -91,7 +102,7 @@ NON_POW_LIST: List[MatrixType] = OP_ADD_MUL_LIST + SYM_LIST + NUM_LIST + INV_TRA
 ALL_TYPES_LIST = INV_TRANS_LIST + OP_ADD_MUL_LIST + OP_POW_LIST + SYM_LIST + NUM_LIST 
 
 
-
+# TODO STAR URGENT: change this too now the matpowconstr operations must be more type-level not so low-level (also getting rid of the addToOpPows function)
 def typeName(t: ConstrType) -> str:
     
     if t == MatPowConstr:
@@ -136,6 +147,33 @@ isSym = lambda m: len(m.free_symbols) in [0,1]
 isOfType = lambda t, ts: anyTypeInstance([t], ts) or anyTypeSub([t], ts) or anyTypeEqual([t], ts)
 
 
+
+# GOAL: make equality between named tuple and original sympy type
+# Example 1: MatPow, MatPowConstr ---> TRUE
+# Example 2: MatAdd, MatPowConstr ---> FALSE
+def equalityClassBridgeNamedTup(x, y) -> bool: 
+    return ((x, y) in NAMED_TUP_TO_CONSTR.items()) or ((y, x) in NAMED_TUP_TO_CONSTR.items())
+
+# GOAL: test whether the args are equal in an instance-related way: 
+# Example 1: MatPow(expo = 111) , MatPowConstr ---> TRUE (since first is instance of type MatPowConstr. NOTE: IS a symmetric definition)
+# Example 2: MatPowConstr , MatPowConstr ---> False (since both are classes not instances)
+# Example 3: MatPow(expo = 1), MatPow(expo = 2) ---> False (since both are instances, not of each other, but of another class)
+# Example 4: MatPow(expo = 2), MatPow(expo = 2) ---> TRUE
+def equalityClassCrossInstance(x, y) -> bool: 
+    if equalityClassBridgeNamedTup(x, y):
+        return False # since the 'cross-instance' func tests somehing else, don't want to confuse the two jobs. 
+
+    # NOW can continue the main logic of the function:
+    # TODO STAR left off here CHECK if this is right (want just instance-instance and instance-class equality tester here)
+    if inspect.isclass(x):
+        return isinstance(y, x) # class x needs to be second arg
+    elif inspect.isclass(y):
+        return isinstance(x, y) # class y needs to be second arg
+    else: #OLD: else if NIETHER x, y are classes then cannot use the isintance method, doesn't make sense since neither x,y is a class
+        # If neither args are classes, then they are instances so test equality of the fields: 
+        return x == y # case 4: MatPow(expo = 1) == MatPow(expo = 2) ??
+
+'''
 def addToOpPows(ts: List[ConstrType]) -> List[ConstrType]:
     # Must filter to not allow non-pow types to get added to the pow list (but must do this while not using isPow because that would cause recursion)
     onlyPowTs: List[ConstrType] = list(filter(lambda t: 
@@ -143,29 +181,42 @@ def addToOpPows(ts: List[ConstrType]) -> List[ConstrType]:
     ts))
 
     return list(set(OP_POW_LIST + onlyPowTs))
+'''
 
 # Need separate definition from anyTypeInst ... etc because otherwise will get recursion error. 
+'''
 def isEqMatPow(c: ConstrType, t: ConstrType) -> bool:
-
     opPowList: List[ConstrType] = addToOpPows([c, t])
     return ((c in opPowList) and (t in opPowList))
-
+'''
 #(isPowC(c) and isPowC(t)) or (isPowC(c) and isinstance(t, c)) or 
 
-isEq = lambda c, t: True if isEqMatPow(c, t) else (anyTypeEqual([c], [t]) or anyTypeInstance([c], [t]) )
+# GOAL: test equality using INSTANCE_type-equality (like MatPow(expo = 5) == MatPowConstr) AND type-to-type equality (like MatAdd == MatAdd)
+isEq = lambda c, t: anyTypeEqual([c], [t]) or anyTypeInstance([c], [t])
+# OLD BAD VERSION
+# isEq = lambda c, t: True if isEqMatPow(c, t) else (anyTypeEqual([c], [t]) or anyTypeInstance([c], [t]) )
 
 isEqAny = lambda cs, ts: any(list(itertools.chain(*list(map(lambda t: list(map(lambda c: isEqMatPow(c, t), cs)), ts ))))) if (any(map(lambda c: isPowC(c), cs)) or any(map(lambda t: isPowC(t), ts))) else (anyTypeEqual(cs, ts) or anyTypeInstance(cs, ts))
 
 isIn = lambda c, ts: any(map(lambda t : isEq(c, t), ts))
 
 
+# GOAL: testing simplest form of object equality (between classes or objects)
 anyTypeEqual = lambda testTypes, searchTypes : any( list(itertools.chain(*map(lambda t: list(map(lambda s: t == s, searchTypes)), testTypes)) ) )
 #any([True for tpe in testTypes if tpe in searchTypes])
 
-# NOTE isinstance and issubclass can throw errors when the constructor (like matpowconstr instance) is not a class so must use if-else and eqmatpow function to redirect.
-anyTypeInstance = lambda testTypes, searchTypes : any( list(itertools.chain(*map(lambda tester: list(map(lambda searcher: isEqMatPow(tester, searcher) if not inspect.isclass(searcher) else isinstance(tester, searcher), searchTypes)), testTypes)) ) )
 
-anyTypeSub = lambda testTypes, searchTypes : any( list(itertools.chain(*map(lambda tester: list(map(lambda searcher: isEqMatPow(tester, searcher) if not (inspect.isclass(tester) and inspect.isclass(searcher)) else issubclass(tester, searcher), searchTypes)), testTypes)) ) )
+# GOAL: test just if the given items in `testTypes` are instances of the items in `searchTypes`:
+anyTypeInstance = lambda testTypes, searchTypes : any(list(itertools.chain(*map(lambda tester : list(map(lambda searcher: equalityClassCrossInstance(tester, searcher) , searchTypes)), testTypes ))))
+
+# OLD BAD VERSION 
+# # anyTypeInstance = lambda testTypes, searchTypes : any( list(itertools.chain(*map(lambda tester: list(map(lambda searcher: isEqMatPow(tester, searcher) if not inspect.isclass(searcher) else isinstance(tester, searcher), searchTypes)), testTypes)) ) )
+
+# GOAL: testing, given two classes, if one is subtype of the other (all combos from the lists)
+anyTypeSub = lambda testTypes, searchTypes : any(list(itertools.chain(*map(lambda tester : list(map(lambda searcher: inspect.isclass(tester) and inspect.isclass(searcher) and issubclass(tester, searcher), searchTypes)), testTypes ))))
+
+# OLD BAD VERSION
+#anyTypeSub = lambda testTypes, searchTypes : any( list(itertools.chain(*map(lambda tester: list(map(lambda searcher: isEqMatPow(tester, searcher) if not (inspect.isclass(tester) and inspect.isclass(searcher)) else issubclass(tester, searcher), searchTypes)), testTypes)) ) )
 
 # NOTE: len == 0 of free syms when Number else for MatSym len == 1 so put 0 case just for safety.
 #onlySymComponents_AddMul = lambda expr: (expr.func in [MatAdd, MatMul]) and all(map(lambda expr: len(expr.free_symbols) in [0, 1], expr.args))
