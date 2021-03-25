@@ -165,10 +165,18 @@ def equalityOverClassAndInstance(x, y) -> bool:
 
     # NOW can continue the main logic of the function:
     # TODO STAR left off here CHECK if this is right (want just instance-instance and instance-class equality tester here)
+    def analyzeEquality(x, y) -> bool:
+        instOfNamedTup: bool = isinstance(y, x) 
+        value = NAMED_TUP_TO_CONSTR.get(x, False) 
+        instOfConstr: bool = isinstance(y, value) if value != False else False 
+
+        return instOfNamedTup or instOfConstr # isnstance of PowHolder or instance of MatPow
+
     if inspect.isclass(x):
-        return isinstance(y, x) # class x needs to be second arg
+        return analyzeEquality(x, y) # class x needs to be second arg
+
     elif inspect.isclass(y):
-        return isinstance(x, y) # class y needs to be second arg
+        return analyzeEquality(y, x) # class y needs to be second arg
     else: #OLD: else if NIETHER x, y are classes then cannot use the isintance method, doesn't make sense since neither x,y is a class
         # If neither args are classes, then they are instances so test equality of the fields: 
         return x == y # case 4: MatPow(expo = 1) == MatPow(expo = 2) ??
