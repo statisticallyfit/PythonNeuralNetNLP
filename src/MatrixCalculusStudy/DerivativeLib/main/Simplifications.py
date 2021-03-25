@@ -67,7 +67,9 @@ printing.init_printing(use_latex='mathjax')
 # -------------------------------------------------------------
 
 # Need to create an instance of this each time you have a matpow and want to store the exponent in the same list as transpose and inverse constructors, so that this looks like any ordinary transpose / inverse constructor. 
-MatPowConstr = collections.namedtuple("MatPow", ["expo"])
+
+# TODO used to have name "MatPow" but changed it to have same name as in code, PowHolder --- should I c hange back to MatPow so the PowHolder will be "read" in output as a "MatPow"??
+PowHolder = collections.namedtuple("PowHolder", ["expo"])
 
 
 #MatrixType = ManagedProperties
@@ -75,7 +77,7 @@ MatPowConstr = collections.namedtuple("MatPow", ["expo"])
 MatrixType = ManagedProperties
 
 # TODO: whenever I create a new named tuple I would have to include it in this union ... any other way to get it dynamically included after creation?
-ConstrType = Union[MatrixType, MatPowConstr]
+ConstrType = Union[MatrixType, PowHolder]
 
 
 
@@ -83,17 +85,17 @@ INV_TRANS_LIST: List[MatrixType] = [Transpose, Inverse] # this always will inclu
 
 # Need to include list of constructors that you dig out of.
 # TODO: need Trace / Derivative / Function ...??
-CONSTR_LIST: List[ConstrType] = [Transpose, Inverse, MatPow, MatPowConstr]
+CONSTR_LIST: List[ConstrType] = [Transpose, Inverse, MatPow, PowHolder]
 
 # Named tuple list of items (to be able to compare at the type-level)
-NAMED_TUPLE_CONSTR_LIST: List[ConstrType] = [MatPowConstr] 
+NAMED_TUPLE_CONSTR_LIST: List[ConstrType] = [PowHolder] 
 
 # Dictionary to map between sympy constructors and my own named tuple constructors: 
 # TODO need to add here the pairs every time you create a named tuple to match the sympy constructor. 
-NAMED_TUP_TO_CONSTR: Dict[ConstrType, ConstrType] = {MatPow : MatPowConstr}
+NAMED_TUP_TO_CONSTR: Dict[ConstrType, ConstrType] = {MatPow : PowHolder}
 
 OP_ADD_MUL_LIST : List[MatrixType] = [MatMul, Mul, MatAdd, Add]
-OP_POW_LIST: List[ConstrType] = [MatPow, Pow, MatPowConstr]
+OP_POW_LIST: List[ConstrType] = [MatPow, Pow, PowHolder]
 SYM_LIST: List[MatrixType] = [MatrixSymbol, Symbol]
 NUM_LIST: List[MatrixType] = [NegativeOne, Number, Integer, IntegerConstant, Singleton] # NOTE: SIngleton to encompoass types like sympy.core.numbers.One 
 NON_POW_LIST: List[MatrixType] = OP_ADD_MUL_LIST + SYM_LIST + NUM_LIST + INV_TRANS_LIST 
@@ -102,22 +104,18 @@ NON_POW_LIST: List[MatrixType] = OP_ADD_MUL_LIST + SYM_LIST + NUM_LIST + INV_TRA
 ALL_TYPES_LIST = INV_TRANS_LIST + OP_ADD_MUL_LIST + OP_POW_LIST + SYM_LIST + NUM_LIST 
 
 
-# TODO STAR URGENT: change this too now the matpowconstr operations must be more type-level not so low-level (also getting rid of the addToOpPows function)
-def typeName(t: ConstrType) -> str:
-    
-    if t == MatPowConstr:
-        return "MatPowConstr"
-    if not isinstance(t, MatPowConstr):
-        return t.__name__ 
+def typeName(instOrType: ConstrType) -> str:
 
-    powList = addToOpPows([t])
-    matpowIndex: int = findWhere(powList, t)[0]
-    matpowType : ConstrType = powList[matpowIndex]
+    # If the arg is a CLASS, must return its name
+    if inspect.isclass(instOrType):
+        return instOrType.__name__ 
 
-    return "{}".format(matpowType) 
+    # Else it is an INSTANCE and I want to show its arguments too:
+    return "{}".format(instOrType) 
+
 
 names = lambda ts: list(map(lambda t: typeName(t), ts))
-namesD = lambda tts: list(map(lambda lst: names(lst), tts))
+namess = lambda tts: list(map(lambda lst: names(lst), tts))
 
 
 
@@ -149,18 +147,20 @@ isOfType = lambda t, ts: anyTypeInstance([t], ts) or anyTypeSub([t], ts) or anyT
 
 
 # GOAL: make equality between named tuple and original sympy type
-# Example 1: MatPow, MatPowConstr ---> TRUE
-# Example 2: MatAdd, MatPowConstr ---> FALSE
-def equalityClassBridgeNamedTup(x, y) -> bool: 
+# Example 1: MatPow, PowHolder ---> TRUE 
+# Example 2: PowHolder, MatPow ---> TRUE (symmetric)
+# Example 3: MatAdd, PowHolder ---> FALSE
+# Example 3: PowHolder, PowHolder(expo = 4) ---> FALSE (because I want this function to JUST test equality at type-level. This example would pass for the `equalityOverClassAndInstance` function)
+def equalityOverClassAndNamedtup(x, y) -> bool: 
     return ((x, y) in NAMED_TUP_TO_CONSTR.items()) or ((y, x) in NAMED_TUP_TO_CONSTR.items())
 
 # GOAL: test whether the args are equal in an instance-related way: 
-# Example 1: MatPow(expo = 111) , MatPowConstr ---> TRUE (since first is instance of type MatPowConstr. NOTE: IS a symmetric definition)
-# Example 2: MatPowConstr , MatPowConstr ---> False (since both are classes not instances)
+# Example 1: MatPow(expo = 111) , PowHolder ---> TRUE (since first is instance of type PowHolder. NOTE: IS a symmetric definition)
+# Example 2: PowHolder , PowHolder ---> False (since both are classes not instances)
 # Example 3: MatPow(expo = 1), MatPow(expo = 2) ---> False (since both are instances, not of each other, but of another class)
 # Example 4: MatPow(expo = 2), MatPow(expo = 2) ---> TRUE
-def equalityClassCrossInstance(x, y) -> bool: 
-    if equalityClassBridgeNamedTup(x, y):
+def equalityOverClassAndInstance(x, y) -> bool: 
+    if equalityOverClassAndNamedtup(x, y):
         return False # since the 'cross-instance' func tests somehing else, don't want to confuse the two jobs. 
 
     # NOW can continue the main logic of the function:
@@ -189,25 +189,27 @@ def isEqMatPow(c: ConstrType, t: ConstrType) -> bool:
     opPowList: List[ConstrType] = addToOpPows([c, t])
     return ((c in opPowList) and (t in opPowList))
 '''
-#(isPowC(c) and isPowC(t)) or (isPowC(c) and isinstance(t, c)) or 
 
-# GOAL: test equality using INSTANCE_type-equality (like MatPow(expo = 5) == MatPowConstr) AND type-to-type equality (like MatAdd == MatAdd)
+
+# GOAL: test equality using INSTANCE_type-equality (like MatPow(expo = 5) == PowHolder) AND type-to-type equality (like MatAdd == MatAdd)
 isEq = lambda c, t: anyTypeEqual([c], [t]) or anyTypeInstance([c], [t])
 # OLD BAD VERSION
 # isEq = lambda c, t: True if isEqMatPow(c, t) else (anyTypeEqual([c], [t]) or anyTypeInstance([c], [t]) )
 
+# TODO FIX
 isEqAny = lambda cs, ts: any(list(itertools.chain(*list(map(lambda t: list(map(lambda c: isEqMatPow(c, t), cs)), ts ))))) if (any(map(lambda c: isPowC(c), cs)) or any(map(lambda t: isPowC(t), ts))) else (anyTypeEqual(cs, ts) or anyTypeInstance(cs, ts))
 
 isIn = lambda c, ts: any(map(lambda t : isEq(c, t), ts))
 
 
 # GOAL: testing simplest form of object equality (between classes or objects)
-anyTypeEqual = lambda testTypes, searchTypes : any( list(itertools.chain(*map(lambda t: list(map(lambda s: t == s, searchTypes)), testTypes)) ) )
+# Using `equalityOverClassAndNamedtup` to be able to compare MatPow with PowHolder (should be same TYPE)
+anyTypeEqual = lambda testTypes, searchTypes : any( list(itertools.chain(*map(lambda tester: list(map(lambda searcher: (tester == searcher) or equalityOverClassAndNamedtup(tester, searcher), searchTypes)), testTypes)) ) )
 #any([True for tpe in testTypes if tpe in searchTypes])
 
 
 # GOAL: test just if the given items in `testTypes` are instances of the items in `searchTypes`:
-anyTypeInstance = lambda testTypes, searchTypes : any(list(itertools.chain(*map(lambda tester : list(map(lambda searcher: equalityClassCrossInstance(tester, searcher) , searchTypes)), testTypes ))))
+anyTypeInstance = lambda testTypes, searchTypes : any(list(itertools.chain(*map(lambda tester : list(map(lambda searcher: equalityOverClassAndInstance(tester, searcher) , searchTypes)), testTypes ))))
 
 # OLD BAD VERSION 
 # # anyTypeInstance = lambda testTypes, searchTypes : any( list(itertools.chain(*map(lambda tester: list(map(lambda searcher: isEqMatPow(tester, searcher) if not inspect.isclass(searcher) else isinstance(tester, searcher), searchTypes)), testTypes)) ) )
@@ -286,7 +288,7 @@ def stackTypesBy(byType: ConstrType, types: List[ConstrType]) -> List[ConstrType
 
     # Get number of signal types in the list
     signalTypes: List[ConstrType] = list(filter(lambda t : isEq(t, byType), types))
-    # Even if we pass in byType = MatPow, and the types list contains MatPowConstr type instance then we must replicate the MatPowConstr not the MatPow (signal type)
+    # Even if we pass in byType = MatPow, and the types list contains PowHolder type instance then we must replicate the PowHolder not the MatPow (signal type)
 
     # Get the list without the signal types
     nonSignalTypes: List[ConstrType] = list(filter(lambda t : not isEq(t, byType), types))
@@ -331,8 +333,9 @@ def chunkExprsBy(byTypes: List[MatrixType], expr: MatrixExpr) -> Tuple[List[List
     byConstrs: List[MatrixType] = list(set(byTypes))
 
     ps: List[MatrixExpr] = list(preorder_traversal(expr)) # elements broken down
-    # NOTE: if p is a matpow then must store its exponent in the named tuple constructor
-    cs: List[ConstrType] = list(map(lambda p: MatPowConstr(expo = p.args[1]) if isPow(p) else type(p), ps)) # types / constructors
+    # NOTE: if p is a matpow then must store its exponent in the named tuple constructor. 
+    # NOTE: isPow also checks that `p` is an INSTANCE of PowHolder, so it is capable of extracting it then too (though don't think this function `chunkExprsBy` has that kind of argument, since that extraction happens later down the pipeline)
+    cs: List[ConstrType] = list(map(lambda p: PowHolder(expo = p.args[1]) if isPow(p) else type(p), ps)) # types / constructors
 
 
     # Check first: does the expr have the types in byConstrs? If not, then return it out, nothing to do here:
@@ -658,8 +661,8 @@ def factorPows(types: List[ConstrType]) -> List[ConstrType]:
     expos: List[int] = list(map(lambda mp: mp.expo, matPows))
     # Go through this sorted num power list, canceling out opposite-sign pairs (to represent power canceling) otherwise no other simplification occurs
     exposFactored: List[int] = elimPows(sorted(expos))
-    # Now make them MatPowConstr again
-    matPowsFactored: List[ConstrType] = list(map(lambda e: MatPowConstr(expo = e), exposFactored))
+    # Now make them PowHolder again
+    matPowsFactored: List[ConstrType] = list(map(lambda e: PowHolder(expo = e), exposFactored))
 
     # Make the simplified list of pows go at beginning (aking to transposes that are all on outer layers) with non-matpow types at the inner layers. 
     return matPowsFactored #+ nonMatPows
@@ -691,7 +694,9 @@ def factor(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
         # The inverse / transpose way of factoring out
         newTypesInners: List[Tuple[List[MatrixType], List[MatrixExpr]]] = list(map(lambda triple: ([WrapType] + triple[1], triple[2]) if (triple[0].count(WrapType) % 2 == 1) else (triple[1], triple[2]) , triples))
 
+    # NOTE: using isPowC not isPow because the latter gives error since PowHolder has no attribute 'func'
     elif isPowC(WrapType): # TODO start here to fix factor() to recognize matpows
+        
         newTypesInners: List[Tuple[List[ConstrType], List[MatrixExpr]]] = list(map(lambda triple: (factorPows(types = triple[0]) + triple[1], triple[2]) , triples))
 
     # Create the old exprs from the digger results:
