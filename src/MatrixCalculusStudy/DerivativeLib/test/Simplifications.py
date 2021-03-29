@@ -138,6 +138,18 @@ t3 = Transpose(Inverse(
 c3 = t3.arg.arg #just twice depth
 assert inner(t3) == c3
 
+# %%
+# INNER TEST 4: powers
+
+e =  Transpose(MatMul(Transpose(R*J*A.T*B), A*X))
+ein = MatAdd(E, Transpose(MatMul(Transpose(R*J*A.T*B), MatPow(X*A, 4))))
+eout = MatAdd(E, Transpose(MatMul(
+    Transpose(R*J*A.T*B), 
+    MatPow(Transpose(J + X*A), 4)
+)))
+p = Transpose(MatPow(Inverse(MatPow(MatPow(X, 2), 5)), 3))
+
+showGroup([e, ein, eout, p])
 
 
 

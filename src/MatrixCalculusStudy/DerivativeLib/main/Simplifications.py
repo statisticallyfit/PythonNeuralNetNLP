@@ -621,21 +621,24 @@ def innerTrail(expr: MatrixExpr) -> List[Tuple[List[MatrixType], MatrixExpr]]:
 
         Constr: MatrixType = expr.func
 
-        otherTypes = list( set(ALL_TYPES_LIST).symmetric_difference(CONSTR_LIST) )
+        #otherTypes = list( set(ALL_TYPES_LIST).symmetric_difference(CONSTR_LIST) )
+        otherTypes = list( set(ALL_TYPES_LIST).symmetric_difference(CONSTR_LIST) - set(OP_POW_LIST))
 
         # BASE CASE 
-        if (Constr in otherTypes) or isNumC(Constr) or (isPow(expr) and isSym(expr)):
+        if (Constr in otherTypes) or isNumC(Constr): # or (isPow(expr) and isSym(expr)):
 
             return (accConstrs, expr)
 
         # else keep recursing
-        elif isPow(expr) and (not isSym(expr)): 
+        elif isPow(expr): # and (not isSym(expr)): 
             # Recurse through the base of the power expression
-            (base, _) = expr.args 
+            (base, exponent) = expr.args 
 
-            return doInnerTrail(expr = base, accConstrs = accConstrs + [Constr])
-
+            return doInnerTrail(expr = base, accConstrs = accConstrs + [PowHolder(expo = exponent)])
+        # else is NOT pow nor OTHERTYPE so must be Inverse or Transpose kind of constructor ...
         return doInnerTrail(expr = expr.arg, accConstrs = accConstrs + [Constr])
+
+        ## END doInnerTrail() function
 
     # OUTER FUNCTION innerTrail()
     return doInnerTrail(expr = expr, accConstrs = [])
