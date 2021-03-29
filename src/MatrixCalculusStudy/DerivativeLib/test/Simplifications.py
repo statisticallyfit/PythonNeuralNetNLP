@@ -2466,9 +2466,6 @@ testSimplifyAlgo(algo = polarize, expr = expr_polarize, check = check, byType = 
 
 # %% codecell
 
-
-
-
 ### GENERAL TEST 17: matpow testing how constructors get rippleout around it
 
 # TODO separate these expressions and test them separately 
@@ -2494,7 +2491,8 @@ factor(MatPow, p)
 isEq(One, MatPow)
 # %%
 p1 = MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(X, -3), 2), 4), 3), -8), 5), -1), -2), 4), 1), -3)
-
+p1
+# %%
 factor(MatPow, p1)
 # %%
 factor(Transpose, eout)
