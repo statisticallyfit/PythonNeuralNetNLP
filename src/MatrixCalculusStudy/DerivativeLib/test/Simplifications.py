@@ -2474,19 +2474,14 @@ testSimplifyAlgo(algo = polarize, expr = expr_polarize, check = check, byType = 
 # TODO separate these expressions and test them separately 
 
 e =  Transpose(MatMul(Transpose(R*J*A.T*B), A*X))
-e
-# %%
 ein = MatAdd(E, Transpose(MatMul(Transpose(R*J*A.T*B), MatPow(X*A, 4))))
-ein
-# %%
 eout = MatAdd(E, Transpose(MatMul(
     Transpose(R*J*A.T*B), 
     MatPow(Transpose(J + X*A), 4)
 )))
-eout
-# %%
 p = Transpose(MatPow(Inverse(MatPow(MatPow(X, 2), 5)), 3))
-p 
+
+showGroup([e, ein, eout, p]) 
 
 # %%
 # TODO STAR left off here must fix recursion error with isEqMatPow <===> isEq

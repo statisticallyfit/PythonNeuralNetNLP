@@ -681,8 +681,22 @@ def factorPows(types: List[ConstrType]) -> List[ConstrType]:
     expos: List[int] = list(map(lambda mp: mp.expo, matPows))
     # Go through this sorted num power list, canceling out opposite-sign pairs (to represent power canceling) otherwise no other simplification occurs
     exposFactored: List[int] = elimPows(sorted(expos))
+    # In order to keep the original order of the exponents in the given list, we want to just select the exponents from the given list, using the exponents we have left (from the sorted list)
+    expoFactoredPairs = []
+    recordExposFactored: List[int] = exposFactored.copy()
+    for originalExpo in expos:
+        if originalExpo in recordExposFactored: 
+            expoFactoredPairs.append( (originalExpo, originalExpo) )
+            recordExposFactored.remove(originalExpo)
+        else: 
+            expoFactoredPairs.append((originalExpo, None))
+    # Finish extracting the chosen expoonents
+    chosenExpos: List[Tuple[int, int]] = list(filter(lambda tup: tup[1] != None, expoFactoredPairs))
+
+    chosenExpos: List[int] = list(map(lambda tup: tup[0], chosenExpos))
+
     # Now make them PowHolder again
-    matPowsFactored: List[ConstrType] = list(map(lambda e: PowHolder(expo = e), exposFactored))
+    matPowsFactored: List[ConstrType] = list(map(lambda e: PowHolder(expo = e), chosenExpos))
 
     # Make the simplified list of pows go at beginning (aking to transposes that are all on outer layers) with non-matpow types at the inner layers. 
     return matPowsFactored #+ nonMatPows
