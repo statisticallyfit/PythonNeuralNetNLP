@@ -270,6 +270,7 @@ def pickOut(WrapType: MatrixType, expr: MatrixExpr):
 
 
 def composeTwoMatrixOps(f, g):
+    # NOTE: assumes PowHolder field name is 'expo'
     if isPowC(f) and isPowC(g):
         return lambda *a, **kw: MatPow(MatPow(*a,  g.expo), f.expo)
     elif isPowC(f):

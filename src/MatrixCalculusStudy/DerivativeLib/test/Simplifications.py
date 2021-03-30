@@ -2466,7 +2466,7 @@ testSimplifyAlgo(algo = polarize, expr = expr_polarize, check = check, byType = 
 
 # %% codecell
 
-### GENERAL TEST 17: matpow testing how constructors get rippleout around it
+### GENERAL TEST 17: general ice-breaker test for power simplifications
 
 # TODO separate these expressions and test them separately 
 
@@ -2477,34 +2477,61 @@ eout = MatAdd(E, Transpose(MatMul(
     MatPow(Transpose(J + X*A), 4)
 )))
 p = Transpose(MatPow(Inverse(MatPow(MatPow(X, 2), 5)), 3))
+pmany = MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(X, -3), 2), 4), 3), -8), 5), -1), -2), 4), 1), -3)
 
-showGroup([e, ein, eout, p]) 
+showGroup([e, ein, eout, p, pmany]) 
 
 # %%
 # TODO STAR left off here must fix recursion error with isEqMatPow <===> isEq
 rippleOut(MatPow, p)
-# %%
-factor(MatPow, p)
+
+
+
+
 
 # %%
-p1 = MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(X, -3), 2), 4), 3), -8), 5), -1), -2), 4), 1), -3)
-p1
-# %%
-factor(MatPow, p1)
-# %%
 
+
+#### TEST 17 a: testing factor against the pow-related examples
+# e
+assert factor(Transpose, e) == e
+assert factor(MatPow, e) == e
+
+# eout
+check = MatAdd(
+    E, 
+    Transpose(MatMul(
+        Transpose(R * J * A.T * B), 
+        Transpose(MatPow(J + X*A, 4))
+    ))
+)
+assert factor(Transpose, eout) == check
+
+assert factor(MatPow, eout) == eout
+
+# p
 check = MatPow(MatPow(MatPow(Transpose(Inverse(X)), 2), 5), 3)
 assert factor(MatPow, p) == check
-# %%
-assert factor(Transpose, p) == p
-# %%
+
 check = Inverse(Transpose(MatPow(MatPow(MatPow(X, 2), 5), 3)))
 assert factor(Inverse, p) == check
 
+assert factor(Transpose, p) == p
+
+
+# pmany
+assert factor(Transpose, pmany) == pmany
+assert factor(Inverse, pmany) == pmany
+
+check = MatPow(MatPow(MatPow(MatPow(MatPow(X, 4), -8), 5), 4), -3)
+assert factor(MatPow, pmany) == check
+
+
+
+
 
 # %%
-factor(Transpose, eout)
-# %%
+# TODO error PowHolder obj not callable (in applyTypesToExpr() function)
 polarize(Transpose, eout)
 # %%
 polarize(Transpose, ein)
