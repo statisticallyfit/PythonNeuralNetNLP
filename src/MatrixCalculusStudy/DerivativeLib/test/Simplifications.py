@@ -2485,15 +2485,23 @@ showGroup([e, ein, eout, p])
 rippleOut(MatPow, p)
 # %%
 factor(MatPow, p)
-# %%
-# TODO STAR left off here must fix recursion error with isEqMatPow <===> isEq
-# TODO fix recursion error
-isEq(One, MatPow)
+
 # %%
 p1 = MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(X, -3), 2), 4), 3), -8), 5), -1), -2), 4), 1), -3)
 p1
 # %%
 factor(MatPow, p1)
+# %%
+
+check = MatPow(MatPow(MatPow(Transpose(Inverse(X)), 2), 5), 3)
+assert factor(MatPow, p) == check
+# %%
+assert factor(Transpose, p) == p
+# %%
+check = Inverse(Transpose(MatPow(MatPow(MatPow(X, 2), 5), 3)))
+assert factor(Inverse, p) == check
+
+
 # %%
 factor(Transpose, eout)
 # %%
@@ -2533,3 +2541,50 @@ check = MatAdd(
 testSimplifyAlgo(algo = polarize, expr = eout, check = check, byType = Transpose)
 # %% codecell
 wrapDeep(Transpose, eout)
+
+
+
+
+# %%
+
+### EQUALITY TESTS
+
+
+otherTypes = list( set(ALL_TYPES_LIST).symmetric_difference(CONSTR_LIST) - set(OP_POW_LIST))
+
+
+# Blatant example: 
+assert not isEq(One, MatPow)
+
+assert all(map(lambda nonPowConstr : not isEq(nonPowConstr, MatPow), otherTypes))
+
+assert all(map(lambda nonPowConstr : not isEq(nonPowConstr, PowHolder), otherTypes))
+
+assert all(map(lambda nonPowConstr : not isEq(nonPowConstr, Pow), otherTypes))
+
+
+
+# M-M combo
+assert isEq(MatPow, MatPow)
+# M-P combo
+assert isEq(MatPow, PowHolder)
+# P-P combo
+assert isEq(PowHolder, Pow)
+
+assert not isEq(Pow, MatPow)
+
+
+mps = [PowHolder(expo = 1), PowHolder(expo = 2), PowHolder(expo = 3)]
+# M-m combo
+assert all(map(lambda mp: isEq(MatPow, mp), mps))
+# P-m combo
+assert all(map(lambda mp: isEq(PowHolder, mp), mps))
+# P-m combo
+assert all(map(lambda mp: isEq(Pow, mp), mps))
+
+# m-m combo
+assert isEq(PowHolder(expo = 1), PowHolder(expo = 1))
+assert not isEq(PowHolder(expo = 1), PowHolder(expo = 1123))
+
+
+# %% codecell

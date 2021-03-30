@@ -86,16 +86,16 @@ INV_TRANS_LIST: List[MatrixType] = [Transpose, Inverse] # this always will inclu
 
 # Dictionary to map between sympy constructors and my own named tuple constructors: 
 # TODO need to add here the pairs every time you create a named tuple to match the sympy constructor. 
-NAMED_TUP_TO_CONSTR: Dict[ConstrType, ConstrType] = {MatPow : PowHolder}
+NAMED_TUP_TO_CONSTR: Dict[ConstrType, ConstrType] = {MatPow : PowHolder, Pow : PowHolder}
 
 
 # Named tuple list of items (to be able to compare at the type-level)
-NAMED_TUPLE_CONSTR_LIST: List[ConstrType] = list(NAMED_TUP_TO_CONSTR.values())
+NAMED_TUPLE_CONSTR_LIST: List[ConstrType] = list(set(NAMED_TUP_TO_CONSTR.values()))
 #[PowHolder] 
 
 # Need to include list of constructors that you dig out of.
 # TODO: need Trace / Derivative / Function ...??
-CONSTR_LIST: List[ConstrType] = INV_TRANS_LIST + list(*NAMED_TUP_TO_CONSTR.items())
+CONSTR_LIST: List[ConstrType] = INV_TRANS_LIST + list(set(itertools.chain(*NAMED_TUP_TO_CONSTR.items())))
 #[Transpose, Inverse, MatPow, PowHolder]
 
 
