@@ -2481,10 +2481,6 @@ pmany = MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(MatPow(Ma
 
 showGroup([e, ein, eout, p, pmany]) 
 
-# %%
-# TODO STAR left off here must fix recursion error with isEqMatPow <===> isEq
-rippleOut(MatPow, p)
-
 
 
 
@@ -2529,12 +2525,24 @@ assert factor(MatPow, pmany) == check
 
 
 
+# %%
+showGroup([
+    p, 
+    rippleOut(MatPow, p), 
+    rippleOut(Transpose, p),
+    rippleOut(Inverse, p)
+])
 
 # %%
-# TODO error PowHolder obj not callable (in applyTypesToExpr() function)
 polarize(Transpose, eout)
 # %%
+# TODO STAR ERROR here missing 1 positional arg 'exp' from pickOut()
+polarize(MatPow, eout)
+# %%
 polarize(Transpose, ein)
+# %%
+# TODO STAR ERROR HERE
+polarize(MatPow, ein)
 # %%
 check = MatAdd(E, Transpose(MatMul(
     Transpose(R*J*A.T*B), 

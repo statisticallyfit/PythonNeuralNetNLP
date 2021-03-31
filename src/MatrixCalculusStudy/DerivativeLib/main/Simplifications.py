@@ -279,9 +279,19 @@ def composeTwoMatrixOps(f, g):
         return lambda *a, **kw: f(MatPow(*a, g.expo))
     return lambda *a, **kw: f(g(*a, **kw))
 
-
+def composeSinglePowMatrixOp(g):
+    # NOTE: assumes PowHolder field name is 'expo'
+    if isPowC(g):
+        return lambda *a, **kw: MatPow(*a,  g.expo)
+    # else if not a pow / powholder / matpow ...
+    return lambda *a, **kw: g(*a, **kw)
 
 def composeMatrixOps(*fs):
+    # NOTE: when the only fs is a single PowHolder then TypeError 'PowHolder' object is not callable gets returned so must separate the cases for when getting this single argument in the list
+    if len(fs) == 1 and isPowC(*fs):
+        # NOTE: using * on the tuple in order to collapse the tuple to pass as single arg, else error occurs: TypeError 'tuple' object not callable
+        return composeSinglePowMatrixOp(*fs)
+        
     return reduce(composeTwoMatrixOps, fs)
 
 
@@ -769,7 +779,7 @@ def wrapShallow(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
         Result: (C.I.T + B + A + R).T
     '''
 
-    assert WrapType in INV_TRANS_LIST
+    #assert WrapType in INV_TRANS_LIST
 
     # TODO: wrapShallow must be able to interpret a MatMul(CONST, expr) kind of input (dig deeper)
     Constr: MatrixType = expr.func
