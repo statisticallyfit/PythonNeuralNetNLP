@@ -248,18 +248,22 @@ def isEqMatPow(c: ConstrType, t: ConstrType) -> bool:
 
 def pickOut(WrapType: MatrixType, expr: MatrixExpr):
     #if not hasTranspose(expr):
-    if not hasType(WrapType, expr):
+    if (not hasType(WrapType, expr)) and isPowC(WrapType):
         #return Transpose(MatMul(*expr.args))
         #return Transpose(expr)
-        return WrapType(expr)
+        return expr
+        # NOTE: it is ok for pickOut() to return original arg when arg doesn't have WrapType in it because WrapType is passed separately as a constructor, this is not like in other simplification functions wher eyou need to recurse through nested expressions. 
+    elif not hasType(WrapType, expr):
+        return WrapType(expr) # TODO check here if this passes, hacked to separate the above mat-pow case from the rest of the non-matpow cases. 
 
     # Need to avoid cuase of X^T ^ 3 ^ T later on so move the transpose out
     elif isPow(expr) and expr.args[0].func == WrapType:
         (base, expo) = expr.args 
         return WrapType(MatPow(base.arg, expo))
+
     elif hasType(WrapType, expr) and expr.func == WrapType:
     #elif hasTranspose(expr) and expr.is_Transpose:
-        return expr.arg
+        return expr # expr.arg
 
     return WrapType(expr) #TODO check
 
@@ -778,6 +782,9 @@ def wrapShallow(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
         Input: B.T + A.T + R.T + C.I
         Result: (C.I.T + B + A + R).T
     '''
+    # NOTE: A^a * B^b * C^c ... != (ABC)^(a+b+c) because matrix multiplication is not commutative so practically cannot lift out the MatPow types here when they are stuck inside, must leave them alone
+    #if isPowC(WrapType):
+    #    return expr 
 
     #assert WrapType in INV_TRANS_LIST
 
@@ -799,10 +806,12 @@ def wrapShallow(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
     # NOTE: len == 0 of free syms when Number else for MatSym len == 1 so put 0 case just for safety.
     #onlySymComponents_AddMul = lambda expr: (expr.func in [MatAdd, MatMul]) and all(map(lambda expr: len(expr.free_symbols) in [0, 1], expr.args))
 
-    #mustWrap: bool = (Constr in [MatAdd, MatMul]) and mostSymsAreOfType #and onlySymComponents_AddMul(innerExpr)
+    # If signal WrapType is a power-kind of type and given expression constructor (Constr) is either Add or Mul kind then we are not assured mathematically that we can bring out the Pow (since it may be like the eout expression, nested deep beyond reach of the Add / Mul)
+    mustNotWrapPow: bool =  (isPowC(WrapType) and (Constr in OP_ADD_MUL_LIST) )
+
     mustWrap: bool = (Constr in OP_ADD_MUL_LIST) and mostSymsAreOfType
 
-    if not mustWrap:
+    if (not mustWrap) and mustNotWrapPow:
         return expr
 
     # Else 
@@ -811,11 +820,14 @@ def wrapShallow(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
     # Apply the reversing and wrapping alog part: 
     invertedArgs: List[MatrixExpr] = list(map(lambda theArg: pickOut(WrapType, theArg) , matrixArgs)) # TODO BROKEN BEFORE THIS POINT FIX MATPOW. BROKEN HERE because it puts transpose on the -1 factor of matmul expr
+    
 
     #invertedArgs: List[MatrixExpr] = list(reversed(invertedArgs)) if Constr == MatMul else invertedArgs
     # TODO changed to check for Mul also since freeze() changes to Mul from MatMul
     invertedArgs: List[MatrixExpr] = list(reversed(invertedArgs)) if isMulC(Constr) else invertedArgs
 
+    # Next: must wrap the resulting inverted args in the oriignal constructor / wrapper. But there are two kinds: two-arg MatPow and single-arg other kinds (non-pow):
+    
     wrapped: MatrixExpr = WrapType(Constr(*invertedArgs)) if len(invertedArgs) != 1 else WrapType(*invertedArgs) # to avoid double constructor wrapping (like double Matmul wrapping)
 
     if nonMatrixArgs != []: 
@@ -829,6 +841,11 @@ def wrapShallow(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 def wrapDeep(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
     Constr = expr.func
 
+    # NOTE: A^a * B^b * C^c ... != (ABC)^(a+b+c) because matrix multiplication is not commutative so practically cannot lift out the MatPow types here when they are stuck inside, must leave them alone
+    #if isPowC(WrapType):
+    #    return expr 
+
+    # NOTE: nothing to wrap when expr is a symbol
     if isSym(expr):
         return expr
 

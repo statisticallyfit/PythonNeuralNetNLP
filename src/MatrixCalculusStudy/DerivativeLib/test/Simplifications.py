@@ -2466,7 +2466,7 @@ testSimplifyAlgo(algo = polarize, expr = expr_polarize, check = check, byType = 
 
 # %% codecell
 
-### GENERAL TEST 17: general ice-breaker test for power simplifications
+### GENERAL TEST 17: POWER TEST DATA : general ice-breaker test for power simplifications
 
 # TODO separate these expressions and test them separately 
 
@@ -2537,6 +2537,8 @@ showGroup([
 polarize(Transpose, eout)
 # %%
 # TODO STAR ERROR here missing 1 positional arg 'exp' from pickOut()
+wrapDeep(MatPow, eout)
+# %%
 polarize(MatPow, eout)
 # %%
 polarize(Transpose, ein)
