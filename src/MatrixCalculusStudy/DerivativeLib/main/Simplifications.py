@@ -243,29 +243,89 @@ def isEqMatPow(c: ConstrType, t: ConstrType) -> bool:
 '''
 
 
+def getConstr(expr: MatrixExpr) -> ConstrType:
+    i: int  = findWhere(ALL_TYPES_LIST, type(expr))[0]
+    # Getting the name from the list
+    return ALL_TYPES_LIST[i]
+
+
+
+
+
+
 
 
 
 def pickOut(WrapType: MatrixType, expr: MatrixExpr):
-    #if not hasTranspose(expr):
-    if (not hasType(WrapType, expr)) and isPowC(WrapType):
-        #return Transpose(MatMul(*expr.args))
-        #return Transpose(expr)
-        return expr
-        # NOTE: it is ok for pickOut() to return original arg when arg doesn't have WrapType in it because WrapType is passed separately as a constructor, this is not like in other simplification functions wher eyou need to recurse through nested expressions. 
-    elif not hasType(WrapType, expr):
-        return WrapType(expr) # TODO check here if this passes, hacked to separate the above mat-pow case from the rest of the non-matpow cases. 
+    '''
+    GOAL: extract the superficial-level-inner argument inside the nesting if it contains the WrapType on the outer, else add the WrapType over it so it will cancel out later on. 
 
-    # Need to avoid cuase of X^T ^ 3 ^ T later on so move the transpose out
-    elif isPow(expr) and expr.args[0].func == WrapType:
+
+    ---> NOTE: ok to add extra transpose layer since functions later on will apply / cancel out transpose accordingly
+    ---> NOTE: inverse does not cancel out, so need to remove it so later functions act as if it weren't there, so they can add it back later
+        TODO: Check this
+    ---> NOTE: power cancels out, so same action as transpose (add negative power)
+
+
+    *** EXAMPLE: Transpose case (transpose on outer)
+    INPUT: pickOut(Transpose, ((J + X*A)^4)^T)
+    RESULT: (J + X*A)^4
+
+    *** EXAMPLE: Transpose case (no outer transpose or none at all)
+    INPUT: pickOut(Transpose, ((J + X*A)^T)^8 )
+    RESULT: (((J + X*A)^T)^8)^T
+
+    (???) EXAMPLE: Inverse case (inverse on outer)
+    INPUT: pickOut(Inverse, (A + B)^-1 )
+    RESULT: A + B
+
+    (???) EXAMPLE: Inverse case (inverse not on outer or not there at all)
+    INPUT: pickOut(Inverse, A)
+    RESULT: A^-1
+
+    (???) INPUT: pickOut(Inverse, ((A + B)^-1)^4 )
+    RESULT: ((A + B)^-1)^4
+
+    *** EXAMPLE: Power case (power on outer side)
+    INPUT: pickOut( PowHolder(expo = 5), (J + X*A)^4 )
+    RESULT: J + X*A
+
+    *** EXAMPLE: Power case (no power on outer side, while is there nested)
+    INPUT: pickOut( PowHolder(expo = 4), (((J + X*A)^4)^T)^5 )
+    RESULT: ((((J + X*A)^4)^T)^5)^ (-4)
+
+    *** EXAMPLE: Power case (no power on outer side)
+    INPUT: pickOut(PowHolder(expo = 4), J + X*A)
+    RESULT: (J + X*A)^ (-4)
+    '''
+
+    # NOTE: this function acts only on Inverse, Transpose, or Power kind of constructor. 
+    if not isIn(WrapType, CONSTR_LIST):
+        return expr 
+    if isPowC(WrapType) and (not typeName(WrapType) == 'PowHolder'):
+        return expr 
+
+
+    # TODO FIX POWER CASE: should I return here to the negative power?
+    #if (not hasType(WrapType, expr)) and isPowC(WrapType):
+        #return expr
+        # NOTE: it is ok for pickOut() to return original arg when arg doesn't have WrapType in it because WrapType is passed separately as a constructor, this is not like in other simplification functions wher eyou need to recurse through nested expressions. 
+    #elif not hasType(WrapType, expr):
+        #return WrapType(expr) # TODO check here if this passes, hacked to separate the above mat-pow case from the rest of the non-matpow cases. 
+
+    # Inverting the power with the inner WrapType (just at superficial level, not recursing here):
+    if isPow(expr) and isEq( getConstr(expr.args[0]) , WrapType ):
         (base, expo) = expr.args 
         return WrapType(MatPow(base.arg, expo))
 
-    elif hasType(WrapType, expr) and expr.func == WrapType:
-    #elif hasTranspose(expr) and expr.is_Transpose:
-        return expr # expr.arg
+    elif isEq(getConstr(expr), WrapType):
+        return expr.arg # can use .arg now since the MatPow (.args) case is out of the way, above
 
-    return WrapType(expr) #TODO check
+    #return WrapType(expr) #TODO check
+
+    # Transpose case:
+    if isEq(WrapType, Transpose) and isEq(getConstr(expr), Transpose):
+
 
 
 

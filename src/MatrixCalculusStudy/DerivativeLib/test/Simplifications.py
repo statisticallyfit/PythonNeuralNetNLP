@@ -2484,11 +2484,76 @@ showGroup([e, ein, eout, p, pmany])
 
 
 
+# %%
+
+
+### TEST 17 b: testing the eout expression (transpose in an out with matpow stuck in between)
+
+
+check = MatAdd(E, Transpose(MatMul(
+    Transpose(R*J*A.T*B), 
+    Transpose(MatPow(J + X*A, 4))
+)))
+
+testSimplifyAlgo(algo = factor, expr = eout, check = check, byType = Transpose)
 
 # %%
 
 
-#### TEST 17 a: testing factor against the pow-related examples
+check = MatAdd(
+    E, 
+    Transpose(MatMul(
+        Transpose(R*J*A.T*B), 
+        Transpose(MatPow(J + X*A, 4))
+    ))
+)
+
+testSimplifyAlgo(algo = rippleOut, expr = eout, check = check, byType = Transpose)
+# %% codecell
+
+
+
+check = MatAdd(
+    E, 
+    MatMul(
+        MatPow(J + X*A, 4),
+        R*J*A.T * B
+    )
+)
+# TODO trouble here: res != check (wrapshallow does not do its job well)
+testSimplifyAlgo(algo = polarize, expr = eout, check = check, byType = Transpose)
+
+
+
+
+
+
+# %%
+showGroup([
+    eout, 
+    wrapShallow(Transpose, eout), 
+    wrapShallow(MatPow, eout)
+])
+# %%
+# %%
+showGroup([
+    eout, 
+    polarize(Transpose, eout), 
+    polarize(MatPow, eout)
+])
+# %%
+
+
+showGroup([
+    eout, 
+    wrapDeep(Transpose, eout), 
+    wrapDeep(MatPow, eout)
+])
+
+# %%
+
+
+#### TEST 17 b: testing factor against the pow-related examples
 # e
 assert factor(Transpose, e) == e
 assert factor(MatPow, e) == e
@@ -2532,52 +2597,6 @@ showGroup([
     rippleOut(Transpose, p),
     rippleOut(Inverse, p)
 ])
-
-# %%
-polarize(Transpose, eout)
-# %%
-# TODO STAR ERROR here missing 1 positional arg 'exp' from pickOut()
-wrapDeep(MatPow, eout)
-# %%
-polarize(MatPow, eout)
-# %%
-polarize(Transpose, ein)
-# %%
-# TODO STAR ERROR HERE
-polarize(MatPow, ein)
-# %%
-check = MatAdd(E, Transpose(MatMul(
-    Transpose(R*J*A.T*B), 
-    Transpose(MatPow(J + X*A, 4))
-)))
-testSimplifyAlgo(algo = factor, expr = eout, check = check, byType = Transpose)
-# %%
-
-
-check = MatAdd(
-    E, 
-    Transpose(MatMul(
-        Transpose(R*J*A.T*B), 
-        Transpose(MatPow(J + X*A, 4))
-    ))
-)
-
-testSimplifyAlgo(algo = rippleOut, expr = eout, check = check, byType = Transpose)
-# %% codecell
-
-
-
-check = MatAdd(
-    E, 
-    MatMul(
-        MatPow(J + X*A, 4),
-        R*J*A.T * B
-    )
-)
-
-testSimplifyAlgo(algo = polarize, expr = eout, check = check, byType = Transpose)
-# %% codecell
-wrapDeep(Transpose, eout)
 
 
 
