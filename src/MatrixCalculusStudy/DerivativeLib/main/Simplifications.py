@@ -811,7 +811,7 @@ def wrapShallow(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
     mustWrap: bool = (Constr in OP_ADD_MUL_LIST) and mostSymsAreOfType
 
-    if (not mustWrap) and mustNotWrapPow:
+    if (not mustWrap) or mustNotWrapPow:
         return expr
 
     # Else 
@@ -828,9 +828,19 @@ def wrapShallow(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
     # Next: must wrap the resulting inverted args in the oriignal constructor / wrapper. But there are two kinds: two-arg MatPow and single-arg other kinds (non-pow):
     
-    wrapped: MatrixExpr = WrapType(Constr(*invertedArgs)) if len(invertedArgs) != 1 else WrapType(*invertedArgs) # to avoid double constructor wrapping (like double Matmul wrapping)
+    #wrapped: MatrixExpr = WrapType(Constr(*invertedArgs)) if len(invertedArgs) != 1 else WrapType(*invertedArgs) # to avoid double constructor wrapping (like double Matmul wrapping)
+    wrapped = None 
+    if len(invertedArgs) != 1:
+        wrapped = WrapType(Constr(*invertedArgs))
+    elif isPowC(WrapType) and WrapType == Constr: # TODO can't return matpow when WrapTYpe is just Pow
+        (_, exponent) = expr.args 
+        wrapped = MatPow(*(invertedArgs + [exponent]) )
+    else: 
+        wrapped = WrapType(*invertedArgs)
 
-    if nonMatrixArgs != []: 
+
+
+    if nonMatrixArgs != [] and not (isPowC(Constr)): 
         wrapped: MatrixExpr = Constr(*(nonMatrixArgs + [wrapped]))
 
     return wrapped
