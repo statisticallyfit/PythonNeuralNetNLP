@@ -2547,7 +2547,7 @@ showGroup([
 showGroup([
     eout, 
     wrapDeep(Transpose, eout), 
-    wrapDeep(MatPow, eout)
+    wrapDeep(PowHolder(expo = 4), eout)
 ])
 
 # %%
