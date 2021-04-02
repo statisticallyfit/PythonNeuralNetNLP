@@ -255,78 +255,126 @@ def getConstr(expr: MatrixExpr) -> ConstrType:
 
 
 
-
-def pickOut(WrapType: MatrixType, expr: MatrixExpr):
-    '''
-    GOAL: extract the superficial-level-inner argument inside the nesting if it contains the WrapType on the outer, else add the WrapType over it so it will cancel out later on. 
+'''
+GOAL: extract the superficial-level-inner argument inside the nesting if it contains the WrapType on the outer, else add the WrapType over it so it will cancel out later on. 
 
 
-    ---> NOTE: ok to add extra transpose layer since functions later on will apply / cancel out transpose accordingly
-    ---> NOTE: inverse does not cancel out, so need to remove it so later functions act as if it weren't there, so they can add it back later
-        TODO: Check this
-    ---> NOTE: power cancels out, so same action as transpose (add negative power)
+---> NOTE: ok to add extra transpose layer since functions later on will apply / cancel out transpose accordingly
+---> NOTE: inverse does not cancel out, so need to remove it so later functions act as if it weren't there, so they can add it back later
+    TODO: Check this
+---> NOTE: power cancels out, so same action as transpose (add negative power)
 
 
-    *** EXAMPLE: Transpose case (transpose on outer)
-    INPUT: pickOut(Transpose, ((J + X*A)^4)^T)
-    RESULT: (J + X*A)^4
+*** EXAMPLE: Transpose case (transpose on outer)
+INPUT: pickOut(Transpose, ((J + X*A)^4)^T)
+RESULT: (J + X*A)^4
 
-    *** EXAMPLE: Transpose case (no outer transpose or none at all)
-    INPUT: pickOut(Transpose, ((J + X*A)^T)^8 )
-    RESULT: (((J + X*A)^T)^8)^T
+*** EXAMPLE: Transpose case (no outer transpose or none at all)
+INPUT: pickOut(Transpose, ((J + X*A)^T)^8 )
+RESULT: (((J + X*A)^T)^8)^T
 
-    (???) EXAMPLE: Inverse case (inverse on outer)
-    INPUT: pickOut(Inverse, (A + B)^-1 )
-    RESULT: A + B
 
-    (???) EXAMPLE: Inverse case (inverse not on outer or not there at all)
-    INPUT: pickOut(Inverse, A)
-    RESULT: A^-1
 
-    (???) INPUT: pickOut(Inverse, ((A + B)^-1)^4 )
-    RESULT: ((A + B)^-1)^4
 
-    *** EXAMPLE: Power case (power on outer side)
-    INPUT: pickOut( PowHolder(expo = 5), (J + X*A)^4 )
-    RESULT: J + X*A
+(???) EXAMPLE: Inverse case (inverse on outer)
+INPUT: pickOut(Inverse, (A + B)^-1 )
+RESULT: A + B
 
-    *** EXAMPLE: Power case (no power on outer side, while is there nested)
-    INPUT: pickOut( PowHolder(expo = 4), (((J + X*A)^4)^T)^5 )
-    RESULT: ((((J + X*A)^4)^T)^5)^ (-4)
+(???) EXAMPLE: Inverse case (inverse not on outer or not there at all)
+INPUT: pickOut(Inverse, A)
+RESULT: A^1
 
-    *** EXAMPLE: Power case (no power on outer side)
-    INPUT: pickOut(PowHolder(expo = 4), J + X*A)
-    RESULT: (J + X*A)^ (-4)
-    '''
+(???) INPUT: pickOut(Inverse, ((A + B)^-1)^4 )
+RESULT: ((A + B)^-1)^4
 
-    # NOTE: this function acts only on Inverse, Transpose, or Power kind of constructor. 
+
+
+*** EXAMPLE: Power case (power on outer side)
+INPUT: pickOut( PowHolder(expo = 5), (J + X*A)^5 )
+RESULT: J + X*A
+
+*** EXAMPLE: Power case (no power on outer side, while is there nested, though nesting is deeper than second level)
+INPUT: pickOut( PowHolder(expo = 4),   (((J + X*A)^4)^T)^5 )
+RESULT: ((((J + X*A)^4)^T)^5)^ (-4)
+
+(???) EXAMPLE: Power case (no power on outer side, just on second level)
+INPUT: pickOut( PowHolder(expo = 4),  ((J + X*A)^4)^T )
+RESULT: ((J + X*A)^T)^4
+
+------> (?) TODO inconsistent with above similar case in transpose
+
+*** EXAMPLE: Power case (no power on outer side)
+INPUT: pickOut(PowHolder(expo = 4), J + X*A)
+RESULT: (J + X*A)^ (-4)
+'''
+
+
+def pickOut(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
+
+    # Clear the input, so pickOut() acts only on Inverse, Transpose, or Power kind of constructor. 
     if not isIn(WrapType, CONSTR_LIST):
         return expr 
+
+    # Shuttle this one out, no information on EXPO to use if WrapType = MatPow and not PowHolder
     if isPowC(WrapType) and (not typeName(WrapType) == 'PowHolder'):
         return expr 
 
 
-    # TODO FIX POWER CASE: should I return here to the negative power?
-    #if (not hasType(WrapType, expr)) and isPowC(WrapType):
-        #return expr
-        # NOTE: it is ok for pickOut() to return original arg when arg doesn't have WrapType in it because WrapType is passed separately as a constructor, this is not like in other simplification functions wher eyou need to recurse through nested expressions. 
-    #elif not hasType(WrapType, expr):
-        #return WrapType(expr) # TODO check here if this passes, hacked to separate the above mat-pow case from the rest of the non-matpow cases. 
+    # TRANSPOSE CASE: -------------------------------------------
 
-    # Inverting the power with the inner WrapType (just at superficial level, not recursing here):
-    if isPow(expr) and isEq( getConstr(expr.args[0]) , WrapType ):
-        (base, expo) = expr.args 
-        return WrapType(MatPow(base.arg, expo))
+    # If required to pickOut with Transpose ...
+    if isEq(WrapType, Transpose):
+        # If Transpose is the outer most case ...
+        if isEq(Transpose, getConstr(expr)):
+            return expr.arg 
+        # else transpose is NOT the outer-most case or even the expr HAS NO transpose inside it anywhere, then need to wrap the whole thing in transpose
+        return Transpose(expr)
 
-    elif isEq(getConstr(expr), WrapType):
-        return expr.arg # can use .arg now since the MatPow (.args) case is out of the way, above
+    # INVERSE CASE: ----------------------------------------------
 
-    #return WrapType(expr) #TODO check
+    # If required to pickOut with Inverse ....
+    if isEq(WrapType, Inverse):
+        # If Inverse is the outermost case ...
+        if isEq(Inverse, getConstr(expr)):
+            return expr.arg
+        # else Inverse is NOT outermost or expr may not HAVE the Inverse in it, so return the expr as is
+        # TODO fix philosophy? What to return A^2 or A^1?
+        return expr 
 
-    # Transpose case:
-    if isEq(WrapType, Transpose) and isEq(getConstr(expr), Transpose):
+    # POWER CASE: ------------------------------------------------
 
+    # Eliminated all other cases, it must be Pow and must be PowHolder-kind ...
 
+    if isPow(expr): #isEq(MatPow, getConstr(expr)):
+        (base, exprExpo) = expr.args 
+
+        # If required to pickOut with Power-kind ...
+        if isinstance(WrapType, PowHolder):
+
+            # Check first-level expo equality
+            if exprExpo == WrapType.expo:
+                return base 
+
+        # Check second-level expo equality, since first-level ones are not equal (# Inverting the power with the inner WrapType (just at superficial level, not recursing here))
+
+        # NOTE: it gets moved out of the above 'if' because it is possible that WrapType NOT instance of PowHolder yet condition below goes after first. 
+        # TODO STAR FIX PICKOUT: this is inconsistent with first case above since the second-level pow becomes first-level and is NOT removed
+        if isEq( getConstr(base) , WrapType ): # AND isPow(expr)
+            (base, expo) = expr.args 
+            return WrapType(MatPow(base.arg, expo))
+        
+        if isinstance(WrapType, PowHolder) and (exprExpo != WrapType.expo):
+            # else the expos are not equal and the required EXPO is not even at the SECOND level so just wrap the entire thing in negative expo (even if the required expo is at third level)
+            # EXAMPLE: pickOut(PowHolder(expo = 4), (((J + XA)^4)^T)^T)
+            # RESULT: ((((J + XA)^4)^T)^T)^(-4)
+            # TODO this is the result since pickOut is not recursive and is only working best / expecting input that require superficial-level inversions (inversions at first or second level)
+            return MatPow(expr, -exprExpo)
+        
+
+    # Need to return something as last statement in function, using this assert to check the last if-statement (with benefit of no indentation so function is happy)
+    assert isEq(getConstr(expr), WrapType)
+
+    return expr.arg # can use .arg now since the MatPow (.args) case is out of the way, above
 
 
 
