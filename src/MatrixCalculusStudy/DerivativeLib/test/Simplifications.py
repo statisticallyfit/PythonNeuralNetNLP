@@ -2464,6 +2464,91 @@ testSimplifyAlgo(algo = polarize, expr = expr_polarize, check = check, byType = 
 
 
 
+
+
+
+
+
+
+
+# %%
+
+### TESTING PICKOUT (for transpose, inverse, power functionality)
+
+
+### TEST 1: transpose case (transpose on outer side)
+et1 = Transpose(MatPow(J + X*A, 4))
+check = et1.arg
+
+testAlgo(algo = pickOut, expr = et1, check = check, byType = Transpose)
+
+# %%
+
+
+# ### TEST 2: transpose case (transpose on second level, not on outer level)
+et2 = MatPow(Transpose(MatPow(J + X*A, 4)), 8)
+check = Transpose(et2)
+
+testAlgo(algo = pickOut, expr = et2, check = check, byType = Transpose)
+
+# %%
+
+# ### TEST 3: Inverse case (inverse on outermost side)
+
+ei1 = Inverse(A + B)
+check = ei1.arg
+
+testAlgo(algo = pickOut, expr = ei1, check = check, byType = Inverse)
+# %%
+
+# ### TEST 4: TODO not sure if this is desired
+ei2 = MatPow(Inverse(A + B), 4)
+check = ei2
+
+testAlgo(algo = pickOut, expr = ei2, check = check, byType = Inverse)
+
+# %%
+
+# ### TEST 5: TODO not sure if this is desired
+ei3 = A
+check = A 
+
+testAlgo(algo = pickOut, expr = ei3, check = check, byType = Inverse)
+
+# %%
+
+# ### TEST 6: Power case (power on outer side)
+ep1 = MatPow(J + X*A, 4)
+MP4 = PowHolder(expo = 4)
+check = ep1.args[0]
+
+testAlgo(algo =  pickOut, expr = ep1, check = check, byType = MP4)
+
+# %%
+
+# ### TEST 7: Power case (power not on the inner side, and deeper than second level)
+ep2 = MatPow(Transpose(MatPow(J + X*A, 4)), 5)
+MP4 = PowHolder(expo = 4)
+check = MatPow( ep2, - MP4.expo)
+
+testAlgo(algo =  pickOut, expr = ep2, check = check, byType = MP4)
+
+
+# %%
+
+# ### TEST 8: Power case (power on second level)
+
+# TODO STAR debug pickout and surounding functions to determine desired result
+
+ep3 = Transpose(MatPow(J + X*A, 4))
+pickOut(MP4, ep3)
+ep4 = J + X*A
+pickOut(MP4, ep4)
+
+
+
+
+
 # %% codecell
 
 ### GENERAL TEST 17: POWER TEST DATA : general ice-breaker test for power simplifications
@@ -2528,7 +2613,16 @@ testSimplifyAlgo(algo = polarize, expr = eout, check = check, byType = Transpose
 
 
 
+
+
+
 # %%
+
+
+# TODO paused here testing the e, ein, eout, p, pmany series of expressions, going to work on pickOut tests
+
+
+
 showGroup([
     eout, 
     wrapShallow(Transpose, eout), 
@@ -2543,14 +2637,26 @@ showGroup([
 ])
 # %%
 
-
+# TODO star left off here testing pickout
 showGroup([
     eout, 
     wrapDeep(Transpose, eout), 
     wrapDeep(PowHolder(expo = 4), eout)
 ])
 
+
+
+
+
+
+
+
+
+
+
 # %%
+
+# TODO integrate these in the above TEST 17 b for e, ein, eout, ... series according to each FUNCTION (factor, ripple, polarize)
 
 
 #### TEST 17 b: testing factor against the pow-related examples

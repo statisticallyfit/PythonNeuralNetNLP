@@ -65,9 +65,33 @@ from src.MatrixCalculusStudy.DerivativeLib.main.Simplifications import *
 
 # ------------------------------------------------
 
+# GOAL: tests how an ordinary algo changes an `expr` and how the result `res` == `check`
+# NOTE: given algo must have arguments: function-name(MatrixType, MatrixExpr) -> MatrixExpr
+def testAlgo(algo, expr: MatrixExpr, check: MatrixExpr, byType: MatrixType = None): 
+    params = [byType, expr] if not (byType == None) else [expr]
+    res = algo(*params)
+
+    showGroup([
+        expr, res, check
+    ])
+    #assert expr.doit() == res.doit()
+    try:
+        assert equal(check, res)
+    except Exception:
+        hasMatPow = lambda e: "MatPow" in srepr(res)
+
+        print("ASSERTION ERROR: equal(check, res) did not work")
+        print("Had MatPow: ", hasMatPow(res))
+
+    try:
+        assert res.doit() == check.doit()
+    except Exception:
+        print("ASSERTION ERROR: res.doit() == check.doit() --- maybe MatPow ? ")
 
 
-def testSimplifyAlgo(algo, expr, check: MatrixExpr, byType: MatrixType = None):
+# GOAL: tests how a simplification algo simplifies the input expr into a `res` and if `res` == `expr` == `check`
+# NOTE: given algo must have arguments: function-name(MatrixType, MatrixExpr) -> MatrixExpr
+def testSimplifyAlgo(algo, expr: MatrixExpr, check: MatrixExpr, byType: MatrixType = None):
     params = [byType, expr] if not (byType == None) else [expr]
     res = algo(*params)
 
