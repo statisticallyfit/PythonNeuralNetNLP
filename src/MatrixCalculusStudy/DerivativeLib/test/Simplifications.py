@@ -112,7 +112,16 @@ assert stackTypesBy(byType = Transpose, types = ts) == cts
 # %% -------------------------------------------------------------
 
 
+
+
 # INNER TEST 1: simplest case possible, just matrixsymbol as innermost nesting
+
+L = MatrixSymbol('L', c, c)
+
+expr = C*E*B*E*L*E*D
+
+
+
 t1 = Transpose(Inverse(Inverse(Inverse(Transpose(Transpose(A))))))
 assert inner(t1) == A
 
@@ -139,7 +148,11 @@ c3 = t3.arg.arg #just twice depth
 assert inner(t3) == c3
 
 # %%
+
+
+
 # INNER TEST 4: powers
+# TODO do the inner test for powers
 
 e =  Transpose(MatMul(Transpose(R*J*A.T*B), A*X))
 ein = MatAdd(E, Transpose(MatMul(Transpose(R*J*A.T*B), MatPow(X*A, 4))))
