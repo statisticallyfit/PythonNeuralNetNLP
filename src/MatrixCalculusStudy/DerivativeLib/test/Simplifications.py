@@ -57,22 +57,6 @@ K = MatrixSymbol("K", c, c)
 X = MatrixSymbol("X", c, c)
 
 
-# %%
-
-# SPLIT ONCE TESTS:
-
-L = MatrixSymbol('L', c, c)
-
-expr = C*E*B*E*L*E*D
-
-assert splitOnce(expr.args, E, 1) == ([C], [B, E, L, E, D])
-assert splitOnce(expr.args, E, 2) == ([C, E, B], [L, E, D])
-assert splitOnce(expr.args, E, 3) == ([C, E, B, E, L], [D])
-assert splitOnce(expr.args, E, 0) == ([], [])
-assert splitOnce(expr.args, E, 4) == ([], [])
-# TODO how to assert error for negative number n?
-
-
 # %% ------------------------------------------------------------
 
 
@@ -266,7 +250,7 @@ testSimplifyAlgo(algo = factor, expr = expr_SLaGA, check = check, byType = Trans
 #    Transpose(MatAdd(C, B.T)), A.T
 #))
 #check = expr_SLaGA
-check = MatAdd(A, MatAdd(C, B.T))
+check = MatAdd(A, C, B.T)
 
 testSimplifyAlgo(algo = polarize, expr = expr_SLaGA, check = check, byType = Transpose)
 
@@ -421,7 +405,7 @@ check = MatMul(
 testSimplifyAlgo(algo = rippleOut, expr = expr_SLmGA, check = check, byType = Transpose)
 # %%
 
-
+# LEFT OFF HERE
 
 check = MatMul(
     Inverse(Inverse(Inverse(A))),
@@ -429,6 +413,10 @@ check = MatMul(
         B, E.I, Transpose(Inverse(R)), C.T
     ))))
 )
+res = factor(Transpose, expr_SLmGA)
+equal(expr_SLmGA, res)
+equal(expr_SLmGA, check)
+
 testSimplifyAlgo(algo = factor, expr = expr_SLmGA, check = check, byType = Transpose)
 # %%
 

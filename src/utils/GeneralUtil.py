@@ -182,7 +182,70 @@ def foldRight(f, acc, xs):
 
 
 
-# Matrix Util area (symbolic) -------------------
+# Matrix Util area (symbolic) ---------------------------------
+
+
+
+'''
+GOAL: removes the UnevaluatedExpr from output of freeze() . As a result, we can have the result of polarize() (frozen output) equal the original expression, without having the equal() method blocked because of different Add vs. MatAdd and UnevaluateExpr constructors in the way.
+
+EXAMPLE: 
+
+equal(polarize(.., expr), expr)  -------------------------> FALSE
+equal( removeUnevaluations(polarize(.., expr)), expr) ----> TRUE
+
+
+
+TODO: seems to keep the expression unevaluated but not sure yet, and not sure if it is ALWAYS true that all the Add -> MatAdd, Mul -> MatMul, Pow -> MatPow (if not then may need ot make separate function to replace those constructors too)
+'''
+def removeUnevaluations(expr: MatrixExpr) -> MatrixExpr: 
+    oldExprStr: str = srepr(expr)
+
+    newExprStr: str = oldExprStr.replace("UnevaluatedExpr", "")
+
+    # Create the symbols dict
+    symbolsDict: Dict[str, MatrixSymbol] = dict(list(map(lambda s: (str(s), s), expr.free_symbols)) )
+
+    return parse_expr(newExprStr, local_dict= symbolsDict)
+
+
+
+
+
+'''
+GOAL: remove MatPow( group, Integer(1)) to just group expression, but no need to do that if the 'group' is just a matrixsymbol or a symbol of any kind
+
+REASON: equal(res, givenExpr) sometimes doesn't work and it is because of the matpow of 1 around an expression group, but subtraction goes to zero easily when matpow of 1 is around a symbol, so leaving that alone 
+'''
+def removeMatPowOfOne(expr: MatrixExpr) -> MatrixExpr:
+
+    # Filter out nums or syms
+    if isNum(expr) or isSym(expr):
+        return expr 
+        
+    if isinstance(expr, MatPow):
+        
+        (base, expo) = expr.args 
+
+        if expo == Number(1):
+            return base # since X^1 == X
+        
+        # else recurse and wrap with the matpow power
+        return MatPow( base = removeMatPowOfOne(base) , exp = expo)
+    
+    # else is a general non-matpow constructor, can just call 'args' and squash the arg list using * arg operator
+    Constr = getConstr(expr)
+    # Must apply this function to each argument
+    argsOneOut: List[MatrixExpr] = list(map(lambda theArg: removeMatPowOfOne(theArg), expr.args))
+
+    return Constr(*argsOneOut)
+
+
+
+
+
+
+
 
 # SOURCE OF CODE = https://stackoverflow.com/a/52196005
 def expandMatmul(expr: MatrixExpr) -> MatrixExpr:
@@ -204,7 +267,10 @@ def equal(mat1: MatrixExpr, mat2: MatrixExpr) -> bool:
         if mat1.shape == mat2.shape:
             zeroMat = ZeroMatrix(*mat1.shape)
 
-            return expandMatmul(mat1 - mat2).doit() == zeroMat
+            # Sometimes the subtraction results in one side of the expression having MatPow(expr, Integer(1)) which impedes simplification. Must remove that and see if results to zero matrix. If not, send to expandMatmul
+            subtracted = removeMatPowOfOne(mat1 - mat2).doit()
+
+            return subtracted == zeroMat or expandMatmul(subtracted).doit() == zeroMat
 
     # else check if they are traces
     elif mat1.is_Trace and mat2.is_Trace:

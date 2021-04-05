@@ -129,22 +129,26 @@ namess = lambda tts: list(map(lambda lst: names(lst), tts))
 hasType = lambda Type, expr : Type.__name__ in srepr(expr)
 #hasTranspose = lambda e : "Transpose" in srepr(e)
 
-isMul = lambda e: isMulC(e.func)
+# NOTE : calling .func is NOT good way to get the type because MatPow for instance doesn't have that attribute
+isMul = lambda e: isMulC(getConstr(e))
 isMulC = lambda t: t in [MatMul, Mul]
-isAdd = lambda e: isAddC(e.func)
+isAdd = lambda e: isAddC(getConstr(e))
 isAddC = lambda t: t in [MatAdd, Add]
-isPow = lambda e: isPowC(e.func)
+# isPow does expression-level querying:
+isPow = lambda e: getConstr(e) in [MatPow, Pow] # NOT including PowHolder(expo) here becasue that is considered a type --- test for that kind of equality is done by isPowC, querying at type level not expression level
+# isPowC does type-level querying:
 isPowC = lambda t : anyTypeEqual([t], OP_POW_LIST) or anyTypeInstance([t], OP_POW_LIST)
 
 
-isNum = lambda e: isNumC(e.func)
+isNum = lambda e: isNumC(getConstr(e))
 
 # Expects t (constructor / type / class)
 isNumC = lambda t: isOfType(t, NUM_LIST)
 
-isSymOrNum = lambda e : isSymOrNumC(e.func)
+isSymOrNum = lambda e : isSymOrNumC(getConstr(e))
 isSymOrNumC = lambda t : (t in SYM_LIST) or isNumC(t) 
 
+# NOTE: len == 0 of free syms when Number else for MatSym len == 1 so put 0 case just for safety.
 isSym = lambda m: len(m.free_symbols) in [0,1]
 
 
@@ -180,15 +184,10 @@ anyTypeInstance = lambda testTypes, searchTypes : any(list(itertools.chain(*map(
 # GOAL: testing, given two classes, if one is subtype of the other (all combos from the lists)
 anyTypeSub = lambda testTypes, searchTypes : any(list(itertools.chain(*map(lambda tester : list(map(lambda searcher: inspect.isclass(tester) and inspect.isclass(searcher) and issubclass(tester, searcher), searchTypes)), testTypes ))))
 
-# OLD BAD VERSION
-#anyTypeSub = lambda testTypes, searchTypes : any( list(itertools.chain(*map(lambda tester: list(map(lambda searcher: isEqMatPow(tester, searcher) if not (inspect.isclass(tester) and inspect.isclass(searcher)) else issubclass(tester, searcher), searchTypes)), testTypes)) ) )
-
-# NOTE: len == 0 of free syms when Number else for MatSym len == 1 so put 0 case just for safety.
-#onlySymComponents_AddMul = lambda expr: (expr.func in [MatAdd, MatMul]) and all(map(lambda expr: len(expr.free_symbols) in [0, 1], expr.args))
 
 isSimpleArgs = lambda e: all(map(lambda a: len(a.free_symbols) in [0, 1], e.args))
 
-isInnerExpr = lambda e: (e.func in OP_ADD_MUL_LIST) and isSimpleArgs(e)
+isInnerExpr = lambda e: (getConstr(e) in OP_ADD_MUL_LIST) and isSimpleArgs(e)
 
 # GOAL: make equality between named tuple and original sympy type
 # Example 1: MatPow, PowHolder ---> TRUE 
@@ -508,79 +507,6 @@ def chunkExprsBy(byTypes: List[MatrixType], expr: MatrixExpr) -> Tuple[List[List
 
 
 
-### WARNING: not maintained anymore 
-
-def group(WrapType: MatrixType, expr: MatrixExpr, combineAdds:bool = False) -> MatrixExpr:
-    '''Combines transposes when they are the outermost operations.
-
-    Brings the individual transpose operations out over the entire group (factors out the transpose and puts it as the outer operation).
-    NOTE: This happens only when the transpose ops are at the same level. If they are nested, that "bringing out" task is left to the rippletranspose function.
-
-    combineAdds:bool  = if True then the function will group all the addition components under expr transpose, like in matmul, otherwise it will group only the individual components of the MatAdd under transpose.'''
-
-
-    def revAlgo(WrapType: MatrixType, expr: MatrixExpr):
-        '''Converts B.T * A.T --> (A * B).T'''
-
-        if hasType(WrapType, expr) and isMul(expr):
-
-            revs = list(map(lambda a : pickOut(WrapType, a), reversed(expr.args)))
-
-            #return Transpose(MatMul(*revs))
-            return WrapType(MatMul(*revs))
-
-        return expr
-
-
-    def algo_Group_MatMul_or_MatSym(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
-
-        ps = list(preorder_traversal(expr))
-        #ms = list(filter(lambda p : p.is_MatMul, ps))
-        ms = list(filter(lambda p : isMul(p), ps))
-        ts = list(map(lambda m : revAlgo(WrapType, m), ms))
-
-        ns = []
-        for j in range(0, len(ms)):
-            m = ms[j]
-            if expr.has(m):
-                #newPair = [(m, ts[j])] #revTransposeAlgo(m))]
-                #ds[expr] = (ds.get(expr) + newPair) if expr in ds.keys() else newPair
-                ns.append( (m, ts[j]) )
-
-        # Apply the changes in the list of replacements we gathered above
-        exprToChange = expr
-        for (old, new) in ns:
-            exprToChange = exprToChange.xreplace({old : new})
-
-        return exprToChange
-
-    # Group function here -----------------------------------
-
-    #if not expr.is_MatAdd: # TODO must change this to identify matmul or matsym exactly
-    if not isAdd(expr):
-        return algo_Group_MatMul_or_MatSym(WrapType, expr)
-
-
-    Constr = expr.func
-
-    # TODO fix this to handle any non-add operation upon function entry
-    addendsTransp: List[MatrixExpr] = list(map(lambda a: group(WrapType, a), expr.args))
-
-    if combineAdds:
-        innerAddends = list(map(lambda t: pickOut(WrapType, t), addendsTransp))
-        #return Transpose(MatAdd(*innerAddends))
-        return WrapType (Constr(*innerAddends))
-
-    # Else not combining adds, just grouping transposes in addends individually
-    # TODO fix this to handle any non-add operation upon function entry. May not be a MatAdd, may be Trace for instance.
-
-    #return MatAdd(*addendsTransp)
-    return Constr(*addendsTransp)
-
-
-
-
-
 
 
 # TODO: FIX: this doesn't work to ripple out the innter transpose when in matpow: 
@@ -660,7 +586,7 @@ def rippleOut(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
     if not isAdd(expr):
         return algo_RippleOut_MatMul_or_MatSym(WrapType = WrapType, expr = expr)
 
-    Constr: MatrixType = expr.func
+    Constr: MatrixType = getConstr(expr)
 
     componentsOut: List[MatrixExpr] = list(map(lambda a: rippleOut(WrapType = WrapType, expr = a), expr.args))
 
@@ -712,7 +638,8 @@ def inner(expr: MatrixExpr) -> MatrixExpr:
     #isMatSym = lambda e : len(e.free_symbols) == 1
 
     # TODO missing any base case possibilities? Should include here anything that is not Trace / Inverse ... etc or any kind of constructors that houses an inner argument.
-    Constr = expr.func
+    Constr = getConstr(expr)
+
     #types = [MatMul, MatAdd, MatrixSymbol, Symbol, Number]
     otherTypes = list( set(ALL_TYPES_LIST).symmetric_difference(CONSTR_LIST) - set(OP_POW_LIST))
     #isAnySubclass = any(map(lambda t : issubclass(Constr, t), types))
@@ -733,7 +660,7 @@ def inner(expr: MatrixExpr) -> MatrixExpr:
 
 
 
-
+# TODO do tests to compare / contrast digger with inner() and with innerTrail()
 
 def innerTrail(expr: MatrixExpr) -> List[Tuple[List[MatrixType], MatrixExpr]]:
     '''Gets the innermost expr (past all the .arg) on the first level only, and stores also the list of constructors'''
@@ -742,7 +669,7 @@ def innerTrail(expr: MatrixExpr) -> List[Tuple[List[MatrixType], MatrixExpr]]:
 
         # FIRST TASK when entering this function is to record the constructor type 
 
-        Constr: MatrixType = expr.func
+        Constr: MatrixType = getConstr(expr)
 
         #otherTypes = list( set(ALL_TYPES_LIST).symmetric_difference(CONSTR_LIST) )
         otherTypes = list( set(ALL_TYPES_LIST).symmetric_difference(CONSTR_LIST) - set(OP_POW_LIST))
@@ -897,7 +824,7 @@ def wrapShallow(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
     #assert WrapType in INV_TRANS_LIST
 
     # TODO: wrapShallow must be able to interpret a MatMul(CONST, expr) kind of input (dig deeper)
-    Constr: MatrixType = expr.func
+    Constr: MatrixType = getConstr(expr)
     #assert Constr in [MatAdd, MatMul]
 
 
@@ -911,8 +838,6 @@ def wrapShallow(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
     # Building conditions for checking if we need to wrap the expr, or else return it as is.
     mostSymsAreOfType: bool = (numArgsOfType / len(matrixArgs) ) >= 0.5
 
-    # NOTE: len == 0 of free syms when Number else for MatSym len == 1 so put 0 case just for safety.
-    #onlySymComponents_AddMul = lambda expr: (expr.func in [MatAdd, MatMul]) and all(map(lambda expr: len(expr.free_symbols) in [0, 1], expr.args))
 
     # If signal WrapType is a power-kind of type and given expression constructor (Constr) is either Add or Mul kind then we are not assured mathematically that we can bring out the Pow (since it may be like the eout expression, nested deep beyond reach of the Add / Mul)
     mustNotWrapPow: bool =  (isPowC(WrapType) and (Constr in OP_ADD_MUL_LIST) )
@@ -955,9 +880,9 @@ def wrapShallow(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
 
 
-
+# TODO identify better what this does
 def wrapDeep(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
-    Constr = expr.func
+    Constr = getConstr(expr)
 
     # NOTE: A^a * B^b * C^c ... != (ABC)^(a+b+c) because matrix multiplication is not commutative so practically cannot lift out the MatPow types here when they are stuck inside, must leave them alone
     #if isPowC(WrapType):
@@ -1019,11 +944,11 @@ def _polarize(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
     def hackpolarizeMatAddMul(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr: 
         #assert expr.is_MatAdd or expr.is_MatMul 
-        assert expr.func in OP_ADD_MUL_LIST # since freeze turns MatAdd --> Add and MatMul --> Mul
+        assert getConstr(expr) in OP_ADD_MUL_LIST # since freeze turns MatAdd --> Add and MatMul --> Mul
 
         polarizedArgs: List[MatrixExpr] = list(map(lambda a: hackpolarizeGroup(WrapType = WrapType, expr = a), expr.args))
 
-        Constr = expr.func 
+        Constr = getConstr(expr) 
 
         return Constr(*polarizedArgs)
 
@@ -1059,7 +984,7 @@ def _polarize(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
     # Compare the two results for the Addition case: 
 
-    if expr.func in OP_ADD_MUL_LIST: 
+    if getConstr(expr) in OP_ADD_MUL_LIST: 
     #if expr in [MatAdd, Add, MatMul, Mul]: # NOTE: adding here Add and Mul because of the new addition freeze() function which results in Add / Mul instead to tolerate UnevaluateExpr otherwise matmul coeff error results (when there is a coeff * matrix)
         resultComp: MatrixExpr = hackpolarizeMatAddMul(WrapType, expr)
         resultGroup: MatrixExpr = hackpolarizeGroup(WrapType, expr)
@@ -1081,7 +1006,8 @@ def _polarize(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
     return resultGroup 
 
 
-polarize = lambda t, e: freeze(_polarize(t, e))
+# Freeze to put things in UnevaluatedExpr mode, to preserve desired structure, and RemoveUnevaluatiosn to remove the UnevaluatedExpr constructor names so that equal(expr, result) works. 
+polarize = lambda t, e: removeUnevaluations( freeze(_polarize(t, e)) )
 
 
 
@@ -1096,8 +1022,12 @@ def freeze(matadd: MatAdd) -> MatAdd:
     Returns: 
         A `MatrixExpr` (`MatAdd`) expression that was parsed from a string, containing the original symbols in the original expression. 
     '''
+
+    ### TODO better way of freezing using sympify + UnevaluatedExpr rather than strings + UnevaluatedExpr? = https://hyp.is/3dFWBJXcEeuce5u3Ta0gig/github.com/sympy/sympy/blob/706007ca2fe279020e099d36dd1db0e33123ac4c/doc/src/tutorial/manipulation.rst
+
+
     #assert matadd.is_MatAdd  # otherwise the expressions remain and there is no need for this freeze function
-    if not (matadd.func in [MatAdd, Add]):
+    if not (getConstr(matadd) in [MatAdd, Add]):
     #if not matadd.is_MatAdd:
         return matadd 
 
@@ -1124,48 +1054,3 @@ def freeze(matadd: MatAdd) -> MatAdd:
 
 
 
-
-
-# ------------------------------------------------------------------
-# UNUSED:
-
-def splitOnce(theArgs: List[MatrixSymbol], signalVar: MatrixSymbol, n: int) -> Tuple[List[MatrixSymbol], List[MatrixSymbol]]:
-
-    assert n <= len(theArgs) and abs(n) == n
-
-    cumArgs = []
-    countSignal: int = 0
-
-    for i in range(0, len(theArgs)):
-        arg = theArgs[i]
-
-        if arg == signalVar:
-            countSignal += 1
-
-            if countSignal == n:
-                return (cumArgs, list(theArgs[i + 1: ]) )
-
-
-        cumArgs.append(arg)
-
-    return ([], [])
-
-
-# NOTE: the symbols can be E.T or E or E.I (so are technically MatrixExpr's not MatrixSymbols)
-
-
-ArgPair = Tuple[List[MatrixSymbol], List[MatrixSymbol]]
-
-def splitArgs(givenArgs: List[MatrixExpr], signalVar: MatrixSymbol) -> List[Tuple[MatrixType, ArgPair]]:
-
-    '''Splits even at the signalVar if it is wrapped in theArgs with a constructor, and returns a dict specifying under which constructor it was wrapped in. 
-    
-    For instance if we split A * E.T * B at signalVar = E then result is {Transpose : ([A], [B]) } because the signalVar was wrapped in a transpose. 
-    
-    Constructor == Transpose ---> dict key is Transpose
-    Constructor == Inverse ---> dict key is Inverse
-    Constructor == MatrixSymbol --> dict key is MatrixSymbol (or None?)
-    '''
-    theArgs = list(givenArgs)
-
-    return [ ( theArgs[i].func  ,(theArgs[0:i], theArgs[i+1 : ]) ) for i in range(0, len(theArgs)) if theArgs[i].has(signalVar)] 
