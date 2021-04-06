@@ -8,9 +8,11 @@ import itertools
 from functools import reduce
 
 
-from sympy import det, Determinant, Trace, Transpose, Inverse, Function, Lambda, HadamardProduct, Matrix, MatrixExpr, Expr, Symbol, derive_by_array, MatrixSymbol, Identity,  Derivative, symbols, diff
+from sympy import det, Determinant, Trace, Transpose, Inverse, Function, Lambda, HadamardProduct, Matrix, ZeroMatrix, MatrixExpr, Expr, Symbol, derive_by_array, MatrixSymbol, Identity,  Derivative, symbols, diff
 
-from sympy import srepr , simplify
+from sympy.matrices.expressions.matexpr import ZeroMatrix
+
+from sympy import srepr , simplify, sympify
 
 from sympy import tensorcontraction, tensorproduct, preorder_traversal
 from sympy.functions.elementary.piecewise import Undefined
@@ -107,7 +109,7 @@ NUM_LIST: List[MatrixType] = [NegativeOne, Number, Integer, IntegerConstant, Sin
 NON_POW_LIST: List[MatrixType] = OP_ADD_MUL_LIST + SYM_LIST + NUM_LIST + INV_TRANS_LIST 
 
 # TODO to add Function, Derivative, and Trace ? any others?
-ALL_TYPES_LIST = INV_TRANS_LIST + OP_ADD_MUL_LIST + OP_POW_LIST + SYM_LIST + NUM_LIST 
+ALL_CONSTRS_LIST = INV_TRANS_LIST + OP_ADD_MUL_LIST + OP_POW_LIST + SYM_LIST + NUM_LIST 
 
 
 def typeName(instOrType: ConstrType) -> str:
@@ -156,7 +158,7 @@ isOfType = lambda t, ts: anyTypeInstance([t], ts) or anyTypeSub([t], ts) or anyT
 
 
 
-# GOAL: test equality using INSTANCE_type-equality (like MatPow(expo = 5) == PowHolder) AND type-to-type equality (like MatAdd == MatAdd)
+# GOAL: test equality between types and / or instances using INSTANCE_type-equality (like MatPow(expo = 5) == PowHolder) AND type-to-type equality (like MatAdd == MatAdd)
 isEq = lambda c, t: anyTypeEqual([c], [t]) or anyTypeInstance([c], [t])
 # OLD BAD VERSION
 # isEq = lambda c, t: True if isEqMatPow(c, t) else (anyTypeEqual([c], [t]) or anyTypeInstance([c], [t]) )
@@ -243,15 +245,124 @@ def isEqMatPow(c: ConstrType, t: ConstrType) -> bool:
 
 
 def getConstr(expr: MatrixExpr) -> ConstrType:
-    i: int  = findWhere(ALL_TYPES_LIST, type(expr))[0]
+    i: int  = findWhere(ALL_CONSTRS_LIST, type(expr))[0]
     # Getting the name from the list
-    return ALL_TYPES_LIST[i]
+    return ALL_CONSTRS_LIST[i]
 
 
 
 
 
 
+# ### UTIL AREA -----------------------------------------------------
+
+'''
+GOAL: removes the UnevaluatedExpr from output of freeze() . As a result, we can have the result of polarize() (frozen output) equal the original expression, without having the equal() method blocked because of different Add vs. MatAdd and UnevaluateExpr constructors in the way.
+
+EXAMPLE: 
+
+equal(polarize(.., expr), expr)  -------------------------> FALSE
+equal( removeUnevaluations(polarize(.., expr)), expr) ----> TRUE
+
+
+
+TODO: seems to keep the expression unevaluated but not sure yet, and not sure if it is ALWAYS true that all the Add -> MatAdd, Mul -> MatMul, Pow -> MatPow (if not then may need ot make separate function to replace those constructors too)
+'''
+def removeUnevaluations(expr: MatrixExpr) -> MatrixExpr: 
+    oldExprStr: str = srepr(expr)
+
+    newExprStr: str = oldExprStr.replace("UnevaluatedExpr", "")
+
+    # Create the symbols dict
+    symbolsDict: Dict[str, MatrixSymbol] = dict(list(map(lambda s: (str(s), s), expr.free_symbols)) )
+
+    return parse_expr(newExprStr, local_dict= symbolsDict)
+
+
+
+
+
+'''
+GOAL: remove MatPow( group, Integer(1)) to just group expression, but no need to do that if the 'group' is just a matrixsymbol or a symbol of any kind
+
+REASON: equal(res, givenExpr) sometimes doesn't work and it is because of the matpow of 1 around an expression group, but subtraction goes to zero easily when matpow of 1 is around a symbol, so leaving that alone 
+'''
+def removeMatPowOfOne(expr: MatrixExpr) -> MatrixExpr:
+
+    # Filter out nums or syms
+    if isNum(expr) or isSym(expr):
+        return expr 
+        
+    if isinstance(expr, MatPow):
+        
+        (base, expo) = expr.args 
+
+        if expo == Number(1):
+            return base # since X^1 == X
+        
+        # else recurse and wrap with the matpow power
+        return MatPow( base = removeMatPowOfOne(base) , exp = expo)
+    
+    # else is a general non-matpow constructor, can just call 'args' and squash the arg list using * arg operator
+    Constr = getConstr(expr)
+    # Must apply this function to each argument
+    argsOneOut: List[MatrixExpr] = list(map(lambda theArg: removeMatPowOfOne(theArg), expr.args))
+
+    return Constr(*argsOneOut)
+
+
+
+
+
+
+# SOURCE OF CODE = https://stackoverflow.com/a/52196005
+def expandMatmul(expr: MatrixExpr) -> MatrixExpr:
+    #import itertools
+#    from sympy import preorder_traversal
+    for a in preorder_traversal(expr):
+        if isinstance(a, MatMul) and any(isinstance(f, MatAdd) for f in a.args):
+            terms = [f.args if isinstance(f, MatAdd) else [f] for f in a.args]
+            expanded = MatAdd(*[MatMul(*t) for t in itertools.product(*terms)])
+            if a != expanded:
+                expr = expr.xreplace({a: expanded})
+                return expandMatmul(expr)
+    return expr
+
+'''
+GOAL: check that two matrix expressions are equaly, simplifying to do so. 
+'''
+def equal(mat1: MatrixExpr, mat2: MatrixExpr) -> bool:
+
+    if isinstance(mat1, MatrixExpr) and isinstance(mat2, MatrixExpr):
+        if mat1.shape == mat2.shape:
+            zeroMat = ZeroMatrix(*mat1.shape)
+
+            # Sometimes the subtraction results in one side of the expression having MatPow(expr, Integer(1)) which impedes simplification. Must remove that and see if results to zero matrix. If not, send to expandMatmul
+            subtracted = (mat1 - mat2).doit()
+
+            # Now removing expo power of 1 around grouped expressions, if there
+            subtracted = subtracted if subtracted == zeroMat else removeMatPowOfOne(subtracted).doit()
+
+            return subtracted == zeroMat or expandMatmul(subtracted).doit() == zeroMat
+
+    # else check if they are traces
+    elif mat1.is_Trace and mat2.is_Trace:
+        return equal(mat1.arg, mat2.arg)
+
+    return False 
+
+
+
+
+
+
+
+
+
+
+
+
+# ### SIMPLIFICATIONS AREA -------------------------------------------
 
 
 '''
@@ -641,7 +752,7 @@ def inner(expr: MatrixExpr) -> MatrixExpr:
     Constr = getConstr(expr)
 
     #types = [MatMul, MatAdd, MatrixSymbol, Symbol, Number]
-    otherTypes = list( set(ALL_TYPES_LIST).symmetric_difference(CONSTR_LIST) - set(OP_POW_LIST))
+    otherTypes = list( set(ALL_CONSTRS_LIST).symmetric_difference(CONSTR_LIST) - set(OP_POW_LIST))
     #isAnySubclass = any(map(lambda t : issubclass(Constr, t), types))
 
     #if (Constr in otherTypes) or issubclass(Constr, Number):
@@ -671,8 +782,8 @@ def innerTrail(expr: MatrixExpr) -> List[Tuple[List[MatrixType], MatrixExpr]]:
 
         Constr: MatrixType = getConstr(expr)
 
-        #otherTypes = list( set(ALL_TYPES_LIST).symmetric_difference(CONSTR_LIST) )
-        otherTypes = list( set(ALL_TYPES_LIST).symmetric_difference(CONSTR_LIST) - set(OP_POW_LIST))
+        #otherTypes = list( set(ALL_CONSTRS_LIST).symmetric_difference(CONSTR_LIST) )
+        otherTypes = list( set(ALL_CONSTRS_LIST).symmetric_difference(CONSTR_LIST) - set(OP_POW_LIST))
 
         # BASE CASE 
         if (Constr in otherTypes) or isNumC(Constr): # or (isPow(expr) and isSym(expr)):

@@ -222,15 +222,7 @@ assert innerTrail(tg) == digger(tg)[0]
 
 # # TEST 1a: SL + GA = single symbol + grouped MatAdd
 expr_SLaGA = MatAdd(A, Transpose(B + C.T) )
-# %%
-check = expr_SLaGA
 
-testSimplifyAlgo(algo = group, expr = expr_SLaGA, check = check, byType = Transpose)
-# %%
-
-check = Transpose( (B + C.T) + A.T )
-
-testSimplifyAlgo_GroupCombineAdds(expr = expr_SLaGA, check = check, byType = Transpose)
 # %%
 # TODO see the todo for matadd general addends error in the rippleout function
 check = expr_SLaGA
@@ -265,15 +257,6 @@ expr_SLaGA = MatAdd(
         B , Inverse(Transpose(Transpose(E))) , C.T , R
     ))))) )
 )
-# %%
-
-check = MatAdd(
-    Inverse(Transpose(Transpose(A))),
-    Inverse(Transpose(Inverse(Transpose(Transpose(MatAdd(
-        Inverse(Transpose(Transpose(E))), B, R, C.T
-    ))))))
-)
-testSimplifyAlgo(algo = group, expr = expr_SLaGA, check = check, byType = Transpose)
 # %%
 
 
@@ -325,15 +308,6 @@ expr_SLmGA = MatMul(
 )
 # %%
 
-# TODO result got too complicated
-check = Transpose(MatMul(
-    Transpose(Inverse(Transpose(MatAdd(B, C.T)))),
-    A.T
-))
-
-testSimplifyAlgo(algo = group, expr = expr_SLmGA, check = check, byType = Transpose)
-# %%
-
 
 check = MatMul(
     A,
@@ -349,6 +323,7 @@ check = MatMul(
     Transpose(Inverse(MatAdd(B, C.T)))
 )
 testSimplifyAlgo(algo = factor, expr = expr_SLmGA, check = check, byType = Transpose)
+
 
 # %%
 
@@ -383,18 +358,6 @@ expr_SLmGA = MatMul(
 # %%
 
 
-check = Transpose(MatMul(
-
-    Transpose(Inverse(Transpose(Inverse(Transpose(Transpose(MatAdd(
-        B , Inverse(Transpose(Transpose(E))) , C.T , Transpose(Inverse(R))
-    ))))) )),
-    Transpose(Inverse(Transpose(Transpose(Inverse(Inverse(Transpose(Transpose(A))))))))
-))
-
-testSimplifyAlgo(algo = group, expr = expr_SLmGA, check = check, byType = Transpose)
-# %%
-
-
 check = MatMul(
     Transpose(Transpose(Transpose(Transpose(Inverse(Inverse(Inverse(A))))))),
     Transpose(Transpose(Transpose(Inverse(Inverse(MatAdd(
@@ -405,18 +368,12 @@ check = MatMul(
 testSimplifyAlgo(algo = rippleOut, expr = expr_SLmGA, check = check, byType = Transpose)
 # %%
 
-# LEFT OFF HERE
-
 check = MatMul(
     Inverse(Inverse(Inverse(A))),
     Transpose(Inverse(Inverse(MatAdd(
         B, E.I, Transpose(Inverse(R)), C.T
     ))))
 )
-res = factor(Transpose, expr_SLmGA)
-equal(expr_SLmGA, res)
-equal(expr_SLmGA, check)
-
 testSimplifyAlgo(algo = factor, expr = expr_SLmGA, check = check, byType = Transpose)
 # %%
 
@@ -424,9 +381,9 @@ testSimplifyAlgo(algo = factor, expr = expr_SLmGA, check = check, byType = Trans
 # check_TOFIX
 check = MatMul(
     Inverse(Inverse(Inverse(A))),
-    Transpose(Inverse(Inverse(MatAdd(
-        E.I, B, Transpose(Inverse(R)), C.T
-    ))))
+    Inverse(Inverse(MatAdd(
+        R.I, C, Transpose(Inverse(E)), B.T
+    )))
 )
 # TODO the difference in res and check might be from the updated wrapDeep function (factoring over args)
 testSimplifyAlgo(algo = polarize, expr = expr_SLmGA, check = check, byType = Transpose)
@@ -436,16 +393,7 @@ testSimplifyAlgo(algo = polarize, expr = expr_SLmGA, check = check, byType = Tra
 # TEST 3a: SL + GM = single symbol + grouped MatMul
 
 expr_SLaGM = MatAdd(A, MatMul(B, A.T, R.I))
-# %%
 
-
-check  = MatAdd(
-    A,
-    Transpose(MatMul(
-        Transpose(Inverse(R)), A, B.T
-    ))
-)
-testSimplifyAlgo(algo = group, expr = expr_SLaGM, check = check, byType = Transpose)
 # %%
 
 
@@ -467,12 +415,8 @@ expr_SLaGM = MatAdd(
         B , Inverse(Transpose(Transpose(E))) , C.T , Transpose(Inverse(R))
     ))))) )
 )
+
 # %%
-
-# STOPPING testing group() here because these tests are mainly meant for factor and polarize, group just complicates things, not that sophisticated!
-# %%
-
-
 
 check = MatAdd(
     Transpose(Transpose(Transpose(Transpose(Inverse(Inverse(Inverse(A))))))),
@@ -483,6 +427,15 @@ check = MatAdd(
 testSimplifyAlgo(algo = rippleOut, expr = expr_SLaGM, check = check, byType = Transpose)
 # %%
 
+check = MatAdd(
+    Inverse(Inverse(Inverse(A))), 
+    Transpose(Inverse(Inverse(MatAdd(
+        E.I, B, Transpose(Inverse(R)), C.T
+    ))))
+)
+
+testSimplifyAlgo(algo = factor, expr = expr_SLaGM, check = check, byType = Transpose)
+# %%
 
 check = MatAdd(
     Inverse(Inverse(Inverse(A))),
@@ -490,8 +443,6 @@ check = MatAdd(
         R.I, C, Transpose(Inverse(E)), B.T
     )))
 )
-
-testSimplifyAlgo(algo = factor, expr = expr_SLaGM, check = check, byType = Transpose)
 
 testSimplifyAlgo(algo = polarize, expr = expr_SLaGM, check = check, byType = Transpose)
 
@@ -515,6 +466,8 @@ testSimplifyAlgo(algo = factor, expr = expr_SLmGM, check = check, byType = Trans
 testSimplifyAlgo(algo = polarize, expr = expr_SLmGM, check = check, byType = Transpose)
 # %% --------------------------------------------------------------
 
+
+# TODO BOOKMARK LEFT OFF HERE RE-TESTING
 
 # TEST 4b: SL * GM = single symbol * grouped MatMul (with more layerings per multiplicand)
 
@@ -1596,10 +1549,6 @@ testSimplifyAlgo(algo = polarize, expr = expr_GMmGM, check = check, byType = Tra
 expr = Inverse(Transpose(C*E*B))
 
 # %%
-check = expr
-
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
-# %%
 
 
 check = Transpose(Inverse(MatMul(C, E, B)))
@@ -1630,8 +1579,6 @@ expr = Transpose(Inverse(C*E*B))
 
 check = expr
 
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
-
 testSimplifyAlgo(algo = rippleOut, expr = expr, check = check, byType = Transpose)
 
 testSimplifyAlgo(algo = factor, expr = expr, check = check, byType = Transpose)
@@ -1643,12 +1590,7 @@ testSimplifyAlgo(algo = polarize, expr = expr, check = check, byType = Transpose
 
 # GENERAL TEST 3: individual transposes inside inverse
 expr = Inverse(B.T * E.T * C.T)
-# %%
 
-
-check = Inverse(Transpose(C*E*B))
-
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
 # %%
 
 
@@ -1675,8 +1617,6 @@ expr = Transpose(B.I * E.I * C.I)
 
 check = expr
 
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
-
 testSimplifyAlgo(algo = rippleOut, expr = expr, check = check, byType = Transpose)
 
 testSimplifyAlgo(algo = factor, expr = expr, check = check, byType = Transpose)
@@ -1690,18 +1630,6 @@ testSimplifyAlgo(algo = polarize, expr = expr, check = check, byType = Transpose
 # GENERAL TEST 5 a: individual symbols
 
 Q = MatrixSymbol("Q", a, b)
-
-# %%
-
-(expr1, check1) = (Q, Q)
-(expr2, check2) = (Q.T, Q.T)
-(expr3, check3) = (C.I, C.I)
-(expr4, check4) = (Inverse(Transpose(C)), Inverse(Transpose(C)))
-
-testSimplifyAlgo(algo = group, expr = expr1, check = check1, byType = Transpose)
-testSimplifyAlgo(algo = group, expr = expr2, check = check2, byType = Transpose)
-testSimplifyAlgo(algo = group, expr = expr3, check = check3, byType = Transpose)
-testSimplifyAlgo(algo = group, expr = expr4, check = check4, byType = Transpose)
 
 # %%
 
@@ -1753,16 +1681,6 @@ expr = Transpose(Inverse(Inverse(Inverse(Transpose(MatMul(
     Inverse(Transpose(R)),
     M
 ))))))
-# %%
-
-check = Transpose(Inverse(Inverse(Inverse(Transpose(Transpose(MatMul(
-    M.T,
-    Transpose(Inverse(Transpose(R))),
-    Transpose(Inverse(Transpose(Inverse(Transpose(C))))),
-    A.T
-)))))))
-
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
 
 # %%
 
@@ -1798,11 +1716,6 @@ testSimplifyAlgo(algo = polarize, expr = expr, check = check, byType = Transpose
 # GENERAL TEST 6: grouped products
 
 expr = MatMul( Transpose(A*B), Transpose(R*J) )
-# %%
-
-check = Transpose(R*J*A*B)
-
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
 
 # %%
 
@@ -1828,12 +1741,6 @@ testSimplifyAlgo(algo = polarize, expr = expr, check = check, byType = Transpose
 expr = B.T * A.T * J.T * R.T
 # %%
 
-
-check = Transpose(R*J*A*B)
-
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
-# %%
-
 check = expr
 
 testSimplifyAlgo(algo = rippleOut, expr = expr, check = check, byType = Transpose)
@@ -1854,13 +1761,6 @@ testSimplifyAlgo(algo = polarize, expr = expr, check = check, byType = Transpose
 L = Transpose(Inverse(MatMul(B, A, R)))
 
 expr = MatMul(A , Transpose(Inverse(R)), Transpose(Inverse(L)) , K , E.T , B.I )
-# %%
-
-check = Transpose(
-    MatMul( Transpose(Inverse(B)), E , K.T , Inverse(L) , Inverse(R) , A.T)
-)
-
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
 # %%
 
 check = expr
@@ -1887,13 +1787,6 @@ testSimplifyAlgo(algo = polarize, expr = expr, check = check, byType = Transpose
 L = Inverse(Transpose(MatMul(B, A, R)))
 
 expr = MatMul(A , Transpose(Inverse(R)), Inverse(Transpose(L)) , K , E.T , B.I )
-# %%
-
-
-check = Transpose(
-    MatMul( Transpose(Inverse(B)), E , K.T , Transpose(Inverse(Transpose(L))) , R.I , A.T)
-)
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
 
 # %%
 
@@ -1928,23 +1821,6 @@ expr = MatAdd(
     MatMul(A, R.T, L, K, E.T, B),
     D.T, K
 )
-# %%
-
-
-#check = MatAdd( Transpose(MatMul(B.T, E, K.T, Transpose(L), R, A.T)) , D.T, K)
-check = MatAdd(
-    Transpose(MatMul(B.T, E, K.T, Inverse(MatMul(B, A, R)), R, A.T)), K, D.T
-)
-
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
-
-# %%
-
-check = Transpose(MatAdd(
-    MatMul(B.T, E, K.T, Inverse(MatMul(B, A, R)), R, A.T), D, K.T
-))
-
-testSimplifyAlgo_GroupCombineAdds(expr = expr, check = check, byType = Transpose)
 
 # %%
 
@@ -1970,13 +1846,6 @@ testSimplifyAlgo(algo = polarize, expr = expr, check = check, byType = Transpose
 # GENERAL TEST 11: digger case, very layered expression (with transposes separated so not expecting the grouptranspose to change them). Has inner arg matmul.
 
 expr = Trace(Transpose(Inverse(Transpose(C*D*E))))
-# %%
-
-check = expr
-
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
-
-testSimplifyAlgo_GroupCombineAdds(expr = expr, check = check, byType = Transpose)
 
 # %%
 
@@ -2002,15 +1871,6 @@ testSimplifyAlgo(algo = polarize, expr = expr, check = check, byType = Transpose
 expr = Trace(Transpose(Transpose(Inverse(C*D*E))))
 # %%
 
-check = expr
-
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
-
-testSimplifyAlgo_GroupCombineAdds(expr = expr, check = check, byType = Transpose)
-
-testSimplifyAlgo(algo = rippleOut, expr = expr, check = check, byType = Transpose)
-# %%
-
 check = Trace(Inverse(MatMul(C, D, E)))
 
 testSimplifyAlgo(algo = factor, expr = expr, check = check, byType = Transpose)
@@ -2022,14 +1882,6 @@ testSimplifyAlgo(algo = polarize, expr = expr, check = check, byType = Transpose
 
 # GENERAL TEST 13: very layered expression (digger case) with individual transpose and inverses littered in the inner matmul arg.
 expr = Transpose(Inverse(Transpose(C.T * A.I * D.T)))
-# %%
-
-
-check = Transpose(Inverse(Transpose(Transpose(
-    MatMul(D , Transpose(Inverse(A)), C )
-))))
-
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
 # %%
 
 check = Transpose(Transpose(Inverse(MatMul(C.T, A.I, D.T))))
@@ -2069,22 +1921,6 @@ expr = Transpose(Inverse(
 
 # %%
 
-check = Transpose(
-    Inverse(Transpose(
-        MatMul(
-            Inverse(Transpose(MatMul(
-                B, Inverse(B*A*R), Transpose(Inverse(E)), C
-            ))),
-
-            Transpose(Transpose(MatMul(R, D, A.T)))
-        )
-    ))
-)
-
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
-testSimplifyAlgo_GroupCombineAdds(expr = expr, check = check, byType = Transpose)
-# %%
-
 check = expr
 
 testSimplifyAlgo(algo = rippleOut, expr = expr, check = check, byType = Transpose)
@@ -2119,17 +1955,6 @@ expr = Transpose(Inverse(
         )
     )
 ))
-
-# %%
-
-check = Transpose(Inverse(Transpose(MatMul(
-    Inverse(Transpose(MatMul(
-        B, Transpose(Inverse(Transpose(B*A*R))), Transpose(Inverse(E)), C
-    ))),
-    Transpose(Transpose(MatMul(R, D, A.T)))
-))))
-
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
 # %%
 
 check = Transpose(Inverse(MatMul(
@@ -2170,17 +1995,6 @@ expr = Inverse(Transpose(
     )
 ))
 
-# %%
-
-
-check = Inverse(Transpose(Transpose(MatMul(
-    Transpose(Inverse(Transpose(Transpose(MatMul(
-        B, Inverse(B*A*R), Transpose(Inverse(E)), C
-    ))))),
-    Transpose(Transpose(MatMul(R, D, A.T)))
-))))
-
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
 
 # %%
 
@@ -2225,16 +2039,6 @@ expr = Inverse(Transpose(
 
 # %%
 
-check = Inverse(Transpose(Transpose(MatMul(
-    Transpose(Inverse(Transpose(Transpose(MatMul(
-        B, Transpose(Inverse(Transpose(B*A*R))), Transpose(Inverse(E)), C
-    ))))),
-    Transpose(Transpose(MatMul(R, D, A.T)))
-))))
-
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
-# %%
-
 
 check = Transpose(Inverse(MatMul(
     A, D.T, R.T,
@@ -2276,53 +2080,6 @@ expr = Transpose(
     MatAdd( B.T * A.T * J.T * R.T,  expr_inv_14a
     )
 )
-# %%
-
-
-
-check_inv_14a = Inverse(Transpose(
-        MatMul(
-            Inverse(Transpose(MatMul(
-                B, Inverse(B*A*R), Transpose(Inverse(E)), C
-            ))),
-
-            Transpose(Transpose(MatMul(R, D, A.T)))
-        )
-))
-
-check = Transpose(
-    MatAdd(
-        check_inv_14a,
-
-        Transpose(MatMul(R, J, A, B))
-    )
-)
-
-testSimplifyAlgo(algo = group, expr = expr, check = check, byType = Transpose)
-# %%
-
-
-check_inv_14a = Inverse(Transpose(
-        MatMul(
-            Inverse(Transpose(MatMul(
-                B, Inverse(B*A*R), Transpose(Inverse(E)), C
-            ))),
-
-            Transpose(Transpose(MatMul(R, D, A.T)))
-        )
-))
-
-check = Transpose(Transpose(
-    MatAdd(
-        Transpose(check_inv_14a),
-
-        MatMul(R, J, A, B)
-    )
-))
-
-testSimplifyAlgo_GroupCombineAdds(expr = expr, check = check, byType = Transpose)
-# TODO: faulty function: group combine add should have gone in the inside of the outer transpose and done transpose combine there.
-
 # %%
 
 
@@ -2401,27 +2158,6 @@ expr_polarize = Inverse(MatMul(
     Transpose(Inverse(Transpose(MatAdd(B.T, A.T, R, MatMul(Transpose(Inverse(B*A*R.T)), MatAdd(E, J, D)), Inverse(Transpose(E)), Inverse(Transpose(D)))))),
     Inverse(Transpose(MatMul(A.T, B.T, E.I, Transpose(Inverse(Transpose(A + E + R.T))), C)))
 ))
-# %%
-
-
-check = Inverse(Transpose(MatMul(
-    Transpose(Inverse(Transpose(Transpose(MatMul(
-        C.T, Inverse(Transpose(A + E + R.T)), Transpose(Inverse(E)), B, A
-    ))))),
-    Inverse(Transpose(MatAdd(
-        Inverse(Transpose(D)),
-        Inverse(Transpose(E)),
-        R,
-        Transpose(MatMul(
-            Transpose(D + E + J),
-            Inverse(Transpose(R * A.T * B.T))
-        )),
-        A.T,
-        B.T
-    )))
-)))
-
-testSimplifyAlgo(algo = group, expr = expr_polarize, check = check, byType = Transpose)
 # %%
 
 
