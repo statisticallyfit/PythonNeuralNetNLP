@@ -70,14 +70,19 @@ from src.NeuralNetworkStudy.books.SethWeidman_DeepLearningFromScratch.FunctionUt
 
 
 from src.utils.GeneralUtil import *
-from src.MatrixCalculusStudy.MatrixDerivLib.symbols import Deriv
-from src.MatrixCalculusStudy.MatrixDerivLib.diff import matrixDifferential
-from src.MatrixCalculusStudy.MatrixDerivLib.printingLatex import myLatexPrinter
+from src.MatrixCalculusStudy.DerivativeLib.main.Simplifications import * 
+
+#from src.MatrixCalculusStudy.MatrixDerivLib.symbols import Deriv
+
+#from src.MatrixCalculusStudy.MatrixDerivLib.printingLatex import myLatexPrinter
 
 # For displaying
 from IPython.display import display, Math
 from sympy.interactive import printing
-printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLatexPrinter.doprint(e))
+printing.init_printing(use_latex='mathjax')
+
+
+#printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLatexPrinter.doprint(e))
 
 #from IPython.display import HTML
 #display(HTML('<style>.text_cell .CodeMirror{font-family:Qarmic sans}</style>'))
@@ -174,7 +179,7 @@ printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLat
 #
 #
 #
-# ... then performing the *matrix multiplication* of this batch $X_\text{batch}$ with $W$ gives a *vector of predictions for the batch* as desired:
+# ... then performing the *matrix multiplication* of this batch $X_\text{batch}$ with $\overrightarrow{w}$ gives a *vector of predictions for the batch* as desired:
 # $$
 # \begin{aligned}
 # p_\text{batch}
@@ -263,7 +268,7 @@ printing.init_printing(use_latex='mathjax', latex_printer= lambda e, **kw: myLat
 #
 # ## Forward Pass for Linear Regression
 #
-# Below in the code, the forward function computes quantities in the forward pass and saves them in a dictionary, which serves the additional purpose of differentiating between forward pass quantities computed her and the parameters themselves.
+# Below in the code, the forward function computes quantities in the forward pass and saves them in a dictionary, which serves the additional purpose of differentiating between forward pass quantities computed here and the parameters themselves.
 #
 # The equations that are computed in the forward pass are as follows:
 #
@@ -398,7 +403,7 @@ def forwardLinearRegression(X_batch: Tensor, y_batch: Tensor, weights: Dict[str,
     '''
     Forward pass for the step-by-step linear regression.
 
-    weights = dictionary of parameters, with parameters 1 through k under the key 'W' and intercept under key 'B'
+    weights = dictionary of parameters, with the W parameters 1 through k under the key 'W' and the intercept under key 'B'
     X_batch = data matrix of observations for a particular batch size.
         size == (b x k)
     w = weights or parameters
@@ -428,16 +433,16 @@ def forwardLinearRegression(X_batch: Tensor, y_batch: Tensor, weights: Dict[str,
     assert canDoMatMul
 
 
-    # TODO should I keep beta as 1x1 array?
-    isInterceptANumber = beta_0.shape[0] == beta_0.shape[1] == 1
-    assert isInterceptANumber
+    # TODO INTERCEPT ISSUE: should I keep beta as 1x1 array?
+    #isInterceptANumber = beta_0.shape[0] == beta_0.shape[1] == 1
+    #assert isInterceptANumber
 
 
     ### Compute the forward pass operations
     N_batch: Tensor = X_batch.matmul(w)
     # torch.mv() only works if w.shape == (dim1, ) instaed of (dim1, dim2) so we have to use matmul here, even though w is a vector so dim2 == 1.
 
-    # TODO: In pytorch it IS possible to add a tensor and scalar together but in a vector space it is NOT possible ...
+    # TODO INTERCEPT ISSUE: In pytorch it IS possible to add a tensor and scalar together but in a vector space it is NOT possible ...
     P_batch_with_bias: Tensor = N_batch + beta_0
 
     # This is the MSE formula:

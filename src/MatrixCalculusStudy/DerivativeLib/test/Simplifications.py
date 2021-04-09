@@ -467,8 +467,6 @@ testSimplifyAlgo(algo = polarize, expr = expr_SLmGM, check = check, byType = Tra
 # %% --------------------------------------------------------------
 
 
-# TODO BOOKMARK LEFT OFF HERE RE-TESTING
-
 # TEST 4b: SL * GM = single symbol * grouped MatMul (with more layerings per multiplicand)
 
 expr_SLmGM = MatMul(
@@ -770,6 +768,11 @@ expr_SMaGA = MatAdd(
     )))
 )
 # %%
+
+# TODO BOOKMARK because factor is different after wrapdeep change not not sure if need to simplify like polarize or keep it in unsimplified state (as test below shows)
+
+# TODO see snagit for other tests for which to update the 'check' if indeed need to change factor to simplify like polarize
+
 
 # OLD check (before wrap-deep-factor fix and mat-add-transpose-group fix)
 #check = MatAdd(
