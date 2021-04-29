@@ -1,0 +1,91 @@
+name: pynlp_farmhaystack_env
+channels:
+  - conda-forge
+  - pytorch
+  - fastai
+  - defaults
+dependencies:
+
+  # ========================
+  # Core
+  # ========================
+  - mypy
+  - typing
+  - pip
+  - python
+  - jupytext
+  - jupyterlab
+  - ipywidgets
+  - python-language-server
+  - ipykernel 
+
+
+
+
+  # ========================
+  # NLP (important base nlp pckgs)
+  # ========================
+  - pytorch>=1.4.0
+  - pytorch-pretrained-bert
+
+  - tensorflow==1.14.0
+  - tensorflow-probability
+
+  #- fastai2>=0.0.11
+  #- nbdev>=0.2.12
+
+  - tensorboard
+  - torchtext
+  - keras
+  - sacremoses
+  - sacrebleu
+  - sentencepiece
+
+  #- textblob
+  #- python-annoy
+  #- pattern>=3.6.0
+  #- gym
+  - scikit-learn
+  - nltk
+  - gensim
+  - numpy
+  - scipy
+  - sympy
+  - spacy
+  - statsmodels
+  - pandas
+  - patsy
+
+
+
+  # ========================
+  # PLOTTING
+  # ========================
+  - matplotlib
+  - seaborn
+  - plotly
+  #- pygraphviz>=1.5
+
+
+
+  # ==============
+  # Pip things
+  # ============== 
+  - pip:
+      - transformers>=2.5.0
+      #- mxnet
+      #- gluonnlp
+      #- gluonts
+      #- pampy
+      - farm
+      - farm-haystack
+
+
+# WARNING: got error about cloudpickle and gast behind too high for tensorflow (all installed via condaforge) but otherwise installation of farm / haystack seems ok (?): 
+
+#  "ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+#tensorflow-probability 0.8.0rc0 requires cloudpickle==1.1.1, but you have cloudpickle 1.6.0 which is incompatible.
+#tensorflow-probability 0.8.0rc0 requires gast<0.3,>=0.2, but you have gast 0.4.0 which is incompatible. Successfully installed S"
+
+
+prefix: /development/bin/python/miniconda3/envs/pynlp_farmhaystack_env
