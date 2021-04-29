@@ -27,7 +27,7 @@ import collections
 
 # Create named tuple class with names "Names" and "Objects"
 Info = collections.namedtuple("Info",
-                              ["Names", "Types", "Objects"], #verbose=False, 
+                              ["Names", "Types", "Objects"], #verbose=False,
                               rename = False)
 
 
@@ -163,6 +163,7 @@ def printChildInfo(model: nn.Module):
 # Parameters ------------------------------------------------------------------------
 
 def printLengthInfo(model: nn.Module):
+     # WARNING: AdaptiveModel type has no 'num_parameters' method
     print(f"Number of parameters = {model.num_parameters()}")
     print(f"Length of parameter list = {len(list(model.parameters()))}")
     print(f"Number of modules = {len(list(model.named_modules()))}")
@@ -171,7 +172,7 @@ def printLengthInfo(model: nn.Module):
 
 
 # Creating my named tuple to hold parameter information.
-ParameterInfo = collections.namedtuple("ParameterInfo", ["Names", "Sizes", "Tensors"], #verbose=False, 
+ParameterInfo = collections.namedtuple("ParameterInfo", ["Names", "Sizes", "Tensors"], #verbose=False,
 rename = False)
 
 
