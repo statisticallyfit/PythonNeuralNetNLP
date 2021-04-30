@@ -159,5 +159,49 @@ modelOpt, optimizer, learnRateSchedule = initialize_optimizer(
 modelOpt
 
 # %% markdown
+# Training loop here can trigger evaluation using the dev data and can trigger evaluation after training using the test data. 
+# %% codecell
+NUM_GPU: int = 1 # positive if CUDA is available, else 0
+
+trainer = Trainer(
+    model = modelOpt, 
+    optimizer = optimizer, 
+    data_silo = dataSilo, 
+    epochs = NUM_EPOCHS, 
+    n_gpu = NUM_GPU, 
+    lr_schedule = learnRateSchedule,
+    device = device
+)
+# %% codecell
+trainer
+# %% codecell
+modelTrain = trainer.train()
+# %% codecell
+modelTrain
+# %% markdown
+# ### STEP 5: Inference
+# Test the model on a sample (doing inference)
+# %% codecell
+from farm.infer import Inferencer 
+from pprint import PrettyPrinter
+
+modelInfer = Inferencer(
+    processor = processor,
+    model = modelTrain, 
+    task_type = "text_classification", 
+    gpu = True
+)
+
+basicTexts: List[Dict[str, str]] = [
+    {"text" : "Martin ist ein Idiot"},
+    {"text" : "Martin Müller spielt Handball in Berlin"}
+]
+
+result = modelInfer.inference_from_dicts(dicts = basicTexts)
+
+PrettyPrinter().pprint(result)
+# %% markdown
+# Can see it was very confident that the second text about handball wasn't offensive while the first one was. 
+# %% markdown
 
 # ## TASK 2: Named Entity Recognition (NER)
