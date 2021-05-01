@@ -1,4 +1,4 @@
-# %% markdown [markdown]
+# %% [markdown]
 # # Tutorial 1: FARM Building Blocks
 #
 # ## TASK 1: Text Classification
@@ -17,7 +17,7 @@ from farm.train import Trainer
 from farm.utils import MLFlowLogger
 
 from typing import *
-# %% markdown [markdown]
+# %% [markdown]
 # ### STEP 1: Setup
 # Adjust the working directory to the current folder path
 # %% codecell
@@ -26,7 +26,7 @@ os.getcwd()
 
 os.chdir("/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP/src/FARMHaystackStudy/")
 
-# %% markdown [markdown]
+# %% [markdown]
 # Setup to be able to import my util functions in other folders:
 # %% codecell
 import sys
@@ -44,7 +44,7 @@ sys.path.append(FARM_PATH)
 
 sys.path
 
-# %% markdown [markdown]
+# %% [markdown]
 # Farm allows simple logging of many parameters & metrics. Let's use MLflow framework to track our experiment ...
 # %% codecell
 mlLogger = MLFlowLogger(tracking_uri="https://public-mlflow.deepset.ai/")
@@ -56,7 +56,7 @@ mlLogger.init_experiment(experiment_name="Public_FARM", run_name="Tutorial1_Cola
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Devices available: {}".format(device))
 
-# %% markdown [markdown]
+# %% [markdown]
 # ### STEP 2: Data Handling
 # Here we initialize a tokenizer to preprocess text. This is the BERT Tokenizer which uses byte pair encoding method (currently loaded with a German model)
 # %% codecell
@@ -64,7 +64,7 @@ tokenizer = Tokenizer.load(pretrained_model_name_or_path = "bert-base-german-cas
                            do_lower_case = False)
 # %% codecell
 tokenizer
-# %% markdown [markdown]
+# %% [markdown]
 # To prepare the data for the model, we need a set of functions to transform data files into PyTorch Datasets.
 # We group these together in Processor objects.
 # We will need a new Processor object for each new source of data.
@@ -82,14 +82,14 @@ processor = TextClassificationProcessor(tokenizer = tokenizer,
                                         metric = METRIC,
                                         label_column_name = "coarse_label")
 
-# %% markdown [markdown]
+# %% [markdown]
 # We need a `DataSilo` to keep our train, dev, and test sets separate. The `DataSilo` will call the functions in the `Processor` to generate these sets.
 #
 # From the `DataSilo` we can fetch a PyTorch `DataLoader` object which will be passed on to the model.
 # %% codecell
 dataSilo  = DataSilo(processor = processor,
                      batch_size = BATCH_SIZE)
-# %% markdown [markdown]
+# %% [markdown]
 # ### STEP 3: Modeling
 # In FARM, we make a strong distinction between the language model and prediction head so that you can mix and match different building blocks for your needs.
 #
@@ -111,7 +111,7 @@ languageModel
 
 
 
-# %% markdown [markdown]
+# %% [markdown]
 # #### Prediction Head
 # * A Prediction head is a model that processes the output of the language model for a specific task. It will look different depending on the task (text classification, NER, QA ...)
 # * Prediction heads should generate logits over the available prediction classes and contain methods to convert these logits to losses or predictions.
@@ -123,7 +123,7 @@ languageModel
 predictionHead = TextClassificationHead(num_labels = len(LABEL_LIST))
 # %% codecell
 predictionHead
-# %% markdown [markdown]
+# %% [markdown]
 # #### Adaptive Model
 # The language model and prediction head are coupled together in the `AdaptiveModel`, which is a class that takes care of model saving and loading. Also coordinates cases where there is more than one prediction head.
 #
@@ -140,7 +140,7 @@ model = AdaptiveModel(language_model = languageModel,
 
 model
 
-# %% markdown [markdown]
+# %% [markdown]
 # ### STEP 4: Training
 # Here we initialize a BERT Adam optimizer with linear warmup and warmdown. Can set learning rate, warmup proportion and number of epochs to train for.
 # %% codecell
@@ -158,7 +158,7 @@ modelOpt, optimizer, learnRateSchedule = initialize_optimizer(
 # NOTE: the modelOpt (after optimizer initialization and previous model seem to be exactly the same (tested using getParamInfo() for each from my ModelUtils to see if the tensor numbers differed some how but they seem the same)
 modelOpt
 
-# %% markdown [markdown]
+# %% [markdown]
 # Training loop here can trigger evaluation using the dev data and can trigger evaluation after training using the test data. 
 # %% codecell
 NUM_GPU: int = 1 # positive if CUDA is available, else 0
@@ -178,7 +178,7 @@ trainer
 modelTrain = trainer.train()
 # %% codecell
 modelTrain
-# %% markdown [markdown]
+# %% [markdown]
 # ### STEP 5: Inference
 # Test the model on a sample (doing inference)
 # %% codecell
@@ -200,8 +200,8 @@ basicTexts: List[Dict[str, str]] = [
 result = modelInfer.inference_from_dicts(dicts = basicTexts)
 
 PrettyPrinter().pprint(result)
-# %% markdown [markdown]
+# %% [markdown]
 # Can see it was very confident that the second text about handball wasn't offensive while the first one was. 
-# %% markdown [markdown]
+# %% [markdown]
 
 # ## TASK 2: Named Entity Recognition (NER)
