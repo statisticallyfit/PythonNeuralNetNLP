@@ -14,6 +14,11 @@ Tensor = torch.Tensor
 LongTensor = torch.LongTensor
 FloatTensor = torch.FloatTensor
 
+# For displaying
+from sympy.interactive import printing
+printing.init_printing(use_latex='mathjax')
+
+
 # %% codecell
 import sys
 
@@ -23,27 +28,22 @@ UTIL_DISPLAY_PATH: str = PATH + "/src/utils/GeneralUtil/"
 
 MATDIFF_PATH: str = PATH + "/src/MatrixCalculusStudy/DerivativeLib"
 
-
 sys.path.append(PATH)
 sys.path.append(UTIL_DISPLAY_PATH)
 sys.path.append(MATDIFF_PATH)
 
-# For displaying
-from sympy.interactive import printing
-printing.init_printing(use_latex='mathjax')
 
 
+# %%
 from src.MatrixCalculusStudy.DerivativeLib.main.Simplifications import *
 
 from src.MatrixCalculusStudy.DerivativeLib.test.utils.TestHelpers import *
 
 
-
-
 # %% ----------------------------------------------------------
 # TEST DATA FOR BELOW FUNCTIONS:
 
-a, b, c = symbols('expr b c', commutative = True)
+a, b, c = symbols('a b c', commutative = True)
 
 C = MatrixSymbol('C', c, c)
 D = MatrixSymbol('D', c, c)
