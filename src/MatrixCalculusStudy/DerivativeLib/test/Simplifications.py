@@ -37,7 +37,7 @@ sys.path.append(PATH)
 # %%
 # NOTE: all that needs to be done is to add the PATH variable to sys.path and no other path is necessary and then the below imports will work: 
 
-# IDEA: perhaps have a global file that does this so no need to do it per file? But then sys.path is still getting hardcoded info ...
+# IDEA: perhaps have a global file that does this so no need to do it per file? But then sys.path is still getting hardcoded info  ...
 
 
 from src.MatrixCalculusStudy.DerivativeLib.main.Simplifications import *
