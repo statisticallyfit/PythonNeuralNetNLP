@@ -46,16 +46,16 @@ import os
 
 PATH: str = '/development/projects/statisticallyfit/github/learningmathstat/PythonNeuralNetNLP'
 
-UTIL_DISPLAY_PATH: str = PATH + "/src/utils/GeneralUtil/"
+#UTIL_DISPLAY_PATH: str = PATH + "/src/utils/GeneralUtil/"
 
-NEURALNET_PATH: str = PATH + '/src/NeuralNetworkStudy/books/SethWeidman_DeepLearningFromScratch'
+#NEURALNET_PATH: str = PATH + '/src/NeuralNetworkStudy/books/SethWeidman_DeepLearningFromScratch'
 
 #os.chdir(NEURALNET_PATH)
 #assert os.getcwd() == NEURALNET_PATH
 
 sys.path.append(PATH)
-sys.path.append(UTIL_DISPLAY_PATH)
-sys.path.append(NEURALNET_PATH)
+#sys.path.append(UTIL_DISPLAY_PATH)
+#sys.path.append(NEURALNET_PATH)
 #assert NEURALNET_PATH in sys.path
 
 # %%
