@@ -137,7 +137,6 @@ isMulC = lambda t: t in [MatMul, Mul]
 isAdd = lambda e: isAddC(getConstr(e))
 isAddC = lambda t: t in [MatAdd, Add]
 # isPow does expression-level querying:
-isPow = lambda e: getConstr(e) in [MatPow, Pow] # NOT including PowHolder(expo) here becasue that is considered a type --- test for that kind of equality is done by isPowC, querying at type level not expression level
 # isPowC does type-level querying:
 isPowC = lambda t : anyTypeEqual([t], OP_POW_LIST) or anyTypeInstance([t], OP_POW_LIST)
 
@@ -884,6 +883,7 @@ def factor(WrapType: MatrixType, expr: MatrixExpr) -> MatrixExpr:
 
     # Create new pairs from the filtered and inner Exprs, by attaching expr Transpose at the end if odd num else none.
     newTypesInners = []
+    
 
     if WrapType in INV_TRANS_LIST: 
         # The inverse / transpose way of factoring out

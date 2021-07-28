@@ -109,7 +109,8 @@ semanticFrameTagger
 s1 = Sentence("George returned to Berlin to return his hat.")
 s2 = Sentence("He had a look at different hats.")
 
-# Predict NER tags
+
+# Predict NER tags  
 semanticFrameTagger.predict(s1)
 semanticFrameTagger.predict(s2)
 
