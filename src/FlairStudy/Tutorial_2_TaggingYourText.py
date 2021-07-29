@@ -99,6 +99,8 @@ print(folkAirSentence)
 # For English, Flair provides a pre-trained model that detects semantic frames in text using Propbank 3.0 frames. 
 # 
 # Provides a word sense disambiguation for frame evoking words. 
+# 
+# ### Example 1: George and Hat
 # %%
 # Load model
 semanticFrameTagger = SequenceTagger.load('frame')
@@ -117,3 +119,71 @@ semanticFrameTagger.predict(s2)
 # Print sentence with predicted tags
 print(s1.to_tagged_string())
 print(s2.to_tagged_string())
+# %% [markdown]
+# ### Example 2: Drive
+# %%
+# Load the model
+semanticFrameTagger = SequenceTagger.load("frame")
+# %%
+# Make English sentence
+#kiwiSentence = Sentence("The girl sliced open the furry brown kiwi to reveal a juicy green interior, while the kiwi sang merrily on the branch in the tropical forest where kiwi hung from branches.")
+
+
+# checkSentence = Sentence("Sally left the porcelain on the table before she left to visit her grandmother.")
+
+#sentence = Sentence("While Marie drove the cart, she admired the driving ambition of the steady, plodding horses pulling her through the country as the pull of ocean waves tugged her eyes to the store.")
+
+sentence = Sentence("Marie drove the cart through the countryside, admiring the drive of the plodding horses pulling it. She drove a nail through the tarp to protect the lumber from rain. The farmer drove away gophers from his crop. The mayor drove people into poverty with the new tax rules. The storms and tides drove the boats toward shore. ")
+
+#checkSentence = Sentence("The girl checked her arrow before letting it fly, and after watching it whip smoothly into the target, she checked her watch for the time of day, and then remembering an urgent appointment, she hurriedly checked to make sure her equipment was packed away before cashing a check in the bank and leaving to see her friend. ")
+
+# Predict NER tags for semantic frames
+semanticFrameTagger.predict(sentence)
+
+# Print sentence with predicted tags
+print(sentence.to_tagged_string())
+# %% [markdown]
+# ### Example 3: Firing
+sentence = Sentence("The general fired four gunshot rounds, while the second general fired the lieutenants.Curiosity sparked my imagination. The flame sparked the bonfire that ravaged the forest.")
+
+semanticFrameTagger.predict(sentence)
+
+print(sentence.to_tagged_string())
+# %% [markdown]
+# ### Example 4: Absorb
+sentence = Sentence("The villagers were absorbed in their own affairs so did not notice how the fortifications were absorbing the floodwaters.")
+
+semanticFrameTagger.predict(sentence)
+
+print(sentence.to_tagged_string())
+# %% [markdown]
+sentence = Sentence("The rock fell through the air. The responsibility fell on his shoulders to protect the herd from the thunderstorm. Multiple animals fell into order to evade lightning strikes. ")
+
+semanticFrameTagger.predict(sentence)
+
+print(sentence.to_tagged_string())
+
+
+
+# %% codecell
+# TODO LEFT OFF HERE - doesn't work
+# SOURCE = https://huggingface.co/jpelhaw/t5-word-sense-disambiguation
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+
+AutoModelForSeq2SeqLM.from_pretrained("jpelhaw/t5-word-sense-disambiguation")
+AutoTokenizer.from_pretrained("jpelhaw/t5-word-sense-disambiguation")
+# %%
+input = 'question: which description describes the word " java " best in the following context? \
+descriptions:[  " A drink consisting of an infusion of ground coffee beans " , 
+                " a platform-independent programming lanugage "
+                ,  or " an island in Indonesia to the south of Borneo " ] 
+context: I like to drink " java " in the morning .'
+
+
+example = tokenizer.tokenize(input, add_special_tokens=True)
+
+answer = model.generate(input_ids=example['input_ids'], 
+                                attention_mask=example['attention_mask'], 
+                                max_length=135)
+
+# "a distinguishing trait"
