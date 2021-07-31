@@ -156,34 +156,22 @@ sentence = Sentence("The villagers were absorbed in their own affairs so did not
 semanticFrameTagger.predict(sentence)
 
 print(sentence.to_tagged_string())
+
 # %% [markdown]
+# ## Tagging a List of Sentences
+# Often, you want to tag an entire text corpus. Then you need to split the corpus into sentences and pass a list of `Sentence` objects to the `.predict()` method. 
+# 
+# For instance, can use the sentence splitter of segtok: 
+# %%
+from flair.models import SequenceTagger
+from flair.tokenization import SegtokSentenceSplitter
+
+# Example text with many sentences
+# %% [markdown]
+# ## Example 5: Fell
+# %%
 sentence = Sentence("The rock fell through the air. The responsibility fell on his shoulders to protect the herd from the thunderstorm. Multiple animals fell into order to evade lightning strikes. ")
 
 semanticFrameTagger.predict(sentence)
 
 print(sentence.to_tagged_string())
-
-
-
-# %% codecell
-# TODO LEFT OFF HERE - doesn't work
-# SOURCE = https://huggingface.co/jpelhaw/t5-word-sense-disambiguation
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-
-AutoModelForSeq2SeqLM.from_pretrained("jpelhaw/t5-word-sense-disambiguation")
-AutoTokenizer.from_pretrained("jpelhaw/t5-word-sense-disambiguation")
-# %%
-input = 'question: which description describes the word " java " best in the following context? \
-descriptions:[  " A drink consisting of an infusion of ground coffee beans " , 
-                " a platform-independent programming lanugage "
-                ,  or " an island in Indonesia to the south of Borneo " ] 
-context: I like to drink " java " in the morning .'
-
-
-example = tokenizer.tokenize(input, add_special_tokens=True)
-
-answer = model.generate(input_ids=example['input_ids'], 
-                                attention_mask=example['attention_mask'], 
-                                max_length=135)
-
-# "a distinguishing trait"
