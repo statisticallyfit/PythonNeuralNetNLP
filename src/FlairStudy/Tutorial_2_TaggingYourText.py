@@ -5,7 +5,12 @@
 # 
 # %%
 from flair.models import SequenceTagger
+from flair.data import Sentence 
+from flair.models import MultiTagger
+from flair.models import SequenceTagger
+from flair.tokenization import SegtokSentenceSplitter
 
+# %%
 tagger: SequenceTagger = SequenceTagger.load("ner")
 # %%
 tagger
@@ -14,7 +19,6 @@ tagger
 # 
 # Using a sentence with two named entities: 
 # %%
-from flair.data import Sentence 
 
 sentence = Sentence("George Washington went to Washington.")
 
@@ -66,7 +70,7 @@ for entity in mistbornSentence.get_spans("ner"):
 # # Multi-Tagging
 # Sometimes you want to predict several types of annotation at once, like NER and POS tags. You can use a `MultiTagger` object: 
 # %%
-from flair.models import MultiTagger
+#from flair.models import MultiTagger
 
 # load tagger for POS and NER
 tagger = MultiTagger.load(['pos', 'ner'])
@@ -124,6 +128,7 @@ print(s2.to_tagged_string())
 # %%
 # Load the model
 semanticFrameTagger = SequenceTagger.load("frame")
+semanticFrameTagger
 # %%
 # Make English sentence
 #kiwiSentence = Sentence("The girl sliced open the furry brown kiwi to reveal a juicy green interior, while the kiwi sang merrily on the branch in the tropical forest where kiwi hung from branches.")
@@ -144,6 +149,7 @@ semanticFrameTagger.predict(sentence)
 print(sentence.to_tagged_string())
 # %% [markdown]
 # ### Example 3: Firing
+# %%
 sentence = Sentence("The general fired four gunshot rounds, while the second general fired the lieutenants.Curiosity sparked my imagination. The flame sparked the bonfire that ravaged the forest.")
 
 semanticFrameTagger.predict(sentence)
@@ -163,15 +169,62 @@ print(sentence.to_tagged_string())
 # 
 # For instance, can use the sentence splitter of segtok: 
 # %%
-from flair.models import SequenceTagger
-from flair.tokenization import SegtokSentenceSplitter
+#from flair.models import SequenceTagger
+#from flair.tokenization import SegtokSentenceSplitter
 
-# Example text with many sentences
-# %% [markdown]
-# ## Example 5: Fell
+# Example 5: Text ("Fell") with many sentences
+
 # %%
-sentence = Sentence("The rock fell through the air. The responsibility fell on his shoulders to protect the herd from the thunderstorm. Multiple animals fell into order to evade lightning strikes. ")
+text: str = "The rock fell through the air. The responsibility fell on his shoulders to protect the herd from the thunderstorm. Multiple animals fell into order to evade lightning strikes."
 
-semanticFrameTagger.predict(sentence)
+# initialize sentence splitter
+splitter = SegtokSentenceSplitter()
 
-print(sentence.to_tagged_string())
+# Use splitter to split text into multiple (list) of sentences
+sentences = splitter.split(text)
+
+# Predict tags for sentences
+tagger = SequenceTagger.load("frame")
+tagger.predict(sentences)
+
+# Iterate through sentences and print predicted labels
+for sentence in sentences: 
+    print(sentence.to_tagged_string())
+
+# TODO HELP: why doesn't this Frame model differentiate the different senses of the word "fell"?
+# 1) "fell" as in object falling through the air
+# 2) "fell" as in an intangible weight being laid on someone.
+# 3) "fell" as in organize themselves in line
+
+# %% [markdown]
+# ## Tagging with Pre-Trained Text Classification Models
+# Using pre-trained mdoel for detecting positive or negative comments. This model is trained over a mix of product and movie review datasets and can recognize positive and negative sentiment in english text. 
+# %% codecell
+from flair.models import TextClassifier
+
+# load tagger
+classifier = TextClassifier.load("sentiment")
+classifier
+# %% [markdown]
+# All required is to use `predict()` method of the classifier on a sentence. This adds the predicted label to the sentence. 
+# %%
+# Predict for example sentence
+sentence = Sentence("enormously entertaining for moviegoers of any age")
+classifier.predict(sentence)
+
+# check prediction
+print(sentence)
+# %% codecell
+sentence = Sentence("A real critical thinker of this day and age; offers deeper insights than any other film about the sad, horrifying state of humanity today")
+
+classifier.predict(sentence)
+
+print(sentence)
+
+# %% [markdown]
+# ## Communicative Functions Text Classification
+# %% codecell
+# TODO doesn't work now
+#functionsClassifier = TextClassifier.load('communicative-functions')
+#functionsClassifier
+# %% codecell
