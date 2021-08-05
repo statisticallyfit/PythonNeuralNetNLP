@@ -41,7 +41,7 @@ from torch.nn.parameter import Parameter
 
 from typing import Dict, List, Union, Tuple
 
-from src.HuggingfaceStudy.Util import *
+from src.utils.ModelUtil import *
 
 
 
