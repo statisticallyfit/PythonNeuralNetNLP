@@ -1,0 +1,23 @@
+name: jupyter_env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+
+  # ========================
+  # Core
+  # ========================
+  #- mypy
+  #- typing
+  - pip
+  - python
+  - jupytext
+  - jupyterlab
+  - ipywidgets
+  - python-language-server
+  - ipykernel 
+
+
+
+
+prefix: /development/bin/python/miniconda3/envs/jupyter_env
